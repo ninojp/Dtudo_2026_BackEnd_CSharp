@@ -1,0 +1,96 @@
+:root {
+  color: var(--pTextColor);
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --linearGradiente: linear-gradient(#082e5c 0%, #041832 23.33%, #020c19 76.67%, #000000 100%);
+  --linearGradiente2: linear-gradient(#022147 0%, #031328 33.33%, #031022 66.67%, #000000 100%);
+  --corFrontEnd: #4EB7E6;
+  --fonteTipoFrontEnd: 'Courier New', Courier, monospace;
+  --corProgramacao: #00C86F;
+  --corCyberSecurity: #FF4F54;
+  --corBlockchain: #fff461d8;
+  --corDataSciencia: #9CD33C;
+  --corIA: #7B71FF;
+  --corHardware: #d5feff;
+  --corRedes: #3c790a;
+  --corOS: #b03b00;
+  --corDesignEUX: #9d0273;
+  --pTextColor: #646cff;
+  --hTituloColor: #ffffffec;
+  --gradientColor1: #082e5c;
+  --gradientColor2: #041832;
+  --gradientColor3: #020c19;
+  --bordaPadrao: 0.1px solid #646cff53;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  width: 100%;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--linearGradiente);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.styleFrontEnd {
+    color: var(--corFrontEnd);
+    font-family: var(--fonteTipoFrontEnd);
+}
+
+.styleProgramacao {
+    color: var(--corProgramacao);
+}
+
+.styleCyberSecurity {
+    color: var(--corCyberSecurity);
+}
+
+.styleDesignEUX {
+    color: var(--corDesignEUX);
+}
+
+.styleDataScience {
+    color: var(--corDataSciencia);
+}
+
+.styleBlockchain {
+    color: var(--corBlockchain);
+}
+
+.styleHardware {
+    color: var(--corHardware);
+}
+
+.styleRedes {
+    color: var(--corRedes);
+}
+
+.styleOS {
+    color: var(--corOS);
+}
+
+.styleIA {
+    color: var(--corIA);
+}

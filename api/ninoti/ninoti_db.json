@@ -1,0 +1,285 @@
+{
+    "areasTI": [
+        {
+            "id": 1,
+            "areaNome": "Front-End",
+            "descricao": "A programação front-end é a arte e a ciência de transformar dados em uma interface gráfica (UI) que garanta uma boa experiência para o usuário (UX) de um site ou aplicativo. Ela se concentra em tudo o que o usuário vê e interage diretamente no navegador ou dispositivo móvel. Garantindo rapidez, funcionalidade, acessibilidade e um design responsivo.",
+            "carreirasIds": [1],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        },
+        {
+            "id": 2,
+            "areaNome": "Programação",
+            "descricao": "",
+            "carreirasIds": [],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        },
+        {
+            "id": 3,
+            "areaNome": "Blockchain",
+            "descricao": "",
+            "carreirasIds": [],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        },
+        {
+            "id": 4,
+            "areaNome": "Hardware",
+            "descricao": "",
+            "carreirasIds": [],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        },
+        {
+            "id": 5,
+            "areaNome": "Inteligência Artificial",
+            "descricao": "",
+            "carreirasIds": [],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        },
+        {
+            "id": 6,
+            "areaNome": "Cyber Security",
+            "descricao": "",
+            "carreirasIds": [],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        },
+        {
+            "id": 7,
+            "areaNome": "Sistemas Operacionais",
+            "descricao": "",
+            "carreirasIds": [],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        },
+        {
+            "id": 8,
+            "areaNome": "Redes",
+            "descricao": "",
+            "carreirasIds": [],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        },
+        {
+            "id": 9,
+            "areaNome": "Data Science",
+            "descricao": "",
+            "carreirasIds": [],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        },
+        {
+            "id": 10,
+            "areaNome": "Design e UX",
+            "descricao": "",
+            "carreirasIds": [],
+            "formacoesIds": [],
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": []
+        }
+    ],
+    "carreiras": [
+        {
+            "idCarreira": 1
+        }
+    ],
+    "formacoes": [
+        {
+            "idFormacao": 1,
+            "nome": "Formação Alura: A partir do zero - iniciante em programação",
+            "descricao": "(essa formação não faz mais parte da grade oficial de Formações da Alura)\n O caminho das pedras para entrar no universo da programação e começar com a criação de sites utilizando as linguagens populares CSS, HTML e JavaScript.",
+            "srcImg": "./imgs/alura/formacao-js.svg",
+            "slugUrl": "formacao-alura-a-partir-do-zero-iniciante-em-programacao.html",
+            "areaId": 1,
+            "cursosIds": [1],
+            "artigosIds": [1],
+            "videosIds": [],
+            "sitesIds": [],
+            "certificadosIds": [],
+            "projetosIds": []
+        },
+        {
+            "idFormacao": 2,
+            "nome": "Formação Alura: ",
+            "descricao": "",
+            "srcImg": "",
+            "slugUrl": "",
+            "areaId": 1,
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": [],
+            "certificadosIds": [],
+            "projetosIds": []
+        },
+        {
+            "idFormacao": 3,
+            "nome": "Formação Alura: ",
+            "descricao": "",
+            "srcImg": "",
+            "slugUrl": "",
+            "areaId": 1,
+            "cursosIds": [],
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": [],
+            "certificadosIds": [],
+            "projetosIds": []
+        }
+    ],
+    "cursos": [
+        {
+            "idCurso": 1,
+            "nome": "Arquitetura de computadores por trás de como seu programa funciona",
+            "descricao": "(Este curso não faz mas parte da grade oficial da Alura)\n Aprenda como funciona a arquitetura de computadores e como isso afeta o desempenho do seu código.",
+            "srcImg": "./ninoti/alura/curso-arquitetura-computadores.svg",
+            "slugUrl": "arquitetura-de-computadores-por-tras-de-como-seu-programa-funciona.html",
+            "areaId": 7,
+            "formacaoId": 1,
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": [],
+            "certificadosIds": [1],
+            "projetosIds": []
+        },
+        {
+            "idCurso": 2,
+            "nome": "Lógica de programação: comece em lógica com o jogo Pong e JavaScript",
+            "descricao": "Faça esse curso de Lógica de programação e:\n Desenvolva um jogo do zero em duas linguagens de programação diferentes\n Dê seus primeiros passos no mundo do Javascript\n Aprenda a trabalhar com variáveis e funções\n Crie um jogo completo, com animações, controles, sons e placar\n Saiba como utilizar em seus projetos um código compartilhado no Github",
+            "srcImg": "idCurso-2.svg",
+            "slugUrl": "logica-de-programacao-comece-em-logica-com-o-jogo-Pong-e-javascript.html",
+            "areaId": 1,
+            "formacaoId": 1,
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": [],
+            "certificadosIds": [],
+            "projetosIds": []
+        },
+        {
+            "idCurso": 3,
+            "nome": "Lógica de programação: laços e listas com JavaScript",
+            "descricao": "Faça esse curso de Lógica de programação e:\n Crie um jogo do zero, com animações, pontuação e sons\nSaiba como adicionar imagens no P5 Js\nAprenda na prática como usar listas (arrays)\nEntenda como evitar código duplicado com laços de repetição\nDesenvolva sua lógica de programação",
+            "srcImg": "idCurso-3.svg",
+            "slugUrl": "logica-de-programacao-comece-em-logica-com-o-jogo-Pong-e-javascript.html",
+            "areaId": 1,
+            "formacaoId": 1,
+            "artigosIds": [],
+            "videosIds": [],
+            "sitesIds": [],
+            "certificadosIds": [],
+            "projetosIds": []
+        }
+    ],
+    "artigos": [
+        {
+            "idArtigo": 1,
+            "nome": "Calendário de estudo para desenvolvimento da carreira",
+            "descricao": "Sente falta de tempo e não consegue programar uma rotina de estudo? Então conheça o calendário de estudo de um profissional de tecnologia.",
+            "linkArtigo": "https://www.alura.com.br/artigos/o-dia-a-dia-de-um-profissional-que-aprende-o-calendario-de-estudo",
+            "areaId": 1,
+            "formacaoId": 1
+        },
+        {
+            "idArtigo": 2,
+            "nome": "5 dúvidas de quem quer iniciar na carreira de programação",
+            "descricao": "Artigo sobre as dúvidas mais comuns de quem quer iniciar na carreira de programação.",
+            "linkArtigo": "https://www.alura.com.br/artigos/5-duvidas-de-quem-quer-iniciar-na-carreira-de-programacao",
+            "areaId": 1,
+            "formacaoId": 1
+        },
+        {
+            "idArtigo": 3,
+            "nome": "Como escolher minha carreira em TI?",
+            "descricao": "E se existem várias linguagens, quantas devo aprender? Uma, duas, três, todas que eu puder?.",
+            "linkArtigo": "https://www.alura.com.br/artigos/como-escolher-minha-carreira-em-ti",
+            "areaId": 1,
+            "formacaoId": 1
+        },
+        {
+            "idArtigo": 4,
+            "nome": "Trabalhando com caminhos e pastas no terminal",
+            "descricao": "Neste artigo vamos entender como funcionam os caminhos de diretórios do sistema operacional e como evitar as cascas de banana que podemos enfrentar quando precisamos utilizar esses caminhos",
+            "linkArtigo": "https://www.alura.com.br/artigos/trabalhando-com-caminhos-e-pastas-no-terminal",
+            "areaId": 1,
+            "formacaoId": 1
+        }
+    ],
+    "videos": [
+        {
+            "idVideo": 1,
+            "nome": "Ritmo de Estudos (video)",
+            "descricao": "Neste vídeo se destaca a importância do estabelecimento de um calendário de estudos aderente à disponibilidade real de tempo de cada estudante, bem como da relevância da disciplina em seguir um plano de estudos dentro do processo de aprendizagem.",
+            "srcImg": "icone-alura+.svg",
+            "linkVideo": "https://cursos.alura.com.br/extra/alura-mais/ritmo-de-estudos-c18",
+            "areaId": 1,
+            "formacaoId": 1
+        },
+        {
+            "idVideo": 2,
+            "nome": "Como posso estudar melhor? #HipstersPontoTube (video)",
+            "descricao": "Como se organizar para estudar? É melhor estudar todos os dias um pouco ou escolher dias específicos? E para aprender muita coisa de uma só vez, qual a melhor técnica? Confira as dicas de aprendizagem do Guilherme Silveira no vídeo! ",
+            "srcImg": "icone-site.svg",
+            "linkVideo": "https://www.youtube.com/watch?v=Is6c9KSGCbk&ab_channel=Alura",
+            "areaId": 1,
+            "formacaoId": 1
+        },
+        {
+            "idVideo": 3,
+            "nome": "O que é Back-End e Front-End",
+            "descricao": "Neste vídeo, mergulharemos nas duas facetas essenciais da construção de websites e aplicativos: o front-end e o back-end.",
+            "srcImg": "icone-alura+.svg",
+            "linkVideo": "https://cursos.alura.com.br/extra/alura-mais/o-que-e-back-end-e-front-end-c9076",
+            "areaId": 1,
+            "formacaoId": 1
+        }
+    ],
+    "sites": [],
+    "certificados": [
+        {
+            "idCertificado": 1,
+            "nome": "Arquitetura de computadores por trás de como seu programa funciona",
+            "descricao": "(Este curso finalizado em 08/07/2023, mas foi retirado da plataforma)\n Aprenda como funciona a arquitetura de computadores e como isso afeta o desempenho do seu código.",
+            "srcImg": "Arquitetura de computadores, por trás de como seu programa funciona.pdf",
+            "slugUrl": "curso-arquitetura-computadores.html",
+            "areaId": 7,
+            "formacaoId": 1,
+            "cursoId": 1
+        }
+    ],
+    "diplomas": [],
+    "projetos": []
+}

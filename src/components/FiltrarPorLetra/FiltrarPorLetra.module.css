@@ -1,0 +1,14 @@
+.divFiltrarLetra {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.selectLetra {
+    background-color: #041832;
+    color: #ffffff;
+    border: 0.1px solid #0d4386;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}

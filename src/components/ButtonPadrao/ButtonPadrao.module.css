@@ -1,0 +1,16 @@
+.btnPadrao {
+    background-color: #041832;
+    color: #ffffff;
+    border: 0.1px solid #0d4386;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btnPadrao:disabled {
+    background-color: #000000;
+    color: #646cff;
+    border: 0.1px solid #333333;
+    cursor: not-allowed;
+}

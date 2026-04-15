@@ -1,0 +1,169 @@
+{
+  "cdsDB": [
+    {
+      "artist": "Racionais MC's",
+      "releases": {
+        "albums": [
+          {
+            "master_id": 430849,
+            "release_id": 8354952,
+            "title": "Holocausto Urbano",
+            "year": 1990,
+            "format": "vinyl, lp, album",
+            "image": "https://i.discogs.com/6cmht7oIFEkNSmY46hHT8bXJDLBN2CgBh3AVxlyiwpg/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTgzNTQ5/NTItMTQ1OTk3MjM0/NS05MDIzLmpwZWc.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 1046838,
+            "release_id": 170454,
+            "title": "Raio X Brasil - Liberdade De Expressão",
+            "year": 1993,
+            "format": "vinyl, lp, album",
+            "image": "https://i.discogs.com/5aVY1vWHjhp3mFBX3dvJYglGK5AfRtHxr78ll5V8sxo/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE3MDQ1/NC0xNDk2MTIwMjUz/LTc4NTIuanBlZw.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 719701,
+            "release_id": 5604009,
+            "title": "Sobrevivendo No Inferno",
+            "year": 1997,
+            "format": "vinyl, lp, album",
+            "image": "https://i.discogs.com/RcBlBxsSDZjw973KUFYXNGBVVBHB8BOAYnNuV-Pzq1g/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTU2MDQw/MDktMTM5Nzc2MDIz/My0yMjI4LmpwZWc.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 1048289,
+            "release_id": 8955262,
+            "title": "Ao Vivo",
+            "year": 2001,
+            "format": "cd, album",
+            "image": "https://i.discogs.com/3esLgXMd8pd2q-lIxVjCDvKyNsGNpK-fCDssYf_40tM/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTg5NTUy/NjItMTU3OTc1NDMz/Ni03NTY3LmpwZWc.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 430850,
+            "release_id": 179022,
+            "title": "Nada Como Um Dia Após O Outro Dia",
+            "year": 2002,
+            "format": "cd, album",
+            "image": "https://i.discogs.com/FpYpDZOtx5yITMQwK6gI6M1pSXpgg089SK_YS8XZxfo/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE3OTAy/Mi0xNTg4MjIyMTk0/LTk3NTIuanBlZw.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 1072432,
+            "release_id": 2968874,
+            "title": "1000 Trutas 1000 Tretas",
+            "year": 2006,
+            "format": "cd, album",
+            "image": "https://i.discogs.com/QGaYUO6wDtsf26196hQiYeJCCh-IN7t2iEn3Q94s0dk/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI5Njg4/NzQtMTU4ODEyNjk0/MS02NDUxLmpwZWc.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 786448,
+            "release_id": 6548763,
+            "title": "Cores & Valores",
+            "year": 2014,
+            "format": "cd, album",
+            "image": "https://i.discogs.com/T4YGi4_o8IAERSvpLz1-WR8QlRd7ZCKPv8Y-TVQjRyo/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTY1NDg3/NjMtMTQzNzQ1MDk2/MC0yODEyLmpwZWc.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 29275087,
+            "release_id": 29275087,
+            "title": "3 Décadas (Ao Vivo)",
+            "year": 2023,
+            "format": "22xFile, AAC, Album, 256",
+            "image": "https://i.discogs.com/46XGBraN_BJa0XZPFYTebF2jmZICuFi0nBPZaih0bNc/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI5Mjc1/MDg3LTE3MDMyNDkw/NDgtODc4OS5qcGVn.jpeg",
+            "type": "release"
+          }
+        ],
+        "singles": [
+          {
+            "master_id": 266287,
+            "release_id": 170447,
+            "title": "Escolha O Seu Caminho",
+            "year": 1992,
+            "format": "vinyl, 12\", ep",
+            "image": "https://i.discogs.com/0MH68uZnjzyhYoHrFWsSCajyO0GEsIso43JLbw_BTcY/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE3MDQ0/Ny0xNDk2NzEyODYx/LTgyOTguanBlZw.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 2571464,
+            "release_id": 3004203,
+            "title": "Fim De Semana No Parque",
+            "year": 1994,
+            "format": "vinyl, 12\", 33 ⅓ rpm, single, promo",
+            "image": "https://i.discogs.com/gzhMbJSnJIDI0EOXwW2zl8hHjCa5bXz4OU1R5ptqxLA/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMwMDQy/MDMtMTQ5NjAzMTc5/MC00MzgxLmpwZWc.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 6350850,
+            "release_id": 6350850,
+            "title": "Quanto Vale O Show",
+            "year": 2014,
+            "format": "File, MP3, Single, 320",
+            "image": "https://i.discogs.com/FJiFFGN9uTTw7NWf6QREdpBCgs-c0MfmGsnShz3X0N8/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTYzNTA4/NTAtMTQxNzEwNzk5/Mi03MDUwLmpwZWc.jpeg",
+            "type": "release"
+          },
+          {
+            "master_id": 8941062,
+            "release_id": 8941062,
+            "title": "Mil Faces De Um Homem Leal (Marighella)",
+            "year": 2017,
+            "format": "File, MP3, Single, 320",
+            "image": "https://i.discogs.com/hE_z3FI65Bv75zZzEpAsIsnQDwDoXvV6MBHdKP_4kkg/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTg5NDEw/NjItMTYxODIwMzkz/NS0yNzczLmpwZWc.jpeg",
+            "type": "release"
+          },
+          {
+            "master_id": 25745833,
+            "release_id": 25745833,
+            "title": "Vida Loka P2 (Kallendario Remix)",
+            "year": 2022,
+            "format": "File, MP3, Single, 256",
+            "image": "https://i.discogs.com/poUZaFCJ1_vQ3YRPOIhkSAJtMp4xSl99LxsUBIGhbYM/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI1NzQ1/ODMzLTE2NzM1NDMy/MTMtMTk3OC5qcGVn.jpeg",
+            "type": "release"
+          }
+        ],
+        "compilations": [
+          {
+            "master_id": 745142,
+            "release_id": 11530087,
+            "title": "Racionais MC's",
+            "year": 1994,
+            "format": "cd, compilation",
+            "image": "https://i.discogs.com/38A9ftpuTJJmsIbCqVqk9-_EGWSxN2H4BWGWQaISmE0/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTExNTMw/MDg3LTE1ODgwNDk4/OTMtNjk3Ni5qcGVn.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 4318890,
+            "release_id": 4318890,
+            "title": "The Best Of Racionais Mc's",
+            "year": 1996,
+            "format": "LP, Comp",
+            "image": "https://i.discogs.com/y0bcWyl3O_AuDYkkO7Jum9cLTah9py4jPLJFyp58CrQ/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQzMTg4/OTAtMTQ5NjExMjQ4/OC0xMjU1LmpwZWc.jpeg",
+            "type": "release"
+          },
+          {
+            "master_id": 1727010,
+            "release_id": 11599186,
+            "title": "Racionais MC's 25",
+            "year": 2014,
+            "format": "cd, compilation",
+            "image": "https://i.discogs.com/4Q2Z_t9lKPBV57qd_7kFO2_IdnFScP7rgW4-G5fS8Bw/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTExNTk5/MTg2LTE1MTkxNzY2/ODYtNjM3NC5qcGVn.jpeg",
+            "type": "master"
+          },
+          {
+            "master_id": 17253439,
+            "release_id": 17253439,
+            "title": "Racionais MC's",
+            "year": 2020,
+            "format": "Box, Comp, Dlx + LP, Album, RE, RM + LP, EP, RE, R",
+            "image": "https://i.discogs.com/Cgj6JATREJ9AQDtyv82qr5er_AufrolhCkd8QD3smDU/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE3MjUz/NDM5LTE2MTI0NTQ1/OTYtMjIwNC5qcGVn.jpeg",
+            "type": "release"
+          }
+        ],
+        "videos": []
+      }
+    }
+  ]
+}

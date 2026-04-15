@@ -1,0 +1,29 @@
+.divContainerBtnPag {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.btnPaginacao {
+    background-color: #041832;
+    color: #ffffff;
+    border: 0.1px solid #0d4386;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btnPaginacao:disabled {
+    background-color: #000000;
+    color: #646cff;
+    border: 0.1px solid #333333;
+    cursor: not-allowed;
+}
+
+.spanTxtPaginacao{
+    font-size: 1.1rem;
+    color: #ffffff;
+}

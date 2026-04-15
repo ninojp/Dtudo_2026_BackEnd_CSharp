@@ -1,0 +1,53 @@
+.mainContainerPage {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    color: var(--corRedes);
+}
+
+.mainContainerPage h1 {
+    font-size: 3rem;
+    color: var(--corRedes);
+}
+
+.divContainerAreasTI {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 2rem;
+    border-radius: 10px;
+}
+.ulMenuAreasTI {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    width: fit-content;
+}
+
+.linkMenuAreasTI {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.ulMenuAreasTI li {
+    width: 100%;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    padding: 0.8rem;
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-shadow: #ffffff4b 0px 0px 1px;
+    cursor: pointer;
+    column-gap: 1rem;
+}
+
+.styleLogoOS{
+    border-radius: 50%;
+}

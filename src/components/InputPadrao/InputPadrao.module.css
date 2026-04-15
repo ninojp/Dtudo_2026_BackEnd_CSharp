@@ -1,0 +1,15 @@
+.inputCampoGenerico{
+    padding: 10px 20px 10px 62px;
+    border-radius: 32px;
+    font-size: 14pt;
+    min-width: 450px;
+    line-height: 20px;
+    outline: transparent;
+    border: 1px solid transparent;
+}
+.inputCampoGenerico::placeholder{
+    text-align: center;
+}
+.inputCampoGenerico:hover{
+    border: 1px solid #fff;
+}

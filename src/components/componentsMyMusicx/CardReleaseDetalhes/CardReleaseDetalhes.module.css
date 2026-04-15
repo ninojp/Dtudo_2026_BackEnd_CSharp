@@ -1,0 +1,151 @@
+.cardDetalhes {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1rem;
+    background-color: var(--cor-cinza-escuro, #1a1a1a);
+    border-radius: 8px;
+    color: var(--cor-branca, #ffffff);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.headerSection {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.coverContainer {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.coverImage {
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.infoSection {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: bold;
+    margin: 0;
+    color: var(--cor-primaria, #4CAF50);
+}
+
+.year,
+.genres,
+.styles,
+.format {
+    font-size: 1rem;
+    margin: 0;
+    color: var(--cor-cinza-claro, #b0b0b0);
+}
+
+.year {
+    font-weight: 600;
+}
+
+.tracklistSection {
+    margin-top: 1rem;
+}
+
+.tracklistTitle {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: var(--cor-primaria, #4CAF50);
+}
+
+.tracklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.track {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    /* gap: 1rem; */
+    padding: 0.75rem;
+    background-color: var(--cor-cinza-medio, #2a2a2a);
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    align-items: center;
+}
+
+.track:hover {
+    background-color: var(--cor-cinza-hover, #3a3a3a);
+}
+
+.trackPosition {
+    font-weight: bold;
+    color: var(--cor-secundaria, #FFC107);
+    min-width: 2.5rem;
+}
+
+.trackTitle {
+    flex: 1;
+}
+
+.trackDuration {
+    font-family: monospace;
+    color: var(--cor-cinza-claro, #b0b0b0);
+    min-width: 3rem;
+    text-align: right;
+}
+
+.errorContainer,
+.emptyContainer {
+    padding: 2rem;
+    text-align: center;
+    color: var(--cor-cinza-claro, #b0b0b0);
+    background-color: var(--cor-cinza-escuro, #1a1a1a);
+    border-radius: 8px;
+}
+
+.errorContainer p {
+    color: var(--cor-erro, #f44336);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .cardDetalhes {
+        padding: 1rem;
+    }
+
+    .headerSection {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .coverImage {
+        width: 200px;
+        height: 200px;
+    }
+
+    .title {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+
+    .track {
+        grid-template-columns: auto 1fr auto;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+}

@@ -1,0 +1,93 @@
+.footerContainer {
+    width: 100%;
+    height: 10vh;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 3rem;
+    background: var(--linearGradiente);
+    border-top: 0.01px dotted #646cff;
+}
+
+.divLogosTecContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
+}
+.divLogosTecContainer a{
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.logoHTM {
+    height: 2rem;
+}
+
+.logoHTM:hover {
+    filter: drop-shadow(0 0 1.5rem #ffc663aa);
+}
+.logoCSS {
+    height: 2rem;
+}
+
+.logoCSS:hover {
+    filter: drop-shadow(0 0 1.5rem #6464ffaa);
+}
+.logoJS {
+    height: 2rem;
+}
+
+.logoJS:hover {
+    filter: drop-shadow(0 0 1.5rem #fbf46ace);
+}
+
+.logoNode {
+    height: 1.6rem;
+    width: 1.3rem;
+}
+.logoNode:hover {
+    filter: drop-shadow(0 0 1.5rem #ffffffce);
+}
+
+.logoVite {
+    height: 1.6rem;
+}
+.logoVite:hover {
+    filter: drop-shadow(0 0 1.5rem #83ff64aa);
+}
+
+.logoGitHub {
+    height: 1.5rem;
+}
+
+.logoGitHub:hover {
+    filter: drop-shadow(0 0 1.5rem #ff6464aa);
+}
+
+.logoReact {
+    height: 2.5rem;
+    padding: 0.5rem;
+    will-change: filter;
+    transition: filter 300ms;
+}
+.logoReact:hover {
+    filter: drop-shadow(0 0 1.5rem #61dafbaa);
+}
+@keyframes logo-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+@media (prefers-reduced-motion: no-preference) {
+    a:nth-of-type(2) .logoReact {
+        animation: logo-spin infinite 20s linear;
+    }
+}

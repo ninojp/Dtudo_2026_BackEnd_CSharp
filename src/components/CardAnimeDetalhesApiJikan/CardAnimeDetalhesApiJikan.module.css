@@ -1,0 +1,41 @@
+.articleCardAnime{
+    width: 700px;
+    min-height: 700px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: fit-content;
+    border: 0.8px solid #0d4386;
+    border-radius: 8px;
+    padding: 1rem;
+    gap: 2rem;
+}
+.divTitulosAnime{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+}
+.divContainerImgEDetalhes{
+    max-width: 550px;
+    display: flex;
+}
+.divImgEDetalhes{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+}
+.divInfoDetalhes{
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+.pSynopisDetalhes{
+    max-width: 550px;
+    text-align: justify;
+}

@@ -1,0 +1,110 @@
+<h1>Olá! Que legal que você está aprendendo a exibir arquivos Markdown no seu site!</h1>
+<p>Para exibir um arquivo Markdown no seu site usando HTML, CSS e JavaScript, você pode seguir estes passos:</p>
+<p>Criar o arquivo Markdown: Crie um arquivo com a extensão .md e escreva seu conteúdo em Markdown.
+Incluir o arquivo Markdown no HTML: Use a tag <script> para incluir um arquivo JavaScript que irá converter o Markdown em HTML.
+Converter o Markdown em HTML: Utilize uma biblioteca JavaScript como o Marked.js para converter o conteúdo Markdown em HTML.
+Exibir o HTML: Insira o HTML gerado pela conversão dentro de um elemento HTML, como uma <div>.
+Exemplo:</p>
+<p>index.html:</p>
+<p>xml
+Copiar código</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Meu Site de Teste&lt;/title&gt;
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id=&quot;markdown-content&quot;&gt;&lt;/div&gt;
+
+  &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/marked/3.0.4/marked.min.js&quot;&gt;&lt;/script&gt;
+  &lt;script src=&quot;script.js&quot;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>script.js:</p>
+<p>javascript
+Copiar código</p>
+<pre><code class="language-javascript">const markdownContent = document.getElementById(&#39;markdown-content&#39;);
+
+fetch(&#39;meu-arquivo.md&#39;)
+  .then(response =&gt; response.text())
+  .then(markdown =&gt; {
+    const html = marked(markdown);
+    markdownContent.innerHTML = html;
+  });
+</code></pre>
+<h2>meu-arquivo.md:</h2>
+<p>markdown
+Copiar código</p>
+<h1>Título do meu arquivo Markdown</h1>
+<p>Este é um exemplo de conteúdo em Markdown.</p>
+<ul>
+<li>Item 1</li>
+<li>Item 2</li>
+<li>Item 3
+style.css:</li>
+</ul>
+<p>css
+Copiar código
+/* Estilos para o conteúdo Markdown */
+#markdown-content {
+  font-family: sans-serif;
+  line-height: 1.6;
+}
+Explicando o código:</p>
+<p>index.html:
+Inclui o arquivo style.css para aplicar estilos ao conteúdo Markdown.
+Inclui o arquivo script.js que contém o código JavaScript para converter o Markdown.
+Cria uma <div> com o ID markdown-content para exibir o conteúdo convertido.
+script.js:
+Seleciona o elemento markdown-content usando document.getElementById().
+Utiliza fetch() para buscar o conteúdo do arquivo meu-arquivo.md.
+Converte o conteúdo Markdown em HTML usando marked().
+Define o conteúdo HTML da <div> markdown-content usando innerHTML.
+meu-arquivo.md:
+Contém o conteúdo em Markdown que será convertido.
+style.css:
+Define estilos para o conteúdo Markdown, como fonte e espaçamento entre linhas.
+Lembre-se:</p>
+<h2>Você precisa incluir o arquivo marked.min.js na sua página HTML. Você pode baixá-lo do <a href="https://marked.js.org/">site oficial do Marked.js</a> ou usar a versão CDN</h2>
+<p>Você pode personalizar os estilos do conteúdo Markdown no arquivo style.css de acordo com suas necessidades.
+Exercício:</p>
+<p>Tente criar um arquivo Markdown com um título, uma lista e um parágrafo. Depois, inclua esse arquivo no seu site e use o código JavaScript para exibir o conteúdo convertido.</p>
+<p>Dica:</p>
+<p>Você pode usar o <a href="https://marked.js.org/">site</a> para testar seu código Markdown e ver como ele será renderizado.</p>
+<p>Espero que isso ajude!</p>
+<p>=========================================================================================================</p>
+<p>no arquivo script.js, posso usar o async e await? se possivel como ficaria</p>
+<p>Que bom que você está explorando o uso de async e await! Sim, você pode usar async e await no seu script.js para tornar o código mais legível e fácil de entender.</p>
+<h3>Veja como ficaria o código com async e await:</h3>
+<pre><code class="language-javascript">const markdownContent = document.getElementById(&#39;markdown-content&#39;);
+
+async function renderMarkdown() {
+  try {
+    const response = await fetch(&#39;meu-arquivo.md&#39;);
+    const markdown = await response.text();
+    const html = marked(markdown);
+    markdownContent.innerHTML = html;
+  } catch (error) {
+    console.error(&#39;Erro ao carregar o arquivo Markdown:&#39;, error);
+  }
+}
+
+renderMarkdown();
+</code></pre>
+<h2>Explicando o código:</h2>
+<p>async function renderMarkdown(): A função renderMarkdown() é declarada como async, o que significa que ela pode usar await.
+await fetch('meu-arquivo.md'): O await é usado para esperar que a promessa retornada por fetch() seja resolvida. Isso significa que o código irá pausar até que o arquivo Markdown seja carregado.
+await response.text(): Da mesma forma, await é usado para esperar que a promessa retornada por response.text() seja resolvida. Isso significa que o código irá pausar até que o conteúdo do arquivo Markdown seja convertido em texto.
+try...catch: O bloco try...catch é usado para lidar com erros que podem ocorrer durante o carregamento do arquivo Markdown. Se ocorrer um erro, a mensagem de erro será exibida no console.
+renderMarkdown(): A função renderMarkdown() é chamada para iniciar o processo de renderização do Markdown.
+Vantagens de usar async e await:</p>
+<p>Código mais legível: O código fica mais fácil de entender, pois você pode escrever código síncrono que parece assíncrono.
+Melhor tratamento de erros: O bloco try...catch permite lidar com erros de forma mais organizada.
+Melhor desempenho: O código pode ser otimizado para melhor desempenho, pois o JavaScript pode executar outras tarefas enquanto espera que as promessas sejam resolvidas.
+Exercício:</p>
+<p>Tente modificar o código para que, em caso de erro, seja exibida uma mensagem amigável para o usuário no lugar do console.</p>
+<p>Dica:</p>
+<p>Você pode usar o alert() para exibir uma mensagem para o usuário.</p>
+<p>Espero que isso ajude!</p>

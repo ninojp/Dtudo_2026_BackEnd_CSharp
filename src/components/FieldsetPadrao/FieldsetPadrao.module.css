@@ -1,0 +1,25 @@
+.fieldsetPadrao{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: max-content;
+    position: relative;
+    border: none;
+}
+
+.fieldsetPadrao::after{
+    content: '';
+    position: absolute;
+    top: 75%;
+    transform: translateY(-50%);
+    left: 20px;
+    background-image: url('/lupa.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-left: 3px;
+}
+

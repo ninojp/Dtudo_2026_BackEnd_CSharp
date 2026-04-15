@@ -1,0 +1,25 @@
+.mainContainerPage {
+    width: 100%;
+    /* min-height: 82vh; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    color: var(--corCyberSecurity);
+}
+
+.mainContainerPage h1 {
+    font-size: 3rem;
+    color: var(--corCyberSecurity);
+}
+
+.divContainerAreasTI {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 2rem;
+    border-radius: 10px;
+}

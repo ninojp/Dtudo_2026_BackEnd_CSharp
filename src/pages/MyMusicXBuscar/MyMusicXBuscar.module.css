@@ -1,0 +1,68 @@
+
+.mainContainerPgMusicx {
+    width: 100%;
+    min-height: 83vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.listaSuspencaArtistas {
+    list-style: none;
+    padding: .5rem;
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.liSuspencaArtistas { 
+    padding: 8px;
+    cursor: pointer;
+}
+.sectionResultadosCds {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.divContainerBtnSalvar {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2rem;
+    padding-bottom: 1rem;
+}
+
+.btnSalvar {
+    width: 10rem;
+}
+
+.sectionResultadosCds h4 {
+    padding: 1rem;
+}
+
+.divContainerCardsCds {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+.imgPgMusicx {
+    max-height: 300px;
+}
+
+.formBuscarCds {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}
+
+.btnBuscarDiscos {
+    width: 10rem;
+    margin-top: 1rem;
+}

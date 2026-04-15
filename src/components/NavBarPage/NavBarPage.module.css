@@ -1,0 +1,71 @@
+.navBarPageContainer {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.3rem;
+    background: linear-gradient(#082e5c 0%, #041832 23.33%, #020c19 76.67%, #000000 100%);
+}
+
+.divContainerLogoTituloMenu {
+    width: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    color: var(--hTituloColor);
+}
+
+/* Logo */
+.divContainerImgLogo {
+    height: 10vh;
+    display: flex;
+    padding: 0.5rem;
+}
+.divContainerImgLogo img {
+    height: 100%;
+    width: auto;
+}
+
+
+/* Titulo */
+.divTitulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.pTituloPage {
+    font-size: 2rem;
+    color: var(--pTextColor);
+}
+
+/* Menu Links */
+.ulMenuLinksContanier {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.liMenuLink {
+    font-size: 1.2rem;
+    font-weight: 600;
+    list-style: none;
+}
+
+/* Icones de Login */
+.divContainerIconsLogin {
+    position: absolute;
+    right: 1rem;
+    bottom: 5px;
+    display: flex;
+    gap: 1rem;
+}
+
+.divContainerIconsLogin button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}

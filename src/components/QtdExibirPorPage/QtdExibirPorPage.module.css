@@ -1,0 +1,27 @@
+.containerParagQtd{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    outline: none;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+.labelQtdPorPg {
+    font-size: 1rem;
+}
+
+.selectQtdPorPg {
+    background-color: #041832;
+    color: #ffffff;
+    border: 0.1px solid #0d4386;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.spanQtdPorPg {
+    font-size: 1rem;
+    font-weight: 700;
+}

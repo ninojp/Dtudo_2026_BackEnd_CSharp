@@ -1,0 +1,42 @@
+.divContainerBtnsCarrossel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    max-width: 200px;
+    justify-content: flex-start;
+    color: #0d4386;
+}
+
+.btnCarrosselItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    border: 0.8px dotted #0d4386;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap; /* Impede que o texto do botão quebre linha */
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.btnCarrosselItem:hover {
+    background-color: #3a3a3a;
+}
+.btnCarrosselItem.active {
+    background-color: #646cff30;
+    border-color: #8c91ff;
+    color: white;
+}
+.spanTextCarrossel{
+    width: 20ch;/* Limita a largura para aproximadamente 40 caracteres */
+    overflow: hidden;/* Oculta o texto que ultrapassa a largura */
+    text-overflow: ellipsis;/* Adiciona reticências (...) ao final do texto cortado */
+    white-space: nowrap;/* Impede a quebra de linha */
+    color: #646cff;
+    font-size: 0.8rem;
+}
+.imgMiniAnimeBtnCarrossel{
+    width: 100px;
+    height: 150px;
+}
