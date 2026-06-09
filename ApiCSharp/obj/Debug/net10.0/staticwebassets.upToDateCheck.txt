@@ -1,0 +1,2 @@
+wwwroot\index.html
+C:\2026MeusProjetos\Dtudo2026CSharp\ApiCSharp\wwwroot\index.html
