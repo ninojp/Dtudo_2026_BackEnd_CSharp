@@ -33,6 +33,11 @@ public class AnimeController : ControllerBase
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(q))
+            {
+                return BadRequest(new { message = "O termo de busca é obrigatório." });
+            }
+
             if (page < 1)
             {
                 return BadRequest(new { message = "O número da página deve ser maior que 0." });
@@ -40,7 +45,7 @@ public class AnimeController : ControllerBase
 
             _logger.LogInformation("Recebida requisição de busca: Query='{Query}', Page={Page}", q, page);
 
-            var result = await _jikanService.SearchAnimeAsync(q ?? string.Empty, page);
+            var result = await _jikanService.SearchAnimeAsync(q, page);
 
             return Ok(result);
         }

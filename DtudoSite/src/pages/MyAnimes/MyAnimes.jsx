@@ -14,6 +14,7 @@ export default function MyAnimes() {
             <HeaderPage>
                 <H1TituloPage>MyAnimes</H1TituloPage>
                 <H2SubTitulo>Lista de todas as <span className={styles.spanTotalAnimes}>{listObjsMyAnimes.length}</span> Animações que eu já assisti, Agrupadas por título.</H2SubTitulo>
+                <h3><a href="/myanimes/myanimes-buscar" target="_blank" rel="noopener noreferrer">Link para MyAnimesBuscar</a></h3>
             </HeaderPage>
             <CardsMyAnimesList />
         </>

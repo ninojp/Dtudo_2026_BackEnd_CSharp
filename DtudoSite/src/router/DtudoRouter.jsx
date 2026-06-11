@@ -14,6 +14,7 @@ import NotFound from "../pages/NotFound/NotFound";
 import MyAnimes from "../pages/MyAnimes/MyAnimes";
 import Animes from "../pages/Animes/Animes";
 import MyAnimesDetalhes from "../pages/MyAnimes/MyAnimesDetalhes/MyAnimesDetalhes";
+import MyAnimesBuscar from "../pages/MyAnimes/MyAnimesBuscar/MyAnimesBuscar";
 import Animex from "../pages/Animex/Animex";
 import AnimexDetalhes from "../pages/Animex/AnimexDetalhes/AnimexDetalhes";
 import MyMusicX from "../pages/MyMusicX/MyMusicX";
@@ -51,18 +52,17 @@ export default function DtudoRouter() {
                     {/* Rotas para Endereços MyAnimes  */}
                     <Route path="/myanimes">
                         <Route index element={<MyAnimes />} />
-                        <Route path="myanimes-detalhes/:slug" element={
-                            <MyAnimesDetalhesProvider>
+                        <Route path="myanimes-detalhes/:slug" element={<MyAnimesDetalhesProvider>
                                 <MyAnimesDetalhes />
                             </MyAnimesDetalhesProvider>} />
+                        <Route path="myanimes-buscar" element={<MyAnimesBuscar />} />
                     </Route>
                     {/* Rotas para Endereços MyAnimesLista */}
                     <Route path="/animes" element={<Animes />} />
                     {/* Rotas para Endereços Animex */}
                     <Route path='/animex'>
                         <Route index element={<ProtetorDeRota><Animex /></ProtetorDeRota>} />
-                        <Route path="animex-detalhes/:slug" element={
-                            <ProtetorDeRota>
+                        <Route path="animex-detalhes/:slug" element={<ProtetorDeRota>
                                 <AnimexDetalhesProvider>
                                     <AnimexDetalhes />
                                 </AnimexDetalhesProvider>
