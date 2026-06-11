@@ -22,6 +22,7 @@ export default function MyMusicXBuscar() {
 
     // Lê o token do Discogs a partir da variável de ambiente Vite
     const discogsToken = typeof import.meta !== 'undefined' ? import.meta.env.VITE_DISCOGS_TOKEN : undefined;
+    const discogsProxyBaseUrl = (typeof import.meta !== 'undefined' ? import.meta.env.VITE_DISCOGS_PROXY_URL : undefined) || 'http://localhost:4010';
 
     const handleArtistSearch = async (q) => {
         if (!q.trim()) {
@@ -29,7 +30,7 @@ export default function MyMusicXBuscar() {
             return;
         }
         try {
-            const resp = await axios.get('http://localhost:4000/api/discogs/artists', { params: { q } });
+            const resp = await axios.get(`${discogsProxyBaseUrl}/api/discogs/artists`, { params: { q } });
             setArtistSuggestions(resp.data.artists);
         } catch (err) {
             console.error('Erro ao buscar artistas:', err);
@@ -49,7 +50,7 @@ export default function MyMusicXBuscar() {
         setResults(null);
         setIsLoading(true);
         try {
-            const searchUrl = 'http://localhost:4000/api/discogs/search';
+            const searchUrl = `${discogsProxyBaseUrl}/api/discogs/search`;
             const searchParams = {
                 artistId: artist.id,
                 artistName: artist.title,
@@ -82,7 +83,7 @@ export default function MyMusicXBuscar() {
             } : null
         });
         try {
-            const saveUrl = 'http://localhost:4000/api/discogs/save';
+            const saveUrl = `${discogsProxyBaseUrl}/api/discogs/save`;
             // Enviar artist e summary (nova estrutura)
             const payload = {
                 artist: data.artist,

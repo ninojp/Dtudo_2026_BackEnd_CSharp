@@ -1,8 +1,9 @@
-'use strist';
+import 'dotenv/config';
+import process from 'process';
 
 async function conectaApiTMDB(movie_id) {
     try {
-        const apiKey = '38574258670385dca5e0428ff5430190';
+        const apiKey = process.env.TMDB_API_KEY;
         const response = await fetch(`https://api.themoviedb.org/3/movie/${movie_id}?api_key=${apiKey}&language=pt-BR`);
         if (!response.ok) {
             throw new Error(`conectaApiTMDB(): Erro na requisição: ${response.statusText}`);

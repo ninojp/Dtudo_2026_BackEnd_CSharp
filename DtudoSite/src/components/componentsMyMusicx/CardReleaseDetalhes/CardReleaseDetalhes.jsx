@@ -7,6 +7,7 @@ export default function CardReleaseDetalhes({ id }) {
     const [releaseDetails, setReleaseDetails] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const discogsProxyBaseUrl = (typeof import.meta !== 'undefined' ? import.meta.env.VITE_DISCOGS_PROXY_URL : undefined) || 'http://localhost:4010';
 
     useEffect(() => {
         if (!id) {
@@ -19,7 +20,7 @@ export default function CardReleaseDetalhes({ id }) {
             setError(null);
             
             try {
-                const response = await fetch(`http://localhost:4000/api/discogs/release/${id}`);
+                const response = await fetch(`${discogsProxyBaseUrl}/api/discogs/release/${id}`);
                 
                 if (!response.ok) {
                     throw new Error('Erro ao buscar detalhes do release');
@@ -36,7 +37,7 @@ export default function CardReleaseDetalhes({ id }) {
         };
 
         fetchReleaseDetails();
-    }, [id]);
+    }, [id, discogsProxyBaseUrl]);
 
     if (isLoading) {
         return <Spinner />;

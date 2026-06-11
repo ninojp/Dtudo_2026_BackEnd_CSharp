@@ -9,8 +9,8 @@ import { getCached, setCache } from './utils/cache.js';
 import { searchArtistReleases } from './services/discogsSearch.js';
 
 const app = express();
-const PORT = process.env.PORT || 4000;
-const DISCOGS_TOKEN = process.env.DISCOGS_TOKEN || process.env.VITE_DISCOGS_TOKEN;
+const PORT = process.env.PORT || 4010;
+const DISCOGS_TOKEN = process.env.DISCOGS_TOKEN || '';
 
 app.use(express.json());
 // Simples CORS e preflight handling
