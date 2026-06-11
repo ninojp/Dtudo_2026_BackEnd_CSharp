@@ -2,15 +2,15 @@ import { useState } from 'react';
 import styles from './MyMusicXBuscar.module.css';
 import notaFireMusical from '/mymusicx/NotaMusica.png';
 import axios from 'axios';
-import InputPadrao from '../../components/InputPadrao/InputPadrao';
-import FieldsetPadrao from '../../components/FieldsetPadrao/FieldsetPadrao';
-import LabelPadrao from '../../components/LabelPadrao/LabelPadrao';
-import ButtonPadrao from '../../components/ButtonPadrao/ButtonPadrao';
-import CardRelease from '../../components/componentsMyMusicx/CardRelease/CardRelease';
-import Spinner from '../../components/Spinner/Spinner';
-import HeaderPage from '../../components/HeaderPage/HeaderPage';
-import H1TituloPage from '../../components/H1TituloPage/H1TituloPage';
-import H2SubTitulo from '../../components/H2SubTitulo/H2SubTitulo';
+import InputPadrao from '../../../components/InputPadrao/InputPadrao';
+import FieldsetPadrao from '../../../components/FieldsetPadrao/FieldsetPadrao';
+import LabelPadrao from '../../../components/LabelPadrao/LabelPadrao';
+import ButtonPadrao from '../../../components/ButtonPadrao/ButtonPadrao';
+import CardRelease from '../../../components/componentsMyMusicx/CardRelease/CardRelease';
+import Spinner from '../../../components/Spinner/Spinner';
+import HeaderPage from '../../../components/HeaderPage/HeaderPage';
+import H1TituloPage from '../../../components/H1TituloPage/H1TituloPage';
+import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
 
 export default function MyMusicXBuscar() {
     const [artistQuery, setArtistQuery] = useState('');

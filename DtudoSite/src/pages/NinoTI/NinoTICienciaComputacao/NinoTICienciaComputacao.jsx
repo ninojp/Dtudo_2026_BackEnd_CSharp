@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
-import LogoRede from '../../components/componentsNinoTI/areasTI/LogoRede';
 import styles from './NinoTICienciaComputacao.module.css';
-import LogoIA from '../../components/componentsNinoTI/areasTI/LogoIA';
-import LogoHardware from '../../components/componentsNinoTI/areasTI/logoHardware';
-import LogoOS from '../../components/componentsNinoTI/areasTI/LogoOS';
-import LogoDataScience from '../../components/componentsNinoTI/areasTI/LogoDataScience';
-import LogoCyberSecurity from '../../components/componentsNinoTI/areasTI/LogoCyberSecurity';
+import LogoRede from '../../../components/componentsNinoTI/areasTI/LogoRede';
+import LogoIA from '../../../components/componentsNinoTI/areasTI/LogoIA';
+import LogoHardware from '../../../components/componentsNinoTI/areasTI/logoHardware';
+import LogoOS from '../../../components/componentsNinoTI/areasTI/LogoOS';
+import LogoDataScience from '../../../components/componentsNinoTI/areasTI/LogoDataScience';
+import LogoCyberSecurity from '../../../components/componentsNinoTI/areasTI/LogoCyberSecurity';
 
 export default function NinoTICienciaComputacao() {
     return (

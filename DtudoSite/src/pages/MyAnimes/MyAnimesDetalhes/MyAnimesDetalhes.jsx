@@ -1,10 +1,10 @@
 import { useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import Spinner from "../../components/Spinner/Spinner";
+import Spinner from "../../../components/Spinner/Spinner";
 import styles from './MyAnimesDetalhes.module.css';
-import MyAnimesDetalhesContext from "../../context_api/MyAnimesDetalhesContext/MyAnimesDetalhesContext";
-import CardMyAnimesMini from "../../components/componentsMyAnimes/CardMyAnimesMini/CardMyAnimesMini";
-import CardAnimeDetalhesApiJikan from "../../components/CardAnimeDetalhesApiJikan/CardAnimeDetalhesApiJikan";
+import MyAnimesDetalhesContext from "../../../context_api/MyAnimesDetalhesContext/MyAnimesDetalhesContext";
+import CardMyAnimesMini from "../../../components/componentsMyAnimes/CardMyAnimesMini/CardMyAnimesMini";
+import CardAnimeDetalhesApiJikan from "../../../components/CardAnimeDetalhesApiJikan/CardAnimeDetalhesApiJikan";
 
 export default function MyAnimesDetalhes() {
     const { isLoading, myAnimesDetalhes, currentDisplayId } = useContext(MyAnimesDetalhesContext);

@@ -1,30 +1,34 @@
 import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
-import AnimexDetalhesProvider from "../context_api/AnimexDetalhesContext/AnimexDetalhesProvider";
 import ProtetorDeRota from "../components/ProtetorDeRota/ProtetorDeRota";
 import IndexLayout from "../layouts/IndexLayout/IndexLayout";
 import NinoTIPageLayout from "../layouts/NinoTIPageLayout/NinoTIPageLayout";
 import MyAnimesDetalhesProvider from "../context_api/MyAnimesDetalhesContext/MyAnimesDetalhesProvider";
 import MyAnimesObjsListProvider from "../context_api/MyAnimesObjsListContext/MyAnimesObjsListProvider";
+import AnimexDetalhesProvider from "../context_api/AnimexDetalhesContext/AnimexDetalhesProvider";
 import MyMusicxObjsListProvider from "../context_api/MyMusicxObjsListContext/MyMusicxObjsListProvider";
 import MyMusicXDetalhesProvider from "../context_api/MyMusicXDetalhesContext/MyMusicXDetalhesProvider";
-import Animex from "../pages/Animex/Animex";
-import MyAnimes from "../pages/MyAnimes/MyAnimes";
-import AnimexDetalhes from "../pages/AnimexDetalhes/AnimexDetalhes";
 import Register from "../pages/Register/Register";
 import Login from "../pages/Login/Login";
 import Logout from "../pages/Logout/Logout";
-import MyAnimesDetalhes from "../pages/MyAnimesDetalhes/MyAnimesDetalhes";
 import NotFound from "../pages/NotFound/NotFound";
+import MyAnimes from "../pages/MyAnimes/MyAnimes";
+import Animes from "../pages/Animes/Animes";
+import MyAnimesDetalhes from "../pages/MyAnimes/MyAnimesDetalhes/MyAnimesDetalhes";
+import Animex from "../pages/Animex/Animex";
+import AnimexDetalhes from "../pages/Animex/AnimexDetalhes/AnimexDetalhes";
 import MyMusicX from "../pages/MyMusicX/MyMusicX";
-import NinoTIFrontEnd from "../pages/NinoTIFrontEnd/NinoTIFrontEnd";
-import NinoTIProgramacao from "../pages/NinoTIProgramacao/NinoTIProgramacao";
-import NinoTICyberSecurity from "../pages/NinoTICyberSecurity/NinoTICyberSecurity";
-import NinoTIBlockChain from "../pages/NinoTIBlockChain/NinoTIBlockChain";
-import NinoTIA from "../pages/NinoTIA/NinoTIA";
-import NinoTIHardware from "../pages/NinoTIHardware/NinoTIHardware";
-import NinoTIOS from "../pages/NinoTIOS/NinoTIOS";
-import NinoTIDataScience from "../pages/NinoTIDataScience/NinoTIDataScience";
-import NinoTIDesignUX from "../pages/NinoTIDesignUX/NinoTIDesignUX";
+import MyMusicXBuscar from "../pages/MyMusicX/MyMusicXBuscar/MyMusicXBuscar";
+import MyMusicXDetalhes from "../pages/MyMusicX/MyMusicXDetalhes/MyMusicXDetalhes";
+import NinoTIIA from "../pages/NinoTI/NinoTIIA/NinoTIIA";
+import NinoTIFrontEnd from "../pages/NinoTI/NinoTIFrontEnd/NinoTIFrontEnd";
+import NinoTIProgramacao from "../pages/NinoTI/NinoTIProgramacao/NinoTIProgramacao";
+import NinoTICyberSecurity from "../pages/NinoTI/NinoTICyberSecurity/NinoTICyberSecurity";
+import NinoTIBlockChain from "../pages/NinoTI/NinoTIBlockChain/NinoTIBlockChain";
+import NinoTIHardware from "../pages/NinoTI/NinoTIHardware/NinoTIHardware";
+import NinoTIOS from "../pages/NinoTI/NinoTIOS/NinoTIOS";
+import NinoTIDataScience from "../pages/NinoTI/NinoTIDataScience/NinoTIDataScience";
+import NinoTIDesignUX from "../pages/NinoTI/NinoTIDesignUX/NinoTIDesignUX";
+import NinoTICienciaComputacao from "../pages/NinoTI/NinoTICienciaComputacao/NinoTICienciaComputacao";
 import HTML from "../components/componentsNinoTI/HTML/HTML";
 import CSS from "../components/componentsNinoTI/CSS/CSS";
 import JavaScript from "../components/componentsNinoTI/JavaScript/JavaScript";
@@ -37,10 +41,6 @@ import Git from "../components/componentsNinoTI/Git/Git";
 import GitHub from "../components/componentsNinoTI/GitHub/GitHub";
 import Figma from "../components/componentsNinoTI/Figma/Figma";
 import WordPress from "../components/componentsNinoTI/WordPress/WordPress";
-import NinoTICienciaComputacao from "../pages/NinoTICienciaComputacao/NinoTICienciaComputacao";
-import Animes from "../pages/Animes/Animes";
-import MyMusicXBuscar from "../pages/MyMusicXBuscar/MyMusicXBuscar";
-import MyMusicXDetalhes from "../pages/MyMusicXDetalhes/MyMusicXDetalhes";
 
 export default function DtudoRouter() {
     return (
@@ -89,7 +89,7 @@ export default function DtudoRouter() {
                         <Route path="programacao" element={<NinoTIProgramacao />} />
                         <Route path="cyber-security" element={<NinoTICyberSecurity />} />
                         <Route path="blockchain" element={<NinoTIBlockChain />} />
-                        <Route path="ia" element={<NinoTIA />} />
+                        <Route path="ia" element={<NinoTIIA />} />
                         <Route path="hardware" element={<NinoTIHardware />} />
                         <Route path="os" element={<NinoTIOS />} />
                         <Route path="ciencia-computacao" element={<NinoTICienciaComputacao />} />

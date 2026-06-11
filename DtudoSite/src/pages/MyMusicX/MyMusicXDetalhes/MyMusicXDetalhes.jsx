@@ -1,10 +1,10 @@
-import MyMusicXDetalhesContext from "../../context_api/MyMusicXDetalhesContext/MyMusicXDetalhesContext";
+import MyMusicXDetalhesContext from "../../../context_api/MyMusicXDetalhesContext/MyMusicXDetalhesContext";
 import { use, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom";
 import styles from './MyMusicXDetalhes.module.css';
-import Spinner from "../../components/Spinner/Spinner";
-import CardRelease from "../../components/componentsMyMusicx/CardRelease/CardRelease";
-import CardReleaseDetalhes from "../../components/componentsMyMusicx/CardReleaseDetalhes/CardReleaseDetalhes";
+import Spinner from "../../../components/Spinner/Spinner";
+import CardRelease from "../../../components/componentsMyMusicx/CardRelease/CardRelease";
+import CardReleaseDetalhes from "../../../components/componentsMyMusicx/CardReleaseDetalhes/CardReleaseDetalhes";
 
 
 export default function MyMusicXDetalhes() {

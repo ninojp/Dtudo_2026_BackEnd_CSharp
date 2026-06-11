@@ -1,5 +1,5 @@
-import LogoDataScience from '../../components/componentsNinoTI/areasTI/LogoDataScience';
-import LogoRede from '../../components/componentsNinoTI/areasTI/LogoRede';
+import LogoDataScience from '../../../components/componentsNinoTI/areasTI/LogoDataScience';
+import LogoRede from '../../../components/componentsNinoTI/areasTI/LogoRede';
 import styles from './NinoTIDataScience.module.css';
 
 export default function NinoTIDataScience() {

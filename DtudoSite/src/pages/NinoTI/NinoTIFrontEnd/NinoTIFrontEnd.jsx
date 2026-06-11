@@ -1,13 +1,13 @@
+import { Outlet } from 'react-router-dom';
+import { RiNextjsFill } from 'react-icons/ri';
 import styles from './NinoTIFrontEnd.module.css';
 import { FaHtml5, FaCss3Alt, FaJsSquare, FaReact, FaGitAlt, FaGithub, FaNodeJs, FaFigma, FaWordpress, } from 'react-icons/fa';
 import { BiLogoTypescript } from 'react-icons/bi';
 import { SiVite } from 'react-icons/si';
-import BadgesTI from '../../components/componentsNinoTI/BadgesTI/BadgesTI';
-import LogoFronEnd from '../../components/componentsNinoTI/areasTI/LogoFronEnd';
-import HeaderPage from '../../components/HeaderPage/HeaderPage';
-import H1TituloPage from '../../components/H1TituloPage/H1TituloPage';
-import { RiNextjsFill } from 'react-icons/ri';
-import { Outlet } from 'react-router-dom';
+import BadgesTI from '../../../components/componentsNinoTI/BadgesTI/BadgesTI';
+import LogoFronEnd from '../../../components/componentsNinoTI/areasTI/LogoFronEnd';
+import HeaderPage from '../../../components/HeaderPage/HeaderPage';
+import H1TituloPage from '../../../components/H1TituloPage/H1TituloPage';
 
 // Lista de tecnologias nome, icone, corFundo e corTexto para os badges.
 const technologies = [

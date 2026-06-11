@@ -1,15 +1,15 @@
 {
   "name": "dtudo",
   "private": true,
-  "version": "0.0.0",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
-    "start": "json-server --watch ./api/db/animacoes.json --port 3666",
-    "proxy": "node api/mymusicx/discogsProxy.js",
+    "start": "json-server --watch ../ApiNode/db/animacoes.json --port 3666",
+    "proxy": "node ../ApiNode/mymusicx/discogsProxy.js",
     "dev": "vite",
     "servers": "concurrently \"npm run start\" \"npm run proxy\"",
-    "populate": "node api/populateAnimeDetails.js",
-    "discografia": "node api/DiscografiaPastas.js",
+    "populate": "node ApiNode/populateAnimeDetails.js",
+    "discografia": "node ApiNode/DiscografiaPastas.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

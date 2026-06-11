@@ -8,7 +8,7 @@ import MyAnimesObjsListContext from '../../context_api/MyAnimesObjsListContext/M
 
 export default function MyAnimes() {
     const { listObjsMyAnimes } = useContext(MyAnimesObjsListContext);
-    //=========================================================
+    //===============================================================
     return (
         <>
             <HeaderPage>

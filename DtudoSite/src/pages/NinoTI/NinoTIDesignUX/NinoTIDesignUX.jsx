@@ -1,11 +1,11 @@
-import LogoIA from '../../components/componentsNinoTI/areasTI/LogoIA';
-import styles from './NinoTIA.module.css';
+import LogoDesignUx from '../../../components/componentsNinoTI/areasTI/LogoDesignUx';
+import styles from './NinoTIDesignUX.module.css';
 
-export default function NinoTIA() {
+export default function NinoTIDesignUX() {
     return (
         <main className={styles.mainContainerPage}>
-            <h1>Inteligência Artificial</h1>
-            <LogoIA largura={'300px'} altura={'300px'}/>
+            <h1>Design e UX</h1>
+            <LogoDesignUx largura={'300px'} altura={'300px'}/>
             <h2>Breve descrição sobre a area...</h2>
             <p>Mais detalhes sobre a area...</p>
             <div className={styles.divContainerAreasTI}>
