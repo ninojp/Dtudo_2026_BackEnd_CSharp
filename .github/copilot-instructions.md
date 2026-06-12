@@ -1,4 +1,6 @@
-# Repository Guidance
+# Copilot Instructions
+
+## Repository Guidance
 
 This repository is a single product workspace named `Dtudo2026CSharp`, treating it as a full-stack workspace covering React (`DtudoSite`), Node (`ApiNode`), and ASP.NET Core (`ApiCSharp`). Always preserve this context in the repository instructions whenever possible.
 
@@ -91,3 +93,7 @@ Keep changes minimal and local to the owning layer unless the requested behavior
 ## Persistence expectation
 
 These repository instructions are intended to persist workspace context across Visual Studio restarts and future sessions opened from this same folder. Always use this repository-level context first when working inside `Dtudo2026CSharp`.
+
+## Visual Studio Visibility
+
+- Ensure that `ApiCSharp`, `DtudoSite`, and `ApiNode` are visible in Visual Studio without moving or reorganizing folders in the repository.

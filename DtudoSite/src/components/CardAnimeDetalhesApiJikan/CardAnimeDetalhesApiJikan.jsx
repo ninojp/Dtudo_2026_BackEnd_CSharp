@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import conectaAPIJikan from "../../api_conect/conectAPIJikam";
+import conectaAPIJikan from "../../../../ApiNode/conectApiJikam";
 import styles from "./CardAnimeDetalhesApiJikan.module.css";
 import Spinner from "../Spinner/Spinner";
 

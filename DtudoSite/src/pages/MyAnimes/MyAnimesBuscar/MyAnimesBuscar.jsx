@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import H1TituloPage from '../../../components/H1TituloPage/H1TituloPage';
 import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
 import HeaderPage from '../../../components/HeaderPage/HeaderPage';
@@ -118,12 +119,11 @@ export default function MyAnimesBuscar() {
                     )}
 
                     {results.map((anime) => (
-                        <a
+                        <Link
                             key={anime.malId || anime.url || anime.title}
                             className={styles.animeLink}
-                            href={anime.url || '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            to="/myanimes/myanimes-buscar-detalhes"
+                            state={{ anime }}
                         >
                             <article className={styles.animeCard}>
                                 <img
@@ -152,7 +152,7 @@ export default function MyAnimesBuscar() {
                                     )}
                                 </div>
                             </article>
-                        </a>
+                        </Link>
                     ))}
                 </div>
 

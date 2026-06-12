@@ -3,8 +3,152 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 1rem;
+    padding: 1rem;
 }
+
 .spanTotalAnimes {
     font-size: 28px;
     color: #ffffff;
+}
+
+.actionsBar {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.backButton {
+    text-decoration: none;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+}
+
+.backButton:hover {
+    background-color: #ffffff;
+    color: #0e356b;
+}
+
+.loading,
+.error {
+    color: #ffffff;
+    font-size: 1.1rem;
+}
+
+.detailsContainer {
+    width: 100%;
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.2rem;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.posterArea {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.poster {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.scoreBox {
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 0.6rem;
+}
+
+.infoArea {
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.gridInfo {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 1rem;
+}
+
+.sectionBlock {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 0.65rem;
+}
+
+.sectionBlock h4 {
+    margin: 0 0 0.35rem;
+}
+
+.sectionBlock p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.sectionBlock a {
+    color: #ffffff;
+    word-break: break-all;
+}
+
+.rawJson {
+    margin-top: 0.6rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 0.7rem;
+}
+
+.rawJson summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.rawJson pre {
+    margin-top: 0.6rem;
+    max-height: 360px;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-size: 0.82rem;
+}
+
+@media (max-width: 960px) {
+    .detailsContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .poster {
+        max-width: 280px;
+    }
+
+    .posterArea {
+        align-items: center;
+    }
+}
+
+@media (max-width: 640px) {
+    .spanTotalAnimes {
+        font-size: 22px;
+    }
+
+    .gridInfo {
+        grid-template-columns: 1fr;
+    }
 }
