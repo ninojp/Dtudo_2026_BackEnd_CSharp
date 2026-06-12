@@ -10,6 +10,7 @@ import styles from './MyAnimesBuscar.module.css';
 export default function MyAnimesBuscar() {
     // const { listObjsMyAnimes } = useContext(MyAnimesObjsListContext);
     const API_BASE_URL = 'https://localhost:7279/api/anime';
+    // const API_BASE_URL = 'https://localhost:5000/api/anime';
     const placeholderImage = 'https://via.placeholder.com/250x350?text=No+Image';
 
     const [searchInput, setSearchInput] = useState('');
@@ -122,7 +123,9 @@ export default function MyAnimesBuscar() {
                         <Link
                             key={anime.malId || anime.url || anime.title}
                             className={styles.animeLink}
-                            to="/myanimes/myanimes-buscar-detalhes"
+                            to={`/myanimes/myanimes-buscar-detalhes?animeId=${anime.malId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             state={{ anime }}
                         >
                             <article className={styles.animeCard}>

@@ -10,12 +10,13 @@ export default function MyAnimesBuscarDetalhes() {
     const placeholderImage = 'https://via.placeholder.com/300x420?text=No+Image';
     const location = useLocation();
     const animeFromState = location.state?.anime;
+    const animeIdFromQuery = Number(new URLSearchParams(location.search).get('animeId')) || 0;
 
     const [animeDetalhes, setAnimeDetalhes] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const animeId = animeFromState?.malId || animeFromState?.mal_Id || 0;
+    const animeId = animeFromState?.malId || animeFromState?.mal_Id || animeIdFromQuery;
 
     const imageUrl = useMemo(() => {
         if (!animeDetalhes) {
