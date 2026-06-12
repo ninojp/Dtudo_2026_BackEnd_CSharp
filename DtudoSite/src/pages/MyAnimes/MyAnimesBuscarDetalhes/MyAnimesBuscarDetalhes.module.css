@@ -1,0 +1,10 @@
+.mainCardsMyAnimesList{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.spanTotalAnimes {
+    font-size: 28px;
+    color: #ffffff;
+}

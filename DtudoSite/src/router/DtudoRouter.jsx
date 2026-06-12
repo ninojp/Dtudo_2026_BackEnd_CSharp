@@ -11,10 +11,11 @@ import Register from "../pages/Register/Register";
 import Login from "../pages/Login/Login";
 import Logout from "../pages/Logout/Logout";
 import NotFound from "../pages/NotFound/NotFound";
-import MyAnimes from "../pages/MyAnimes/MyAnimes";
 import Animes from "../pages/Animes/Animes";
+import MyAnimes from "../pages/MyAnimes/MyAnimes";
 import MyAnimesDetalhes from "../pages/MyAnimes/MyAnimesDetalhes/MyAnimesDetalhes";
 import MyAnimesBuscar from "../pages/MyAnimes/MyAnimesBuscar/MyAnimesBuscar";
+import MyAnimesBuscarDetalhes from "../pages/MyAnimes/MyAnimesBuscarDetalhes/MyAnimesBuscarDetalhes";
 import Animex from "../pages/Animex/Animex";
 import AnimexDetalhes from "../pages/Animex/AnimexDetalhes/AnimexDetalhes";
 import MyMusicX from "../pages/MyMusicX/MyMusicX";
@@ -56,6 +57,7 @@ export default function DtudoRouter() {
                                 <MyAnimesDetalhes />
                             </MyAnimesDetalhesProvider>} />
                         <Route path="myanimes-buscar" element={<MyAnimesBuscar />} />
+                        <Route path="myanimes-buscar-detalhes" element={<MyAnimesBuscarDetalhes />} />
                     </Route>
                     {/* Rotas para Endereços MyAnimesLista */}
                     <Route path="/animes" element={<Animes />} />
