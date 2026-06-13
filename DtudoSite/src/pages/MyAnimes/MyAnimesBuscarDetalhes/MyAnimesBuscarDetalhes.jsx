@@ -6,7 +6,7 @@ import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
 import styles from "./MyAnimesBuscarDetalhes.module.css";
 
 export default function MyAnimesBuscarDetalhes() {
-    const API_BASE_URL = 'https://localhost:7279/api/anime';
+    const API_BASE_URL = 'https://localhost:7082/api/anime';
     const placeholderImage = 'https://via.placeholder.com/300x420?text=No+Image';
     const location = useLocation();
     const animeFromState = location.state?.anime;

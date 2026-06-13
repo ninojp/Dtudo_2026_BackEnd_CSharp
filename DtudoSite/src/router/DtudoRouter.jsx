@@ -3,6 +3,7 @@ import ProtetorDeRota from "../components/ProtetorDeRota/ProtetorDeRota";
 import IndexLayout from "../layouts/IndexLayout/IndexLayout";
 import NinoTIPageLayout from "../layouts/NinoTIPageLayout/NinoTIPageLayout";
 import MyAnimesDetalhesProvider from "../context_api/MyAnimesDetalhesContext/MyAnimesDetalhesProvider";
+import MyAnimesBuscarJikanProvider from "../context_api/MyAnimesBuscarJikanContext/MyAnimesBuscarJikanProvider";
 import MyAnimesObjsListProvider from "../context_api/MyAnimesObjsListContext/MyAnimesObjsListProvider";
 import AnimexDetalhesProvider from "../context_api/AnimexDetalhesContext/AnimexDetalhesProvider";
 import MyMusicxObjsListProvider from "../context_api/MyMusicxObjsListContext/MyMusicxObjsListProvider";
@@ -56,7 +57,7 @@ export default function DtudoRouter() {
                         <Route path="myanimes-detalhes/:slug" element={<MyAnimesDetalhesProvider>
                                 <MyAnimesDetalhes />
                             </MyAnimesDetalhesProvider>} />
-                        <Route path="myanimes-buscar" element={<MyAnimesBuscar />} />
+                        <Route path="myanimes-buscar" element={<MyAnimesBuscarJikanProvider><MyAnimesBuscar /></MyAnimesBuscarJikanProvider>} />
                         <Route path="myanimes-buscar-detalhes" element={<MyAnimesBuscarDetalhes />} />
                     </Route>
                     {/* Rotas para Endereços MyAnimesLista */}

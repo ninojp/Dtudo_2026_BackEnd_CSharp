@@ -1,92 +1,32 @@
-import { useEffect, useState } from 'react';
+import { use } from 'react';
 import { Link } from 'react-router-dom';
 import H1TituloPage from '../../../components/H1TituloPage/H1TituloPage';
 import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
 import HeaderPage from '../../../components/HeaderPage/HeaderPage';
+import MyAnimesBuscarJikanContext from '../../../context_api/MyAnimesBuscarJikanContext/MyAnimesBuscarJikanContext';
 import styles from './MyAnimesBuscar.module.css';
-// import { useContext } from 'react';
-// import MyAnimesObjsListContext from '../../../context_api/MyAnimesObjsListContext/MyAnimesObjsListContext';
 
 export default function MyAnimesBuscar() {
-    // const { listObjsMyAnimes } = useContext(MyAnimesObjsListContext);
-    const API_BASE_URL = 'https://localhost:7279/api/anime';
-    // const API_BASE_URL = 'https://localhost:5000/api/anime';
     const placeholderImage = 'https://via.placeholder.com/250x350?text=No+Image';
 
-    const [searchInput, setSearchInput] = useState('');
-    const [currentQuery, setCurrentQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [hasNextPage, setHasNextPage] = useState(false);
-    const [totalPages, setTotalPages] = useState(0);
-    const [results, setResults] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [hasSearched, setHasSearched] = useState(false);
-
-    useEffect(() => {
-        async function searchAnime() {
-            if (!currentQuery.trim()) {
-                setLoading(false);
-                setError('');
-                setResults([]);
-                setHasNextPage(false);
-                setTotalPages(0);
-                return;
-            }
-
-            try {
-                setLoading(true);
-                setError('');
-                setResults([]);
-                const url = `${API_BASE_URL}/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Erro na requisição: ${response.status}`);
-                }
-                const data = await response.json();
-                setResults(data.results || []);
-                setHasNextPage(Boolean(data.hasNextPage));
-                setTotalPages(data.totalPages || 0);
-                setHasSearched(true);
-            } catch (requestError) {
-                setError('Erro ao buscar animes. Verifique se a API está rodando.');
-                console.error('Erro:', requestError);
-            } finally {
-                setLoading(false);
-            }
-        }
-        searchAnime();
-    }, [currentQuery, currentPage]);
+    const {
+        searchInput,
+        setSearchInput,
+        currentPage,
+        totalPages,
+        hasNextPage,
+        results,
+        isLoading,
+        error,
+        hasSearched,
+        handleSearch,
+        handlePrevPage,
+        handleNextPage,
+    } = use(MyAnimesBuscarJikanContext);
 
     function handleSubmit(e) {
         e.preventDefault();
-        const trimmedQuery = searchInput.trim();
-
-        if (!trimmedQuery) {
-            setCurrentPage(1);
-            setCurrentQuery('');
-            setHasSearched(false);
-            setResults([]);
-            setError('');
-            setHasNextPage(false);
-            setTotalPages(0);
-            return;
-        }
-
-        setCurrentPage(1);
-        setCurrentQuery(trimmedQuery);
-    }
-
-    function handlePrevPage() {
-        if (currentPage > 1) {
-            setCurrentPage((prev) => prev - 1);
-        }
-    }
-
-    function handleNextPage() {
-        if (hasNextPage) {
-            setCurrentPage((prev) => prev + 1);
-        }
+        handleSearch(searchInput);
     }
 
     return (
@@ -107,15 +47,15 @@ export default function MyAnimesBuscar() {
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
                         />
-                        <button type="submit" className={styles.searchButton} disabled={loading}>Buscar</button>
+                        <button type="submit" className={styles.searchButton} disabled={isLoading}>Buscar</button>
                     </form>
                 </div>
 
                 {error && <div className={styles.error}>{error}</div>}
-                {loading && <div className={styles.loading}>🔄 Carregando...</div>}
+                {isLoading && <div className={styles.loading}>🔄 Carregando...</div>}
 
                 <div className={styles.results}>
-                    {!loading && hasSearched && results.length === 0 && (
+                    {!isLoading && hasSearched && results.length === 0 && (
                         <p className={styles.emptyMessage}>Nenhum anime encontrado.</p>
                     )}
 
