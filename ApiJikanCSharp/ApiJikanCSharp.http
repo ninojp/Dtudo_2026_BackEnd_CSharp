@@ -1,6 +1,0 @@
-@ApiJikanCSharp_HostAddress = http://localhost:5079
-
-GET {{ApiJikanCSharp_HostAddress}}/animes/
-Accept: application/json
-
-###

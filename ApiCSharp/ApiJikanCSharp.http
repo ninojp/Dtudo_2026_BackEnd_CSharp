@@ -1,0 +1,43 @@
+@ApiJikanCSharp_HostAddress = http://localhost:5079
+
+GET {{ApiJikanCSharp_HostAddress}}/animes/
+Accept: application/json
+
+###
+
+# POST para adicionar um novo Anime
+POST {{ApiJikanCSharp_HostAddress}}/apiLocal/Anime
+Content-Type: application/json
+
+{
+  "malId": 1,
+  "titulo": "Naruto",
+  "episodios": 220,
+  "malUrl": "https://myanimelist.net/anime/20/Naruto",
+  "imagensUrlMal": ["https://example.com/image1.jpg"],
+  "subTitulos": ["Portuguese", "English"]
+}
+
+###
+
+# GET Anime por ID
+GET {{ApiJikanCSharp_HostAddress}}/apiLocal/Anime/1
+Accept: application/json
+
+###
+
+# POST para adicionar MyAnime
+POST {{ApiJikanCSharp_HostAddress}}/apiLocal/MyAnime
+Content-Type: application/json
+
+{
+  "titulo": "Meus Animes Favoritos",
+  "animesMalId": [1, 5, 16]
+}
+
+###
+
+# GET MyAnime por ID
+GET {{ApiJikanCSharp_HostAddress}}/apiLocal/MyAnime/1
+Accept: application/json
+
