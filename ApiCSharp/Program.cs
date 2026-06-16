@@ -1,6 +1,8 @@
-using ApiCSharp.Services;
 using ApiCSharp.Data;
+using ApiCSharp.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,18 +15,22 @@ builder.Services.AddDbContext<MyAnimesContext>(opts => opts.UseSqlServer(localDb
 // Configuração do Entity.Framework.Core para AnimeContext usando SQL Server
 //builder.Services.AddDbContext<AnimeContext>(opts => opts.UseSqlServer(localDbConnection));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(options =>
+// Configuração do Swagger para documentação da API
+builder.Services.AddSwaggerGen(c =>
 {
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "ApiJikanCSharp",
+        Title = "Api Local MyAnimes",
         Version = "v1",
-        Description = "Documentação da API Jikan em ASP.NET Core."
+        Description = "Esta é uma Api Local que manipula (CRUD, completo) um Banco de dados Relacional local que contém informações relacionadas as minhas coleções de animes, MyAnime (DBtabela) Api Local MyAnimes, engloba todos os endpoints relacionados a MyAnimes (coleções nomeadas, que agrupam APENAS os IDs dos animes) e Anime (DBtabela) que contém informações detalhadas sobre cada anime. Api Jikan, tem apenas 2 EndPoints (consulta por Nome ou ID) de consulta a API Jikan Externa para fornecer todas as informações necessárias sobre os animes."
     });
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 });
 //==========================================
 // Configuração do HttpClient para Jikan API
@@ -54,7 +60,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiJikanCSharp v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Api Local MyAnimes v1");
         options.RoutePrefix = "swagger";
     });
 }

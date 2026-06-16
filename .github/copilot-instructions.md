@@ -66,6 +66,8 @@ Do not treat `ApiCSharp/` as an isolated application just because it is the only
 - If a request touches API behavior, inspect controller, service, model, and frontend consumer contracts.
 - If a request touches local data, mock data, or third-party proxy behavior, inspect `ApiNode/` before assuming the backend owns it.
 - When changing API contracts, consider whether React pages, providers, or Node scripts also need coordinated updates.
+- When refactoring controllers in this repository, preserve and correct existing XML/Swagger comments instead of removing them.
+- Always use modern and secure coding practices, ensuring consistent standards across controllers.
 
 ## Useful commands
 
