@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import MyAnimesBuscarJikanContext from './MyAnimesBuscarJikanContext';
 
-const API_LOCAL_JIKAN_BASE_URL = import.meta.env.VITE_API_LOCAL_JIKAN_BASE_URL || 'https://localhost:7082/apiJikan/ApiJikan';
+const API_LOCAL_JIKAN_BASE_URL = import.meta.env.VITE_API_LOCAL_JIKAN_BASE_URL || 'https://localhost:63982/ApiJikan';
 
 export default function MyAnimesBuscarJikanProvider({ children }) {
     const [searchInput, setSearchInput] = useState('');

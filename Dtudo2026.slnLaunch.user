@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "IniciaTudo",
+    "Projects": [
+      {
+        "Path": "ApiJikan\\ApiJikan.csproj",
+        "Action": "Start",
+        "DebugTarget": "ApiJikan"
+      },
+      {
+        "Path": "ApiMyAnimes\\ApiMyAnimes.csproj",
+        "Action": "Start",
+        "DebugTarget": "ApiMyAnimes"
+      }
+    ]
+  }
+]

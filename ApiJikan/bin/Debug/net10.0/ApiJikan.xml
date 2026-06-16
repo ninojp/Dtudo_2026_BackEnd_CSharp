@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ApiJikan</name>
+    </assembly>
+    <members>
+        <member name="M:ApiJikan.Controllers.ApiJikanController.SearchAnime(System.String,System.Int32)">
+            <summary>
+            Busca animes por nome
+            </summary>
+            <param name="q">Termo de busca</param>
+            <param name="page">Número da página (padrão: 1)</param>
+            <returns>Lista de animes encontrados</returns>
+        </member>
+        <member name="M:ApiJikan.Controllers.ApiJikanController.GetAnimeById(System.Int32)">
+            <summary>
+            Busca um anime específico por ID do MyAnimeList
+            </summary>
+            <param name="id">ID do anime no MyAnimeList</param>
+            <returns>Detalhes completos do anime</returns>
+        </member>
+        <member name="T:Program">
+            <summary>
+            Auto-generated public partial Program class for top-level statement apps.
+            </summary>
+        </member>
+    </members>
+</doc>

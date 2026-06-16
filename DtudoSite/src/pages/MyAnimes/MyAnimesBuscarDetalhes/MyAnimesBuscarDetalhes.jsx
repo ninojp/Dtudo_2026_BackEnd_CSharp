@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import HeaderPage from '../../../components/HeaderPage/HeaderPage';
 import H1TituloPage from '../../../components/H1TituloPage/H1TituloPage';
 import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
@@ -44,7 +44,7 @@ function resolveRelatedImage(item) {
 }
 
 export default function MyAnimesBuscarDetalhes() {
-    const API_LOCAL_JIKAN_BASE_URL = import.meta.env.VITE_API_LOCAL_JIKAN_BASE_URL || 'https://localhost:7082/apiJikan/ApiJikan';
+    const API_LOCAL_JIKAN_BASE_URL = import.meta.env.VITE_API_LOCAL_JIKAN_BASE_URL || 'https://localhost:63982/ApiJikan';
     const location = useLocation();
     const animeFromState = location.state?.anime;
     const animeIdFromQuery = Number(new URLSearchParams(location.search).get('animeId')) || 0;

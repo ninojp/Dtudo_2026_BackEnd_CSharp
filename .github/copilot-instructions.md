@@ -68,6 +68,7 @@ Do not treat `ApiCSharp/` as an isolated application just because it is the only
 - When changing API contracts, consider whether React pages, providers, or Node scripts also need coordinated updates.
 - When refactoring controllers in this repository, preserve and correct existing XML/Swagger comments instead of removing them.
 - Always use modern and secure coding practices, ensuring consistent standards across controllers.
+- **CRÍTICO**: Nunca altere ou modifique a estrutura de pastas existentes na raiz `Dtudo2026` ou arquivos em pastas externas a `ApiCSharp`. Modifique APENAS dentro da pasta `ApiCSharp` e crie novas pastas para os novos projetos (`ApiJikan`, `ApiMyAnimes`, `ApiCSharp.Shared`) dentro de `Dtudo2026`.
 
 ## Useful commands
 
