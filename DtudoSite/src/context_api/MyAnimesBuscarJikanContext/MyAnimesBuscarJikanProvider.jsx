@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import MyAnimesBuscarJikanContext from './MyAnimesBuscarJikanContext';
 
-const API_BASE_URL = 'https://localhost:7082/api/anime';
+const API_LOCAL_JIKAN_BASE_URL = import.meta.env.VITE_API_LOCAL_JIKAN_BASE_URL || 'https://localhost:7082/apiJikan/ApiJikan';
 
 export default function MyAnimesBuscarJikanProvider({ children }) {
     const [searchInput, setSearchInput] = useState('');
@@ -32,7 +32,7 @@ export default function MyAnimesBuscarJikanProvider({ children }) {
                 setError('');
                 setResults([]);
 
-                const url = `${API_BASE_URL}/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
+                const url = `${API_LOCAL_JIKAN_BASE_URL}/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
                 const response = await fetch(url, { signal: controller.signal });
 
                 if (!response.ok) {

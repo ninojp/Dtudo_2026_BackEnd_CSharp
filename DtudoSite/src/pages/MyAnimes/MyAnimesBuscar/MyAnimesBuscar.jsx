@@ -7,7 +7,18 @@ import MyAnimesBuscarJikanContext from '../../../context_api/MyAnimesBuscarJikan
 import styles from './MyAnimesBuscar.module.css';
 
 export default function MyAnimesBuscar() {
-    const placeholderImage = 'https://via.placeholder.com/250x350?text=No+Image';
+    const placeholderImage = `data:image/svg+xml;utf8,${encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="250" height="350" viewBox="0 0 250 350">
+            <defs>
+                <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#143a66"/>
+                    <stop offset="100%" stop-color="#0b1d33"/>
+                </linearGradient>
+            </defs>
+            <rect width="250" height="350" fill="url(#g)"/>
+            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-size="20" font-family="Arial, sans-serif">Sem imagem</text>
+        </svg>`
+    )}`;
 
     const {
         searchInput,

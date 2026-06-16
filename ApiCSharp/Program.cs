@@ -17,6 +17,8 @@ builder.Services.AddDbContext<MyAnimesContext>(opts => opts.UseSqlServer(localDb
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddEndpointsApiExplorer();
 
 // Configuração do Swagger para documentação da API

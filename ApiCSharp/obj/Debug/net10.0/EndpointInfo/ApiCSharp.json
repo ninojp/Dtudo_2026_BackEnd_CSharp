@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.4",
   "info": {
-    "title": "ApiJikanCSharp",
-    "description": "Documentação da API Jikan em ASP.NET Core.",
+    "title": "Api Local MyAnimes",
+    "description": "Esta é uma Api Local que manipula (CRUD, completo) um Banco de dados Relacional local que contém informações relacionadas as minhas coleções de animes, MyAnime (DBtabela) Api Local MyAnimes, engloba todos os endpoints relacionados a MyAnimes (coleções nomeadas, que agrupam APENAS os IDs dos animes) e Anime (DBtabela) que contém informações detalhadas sobre cada anime. Api Jikan, tem apenas 2 EndPoints (consulta por Nome ou ID) de consulta a API Jikan Externa para fornecer todas as informações necessárias sobre os animes.",
     "version": "v1"
   },
   "paths": {
@@ -11,33 +11,92 @@
         "tags": [
           "Anime"
         ],
+        "summary": "Adiciona um novo anime na tabela local de animes.\r\nO `MalId` é utilizado como chave primária e deve ser único.",
         "requestBody": {
+          "description": "Dados necessários para criar um novo anime.",
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/Anime"
+                "$ref": "#/components/schemas/AdicionaAnimeDto"
               }
             },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Anime"
+                "$ref": "#/components/schemas/AdicionaAnimeDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Anime"
+                "$ref": "#/components/schemas/AdicionaAnimeDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Anime"
+                "$ref": "#/components/schemas/AdicionaAnimeDto"
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObterAnimeDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObterAnimeDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObterAnimeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       },
@@ -45,10 +104,12 @@
         "tags": [
           "Anime"
         ],
+        "summary": "Obtém uma lista paginada de animes cadastrados no banco local.",
         "parameters": [
           {
             "name": "skip",
             "in": "query",
+            "description": "Quantidade de registros a ignorar (offset).",
             "schema": {
               "type": "integer",
               "format": "int32",
@@ -58,10 +119,11 @@
           {
             "name": "take",
             "in": "query",
+            "description": "Quantidade máxima de registros retornados.",
             "schema": {
               "type": "integer",
               "format": "int32",
-              "default": 5
+              "default": 10
             }
           }
         ],
@@ -73,7 +135,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Anime"
+                    "$ref": "#/components/schemas/ObterAnimeDto"
                   }
                 }
               },
@@ -81,7 +143,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Anime"
+                    "$ref": "#/components/schemas/ObterAnimeDto"
                   }
                 }
               },
@@ -89,8 +151,28 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Anime"
+                    "$ref": "#/components/schemas/ObterAnimeDto"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -103,10 +185,12 @@
         "tags": [
           "Anime"
         ],
+        "summary": "Obtém um anime específico pelo `MalId`.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "Identificador do anime no MyAnimeList (MalId).",
             "required": true,
             "schema": {
               "type": "integer",
@@ -120,17 +204,308 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/Anime"
+                  "$ref": "#/components/schemas/ObterAnimeDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Anime"
+                  "$ref": "#/components/schemas/ObterAnimeDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Anime"
+                  "$ref": "#/components/schemas/ObterAnimeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Anime"
+        ],
+        "summary": "Atualiza completamente um anime existente com base no `MalId`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "MalId do anime que será atualizado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Objeto com os novos dados do anime.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizaAnimeDto"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizaAnimeDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizaAnimeDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizaAnimeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Anime"
+        ],
+        "summary": "Atualiza parcialmente um anime existente usando JSON Patch.\r\nO `MalId` é preservado e não é alterado pela operação.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "MalId do anime que será atualizado parcialmente.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Documento JSON Patch contendo as operações de alteração.",
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Anime"
+        ],
+        "summary": "Remove um anime da base local com base no `MalId` informado.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "MalId do anime a ser removido.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -143,10 +518,12 @@
         "tags": [
           "ApiJikan"
         ],
+        "summary": "Busca animes por nome",
         "parameters": [
           {
             "name": "q",
             "in": "query",
+            "description": "Termo de busca",
             "schema": {
               "type": "string"
             }
@@ -154,6 +531,7 @@
           {
             "name": "page",
             "in": "query",
+            "description": "Número da página (padrão: 1)",
             "schema": {
               "type": "integer",
               "format": "int32",
@@ -213,10 +591,12 @@
         "tags": [
           "ApiJikan"
         ],
+        "summary": "Busca um anime específico por ID do MyAnimeList",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID do anime no MyAnimeList",
             "required": true,
             "schema": {
               "type": "integer",
@@ -276,7 +656,9 @@
         "tags": [
           "MyAnime"
         ],
+        "summary": "Adiciona uma nova coleção MyAnime.",
         "requestBody": {
+          "description": "Dados necessários para criação da coleção.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -301,8 +683,45 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObterMyAnimeDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObterMyAnimeDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObterMyAnimeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       },
@@ -310,10 +729,12 @@
         "tags": [
           "MyAnime"
         ],
+        "summary": "Obtém uma lista paginada de coleções MyAnime.",
         "parameters": [
           {
             "name": "skip",
             "in": "query",
+            "description": "Quantidade de registros a ignorar.",
             "schema": {
               "type": "integer",
               "format": "int32",
@@ -323,6 +744,7 @@
           {
             "name": "take",
             "in": "query",
+            "description": "Quantidade máxima de registros retornados.",
             "schema": {
               "type": "integer",
               "format": "int32",
@@ -338,7 +760,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/MyAnime"
+                    "$ref": "#/components/schemas/ObterMyAnimeDto"
                   }
                 }
               },
@@ -346,7 +768,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/MyAnime"
+                    "$ref": "#/components/schemas/ObterMyAnimeDto"
                   }
                 }
               },
@@ -354,8 +776,28 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/MyAnime"
+                    "$ref": "#/components/schemas/ObterMyAnimeDto"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -368,10 +810,12 @@
         "tags": [
           "MyAnime"
         ],
+        "summary": "Obtém uma coleção MyAnime pelo ID.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID da coleção.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -385,17 +829,57 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/MyAnime"
+                  "$ref": "#/components/schemas/ObterMyAnimeDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MyAnime"
+                  "$ref": "#/components/schemas/ObterMyAnimeDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MyAnime"
+                  "$ref": "#/components/schemas/ObterMyAnimeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -406,10 +890,12 @@
         "tags": [
           "MyAnime"
         ],
+        "summary": "Atualiza completamente uma coleção MyAnime existente.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID da coleção a ser atualizada.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -418,6 +904,7 @@
           }
         ],
         "requestBody": {
+          "description": "Novos valores da coleção.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -442,8 +929,48 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
           }
         }
       },
@@ -451,10 +978,12 @@
         "tags": [
           "MyAnime"
         ],
+        "summary": "Atualiza parcialmente uma coleção MyAnime usando JSON Patch.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID da coleção a ser atualizada parcialmente.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -463,6 +992,7 @@
           }
         ],
         "requestBody": {
+          "description": "Documento de operações JSON Patch aplicado sobre ApiCSharp.Data.Dtos.AtualizaMyAnimeDto.",
           "content": {
             "application/json-patch+json": {
               "schema": {
@@ -499,8 +1029,48 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
           }
         }
       },
@@ -508,10 +1078,12 @@
         "tags": [
           "MyAnime"
         ],
+        "summary": "Remove uma coleção MyAnime pelo ID.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
+            "description": "ID da coleção a ser removida.",
             "required": true,
             "schema": {
               "type": "integer",
@@ -520,8 +1092,48 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
           }
         }
       }
@@ -529,6 +1141,51 @@
   },
   "components": {
     "schemas": {
+      "AdicionaAnimeDto": {
+        "required": [
+          "episodios",
+          "malId",
+          "titulo"
+        ],
+        "type": "object",
+        "properties": {
+          "malId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "titulo": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "episodios": {
+            "maximum": 3000,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "malUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "imagensUrlMal": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "subTitulos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AdicionaMyAnimeDto": {
         "required": [
           "animesMalId",
@@ -567,50 +1224,6 @@
           },
           "string": {
             "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Anime": {
-        "required": [
-          "episodios",
-          "malId",
-          "titulo"
-        ],
-        "type": "object",
-        "properties": {
-          "malId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "titulo": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "episodios": {
-            "maximum": 3000,
-            "minimum": 1,
-            "pattern": "^\\d+$",
-            "type": "integer",
-            "format": "int32"
-          },
-          "malUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "imagensUrlMal": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "subTitulos": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
             "nullable": true
           }
         },
@@ -792,6 +1405,30 @@
               "$ref": "#/components/schemas/MalItem"
             },
             "nullable": true
+          },
+          "relations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnimeRelation"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AnimeRelation": {
+        "type": "object",
+        "properties": {
+          "relation": {
+            "type": "string",
+            "nullable": true
+          },
+          "entry": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MalItem"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -820,6 +1457,44 @@
           "totalResults": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AtualizaAnimeDto": {
+        "required": [
+          "episodios",
+          "titulo"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "episodios": {
+            "maximum": 3000,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "malUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "imagensUrlMal": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "subTitulos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -967,33 +1642,72 @@
           "url": {
             "type": "string",
             "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "MyAnime": {
-        "required": [
-          "animesMalId",
-          "id",
-          "titulo"
-        ],
+      "ObterAnimeDto": {
         "type": "object",
         "properties": {
-          "id": {
+          "malId": {
             "type": "integer",
             "format": "int32"
           },
           "titulo": {
-            "maxLength": 100,
-            "minLength": 0,
-            "type": "string"
+            "type": "string",
+            "nullable": true
+          },
+          "episodios": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "malUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "imagensUrlMal": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "subTitulos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "horaDaConsulta": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObterMyAnimeDto": {
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "nullable": true
           },
           "animesMalId": {
             "type": "array",
             "items": {
               "type": "integer",
               "format": "int32"
-            }
+            },
+            "nullable": true
+          },
+          "horaDaConsulta": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

@@ -4,6 +4,90 @@
         <name>ApiCSharp</name>
     </assembly>
     <members>
+        <member name="T:ApiCSharp.Controllers.AnimeController">
+            <summary>
+            Controlador responsável por gerenciar os registros da entidade <see cref="T:ApiCSharp.Models.Anime"/> em banco local.
+            Disponibiliza endpoints de criação, leitura, atualização (total e parcial) e exclusão.
+            </summary>
+            <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
+        </member>
+        <member name="M:ApiCSharp.Controllers.AnimeController.#ctor(ApiCSharp.Data.MyAnimesContext)">
+            <summary>
+            Controlador responsável por gerenciar os registros da entidade <see cref="T:ApiCSharp.Models.Anime"/> em banco local.
+            Disponibiliza endpoints de criação, leitura, atualização (total e parcial) e exclusão.
+            </summary>
+            <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
+        </member>
+        <member name="M:ApiCSharp.Controllers.AnimeController.AdicionarAnime(ApiCSharp.Data.Dtos.AdicionaAnimeDto)">
+            <summary>
+            Adiciona um novo anime na tabela local de animes.
+            O <c>MalId</c> é utilizado como chave primária e deve ser único.
+            </summary>
+            <param name="adicionaAnimeDto">Dados necessários para criar um novo anime.</param>
+            <returns>
+            Retorna <c>201 Created</c> quando criado com sucesso,
+            <c>400 BadRequest</c> para corpo inválido,
+            ou <c>409 Conflict</c> quando já existe anime com o mesmo <c>MalId</c>.
+            </returns>
+        </member>
+        <member name="M:ApiCSharp.Controllers.AnimeController.ObterAnimes(System.Int32,System.Int32)">
+            <summary>
+            Obtém uma lista paginada de animes cadastrados no banco local.
+            </summary>
+            <param name="skip">Quantidade de registros a ignorar (offset).</param>
+            <param name="take">Quantidade máxima de registros retornados.</param>
+            <returns>
+            Retorna <c>200 OK</c> com a lista paginada,
+            ou <c>400 BadRequest</c> quando parâmetros de paginação são inválidos.
+            </returns>
+        </member>
+        <member name="M:ApiCSharp.Controllers.AnimeController.ObterAnimePorId(System.Int32)">
+            <summary>
+            Obtém um anime específico pelo <c>MalId</c>.
+            </summary>
+            <param name="id">Identificador do anime no MyAnimeList (MalId).</param>
+            <returns>
+            Retorna <c>200 OK</c> com o anime,
+            <c>400 BadRequest</c> para ID inválido,
+            ou <c>404 NotFound</c> quando o registro não existe.
+            </returns>
+        </member>
+        <member name="M:ApiCSharp.Controllers.AnimeController.AtualizarAnime(System.Int32,ApiCSharp.Data.Dtos.AtualizaAnimeDto)">
+            <summary>
+            Atualiza completamente um anime existente com base no <c>MalId</c>.
+            </summary>
+            <param name="id">MalId do anime que será atualizado.</param>
+            <param name="atualizaAnimeDto">Objeto com os novos dados do anime.</param>
+            <returns>
+            Retorna <c>204 NoContent</c> quando atualizado com sucesso,
+            <c>400 BadRequest</c> para entrada inválida,
+            ou <c>404 NotFound</c> quando o anime não existe.
+            </returns>
+        </member>
+        <member name="M:ApiCSharp.Controllers.AnimeController.AtualizarAnimeParcial(System.Int32,Microsoft.AspNetCore.JsonPatch.JsonPatchDocument{ApiCSharp.Data.Dtos.AtualizaAnimeDto})">
+            <summary>
+            Atualiza parcialmente um anime existente usando JSON Patch.
+            O <c>MalId</c> é preservado e não é alterado pela operação.
+            </summary>
+            <param name="id">MalId do anime que será atualizado parcialmente.</param>
+            <param name="animePatch">Documento JSON Patch contendo as operações de alteração.</param>
+            <returns>
+            Retorna <c>204 NoContent</c> quando atualizado com sucesso,
+            <c>400 BadRequest</c> para entrada inválida,
+            ou <c>404 NotFound</c> quando o anime não existe.
+            </returns>
+        </member>
+        <member name="M:ApiCSharp.Controllers.AnimeController.DeletarAnime(System.Int32)">
+            <summary>
+            Remove um anime da base local com base no <c>MalId</c> informado.
+            </summary>
+            <param name="id">MalId do anime a ser removido.</param>
+            <returns>
+            Retorna <c>204 NoContent</c> quando removido com sucesso,
+            <c>400 BadRequest</c> para ID inválido,
+            ou <c>404 NotFound</c> quando o anime não existe.
+            </returns>
+        </member>
         <member name="M:ApiCSharp.Controllers.ApiJikanController.SearchAnime(System.String,System.Int32)">
             <summary>
             Busca animes por nome
@@ -19,43 +103,86 @@
             <param name="id">ID do anime no MyAnimeList</param>
             <returns>Detalhes completos do anime</returns>
         </member>
+        <member name="T:ApiCSharp.Controllers.MyAnimeController">
+            <summary>
+            Controlador responsável por gerenciar as coleções <see cref="T:ApiCSharp.Models.MyAnime"/>.
+            Disponibiliza operações de criação, consulta, atualização e remoção.
+            </summary>
+            <param name="context">Contexto do banco para operações CRUD na tabela MyAnimes.</param>
+        </member>
+        <member name="M:ApiCSharp.Controllers.MyAnimeController.#ctor(ApiCSharp.Data.MyAnimesContext)">
+            <summary>
+            Controlador responsável por gerenciar as coleções <see cref="T:ApiCSharp.Models.MyAnime"/>.
+            Disponibiliza operações de criação, consulta, atualização e remoção.
+            </summary>
+            <param name="context">Contexto do banco para operações CRUD na tabela MyAnimes.</param>
+        </member>
         <member name="M:ApiCSharp.Controllers.MyAnimeController.AdicionarMyAnime(ApiCSharp.Data.Dtos.AdicionaMyAnimeDto)">
             <summary>
-            Adiciona uma nova coleção MyAnimes. Recebe um objeto do tipo AdicionaMyAnimeDto contendo o título e a lista de IDs dos animes relacionados. O método cria uma nova instância de MyAnime, adiciona ao contexto do banco de dados e salva as alterações. Retorna um status 201 Created com a localização do novo recurso criado.
+            Adiciona uma nova coleção MyAnime.
             </summary>
-            <param name="adicionaMyAnimeDto">Objeto contendo o título e a lista de IDs dos animes relacionados.</param>
-            <returns>Retorna um status 201 Created com a localização do novo recurso criado.</returns>
+            <param name="adicionaMyAnimeDto">Dados necessários para criação da coleção.</param>
+            <returns>
+            Retorna <c>201 Created</c> quando a coleção é criada com sucesso
+            ou <c>400 BadRequest</c> quando o corpo da requisição é inválido.
+            </returns>
         </member>
         <member name="M:ApiCSharp.Controllers.MyAnimeController.ObterMyAnimes(System.Int32,System.Int32)">
             <summary>
-            Obtém uma lista paginada de coleções MyAnimes. O método recebe dois parâmetros de consulta opcionais, "skip" e "take", para controlar a paginação dos resultados.
+            Obtém uma lista paginada de coleções MyAnime.
             </summary>
-            <param name="skip">Número de registros a serem ignorados.</param>
-            <param name="take">Número de registros a serem retornados.</param>
-            <returns>Retorna um status 200 OK com a lista de animes paginada.</returns>
+            <param name="skip">Quantidade de registros a ignorar.</param>
+            <param name="take">Quantidade máxima de registros retornados.</param>
+            <returns>
+            Retorna <c>200 OK</c> com a lista paginada
+            ou <c>400 BadRequest</c> para parâmetros inválidos.
+            </returns>
         </member>
         <member name="M:ApiCSharp.Controllers.MyAnimeController.ObterMyAnimePorId(System.Int32)">
             <summary>
-            Obtém uma coleção MyAnimes específica com base no ID fornecido. O método recebe um parâmetro de rota "id" e verifica se é um número positivo. Em seguida, ele busca a coleção correspondente no banco de dados. Se a coleção for encontrada, ela é mapeada para um objeto do tipo ObterMyAnimeDto, que inclui o título, a lista de IDs dos animes relacionados e a hora da consulta. Retorna um status 200 OK com os detalhes da coleção encontrada. Se o ID for inválido ou a coleção não for encontrada, retorna os status apropriados (400 Bad Request ou 404 Not Found).
+            Obtém uma coleção MyAnime pelo ID.
             </summary>
-            <param name="id">ID da coleção a ser obtida.</param>
-            <returns>Retorna um status 200 OK com os detalhes da coleção encontrada ou um status 400/404 em caso de erro.</returns>
+            <param name="id">ID da coleção.</param>
+            <returns>
+            Retorna <c>200 OK</c> com os dados da coleção,
+            <c>400 BadRequest</c> para ID inválido,
+            ou <c>404 NotFound</c> quando não encontrada.
+            </returns>
         </member>
         <member name="M:ApiCSharp.Controllers.MyAnimeController.AtualizarMyAnime(System.Int32,ApiCSharp.Data.Dtos.AtualizaMyAnimeDto)">
             <summary>
-            Atualiza uma coleção MyAnimes existente com base no ID fornecido. O método recebe um parâmetro de rota "id" e um objeto do tipo AtualizaMyAnimeDto contendo os novos valores para o título e a lista de IDs dos animes relacionados. Ele verifica se o ID é um número positivo e busca a coleção correspondente no banco de dados. Se a coleção for encontrada, seus campos são atualizados com os novos valores e as alterações são salvas no banco de dados. Retorna um status 204 No Content para indicar que a atualização foi bem-sucedida. Se o ID for inválido ou a coleção não for encontrada, retorna os status apropriados (400 Bad Request ou 404 Not Found).
+            Atualiza completamente uma coleção MyAnime existente.
             </summary>
             <param name="id">ID da coleção a ser atualizada.</param>
-            <param name="atualizaMyAnimeDto">Objeto contendo os novos valores para a coleção.</param>
-            <returns>Retorna um status 204 No Content se a atualização for bem-sucedida ou um status 400/404 em caso de erro.</returns>
+            <param name="atualizaMyAnimeDto">Novos valores da coleção.</param>
+            <returns>
+            Retorna <c>204 NoContent</c> quando atualizada com sucesso,
+            <c>400 BadRequest</c> para entrada inválida,
+            ou <c>404 NotFound</c> quando não encontrada.
+            </returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:ApiCSharp.Controllers.MyAnimeController.AtualizarMyAnimeParcial(System.Int32,Microsoft.AspNetCore.JsonPatch.JsonPatchDocument{ApiCSharp.Data.Dtos.AtualizaMyAnimeDto})" -->
+        <member name="M:ApiCSharp.Controllers.MyAnimeController.AtualizarMyAnimeParcial(System.Int32,Microsoft.AspNetCore.JsonPatch.JsonPatchDocument{ApiCSharp.Data.Dtos.AtualizaMyAnimeDto})">
+            <summary>
+            Atualiza parcialmente uma coleção MyAnime usando JSON Patch.
+            </summary>
+            <param name="id">ID da coleção a ser atualizada parcialmente.</param>
+            <param name="myAnimeToAtualiza">Documento de operações JSON Patch aplicado sobre <see cref="T:ApiCSharp.Data.Dtos.AtualizaMyAnimeDto"/>.</param>
+            <returns>
+            Retorna <c>204 NoContent</c> quando atualizada com sucesso,
+            <c>400 BadRequest</c> para entrada inválida,
+            ou <c>404 NotFound</c> quando não encontrada.
+            </returns>
+        </member>
         <member name="M:ApiCSharp.Controllers.MyAnimeController.DeletarMyAnime(System.Int32)">
             <summary>
-            Deleta a coleção MyAnimes com base no ID fornecido. O método recebe um parâmetro de rota "id" e verifica se é um número positivo. Em seguida, ele busca o anime correspondente no banco de dados. Se o anime for encontrado, ele é removido do contexto do banco de dados e as alterações são salvas. Retorna um status 204 No Content para indicar que a exclusão foi bem-sucedida. Se o ID for inválido ou o anime não for encontrado, retorna os status apropriados (400 Bad Request ou 404 Not Found).
+            Remove uma coleção MyAnime pelo ID.
             </summary>
-            <param name="id">ID da coleção "MyAnimes" a ser deletado.</param>
-            <returns>Retorna um status 204 No Content se a exclusão for bem-sucedida ou um status 400/404 em caso de erro.</returns>
+            <param name="id">ID da coleção a ser removida.</param>
+            <returns>
+            Retorna <c>204 NoContent</c> quando removida com sucesso,
+            <c>400 BadRequest</c> para ID inválido,
+            ou <c>404 NotFound</c> quando não encontrada.
+            </returns>
         </member>
         <member name="T:ApiCSharp.Migrations.RefazendoAsMigration">
             <inheritdoc />

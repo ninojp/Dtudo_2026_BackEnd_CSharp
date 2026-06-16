@@ -58,6 +58,7 @@ public class AnimeData
     public List<MalItem>? Explicit_Genres { get; set; }
     public List<MalItem>? Themes { get; set; }
     public List<MalItem>? Demographics { get; set; }
+    public List<AnimeRelation>? Relations { get; set; }
 }
 
 public class ImageUrl
@@ -108,4 +109,16 @@ public class MalItem
     public string? Type { get; set; }
     public string? Name { get; set; }
     public string? Url { get; set; }
+    public string? ImageUrl { get; set; }
+}
+
+public class AnimeRelationResponse
+{
+    public List<AnimeRelation>? Data { get; set; }
+}
+
+public class AnimeRelation
+{
+    public string? Relation { get; set; }
+    public List<MalItem>? Entry { get; set; }
 }
