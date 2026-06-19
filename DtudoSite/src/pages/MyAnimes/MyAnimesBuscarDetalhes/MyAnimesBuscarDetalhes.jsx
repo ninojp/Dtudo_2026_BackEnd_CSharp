@@ -182,8 +182,9 @@ export default function MyAnimesBuscarDetalhes() {
         <>
             <HeaderPage>
                 <H1TituloPage>MyAnimesBuscar Detalhes</H1TituloPage>
+                <br/>
                 <H2SubTitulo>
-                    <span className={styles.spanTotalAnimes}> Exibi os detalhes completos do anime: {dados?.title || 'Titulo nao disponivel'}</span>
+                    <span className={styles.spanTotalAnimes}> {dados?.title || 'Nome do Anime'}</span>
                 </H2SubTitulo>
                 <div className={styles.divContainerSubTitulos}>
                     {hasValue(dados?.titleEnglish || dados?.title_English) && (
@@ -223,116 +224,29 @@ export default function MyAnimesBuscarDetalhes() {
                                 </div>
                             )}
                         </div>
-
                         <div className={styles.infoArea}>
-                            <div>
-                                {hasValue(dados?.type) && (
-                                    <div className={styles.sectionBlock}>
-                                        <strong>Tipo:</strong> {dados.type}
-                                    </div>)}
+                            <div className={styles.divInfoDetalhesTop}>
+                                {hasValue(dados?.malId || dados?.mal_Id) && <div><strong>Mal_id:</strong> {dados?.malId || dados?.mal_Id}</div>}
                                 {hasValue(dados?.year) && <div><strong>Ano:</strong> {dados.year}</div>}
+                                {hasValue(dados?.type) && <div><strong>Tipo:</strong> {dados.type}</div>}
                                 {hasValue(aired?.string || aired?.String) && <div><strong>Data Lançamento:</strong> {aired?.string || aired?.String}</div>}
-                                {hasValue(dados?.malId || dados?.mal_Id) && <div><strong>ID MAL:</strong> {dados?.malId || dados?.mal_Id}</div>}
+                            </div>
+                            <div className={styles.divInfoDetalhesTop}>
                                 {hasValue(dados?.episodes) && <div><strong>Episodios:</strong> {dados.episodes}</div>}                            
                                 {hasValue(dados?.duration) && <div><strong>Duracao:</strong> {dados.duration}</div>}
-                                {hasValue(dados?.rating) && <div><strong>Classificacao:</strong> {dados.rating}</div>}
-                                
-                                {hasValue(renderList(dados?.genres)) && (
-                                    <div className={styles.sectionBlock}>
-                                        <strong>Generos:</strong> {renderList(dados?.genres)}
-                                    </div>
-                                )}
-                            </div> 
-                            <div className={styles.gridInfo}>
-                                {hasValue(dados?.status) && <div><strong>Status:</strong> {dados.status}</div>}
-                                {hasValue(dados?.airing) && <div><strong>Em Exibição:</strong> {formatBoolean(dados.airing)}</div>}
-                                {hasValue(dados?.season) && <div><strong>Temporada:</strong> {dados.season}</div>}
-                                {hasValue(dados?.rank) && <div><strong>Rank:</strong> {dados.rank}</div>}
-                                {hasValue(dados?.popularity) && <div><strong>Popularidade:</strong> {dados.popularity}</div>}
-                                {hasValue(dados?.members) && <div><strong>Membros:</strong> {dados.members}</div>}
-                                {hasValue(dados?.favorites) && <div><strong>Favoritos:</strong> {dados.favorites}</div>}
-                                {hasValue(dados?.scoredBy ?? dados?.scored_By) && <div><strong>Scored By:</strong> {dados?.scoredBy ?? dados?.scored_By}</div>}
-                                {hasValue(dados?.source) && <div><strong>Source:</strong> {dados.source}</div>}
-                                {hasValue(dados?.approved) && <div><strong>Aprovado:</strong> {formatBoolean(dados.approved)}</div>}
                             </div>
-
-                            {(hasValue(aired?.string || aired?.String) || hasValue(aired?.from || aired?.From) || hasValue(aired?.to || aired?.To)) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Periodo de Exibicao</h4>
-                                    {hasValue(aired?.string || aired?.String) && <p>{aired?.string || aired?.String}</p>}
-                                    {(hasValue(aired?.from || aired?.From) || hasValue(aired?.to || aired?.To)) && (
-                                        <p> Inicio: {aired?.from || aired?.From || '-'} | Fim: {aired?.to || aired?.To || '-'} </p>
-                                    )}
-                                </div>
-                            )}
-
-                            {hasValue(dados?.background) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Background</h4>
-                                    <p>{dados.background}</p>
-                                </div>
-                            )}
-
-                            {hasValue(renderList(dados?.explicitGenres || dados?.explicit_Genres)) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Generos Explicitos</h4>
-                                    <p>{renderList(dados?.explicitGenres || dados?.explicit_Genres)}</p>
-                                </div>
-                            )}
-
-                            {hasValue(renderList(dados?.themes)) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Temas</h4>
-                                    <p>{renderList(dados?.themes)}</p>
-                                </div>
-                            )}
-
-                            {hasValue(renderList(dados?.demographics)) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Demografia</h4>
-                                    <p>{renderList(dados?.demographics)}</p>
-                                </div>
-                            )}
-
-                            {hasValue(renderList(dados?.studios)) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Studios</h4>
-                                    <p>{renderList(dados?.studios)}</p>
-                                </div>
-                            )}
-
-                            {hasValue(renderList(dados?.producers)) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Produtores</h4>
-                                    <p>{renderList(dados?.producers)}</p>
-                                </div>
-                            )}
-
-                            {hasValue(renderList(dados?.licensors)) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Licensors</h4>
-                                    <p>{renderList(dados?.licensors)}</p>
-                                </div>
-                            )}
-
-                            {(trailer?.url || trailer?.Url) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Trailer</h4>
-                                    <a href={trailer?.url || trailer?.Url} target="_blank" rel="noopener noreferrer">
-                                        Abrir trailer
-                                    </a>
-                                </div>
-                            )}
-
-                            {hasValue(dados?.url) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Link MyAnimeList</h4>
-                                    <a href={dados.url} target="_blank" rel="noopener noreferrer">
-                                        {dados.url}
-                                    </a>
-                                </div>
-                            )}
-
+                            <div className={styles.divInfoDetalhesTop}>    
+                                {hasValue(renderList(dados?.genres)) && <div><strong>Generos:</strong> {renderList(dados?.genres)}</div>}
+                                {hasValue(dados?.rating) && <div><strong>Classificacao:</strong> {dados.rating}</div>}
+                            </div>
+                            <div className={styles.divInfoDetalhesTop}>
+                                <button >
+                                    Cadastrar como MyAnime
+                                </button>
+                                <button >
+                                    Cadastrar como Anime
+                                </button>
+                            </div>
                             {relations.length > 0 && (
                                 <div className={styles.relationsSection}>
                                     <h4>Animes Relacionados</h4>
@@ -364,7 +278,97 @@ export default function MyAnimesBuscarDetalhes() {
                                     </div>
                                 </div>
                             )}
+                            <div className={styles.gridInfo}>
+                                {hasValue(dados?.status) && <div><strong>Status:</strong> {dados.status}</div>}
+                                {hasValue(dados?.airing) && <div><strong>Em Exibição:</strong> {formatBoolean(dados.airing)}</div>}
+                                {hasValue(dados?.season) && <div><strong>Temporada:</strong> {dados.season}</div>}
+                                {hasValue(dados?.rank) && <div><strong>Rank:</strong> {dados.rank}</div>}
+                                {hasValue(dados?.popularity) && <div><strong>Popularidade:</strong> {dados.popularity}</div>}
+                                {hasValue(dados?.members) && <div><strong>Membros:</strong> {dados.members}</div>}
+                                {hasValue(dados?.favorites) && <div><strong>Favoritos:</strong> {dados.favorites}</div>}
+                                {hasValue(dados?.scoredBy ?? dados?.scored_By) && <div><strong>Scored By:</strong> {dados?.scoredBy ?? dados?.scored_By}</div>}
+                                {hasValue(dados?.source) && <div><strong>Source:</strong> {dados.source}</div>}
+                                {hasValue(dados?.approved) && <div><strong>Aprovado:</strong> {formatBoolean(dados.approved)}</div>}
+                            </div>
 
+                            <div className={styles.gridInfo}>
+                                {(hasValue(aired?.string || aired?.String) || hasValue(aired?.from || aired?.From) || hasValue(aired?.to || aired?.To)) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Periodo de Exibicao</h4>
+                                        {hasValue(aired?.string || aired?.String) && <p>{aired?.string || aired?.String}</p>}
+                                        {(hasValue(aired?.from || aired?.From) || hasValue(aired?.to || aired?.To)) && (
+                                            <p> Inicio: {aired?.from || aired?.From || '-'} | Fim: {aired?.to || aired?.To || '-'} </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {hasValue(dados?.background) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Background</h4>
+                                        <p>{dados.background}</p>
+                                    </div>
+                                )}
+
+                                {hasValue(renderList(dados?.explicitGenres || dados?.explicit_Genres)) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Generos Explicitos</h4>
+                                        <p>{renderList(dados?.explicitGenres || dados?.explicit_Genres)}</p>
+                                    </div>
+                                )}
+
+                                {hasValue(renderList(dados?.themes)) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Temas</h4>
+                                        <p>{renderList(dados?.themes)}</p>
+                                    </div>
+                                )}
+
+                                {hasValue(renderList(dados?.demographics)) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Demografia</h4>
+                                        <p>{renderList(dados?.demographics)}</p>
+                                    </div>
+                                )}
+
+                                {hasValue(renderList(dados?.studios)) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Studios</h4>
+                                        <p>{renderList(dados?.studios)}</p>
+                                    </div>
+                                )}
+
+                                {hasValue(renderList(dados?.producers)) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Produtores</h4>
+                                        <p>{renderList(dados?.producers)}</p>
+                                    </div>
+                                )}
+
+                                {hasValue(renderList(dados?.licensors)) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Licensors</h4>
+                                        <p>{renderList(dados?.licensors)}</p>
+                                    </div>
+                                )}
+
+                                {(trailer?.url || trailer?.Url) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Trailer</h4>
+                                        <a href={trailer?.url || trailer?.Url} target="_blank" rel="noopener noreferrer">
+                                            Abrir trailer
+                                        </a>
+                                    </div>
+                                )}
+
+                                {hasValue(dados?.url) && (
+                                    <div className={styles.sectionBlock}>
+                                        <h4>Link MyAnimeList</h4>
+                                        <a href={dados.url} target="_blank" rel="noopener noreferrer">
+                                            {dados.url}
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
                             <details className={styles.rawJson}>
                                 <summary>Ver objeto completo (JSON)</summary>
                                 <pre>{JSON.stringify(dados, null, 2)}</pre>

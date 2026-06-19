@@ -33,16 +33,16 @@ public class ServiceBuscarPorID
             using var response = await GetComRetryRateLimitAsync($"anime/{malId}");
 
             var content = await response.Content.ReadAsStringAsync();
-            try
-            {
-                using var docLog = JsonDocument.Parse(content);
-                var prettyJson = JsonSerializer.Serialize(docLog.RootElement, new JsonSerializerOptions { WriteIndented = true });
-                _logger.LogInformation("=== JIKAN API BUSCA POR ID {MalId} - JSON BRUTO COMPLETO (antes do mapeamento) ===\n{Json}", malId, prettyJson);
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogWarning(ex, "=== JIKAN API BUSCA POR ID {MalId} - Falha ao formatar log detalhado.", malId);
-            }
+            //try
+            //{
+            //    using var docLog = JsonDocument.Parse(content);
+            //    var prettyJson = JsonSerializer.Serialize(docLog.RootElement, new JsonSerializerOptions { WriteIndented = true });
+            //    _logger.LogInformation("=== JIKAN API BUSCA POR ID {MalId} - JSON BRUTO COMPLETO (antes do mapeamento) ===\n{Json}", malId, prettyJson);
+            //}
+            //catch (JsonException ex)
+            //{
+            //    _logger.LogWarning(ex, "=== JIKAN API BUSCA POR ID {MalId} - Falha ao formatar log detalhado.", malId);
+            //}
 
             var jikanResponse = JsonSerializer.Deserialize<JikanAnimeByIdResponseDto>(content, _jsonOptions);
 
