@@ -50,19 +50,18 @@ export default function MyAnimesBuscarDetalhes() {
     const animeIdFromQuery = Number(new URLSearchParams(location.search).get('animeId')) || 0;
 
     const [animeDetalhes, setAnimeDetalhes] = useState(null);
+    const [animeRelations, setAnimeRelations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     const animeId = animeFromState?.malId || animeFromState?.mal_Id || animeIdFromQuery;
-
+    // Determina a URL da imagem do anime, priorizando os detalhes completos carregados da API.
     const imageUrl = useMemo(() => {
         if (!animeDetalhes) {
             return animeFromState?.imageUrl || placeholderImage;
         }
-
         const images = animeDetalhes.images;
         const jpg = images?.jpg || images?.Jpg;
-
         return (
             jpg?.largeImageUrl ||
             jpg?.large_image_url ||
@@ -75,7 +74,7 @@ export default function MyAnimesBuscarDetalhes() {
             placeholderImage
         );
     }, [animeDetalhes, animeFromState]);
-
+    // useEffect para carregar os detalhes do anime quando o componente é montado ou quando o animeId muda.
     useEffect(() => {
         async function carregarDetalhes() {
             if (!animeId) {
@@ -83,123 +82,129 @@ export default function MyAnimesBuscarDetalhes() {
                 setLoading(false);
                 return;
             }
-
             try {
                 setLoading(true);
                 setError('');
+                const [detalhesResponse, relacoesResponse] = await Promise.allSettled([
+                    fetch(`${API_LOCAL_JIKAN_BASE_URL}/${animeId}`),
+                    fetch(`${API_LOCAL_JIKAN_BASE_URL}/${animeId}/relations`),
+                ]);
 
-                const response = await fetch(`${API_LOCAL_JIKAN_BASE_URL}/${animeId}`);
-                if (!response.ok) {
-                    throw new Error(`Erro ao buscar detalhes: ${response.status}`);
+                if (detalhesResponse.status !== 'fulfilled' || !detalhesResponse.value.ok) {
+                    const status = detalhesResponse.status === 'fulfilled'
+                        ? detalhesResponse.value.status
+                        : 'sem resposta';
+                    throw new Error(`Erro ao buscar detalhes: ${status}`);
                 }
 
-                const data = await response.json();
+                const data = await detalhesResponse.value.json();
                 setAnimeDetalhes(data);
+
+                if (relacoesResponse.status === 'fulfilled' && relacoesResponse.value.ok) {
+                    const relacoesData = await relacoesResponse.value.json();
+                    setAnimeRelations(Array.isArray(relacoesData) ? relacoesData : []);
+                } else {
+                    setAnimeRelations([]);
+                }
             } catch (requestError) {
                 console.error('Erro ao carregar detalhes do anime:', requestError);
                 setError('Nao foi possivel carregar os detalhes completos do anime.');
+                setAnimeRelations([]);
             } finally {
                 setLoading(false);
             }
         }
-
         carregarDetalhes();
     }, [API_LOCAL_JIKAN_BASE_URL, animeId]);
-
+    // Função auxiliar para renderizar listas de itens (como gêneros, estúdios, etc.) de forma consistente.
     function renderList(items) {
         if (!items || items.length === 0) {
             return '';
         }
-
-        return items
-            .map((item) => {
+        return items.map((item) => {
                 if (typeof item === 'string') {
                     return item;
                 }
-
                 return item?.name || item?.Name || item?.title || JSON.stringify(item);
             })
             .filter(Boolean)
             .join(', ');
     }
-
+    // Verifica se um valor é considerado "presente" para exibição.
     function hasValue(value) {
         if (value === null || value === undefined) {
             return false;
         }
-
         if (typeof value === 'string') {
             return value.trim().length > 0;
         }
-
         if (Array.isArray(value)) {
             return value.length > 0;
         }
-
         return true;
     }
-
+    // Formata valores booleanos para exibição mais amigável (texto Sim/Não).
     function formatBoolean(value) {
         if (value === true) {
             return 'Sim';
         }
-
         if (value === false) {
             return 'Nao';
         }
-
         return '';
     }
-
+    // Determina qual fonte de dados usar para exibir os detalhes do anime, priorizando os dados completos carregados da API.
     const dados = animeDetalhes || animeFromState;
     const titulosAlternativos = dados?.titleSynonyms || dados?.title_Synonyms;
     const aired = dados?.aired;
     const trailer = dados?.trailer;
+    // Processa as relações do anime para exibição, garantindo que o formato seja consistente independentemente de como os dados foram retornados pela API.
     const relations = useMemo(() => {
-        const relationGroups = dados?.relations;
-
-        if (!Array.isArray(relationGroups)) {
-            return [];
-        }
-
+        const relationGroups = animeRelations.length > 0
+            ? animeRelations
+            : (dados?.relations || []);
+        if (!Array.isArray(relationGroups)) return [];
         return relationGroups.flatMap((group, groupIndex) => {
             const entries = group?.entry || group?.Entry;
-
-            if (!Array.isArray(entries)) {
-                return [];
-            }
-
+            if (!Array.isArray(entries)) return [];
             return entries.map((entry, entryIndex) => ({
                 relationType: group?.relation || group?.Relation || 'Relacionamento',
                 malId: entry?.malId || entry?.mal_id || entry?.mal_Id || null,
                 title: entry?.name || entry?.title || entry?.Name || 'Sem titulo',
                 url: entry?.url || entry?.Url || '',
-                imageUrl: resolveRelatedImage(entry),
+                imageUrl: entry?.imageUrl || entry?.image_url || resolveRelatedImage(entry),
                 key: `${groupIndex}-${entryIndex}-${entry?.malId || entry?.mal_id || entry?.name || entry?.title || 'relation'}`,
             }));
         });
-    }, [dados]);
-
+    }, [animeRelations, dados]);
+    // O componente retorna a estrutura JSX para exibir os detalhes do anime, incluindo o título, imagem, sinopse, informações adicionais e relações com outros animes.
     return (
         <>
             <HeaderPage>
-                <H1TituloPage>MyAnimesBuscar</H1TituloPage>
+                <H1TituloPage>MyAnimesBuscar Detalhes</H1TituloPage>
                 <H2SubTitulo>
-                    Pagina para exibir os detalhes completos do anime selecionado em
-                    <span className={styles.spanTotalAnimes}> MyAnimesBuscarDetalhes</span>
+                    <span className={styles.spanTotalAnimes}> Exibi os detalhes completos do anime: {dados?.title || 'Titulo nao disponivel'}</span>
                 </H2SubTitulo>
+                <div className={styles.divContainerSubTitulos}>
+                    {hasValue(dados?.titleEnglish || dados?.title_English) && (
+                        <p className={styles.subtitle}> {dados?.titleEnglish || dados?.title_English} </p>
+                    )}                    
+                    {hasValue(dados?.titleJapanese || dados?.title_Japanese) && (
+                        <p className={styles.subtitle}> {dados?.titleJapanese || dados?.title_Japanese} </p>
+                    )}
+                    {hasValue(renderList(titulosAlternativos)) && (
+                        <p className={styles.subtitle}> {renderList(titulosAlternativos)} </p>
+                    )}
+                </div>
             </HeaderPage>
             <main className={styles.mainCardsMyAnimesList}>
-                <h3>Detalhes do Anime resultado da Busca</h3>
-
                 {loading && <p className={styles.loading}>Carregando detalhes...</p>}
                 {error && <p className={styles.error}>{error}</p>}
 
                 {!loading && !error && dados && (
                     <section className={styles.detailsContainer}>
                         <div className={styles.posterArea}>
-                            <img
-                                src={imageUrl}
+                            <img src={imageUrl}
                                 alt={dados?.title || 'Anime'}
                                 className={styles.poster}
                                 onError={(e) => {
@@ -211,7 +216,6 @@ export default function MyAnimesBuscarDetalhes() {
                                     <strong>Score:</strong> {dados.score}
                                 </div>
                             )}
-
                             {hasValue(dados?.synopsis) && (
                                 <div className={styles.synopsisBlock}>
                                     <h4>Sinopse</h4>
@@ -221,70 +225,28 @@ export default function MyAnimesBuscarDetalhes() {
                         </div>
 
                         <div className={styles.infoArea}>
-                            <h2>{dados?.title || 'Titulo nao disponivel'}</h2>
-                            {hasValue(dados?.titleEnglish || dados?.title_English) && (
-                                <p className={styles.subtitle}>
-                                    {dados?.titleEnglish || dados?.title_English}
-                                </p>
-                            )}
-
-                            {relations.length > 0 && (
-                                <div className={styles.relationsSection}>
-                                    <h4>Animes Relacionados</h4>
-                                    <div className={styles.relationsCarouselShell}>
-                                        {relations.map((item) => {
-                                            const CardLink = item.malId ? Link : 'a';
-                                            const cardProps = item.malId
-                                                ? {
-                                                    to: `/myanimes/myanimes-buscar-detalhes?animeId=${item.malId}`,
-                                                    state: {
-                                                        anime: {
-                                                            malId: item.malId,
-                                                            title: item.title,
-                                                            imageUrl: item.imageUrl,
-                                                        },
-                                                    },
-                                                }
-                                                : {
-                                                    href: item.url,
-                                                    target: '_blank',
-                                                    rel: 'noopener noreferrer',
-                                                };
-
-                                            return (
-                                                <CardLink
-                                                    key={item.key}
-                                                    className={styles.relationCard}
-                                                    title={item.title}
-                                                    {...cardProps}
-                                                >
-                                                    <span className={styles.relationLabel}>{item.relationType}</span>
-                                                    <img
-                                                        src={item.imageUrl}
-                                                        alt={item.title}
-                                                        className={styles.relationImage}
-                                                        onError={(e) => {
-                                                            e.currentTarget.src = placeholderImage;
-                                                        }}
-                                                    />
-                                                    <span className={styles.relationTitle}>{item.title}</span>
-                                                </CardLink>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className={styles.gridInfo}>
-                                {hasValue(dados?.malId || dados?.mal_Id) && <div><strong>ID MAL:</strong> {dados?.malId || dados?.mal_Id}</div>}
-                                {hasValue(dados?.type) && <div><strong>Tipo:</strong> {dados.type}</div>}
-                                {hasValue(dados?.episodes) && <div><strong>Episodios:</strong> {dados.episodes}</div>}
-                                {hasValue(dados?.status) && <div><strong>Status:</strong> {dados.status}</div>}
-                                {hasValue(dados?.airing) && <div><strong>Airing:</strong> {formatBoolean(dados.airing)}</div>}
+                            <div>
+                                {hasValue(dados?.type) && (
+                                    <div className={styles.sectionBlock}>
+                                        <strong>Tipo:</strong> {dados.type}
+                                    </div>)}
                                 {hasValue(dados?.year) && <div><strong>Ano:</strong> {dados.year}</div>}
-                                {hasValue(dados?.season) && <div><strong>Temporada:</strong> {dados.season}</div>}
+                                {hasValue(aired?.string || aired?.String) && <div><strong>Data Lançamento:</strong> {aired?.string || aired?.String}</div>}
+                                {hasValue(dados?.malId || dados?.mal_Id) && <div><strong>ID MAL:</strong> {dados?.malId || dados?.mal_Id}</div>}
+                                {hasValue(dados?.episodes) && <div><strong>Episodios:</strong> {dados.episodes}</div>}                            
                                 {hasValue(dados?.duration) && <div><strong>Duracao:</strong> {dados.duration}</div>}
                                 {hasValue(dados?.rating) && <div><strong>Classificacao:</strong> {dados.rating}</div>}
+                                
+                                {hasValue(renderList(dados?.genres)) && (
+                                    <div className={styles.sectionBlock}>
+                                        <strong>Generos:</strong> {renderList(dados?.genres)}
+                                    </div>
+                                )}
+                            </div> 
+                            <div className={styles.gridInfo}>
+                                {hasValue(dados?.status) && <div><strong>Status:</strong> {dados.status}</div>}
+                                {hasValue(dados?.airing) && <div><strong>Em Exibição:</strong> {formatBoolean(dados.airing)}</div>}
+                                {hasValue(dados?.season) && <div><strong>Temporada:</strong> {dados.season}</div>}
                                 {hasValue(dados?.rank) && <div><strong>Rank:</strong> {dados.rank}</div>}
                                 {hasValue(dados?.popularity) && <div><strong>Popularidade:</strong> {dados.popularity}</div>}
                                 {hasValue(dados?.members) && <div><strong>Membros:</strong> {dados.members}</div>}
@@ -294,28 +256,12 @@ export default function MyAnimesBuscarDetalhes() {
                                 {hasValue(dados?.approved) && <div><strong>Aprovado:</strong> {formatBoolean(dados.approved)}</div>}
                             </div>
 
-                            {hasValue(dados?.titleJapanese || dados?.title_Japanese) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Titulo Japones</h4>
-                                    <p>{dados?.titleJapanese || dados?.title_Japanese}</p>
-                                </div>
-                            )}
-
-                            {hasValue(renderList(titulosAlternativos)) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Titulos Alternativos</h4>
-                                    <p>{renderList(titulosAlternativos)}</p>
-                                </div>
-                            )}
-
                             {(hasValue(aired?.string || aired?.String) || hasValue(aired?.from || aired?.From) || hasValue(aired?.to || aired?.To)) && (
                                 <div className={styles.sectionBlock}>
                                     <h4>Periodo de Exibicao</h4>
                                     {hasValue(aired?.string || aired?.String) && <p>{aired?.string || aired?.String}</p>}
                                     {(hasValue(aired?.from || aired?.From) || hasValue(aired?.to || aired?.To)) && (
-                                        <p>
-                                            Inicio: {aired?.from || aired?.From || '-'} | Fim: {aired?.to || aired?.To || '-'}
-                                        </p>
+                                        <p> Inicio: {aired?.from || aired?.From || '-'} | Fim: {aired?.to || aired?.To || '-'} </p>
                                     )}
                                 </div>
                             )}
@@ -324,13 +270,6 @@ export default function MyAnimesBuscarDetalhes() {
                                 <div className={styles.sectionBlock}>
                                     <h4>Background</h4>
                                     <p>{dados.background}</p>
-                                </div>
-                            )}
-
-                            {hasValue(renderList(dados?.genres)) && (
-                                <div className={styles.sectionBlock}>
-                                    <h4>Generos</h4>
-                                    <p>{renderList(dados?.genres)}</p>
                                 </div>
                             )}
 
@@ -394,11 +333,43 @@ export default function MyAnimesBuscarDetalhes() {
                                 </div>
                             )}
 
+                            {relations.length > 0 && (
+                                <div className={styles.relationsSection}>
+                                    <h4>Animes Relacionados</h4>
+                                    <div className={styles.relationsCarouselShell}>
+                                        {relations.map((item) => {
+                                            const CardLink = item.malId ? Link : 'a';
+                                            const cardProps = item.malId
+                                                ? { to: `/myanimes/myanimes-buscar-detalhes?animeId=${item.malId}`,
+                                                    state: {
+                                                        anime: {
+                                                            malId: item.malId,
+                                                            title: item.title,
+                                                            imageUrl: item.imageUrl,
+                                                        },
+                                                    },
+                                                }
+                                                : { href: item.url, target: '_blank', rel: 'noopener noreferrer', };
+                                            return (
+                                                <CardLink key={item.key} className={styles.relationCard} title={item.title} {...cardProps}>
+                                                    <span className={styles.relationLabel}>{item.relationType}</span>
+                                                    <img src={item.imageUrl} alt={item.title}
+                                                        className={styles.relationImage}
+                                                        onError={(e) => { e.currentTarget.src = placeholderImage;}}
+                                                    />
+                                                    <span className={styles.relationTitle}>{item.title}</span>
+                                                </CardLink>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
                             <details className={styles.rawJson}>
                                 <summary>Ver objeto completo (JSON)</summary>
                                 <pre>{JSON.stringify(dados, null, 2)}</pre>
                             </details>
-                        </div>
+                        </div>                        
                     </section>
                 )}
             </main>

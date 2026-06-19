@@ -11,7 +11,7 @@
         "tags": [
           "ApiJikan"
         ],
-        "summary": "Busca animes por nome",
+        "summary": "End-Point da minha Api Local que faz uma busca na Api externa Jikan, por nome do anime.",
         "parameters": [
           {
             "name": "q",
@@ -38,17 +38,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/AnimeSearchResponse"
+                  "$ref": "#/components/schemas/BuscarAnimePorNomeResponseDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AnimeSearchResponse"
+                  "$ref": "#/components/schemas/BuscarAnimePorNomeResponseDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AnimeSearchResponse"
+                  "$ref": "#/components/schemas/BuscarAnimePorNomeResponseDto"
                 }
               }
             }
@@ -75,6 +75,9 @@
           },
           "500": {
             "description": "Internal Server Error"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
@@ -103,17 +106,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/AnimeData"
+                  "$ref": "#/components/schemas/BuscarAnimePorIdResponseDto"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AnimeData"
+                  "$ref": "#/components/schemas/BuscarAnimePorIdResponseDto"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AnimeData"
+                  "$ref": "#/components/schemas/BuscarAnimePorIdResponseDto"
                 }
               }
             }
@@ -143,11 +146,85 @@
           }
         }
       }
+    },
+    "/ApiJikan/{id}/relations": {
+      "get": {
+        "tags": [
+          "ApiJikan"
+        ],
+        "summary": "Busca os animes relacionados a um anime específico pelo ID do MyAnimeList.\r\nUtiliza o endpoint dedicado /anime/{id}/relations da Jikan e retorna as imagens hidratadas de cada entrada.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do anime no MyAnimeList",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnimeRelationGroupDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnimeRelationGroupDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnimeRelationGroupDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "Aired": {
+      "AnimeAiredDto": {
         "type": "object",
         "properties": {
           "from": {
@@ -159,19 +236,235 @@
             "nullable": true
           },
           "prop": {
-            "$ref": "#/components/schemas/Prop"
+            "$ref": "#/components/schemas/AnimePropDto"
           },
           "string": {
             "type": "string",
             "nullable": true
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Período público de exibição do anime."
       },
-      "AnimeData": {
+      "AnimeBuscaResumoDto": {
         "type": "object",
         "properties": {
-          "mal_Id": {
+          "malId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "titleEnglish": {
+            "type": "string",
+            "nullable": true
+          },
+          "titleJapanese": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "episodes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "score": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "year": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Resumo público de anime retornado na listagem de busca."
+      },
+      "AnimeDateInfoDto": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "month": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "year": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Parte pública de data do anime."
+      },
+      "AnimeImageVariantDto": {
+        "type": "object",
+        "properties": {
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "smallImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "largeImageUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Variante pública de imagem do anime."
+      },
+      "AnimeImagesDto": {
+        "type": "object",
+        "properties": {
+          "jpg": {
+            "$ref": "#/components/schemas/AnimeImageVariantDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Coleção pública de imagens do anime."
+      },
+      "AnimeNamedItemDto": {
+        "type": "object",
+        "properties": {
+          "malId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Item público nomeado de apoio para gêneros, estúdios, produtores e similares."
+      },
+      "AnimePropDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "$ref": "#/components/schemas/AnimeDateInfoDto"
+          },
+          "to": {
+            "$ref": "#/components/schemas/AnimeDateInfoDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Subpropriedades públicas de datas do anime."
+      },
+      "AnimeRelationEntryDto": {
+        "type": "object",
+        "properties": {
+          "malId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Entrada pública de anime relacionado."
+      },
+      "AnimeRelationGroupDto": {
+        "type": "object",
+        "properties": {
+          "relation": {
+            "type": "string",
+            "nullable": true
+          },
+          "entry": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnimeRelationEntryDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Grupo público de relações de um anime."
+      },
+      "AnimeTrailerDto": {
+        "type": "object",
+        "properties": {
+          "youtubeId": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "embedUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "images": {
+            "$ref": "#/components/schemas/AnimeImagesDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Trailer público do anime."
+      },
+      "BuscarAnimePorIdResponseDto": {
+        "type": "object",
+        "properties": {
+          "malId": {
             "type": "integer",
             "format": "int32"
           },
@@ -180,38 +473,27 @@
             "nullable": true
           },
           "images": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/ImageUrl"
-            },
-            "nullable": true
+            "$ref": "#/components/schemas/AnimeImagesDto"
           },
           "trailer": {
-            "$ref": "#/components/schemas/Trailer"
+            "$ref": "#/components/schemas/AnimeTrailerDto"
           },
           "approved": {
             "type": "boolean"
-          },
-          "titles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Title"
-            },
-            "nullable": true
           },
           "title": {
             "type": "string",
             "nullable": true
           },
-          "title_English": {
+          "titleEnglish": {
             "type": "string",
             "nullable": true
           },
-          "title_Japanese": {
+          "titleJapanese": {
             "type": "string",
             "nullable": true
           },
-          "title_Synonyms": {
+          "titleSynonyms": {
             "type": "array",
             "items": {
               "type": "string"
@@ -239,7 +521,7 @@
             "type": "boolean"
           },
           "aired": {
-            "$ref": "#/components/schemas/Aired"
+            "$ref": "#/components/schemas/AnimeAiredDto"
           },
           "duration": {
             "type": "string",
@@ -254,7 +536,7 @@
             "format": "double",
             "nullable": true
           },
-          "scored_By": {
+          "scoredBy": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -299,86 +581,63 @@
           "producers": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MalItem"
+              "$ref": "#/components/schemas/AnimeNamedItemDto"
             },
             "nullable": true
           },
           "licensors": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MalItem"
+              "$ref": "#/components/schemas/AnimeNamedItemDto"
             },
             "nullable": true
           },
           "studios": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MalItem"
+              "$ref": "#/components/schemas/AnimeNamedItemDto"
             },
             "nullable": true
           },
           "genres": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MalItem"
+              "$ref": "#/components/schemas/AnimeNamedItemDto"
             },
             "nullable": true
           },
-          "explicit_Genres": {
+          "explicitGenres": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MalItem"
+              "$ref": "#/components/schemas/AnimeNamedItemDto"
             },
             "nullable": true
           },
           "themes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MalItem"
+              "$ref": "#/components/schemas/AnimeNamedItemDto"
             },
             "nullable": true
           },
           "demographics": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MalItem"
-            },
-            "nullable": true
-          },
-          "relations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AnimeRelation"
+              "$ref": "#/components/schemas/AnimeNamedItemDto"
             },
             "nullable": true
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Resposta pública do endpoint de detalhes de anime por ID."
       },
-      "AnimeRelation": {
-        "type": "object",
-        "properties": {
-          "relation": {
-            "type": "string",
-            "nullable": true
-          },
-          "entry": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MalItem"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "AnimeSearchResponse": {
+      "BuscarAnimePorNomeResponseDto": {
         "type": "object",
         "properties": {
           "results": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/JikanAnimeSearchResult"
+              "$ref": "#/components/schemas/AnimeBuscaResumoDto"
             },
             "nullable": true
           },
@@ -398,136 +657,8 @@
             "format": "int32"
           }
         },
-        "additionalProperties": false
-      },
-      "DateInfo": {
-        "type": "object",
-        "properties": {
-          "day": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "month": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "year": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ImageUrl": {
-        "type": "object",
-        "properties": {
-          "image_Url": {
-            "type": "string",
-            "nullable": true
-          },
-          "small_Image_Url": {
-            "type": "string",
-            "nullable": true
-          },
-          "large_Image_Url": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "JikanAnimeSearchResult": {
-        "type": "object",
-        "properties": {
-          "malId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "titleEnglish": {
-            "type": "string",
-            "nullable": true
-          },
-          "titleJapanese": {
-            "type": "string",
-            "nullable": true
-          },
-          "imageUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "type": {
-            "type": "string",
-            "nullable": true
-          },
-          "episodes": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "score": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "year": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "synopsis": {
-            "type": "string",
-            "nullable": true
-          },
-          "genres": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "url": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "MalItem": {
-        "type": "object",
-        "properties": {
-          "mal_Id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "type": {
-            "type": "string",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "url": {
-            "type": "string",
-            "nullable": true
-          },
-          "imageUrl": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Resposta pública do endpoint de busca por nome."
       },
       "ProblemDetails": {
         "type": "object",
@@ -555,57 +686,6 @@
           }
         },
         "additionalProperties": { }
-      },
-      "Prop": {
-        "type": "object",
-        "properties": {
-          "from": {
-            "$ref": "#/components/schemas/DateInfo"
-          },
-          "to": {
-            "$ref": "#/components/schemas/DateInfo"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Title": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "nullable": true
-          },
-          "titleValue": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Trailer": {
-        "type": "object",
-        "properties": {
-          "youtube_Id": {
-            "type": "string",
-            "nullable": true
-          },
-          "url": {
-            "type": "string",
-            "nullable": true
-          },
-          "embed_Url": {
-            "type": "string",
-            "nullable": true
-          },
-          "images": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/ImageUrl"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
       }
     }
   },

@@ -1,7 +1,7 @@
 [
   {
     "ContainingType": "ApiJikan.Controllers.ApiJikanController",
-    "Method": "GetAnimeById",
+    "Method": "BuscarAnimePorId",
     "RelativePath": "ApiJikan/{id}",
     "HttpMethod": "GET",
     "IsController": true,
@@ -15,7 +15,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "ApiJikan.Models.AnimeData",
+        "Type": "ApiJikan.Dtos.Responses.BuscarAnimePorIdResponseDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -41,26 +41,21 @@
   },
   {
     "ContainingType": "ApiJikan.Controllers.ApiJikanController",
-    "Method": "SearchAnime",
-    "RelativePath": "ApiJikan/search",
+    "Method": "BuscarAnimeRelacionadoPorId",
+    "RelativePath": "ApiJikan/{id}/relations",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "q",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "page",
+        "Name": "id",
         "Type": "System.Int32",
-        "IsRequired": false
+        "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "ApiJikan.Models.AnimeSearchResponse",
+        "Type": "System.Collections.Generic.List\u00601[[ApiJikan.Dtos.Responses.AnimeRelationGroupDto, ApiJikan, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -81,6 +76,56 @@
         "Type": "System.Void",
         "MediaTypes": [],
         "StatusCode": 500
+      }
+    ]
+  },
+  {
+    "ContainingType": "ApiJikan.Controllers.ApiJikanController",
+    "Method": "BuscarAnimePorNome",
+    "RelativePath": "ApiJikan/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "q",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "ApiJikan.Dtos.Responses.BuscarAnimePorNomeResponseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 504
       }
     ]
   }

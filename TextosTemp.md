@@ -6,3 +6,8 @@
 3. Adicionar logging centralizado (Serilog)
 4. Documentação OpenAPI (Swagger) para cada API
 5. Docker Compose para orquestrar ambos os serviços
+
+"year": null,
+"id_Animes_Relacionados": []
+ServiceBuscarAnimeRelacionadoPorID
+

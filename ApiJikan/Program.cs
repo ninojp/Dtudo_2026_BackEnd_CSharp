@@ -6,9 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 //===============================
 builder.Services.AddControllers().AddNewtonsoftJson();
 
-builder.Services.AddMemoryCache();
-
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddMemoryCache();
 
 // Configuração do Swagger para documentação da API
 builder.Services.AddSwaggerGen(c =>
@@ -25,9 +24,26 @@ builder.Services.AddSwaggerGen(c =>
 });
 //==========================================
 // Configuração do HttpClient para Jikan API
-builder.Services.AddHttpClient<IJikanService, JikanService>(client =>
+// Agora são 3 serviços distintos: BuscarPorID, BuscarPorNome e BuscarAnimeRelacionadoPorID, usando o mesmo HttpClient configurado para a Jikan API.
+
+var enderecoBase = new Uri("https://api.jikan.moe/v4/");
+builder.Services.AddHttpClient<ServiceBuscarPorID>(client =>
 {
-    client.BaseAddress = new Uri("https://api.jikan.moe/v4/");
+    client.BaseAddress = enderecoBase;
+    client.DefaultRequestHeaders.Add("User-Agent", "ApiJikan-Client/1.0");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<ServiceBuscarPorNome>(client =>
+{
+    client.BaseAddress = enderecoBase;
+    client.DefaultRequestHeaders.Add("User-Agent", "ApiJikan-Client/1.0");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<ServiceBuscarAnimeRelacionadoPorID>(client =>
+{
+    client.BaseAddress = enderecoBase;
     client.DefaultRequestHeaders.Add("User-Agent", "ApiJikan-Client/1.0");
     client.Timeout = TimeSpan.FromSeconds(30);
 });

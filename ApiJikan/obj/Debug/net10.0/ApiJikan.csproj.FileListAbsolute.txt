@@ -39,7 +39,6 @@ C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\staticwebassets.build.j
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\staticwebassets.development.json
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\staticwebassets.build.endpoints.json
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\swae.build.ex.cache
-C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\ApiJikan.csproj.Up2Date
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\ApiJikan.dll
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\refint\ApiJikan.dll
