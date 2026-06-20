@@ -1,4 +1,5 @@
 using ApiMyAnimes.Data;
+using ApiMyAnimes.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -14,6 +15,13 @@ builder.Services.AddDbContext<MyAnimesContext>(opts => opts.UseSqlServer(localDb
 builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.AddMemoryCache();
+
+var apiJikanBaseUrl = builder.Configuration["ApiJikan:BaseUrl"] ?? "http://localhost:63983/";
+builder.Services.AddHttpClient<ApiJikanClient>(client =>
+{
+    client.BaseAddress = new Uri(apiJikanBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 builder.Services.AddEndpointsApiExplorer();
 

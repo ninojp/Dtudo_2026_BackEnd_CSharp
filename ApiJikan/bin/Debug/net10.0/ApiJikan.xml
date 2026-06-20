@@ -92,16 +92,6 @@
             DTO comum para períodos de exibição retornados pela Jikan.
             </summary>
         </member>
-        <member name="T:ApiJikan.Dtos.External.JikanPropDto">
-            <summary>
-            DTO comum para subpropriedades de datas da Jikan.
-            </summary>
-        </member>
-        <member name="T:ApiJikan.Dtos.External.JikanDateInfoDto">
-            <summary>
-            DTO comum para partes de data retornadas pela Jikan.
-            </summary>
-        </member>
         <member name="T:ApiJikan.Dtos.External.JikanNamedItemDto">
             <summary>
             DTO comum para itens nomeados retornados pela Jikan.
@@ -125,31 +115,6 @@
         <member name="T:ApiJikan.Dtos.Responses.AnimeImageVariantDto">
             <summary>
             Variante pública de imagem do anime.
-            </summary>
-        </member>
-        <member name="T:ApiJikan.Dtos.Responses.AnimeTrailerDto">
-            <summary>
-            Trailer público do anime.
-            </summary>
-        </member>
-        <member name="T:ApiJikan.Dtos.Responses.AnimeAiredDto">
-            <summary>
-            Período público de exibição do anime.
-            </summary>
-        </member>
-        <member name="T:ApiJikan.Dtos.Responses.AnimePropDto">
-            <summary>
-            Subpropriedades públicas de datas do anime.
-            </summary>
-        </member>
-        <member name="T:ApiJikan.Dtos.Responses.AnimeDateInfoDto">
-            <summary>
-            Parte pública de data do anime.
-            </summary>
-        </member>
-        <member name="T:ApiJikan.Dtos.Responses.AnimeNamedItemDto">
-            <summary>
-            Item público nomeado de apoio para gêneros, estúdios, produtores e similares.
             </summary>
         </member>
         <member name="T:ApiJikan.Dtos.Responses.BuscarAnimePorNomeResponseDto">
@@ -176,6 +141,20 @@
             <summary>
             Centraliza o mapeamento entre DTOs externos da Jikan e DTOs públicos da API.
             </summary>
+        </member>
+        <member name="M:ApiJikan.Mappers.ApiJikanResponseMapper.Map(ApiJikan.Dtos.External.JikanAnimeSearchResponseDto)">
+            <summary>
+            BuscarAnimePorNomeResponseDto...
+            </summary>
+            <param name="source"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ApiJikan.Mappers.ApiJikanResponseMapper.MapImages(System.Collections.Generic.Dictionary{System.String,ApiJikan.Dtos.External.JikanImageVariantDto})">
+            <summary>
+            Mapea as imagens...
+            </summary>
+            <param name="source"></param>
+            <returns></returns>
         </member>
         <member name="T:ApiJikan.Services.ServiceBuscarAnimeRelacionadoPorID">
             <summary>

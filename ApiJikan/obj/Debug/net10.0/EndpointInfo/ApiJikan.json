@@ -224,28 +224,6 @@
   },
   "components": {
     "schemas": {
-      "AnimeAiredDto": {
-        "type": "object",
-        "properties": {
-          "from": {
-            "type": "string",
-            "nullable": true
-          },
-          "to": {
-            "type": "string",
-            "nullable": true
-          },
-          "prop": {
-            "$ref": "#/components/schemas/AnimePropDto"
-          },
-          "string": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "Período público de exibição do anime."
-      },
       "AnimeBuscaResumoDto": {
         "type": "object",
         "properties": {
@@ -307,28 +285,6 @@
         "additionalProperties": false,
         "description": "Resumo público de anime retornado na listagem de busca."
       },
-      "AnimeDateInfoDto": {
-        "type": "object",
-        "properties": {
-          "day": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "month": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "year": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "Parte pública de data do anime."
-      },
       "AnimeImageVariantDto": {
         "type": "object",
         "properties": {
@@ -357,42 +313,6 @@
         },
         "additionalProperties": false,
         "description": "Coleção pública de imagens do anime."
-      },
-      "AnimeNamedItemDto": {
-        "type": "object",
-        "properties": {
-          "malId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "type": {
-            "type": "string",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "url": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "Item público nomeado de apoio para gêneros, estúdios, produtores e similares."
-      },
-      "AnimePropDto": {
-        "type": "object",
-        "properties": {
-          "from": {
-            "$ref": "#/components/schemas/AnimeDateInfoDto"
-          },
-          "to": {
-            "$ref": "#/components/schemas/AnimeDateInfoDto"
-          }
-        },
-        "additionalProperties": false,
-        "description": "Subpropriedades públicas de datas do anime."
       },
       "AnimeRelationEntryDto": {
         "type": "object",
@@ -439,28 +359,6 @@
         "additionalProperties": false,
         "description": "Grupo público de relações de um anime."
       },
-      "AnimeTrailerDto": {
-        "type": "object",
-        "properties": {
-          "youtubeId": {
-            "type": "string",
-            "nullable": true
-          },
-          "url": {
-            "type": "string",
-            "nullable": true
-          },
-          "embedUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "images": {
-            "$ref": "#/components/schemas/AnimeImagesDto"
-          }
-        },
-        "additionalProperties": false,
-        "description": "Trailer público do anime."
-      },
       "BuscarAnimePorIdResponseDto": {
         "type": "object",
         "properties": {
@@ -476,7 +374,8 @@
             "$ref": "#/components/schemas/AnimeImagesDto"
           },
           "trailer": {
-            "$ref": "#/components/schemas/AnimeTrailerDto"
+            "type": "string",
+            "nullable": true
           },
           "approved": {
             "type": "boolean"
@@ -521,7 +420,8 @@
             "type": "boolean"
           },
           "aired": {
-            "$ref": "#/components/schemas/AnimeAiredDto"
+            "type": "string",
+            "nullable": true
           },
           "duration": {
             "type": "string",
@@ -581,49 +481,49 @@
           "producers": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AnimeNamedItemDto"
+              "type": "string"
             },
             "nullable": true
           },
           "licensors": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AnimeNamedItemDto"
+              "type": "string"
             },
             "nullable": true
           },
           "studios": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AnimeNamedItemDto"
+              "type": "string"
             },
             "nullable": true
           },
           "genres": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AnimeNamedItemDto"
+              "type": "string"
             },
             "nullable": true
           },
           "explicitGenres": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AnimeNamedItemDto"
+              "type": "string"
             },
             "nullable": true
           },
           "themes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AnimeNamedItemDto"
+              "type": "string"
             },
             "nullable": true
           },
           "demographics": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AnimeNamedItemDto"
+              "type": "string"
             },
             "nullable": true
           }

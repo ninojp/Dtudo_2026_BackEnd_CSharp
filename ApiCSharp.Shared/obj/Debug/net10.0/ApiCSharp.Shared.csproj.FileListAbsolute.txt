@@ -13,3 +13,5 @@ C:\2026MeusProjetos\Dtudo2026\ApiCSharp.Shared\obj\Debug\net10.0\refint\ApiCShar
 C:\2026MeusProjetos\Dtudo2026\ApiCSharp.Shared\obj\Debug\net10.0\ApiCSharp.Shared.xml
 C:\2026MeusProjetos\Dtudo2026\ApiCSharp.Shared\obj\Debug\net10.0\ApiCSharp.Shared.pdb
 C:\2026MeusProjetos\Dtudo2026\ApiCSharp.Shared\obj\Debug\net10.0\ref\ApiCSharp.Shared.dll
+C:\2026MeusProjetos\Dtudo2026\ApiCSharp.Shared\bin\Debug\net10.0\ApiCSharp.Shared.runtimeconfig.json
+C:\2026MeusProjetos\Dtudo2026\ApiCSharp.Shared\obj\Debug\net10.0\ApiCSharp.Shared.genruntimeconfig.cache

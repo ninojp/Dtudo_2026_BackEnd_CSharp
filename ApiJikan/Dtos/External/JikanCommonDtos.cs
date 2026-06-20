@@ -36,10 +36,10 @@ public class JikanImageVariantDto
 /// </summary>
 public class JikanTrailerDto
 {
-    public string? Youtube_Id { get; set; }
-    public string? Url { get; set; }
+    //public string? Youtube_Id { get; set; }
+    //public string? Url { get; set; }
     public string? Embed_Url { get; set; }
-    public Dictionary<string, JikanImageVariantDto>? Images { get; set; }
+    //public Dictionary<string, JikanImageVariantDto>? Images { get; set; }
 }
 
 /// <summary>
@@ -47,40 +47,40 @@ public class JikanTrailerDto
 /// </summary>
 public class JikanAiredDto
 {
-    public string? From { get; set; }
-    public string? To { get; set; }
-    public JikanPropDto? Prop { get; set; }
+    //public string? From { get; set; }
+    //public string? To { get; set; }
+    //public JikanPropDto? Prop { get; set; }
     public string? String { get; set; }
 }
 
 /// <summary>
 /// DTO comum para subpropriedades de datas da Jikan.
 /// </summary>
-public class JikanPropDto
-{
-    public JikanDateInfoDto? From { get; set; }
-    public JikanDateInfoDto? To { get; set; }
-}
+//public class JikanPropDto
+//{
+    //public JikanDateInfoDto? From { get; set; }
+    //public JikanDateInfoDto? To { get; set; }
+//}
 
 /// <summary>
 /// DTO comum para partes de data retornadas pela Jikan.
 /// </summary>
-public class JikanDateInfoDto
-{
-    public int? Day { get; set; }
-    public int? Month { get; set; }
-    public int? Year { get; set; }
-}
+//public class JikanDateInfoDto
+//{
+//    public int? Day { get; set; }
+//    public int? Month { get; set; }
+//    public int? Year { get; set; }
+//}
 
 /// <summary>
 /// DTO comum para itens nomeados retornados pela Jikan.
 /// </summary>
 public class JikanNamedItemDto
 {
-    public int Mal_Id { get; set; }
-    public string? Type { get; set; }
+    //public int Mal_Id { get; set; }
+    //public string? Type { get; set; }
     public string? Name { get; set; }
-    public string? Url { get; set; }
+    //public string? Url { get; set; }
 }
 
 /// <summary>

@@ -11,23 +11,27 @@
             </summary>
             <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
         </member>
-        <member name="M:ApiCSharp.Controllers.AnimeController.#ctor(ApiMyAnimes.Data.MyAnimesContext)">
+        <member name="M:ApiCSharp.Controllers.AnimeController.#ctor(ApiMyAnimes.Data.MyAnimesContext,ApiMyAnimes.Services.ApiJikanClient,Microsoft.Extensions.Logging.ILogger{ApiCSharp.Controllers.AnimeController})">
             <summary>
             Controlador responsável por gerenciar os registros da entidade <see cref="T:ApiCSharp.Shared.Models.Anime"/> em banco local.
             Disponibiliza endpoints de criação, leitura, atualização (total e parcial) e exclusão.
             </summary>
             <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
         </member>
-        <member name="M:ApiCSharp.Controllers.AnimeController.AdicionarAnime(ApiCSharp.Shared.Dtos.AdicionaAnimeDto)">
+        <member name="M:ApiCSharp.Controllers.AnimeController.AdicionarAnime(ApiCSharp.Shared.Dtos.AdicionaAnimeDto,System.Nullable{System.Int32})">
             <summary>
             Adiciona um novo anime na tabela local de animes.
+            Pode criar diretamente via corpo da requisição ou importar da ApiJikan via <c>jikanId</c> na query string.
             O <c>MalId</c> é utilizado como chave primária e deve ser único.
             </summary>
-            <param name="adicionaAnimeDto">Dados necessários para criar um novo anime.</param>
+            <param name="adicionaAnimeDto">Dados necessários para criação direta no banco local.</param>
+            <param name="jikanId">ID opcional para importar dados da ApiJikan e persistir localmente.</param>
             <returns>
             Retorna <c>201 Created</c> quando criado com sucesso,
-            <c>400 BadRequest</c> para corpo inválido,
-            ou <c>409 Conflict</c> quando já existe anime com o mesmo <c>MalId</c>.
+            <c>400 BadRequest</c> para entrada inválida,
+            <c>404 NotFound</c> quando o anime não existe na ApiJikan,
+            <c>409 Conflict</c> quando já existe anime com o mesmo <c>MalId</c>,
+            ou <c>502 BadGateway</c> quando a ApiJikan está indisponível.
             </returns>
         </member>
         <member name="M:ApiCSharp.Controllers.AnimeController.ObterAnimes(System.Int32,System.Int32)">
@@ -168,6 +172,18 @@
             <c>400 BadRequest</c> para ID inválido,
             ou <c>404 NotFound</c> quando não encontrada.
             </returns>
+        </member>
+        <member name="T:ApiMyAnimes.Migrations.RecebendoDadosDetalhadoApiJikan">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.RecebendoDadosDetalhadoApiJikan.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.RecebendoDadosDetalhadoApiJikan.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.RecebendoDadosDetalhadoApiJikan.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
         </member>
         <member name="T:Program">
             <summary>

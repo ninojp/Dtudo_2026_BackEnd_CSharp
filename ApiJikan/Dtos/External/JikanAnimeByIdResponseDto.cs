@@ -16,7 +16,9 @@ public class JikanAnimeDetailsDto
     public int Mal_Id { get; set; }
     public string? Url { get; set; }
     public Dictionary<string, JikanImageVariantDto>? Images { get; set; }
+
     public JikanTrailerDto? Trailer { get; set; }
+    //public string? Trailer { get; set; }
     public bool Approved { get; set; }
     public string? Title { get; set; }
     public string? Title_English { get; set; }

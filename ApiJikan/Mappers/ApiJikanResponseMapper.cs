@@ -8,6 +8,11 @@ namespace ApiJikan.Mappers;
 /// </summary>
 public static class ApiJikanResponseMapper
 {
+    /// <summary>
+    /// BuscarAnimePorNomeResponseDto...
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static BuscarAnimePorNomeResponseDto Map(JikanAnimeSearchResponseDto source)
     {
         var results = source.Data?
@@ -24,7 +29,7 @@ public static class ApiJikanResponseMapper
                 Episodes = anime.Episodes,
                 Status = anime.Status,
                 Score = anime.Score,
-                Year = anime.Year ?? anime.Aired?.Prop?.From?.Year,
+                Year = anime.Year,
                 Genres = anime.Genres?
                     .Select(g => g.Name)
                     .Where(n => !string.IsNullOrWhiteSpace(n))
@@ -119,56 +124,20 @@ public static class ApiJikanResponseMapper
             LargeImageUrl = source.Large_Image_Url
         };
     }
-    private static AnimeTrailerDto? MapTrailer(JikanTrailerDto? source)
+    private static string? MapTrailer(JikanTrailerDto? source)
     {
-        if (source == null) return null;
-        return new AnimeTrailerDto
-        {
-            YoutubeId = source.Youtube_Id,
-            Url = source.Url,
-            EmbedUrl = source.Embed_Url,
-            Images = MapImages(source.Images)
-        };
+        return source?.Embed_Url;
     }
-    private static AnimeAiredDto? MapAired(JikanAiredDto? source)
+    private static string? MapAired(JikanAiredDto? source)
     {
-        if (source == null) return null;
-        return new AnimeAiredDto
-        {
-            From = source.From,
-            To = source.To,
-            String = source.String,
-            Prop = source.Prop == null
-                ? null
-                : new AnimePropDto
-                {
-                    From = source.Prop.From == null
-                        ? null
-                        : new AnimeDateInfoDto
-                        {
-                            Day = source.Prop.From.Day,
-                            Month = source.Prop.From.Month,
-                            Year = source.Prop.From.Year
-                        },
-                    To = source.Prop.To == null
-                        ? null
-                        : new AnimeDateInfoDto
-                        {
-                            Day = source.Prop.To.Day,
-                            Month = source.Prop.To.Month,
-                            Year = source.Prop.To.Year
-                        }
-                }
-        };
+        return source?.String;
     }
-    private static List<AnimeNamedItemDto> MapNamedItems(List<JikanNamedItemDto>? source)
+    private static List<string> MapNamedItems(List<JikanNamedItemDto>? source)
     {
-        return source?.Select(item => new AnimeNamedItemDto
-            {
-                MalId = item.Mal_Id,
-                Type = item.Type,
-                Name = item.Name,
-                Url = item.Url
-            }).ToList() ?? new List<AnimeNamedItemDto>();
+        return source?
+            .Select(item => item.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Cast<string>()
+            .ToList() ?? new List<string>();
     }
 }
