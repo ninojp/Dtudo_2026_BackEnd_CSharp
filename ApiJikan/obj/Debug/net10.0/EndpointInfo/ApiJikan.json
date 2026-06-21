@@ -377,6 +377,10 @@
             "type": "string",
             "nullable": true
           },
+          "myAnimeID": {
+            "type": "integer",
+            "format": "int32"
+          },
           "approved": {
             "type": "boolean"
           },

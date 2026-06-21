@@ -7,7 +7,6 @@ public class AtualizaAnimeDto
     [Required(ErrorMessage = "O título é obrigatório.")]
     public string Titulo { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "O número de episódios é obrigatório.")]
     [Range(1, 3000, ErrorMessage = "O número de episódios deve ser entre 1 e 3000.")]
     public int Episodios { get; set; } = 1;
 
@@ -16,8 +15,8 @@ public class AtualizaAnimeDto
     public List<string> ImagensUrlMal { get; set; } = new();
 
     public List<string> SubTitulos { get; set; } = new();
-
     public string? Trailer { get; set; }
+    public int MyAnimeID { get; set; }
     public bool Approved { get; set; }
     public string? Title { get; set; }
     public string? TitleEnglish { get; set; }

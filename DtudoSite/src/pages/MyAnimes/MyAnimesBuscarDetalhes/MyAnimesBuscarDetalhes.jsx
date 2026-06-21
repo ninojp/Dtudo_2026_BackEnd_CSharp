@@ -4,6 +4,7 @@ import HeaderPage from '../../../components/HeaderPage/HeaderPage';
 import H1TituloPage from '../../../components/H1TituloPage/H1TituloPage';
 import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
 import styles from "./MyAnimesBuscarDetalhes.module.css";
+import ModalDialog from '../../../components/ModalDialog/ModalDialog';
 
 const placeholderImage = `data:image/svg+xml;utf8,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420">
@@ -21,7 +22,6 @@ const placeholderImage = `data:image/svg+xml;utf8,${encodeURIComponent(
 function resolveAnimeImage(data, fallbackImage = placeholderImage) {
     const images = data?.images;
     const jpg = images?.jpg || images?.Jpg;
-
     return (
         jpg?.smallImageUrl ||
         jpg?.small_image_url ||
@@ -45,6 +45,7 @@ function resolveRelatedImage(item) {
 
 export default function MyAnimesBuscarDetalhes() {
     const API_LOCAL_JIKAN_BASE_URL = import.meta.env.VITE_API_LOCAL_JIKAN_BASE_URL || 'https://localhost:63982/ApiJikan';
+    const API_LOCAL_MYANIMES_BASE_URL = import.meta.env.VITE_API_LOCAL_MYANIMES_BASE_URL || 'https://localhost:63980/apiLocal';
     const location = useLocation();
     const animeFromState = location.state?.anime;
     const animeIdFromQuery = Number(new URLSearchParams(location.search).get('animeId')) || 0;
@@ -53,8 +54,17 @@ export default function MyAnimesBuscarDetalhes() {
     const [animeRelations, setAnimeRelations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [isMyAnimeModalOpen, setIsMyAnimeModalOpen] = useState(false);
+    const [isAnimeModalOpen, setIsAnimeModalOpen] = useState(false);
+    const [myAnimeTitulo, setMyAnimeTitulo] = useState('');
+    const [myAnimeMalIdsText, setMyAnimeMalIdsText] = useState('');
+    const [animeMyAnimeId, setAnimeMyAnimeId] = useState('');
+    const [submittingMyAnime, setSubmittingMyAnime] = useState(false);
+    const [submittingAnime, setSubmittingAnime] = useState(false);
+    const [feedbackMessage, setFeedbackMessage] = useState('');
+    const [feedbackType, setFeedbackType] = useState('');
 
-    const animeId = animeFromState?.malId || animeFromState?.mal_Id || animeIdFromQuery;
+    const animeId = animeFromState?.malId || animeFromState?.mal_id || animeFromState?.mal_Id || animeIdFromQuery;
     // Determina a URL da imagem do anime, priorizando os detalhes completos carregados da API.
     const imageUrl = useMemo(() => {
         if (!animeDetalhes) {
@@ -70,7 +80,11 @@ export default function MyAnimesBuscarDetalhes() {
             jpg?.image_url ||
             jpg?.image_Url ||
             animeDetalhes.imageUrl ||
+            animeDetalhes.image_url ||
+            animeDetalhes.image_Url ||
             animeFromState?.imageUrl ||
+            animeFromState?.image_url ||
+            animeFromState?.image_Url ||
             placeholderImage
         );
     }, [animeDetalhes, animeFromState]);
@@ -117,47 +131,31 @@ export default function MyAnimesBuscarDetalhes() {
         carregarDetalhes();
     }, [API_LOCAL_JIKAN_BASE_URL, animeId]);
     // Função auxiliar para renderizar listas de itens (como gêneros, estúdios, etc.) de forma consistente.
-    function renderList(items) {
-        if (!items || items.length === 0) {
-            return '';
-        }
+    function renderizarLista(items) {
+        if (!items || items.length === 0) return '';
         return items.map((item) => {
-                if (typeof item === 'string') {
-                    return item;
-                }
+                if (typeof item === 'string') return item;
                 return item?.name || item?.Name || item?.title || JSON.stringify(item);
             })
             .filter(Boolean)
             .join(', ');
     }
     // Verifica se um valor é considerado "presente" para exibição.
-    function hasValue(value) {
-        if (value === null || value === undefined) {
-            return false;
-        }
-        if (typeof value === 'string') {
-            return value.trim().length > 0;
-        }
-        if (Array.isArray(value)) {
-            return value.length > 0;
-        }
+    function temValorDentro(value) {
+        if (value === null || value === undefined) return false;
+        if (typeof value === 'string') return value.trim().length > 0;
+        if (Array.isArray(value)) return value.length > 0;
         return true;
     }
     // Formata valores booleanos para exibição mais amigável (texto Sim/Não).
     function formatBoolean(value) {
-        if (value === true) {
-            return 'Sim';
-        }
-        if (value === false) {
-            return 'Nao';
-        }
+        if (value === true) return 'Sim';
+        if (value === false) return 'Nao';
         return '';
     }
     // Determina qual fonte de dados usar para exibir os detalhes do anime, priorizando os dados completos carregados da API.
     const dados = animeDetalhes || animeFromState;
     const titulosAlternativos = dados?.titleSynonyms || dados?.title_Synonyms;
-    const aired = dados?.aired;
-    const trailer = dados?.trailer;
     // Processa as relações do anime para exibição, garantindo que o formato seja consistente independentemente de como os dados foram retornados pela API.
     const relations = useMemo(() => {
         const relationGroups = animeRelations.length > 0
@@ -177,6 +175,144 @@ export default function MyAnimesBuscarDetalhes() {
             }));
         });
     }, [animeRelations, dados]);
+
+    function resetFeedback() {
+        setFeedbackMessage('');
+        setFeedbackType('');
+    }
+    function closeMyAnimeModal() {
+        setIsMyAnimeModalOpen(false);
+    }
+    function closeAnimeModal() {
+        setIsAnimeModalOpen(false);
+    }
+    function parseApiError(errorText, fallbackMessage) {
+        if (!errorText) return fallbackMessage;
+        try {
+            const parsed = JSON.parse(errorText);
+            if (typeof parsed === 'string' && parsed.trim()) return parsed;
+            if (parsed?.title) return parsed.title;
+            if (parsed?.message) return parsed.message;
+            return fallbackMessage;
+        } catch {
+            return errorText;
+        }
+    }
+
+    function parseMalIdsList(malIdsText) {
+        const parsedMalIds = malIdsText
+            .split(',')
+            .map((item) => Number(item.trim()))
+            .filter((item) => Number.isInteger(item) && item > 0);
+
+        const uniqueMalIds = [...new Set(parsedMalIds)];
+        return uniqueMalIds;
+    }
+
+    function CadastrarMyAnimeNoDB(){
+        const malIdAtual = Number(dados?.malId || dados?.mal_id || animeId || 0);
+        setMyAnimeTitulo((dados?.title || dados?.titulo || '').trim());
+        setMyAnimeMalIdsText(malIdAtual > 0 ? String(malIdAtual) : '');
+        resetFeedback();
+        setIsMyAnimeModalOpen(true);
+    }
+
+    async function submitCadastrarMyAnime(event) {
+        event.preventDefault();
+        const titulo = myAnimeTitulo.trim();
+        const animesMalId = parseMalIdsList(myAnimeMalIdsText);
+        if (!titulo) {
+            setFeedbackType('error');
+            setFeedbackMessage('Informe um titulo para cadastrar MyAnime.');
+            return;
+        };
+        if (animesMalId.length === 0) {
+            setFeedbackType('error');
+            setFeedbackMessage('Informe ao menos um MalId valido.');
+            return;
+        };
+        try {
+            setSubmittingMyAnime(true);
+            resetFeedback();
+            const response = await fetch(`${API_LOCAL_MYANIMES_BASE_URL}/myanime`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    titulo,
+                    animesMalId,
+                }),
+            });
+            if (!response.ok) {
+                const responseText = await response.text();
+                throw new Error(parseApiError(responseText, `Falha ao cadastrar MyAnime (HTTP ${response.status}).`));
+            };
+            setFeedbackType('success');
+            setFeedbackMessage('MyAnime cadastrado com sucesso no banco local.');
+            setIsMyAnimeModalOpen(false);
+        } catch (requestError) {
+            setFeedbackType('error');
+            setFeedbackMessage(requestError?.message || 'Nao foi possivel cadastrar MyAnime.');
+        } finally {
+            setSubmittingMyAnime(false);
+        }
+    }
+
+    function CadastrarAnimeNoDB(){
+        setAnimeMyAnimeId('');
+        resetFeedback();
+        setIsAnimeModalOpen(true);
+    }
+
+    async function submitCadastrarAnime(event) {
+        event.preventDefault();
+        const myAnimeIdParsed = Number(animeMyAnimeId);
+        const malIdAtual = Number(dados?.malId || dados?.mal_id || animeId || 0);
+        if (!Number.isInteger(myAnimeIdParsed) || myAnimeIdParsed <= 0) {
+            setFeedbackType('error');
+            setFeedbackMessage('Informe um ID MyAnime valido (numero inteiro positivo).');
+            return;
+        }
+        if (!Number.isInteger(malIdAtual) || malIdAtual <= 0) {
+            setFeedbackType('error');
+            setFeedbackMessage('Nao foi possivel identificar o malId do anime atual.');
+            return;
+        }
+        const animePayload = {
+            malId: malIdAtual,
+            titulo: (dados?.title || dados?.titulo || '').trim() || `Anime ${malIdAtual}`,
+            episodios: Number(dados?.episodes) > 0 ? Number(dados.episodes) : 1,
+            myAnimeID: myAnimeIdParsed,
+        };
+
+        try {
+            setSubmittingAnime(true);
+            resetFeedback();
+
+            const response = await fetch(`${API_LOCAL_MYANIMES_BASE_URL}/anime?jikanId=${malIdAtual}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(animePayload),
+            });
+
+            if (!response.ok) {
+                const responseText = await response.text();
+                throw new Error(parseApiError(responseText, `Falha ao cadastrar Anime (HTTP ${response.status}).`));
+            }
+
+            setFeedbackType('success');
+            setFeedbackMessage('Anime cadastrado com sucesso no banco local.');
+            setIsAnimeModalOpen(false);
+        } catch (requestError) {
+            setFeedbackType('error');
+            setFeedbackMessage(requestError?.message || 'Nao foi possivel cadastrar Anime.');
+        } finally {
+            setSubmittingAnime(false);
+        }
+    }
     // O componente retorna a estrutura JSX para exibir os detalhes do anime, incluindo o título, imagem, sinopse, informações adicionais e relações com outros animes.
     return (
         <>
@@ -187,14 +323,14 @@ export default function MyAnimesBuscarDetalhes() {
                     <span className={styles.spanTotalAnimes}> {dados?.title || 'Nome do Anime'}</span>
                 </H2SubTitulo>
                 <div className={styles.divContainerSubTitulos}>
-                    {hasValue(dados?.titleEnglish || dados?.title_English) && (
-                        <p className={styles.subtitle}> {dados?.titleEnglish || dados?.title_English} </p>
+                    {temValorDentro(dados?.titleEnglish) && (
+                        <p className={styles.subtitle}> {dados?.titleEnglish} </p>
                     )}                    
-                    {hasValue(dados?.titleJapanese || dados?.title_Japanese) && (
-                        <p className={styles.subtitle}> {dados?.titleJapanese || dados?.title_Japanese} </p>
+                    {temValorDentro(dados?.titleJapanese) && (
+                        <p className={styles.subtitle}> {dados?.titleJapanese} </p>
                     )}
-                    {hasValue(renderList(titulosAlternativos)) && (
-                        <p className={styles.subtitle}> {renderList(titulosAlternativos)} </p>
+                    {temValorDentro(renderizarLista(titulosAlternativos)) && (
+                        <p className={styles.subtitle}> {renderizarLista(titulosAlternativos)} </p>
                     )}
                 </div>
             </HeaderPage>
@@ -212,12 +348,12 @@ export default function MyAnimesBuscarDetalhes() {
                                     e.currentTarget.src = placeholderImage;
                                 }}
                             />
-                            {hasValue(dados?.score) && (
+                            {temValorDentro(dados?.score) && (
                                 <div className={styles.scoreBox}>
                                     <strong>Score:</strong> {dados.score}
                                 </div>
                             )}
-                            {hasValue(dados?.synopsis) && (
+                            {temValorDentro(dados?.synopsis) && (
                                 <div className={styles.synopsisBlock}>
                                     <h4>Sinopse</h4>
                                     <p>{dados.synopsis}</p>
@@ -226,27 +362,32 @@ export default function MyAnimesBuscarDetalhes() {
                         </div>
                         <div className={styles.infoArea}>
                             <div className={styles.divInfoDetalhesTop}>
-                                {hasValue(dados?.malId || dados?.mal_Id) && <div><strong>Mal_id:</strong> {dados?.malId || dados?.mal_Id}</div>}
-                                {hasValue(dados?.year) && <div><strong>Ano:</strong> {dados.year}</div>}
-                                {hasValue(dados?.type) && <div><strong>Tipo:</strong> {dados.type}</div>}
-                                {hasValue(aired?.string || aired?.String) && <div><strong>Data Lançamento:</strong> {aired?.string || aired?.String}</div>}
+                                {temValorDentro(dados?.malId) && <div><strong>Mal_id:</strong> {dados?.malId}</div>}
+                                {temValorDentro(dados?.type) && <div><strong>Tipo:</strong> {dados.type}</div>}
+                                {temValorDentro(dados?.aired) && <div><strong>Data Lançamento:</strong> {dados?.aired}</div>}
                             </div>
                             <div className={styles.divInfoDetalhesTop}>
-                                {hasValue(dados?.episodes) && <div><strong>Episodios:</strong> {dados.episodes}</div>}                            
-                                {hasValue(dados?.duration) && <div><strong>Duracao:</strong> {dados.duration}</div>}
+                                {temValorDentro(dados?.year) && <div><strong>Ano:</strong> {dados.year}</div>}
+                                {temValorDentro(dados?.episodes) && <div><strong>Episodios:</strong> {dados.episodes}</div>}                            
+                                {temValorDentro(dados?.duration) && <div><strong>Duracao:</strong> {dados.duration}</div>}
                             </div>
                             <div className={styles.divInfoDetalhesTop}>    
-                                {hasValue(renderList(dados?.genres)) && <div><strong>Generos:</strong> {renderList(dados?.genres)}</div>}
-                                {hasValue(dados?.rating) && <div><strong>Classificacao:</strong> {dados.rating}</div>}
+                                {temValorDentro(renderizarLista(dados?.genres)) && <div><strong>Generos:</strong> {renderizarLista(dados?.genres)}</div>}
+                                {temValorDentro(dados?.rating) && <div><strong>Classificacao:</strong> {dados.rating}</div>}
                             </div>
                             <div className={styles.divInfoDetalhesTop}>
-                                <button >
+                                <button onClick={() => CadastrarMyAnimeNoDB()}>
                                     Cadastrar como MyAnime
                                 </button>
-                                <button >
+                                <button onClick={() => CadastrarAnimeNoDB()}>
                                     Cadastrar como Anime
                                 </button>
                             </div>
+                            {feedbackMessage && (
+                                <div className={feedbackType === 'error' ? styles.feedbackError : styles.feedbackSuccess}>
+                                    {feedbackMessage}
+                                </div>
+                            )}
                             {relations.length > 0 && (
                                 <div className={styles.relationsSection}>
                                     <h4>Animes Relacionados</h4>
@@ -279,88 +420,78 @@ export default function MyAnimesBuscarDetalhes() {
                                 </div>
                             )}
                             <div className={styles.gridInfo}>
-                                {hasValue(dados?.status) && <div><strong>Status:</strong> {dados.status}</div>}
-                                {hasValue(dados?.airing) && <div><strong>Em Exibição:</strong> {formatBoolean(dados.airing)}</div>}
-                                {hasValue(dados?.season) && <div><strong>Temporada:</strong> {dados.season}</div>}
-                                {hasValue(dados?.rank) && <div><strong>Rank:</strong> {dados.rank}</div>}
-                                {hasValue(dados?.popularity) && <div><strong>Popularidade:</strong> {dados.popularity}</div>}
-                                {hasValue(dados?.members) && <div><strong>Membros:</strong> {dados.members}</div>}
-                                {hasValue(dados?.favorites) && <div><strong>Favoritos:</strong> {dados.favorites}</div>}
-                                {hasValue(dados?.scoredBy ?? dados?.scored_By) && <div><strong>Scored By:</strong> {dados?.scoredBy ?? dados?.scored_By}</div>}
-                                {hasValue(dados?.source) && <div><strong>Source:</strong> {dados.source}</div>}
-                                {hasValue(dados?.approved) && <div><strong>Aprovado:</strong> {formatBoolean(dados.approved)}</div>}
+                                {temValorDentro(dados?.status) && <div><strong>Status:</strong> {dados.status}</div>}
+                                {temValorDentro(dados?.airing) && <div><strong>Em Exibição:</strong> {formatBoolean(dados.airing)}</div>}
+                                {temValorDentro(dados?.season) && <div><strong>Temporada:</strong> {dados.season}</div>}
+                                {temValorDentro(dados?.rank) && <div><strong>Rank:</strong> {dados.rank}</div>}
+                                {temValorDentro(dados?.popularity) && <div><strong>Popularidade:</strong> {dados.popularity}</div>}
+                                {temValorDentro(dados?.members) && <div><strong>Membros:</strong> {dados.members}</div>}
+                                {temValorDentro(dados?.favorites) && <div><strong>Favoritos:</strong> {dados.favorites}</div>}
+                                {temValorDentro(dados?.scoredBy) && <div><strong>Scored By:</strong> {dados?.scoredBy}</div>}
+                                {temValorDentro(dados?.source) && <div><strong>Source:</strong> {dados.source}</div>}
+                                {temValorDentro(dados?.approved) && <div><strong>Aprovado:</strong> {formatBoolean(dados.approved)}</div>}
                             </div>
 
                             <div className={styles.gridInfo}>
-                                {(hasValue(aired?.string || aired?.String) || hasValue(aired?.from || aired?.From) || hasValue(aired?.to || aired?.To)) && (
-                                    <div className={styles.sectionBlock}>
-                                        <h4>Periodo de Exibicao</h4>
-                                        {hasValue(aired?.string || aired?.String) && <p>{aired?.string || aired?.String}</p>}
-                                        {(hasValue(aired?.from || aired?.From) || hasValue(aired?.to || aired?.To)) && (
-                                            <p> Inicio: {aired?.from || aired?.From || '-'} | Fim: {aired?.to || aired?.To || '-'} </p>
-                                        )}
-                                    </div>
-                                )}
-
-                                {hasValue(dados?.background) && (
+                                {temValorDentro(dados?.background) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Background</h4>
                                         <p>{dados.background}</p>
                                     </div>
                                 )}
 
-                                {hasValue(renderList(dados?.explicitGenres || dados?.explicit_Genres)) && (
+                                {temValorDentro(renderizarLista(dados?.explicitGenres)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Generos Explicitos</h4>
-                                        <p>{renderList(dados?.explicitGenres || dados?.explicit_Genres)}</p>
+                                        <p>{renderizarLista(dados?.explicitGenres)}</p>
                                     </div>
                                 )}
 
-                                {hasValue(renderList(dados?.themes)) && (
+                                {temValorDentro(renderizarLista(dados?.themes)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Temas</h4>
-                                        <p>{renderList(dados?.themes)}</p>
+                                        <p>{renderizarLista(dados?.themes)}</p>
                                     </div>
                                 )}
 
-                                {hasValue(renderList(dados?.demographics)) && (
+                                {temValorDentro(renderizarLista(dados?.demographics)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Demografia</h4>
-                                        <p>{renderList(dados?.demographics)}</p>
+                                        <p>{renderizarLista(dados?.demographics)}</p>
                                     </div>
                                 )}
 
-                                {hasValue(renderList(dados?.studios)) && (
+                                {temValorDentro(renderizarLista(dados?.studios)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Studios</h4>
-                                        <p>{renderList(dados?.studios)}</p>
+                                        <p>{renderizarLista(dados?.studios)}</p>
                                     </div>
                                 )}
 
-                                {hasValue(renderList(dados?.producers)) && (
+                                {temValorDentro(renderizarLista(dados?.producers)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Produtores</h4>
-                                        <p>{renderList(dados?.producers)}</p>
+                                        <p>{renderizarLista(dados?.producers)}</p>
                                     </div>
                                 )}
 
-                                {hasValue(renderList(dados?.licensors)) && (
+                                {temValorDentro(renderizarLista(dados?.licensors)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Licensors</h4>
-                                        <p>{renderList(dados?.licensors)}</p>
+                                        <p>{renderizarLista(dados?.licensors)}</p>
                                     </div>
                                 )}
 
-                                {(trailer?.url || trailer?.Url) && (
+                                {(dados?.trailer) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Trailer</h4>
-                                        <a href={trailer?.url || trailer?.Url} target="_blank" rel="noopener noreferrer">
-                                            Abrir trailer
+                                        <a href={dados?.trailer} target="_blank" rel="noopener noreferrer">
+                                            Embed Url trailer
                                         </a>
                                     </div>
                                 )}
 
-                                {hasValue(dados?.url) && (
+                                {temValorDentro(dados?.url) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Link MyAnimeList</h4>
                                         <a href={dados.url} target="_blank" rel="noopener noreferrer">
@@ -369,13 +500,104 @@ export default function MyAnimesBuscarDetalhes() {
                                     </div>
                                 )}
                             </div>
-                            <details className={styles.rawJson}>
-                                <summary>Ver objeto completo (JSON)</summary>
-                                <pre>{JSON.stringify(dados, null, 2)}</pre>
-                            </details>
-                        </div>                        
+                        </div>
                     </section>
                 )}
+                <ModalDialog
+                    isOpen={isMyAnimeModalOpen}
+                    onClose={closeMyAnimeModal}
+                    title="Cadastrar como MyAnime"
+                >
+                    <form className={styles.modalForm} onSubmit={submitCadastrarMyAnime}>
+                        <label className={styles.modalLabel} htmlFor="myanime-titulo">
+                            Titulo
+                        </label>
+                        <input
+                            id="myanime-titulo"
+                            type="text"
+                            className={styles.modalInput}
+                            value={myAnimeTitulo}
+                            onChange={(e) => setMyAnimeTitulo(e.target.value)}
+                            placeholder="Digite o titulo da colecao"
+                            required
+                        />
+
+                        <label className={styles.modalLabel} htmlFor="myanime-malids">
+                            Lista de MalId (separados por virgula)
+                        </label>
+                        <input
+                            id="myanime-malids"
+                            type="text"
+                            className={styles.modalInput}
+                            value={myAnimeMalIdsText}
+                            onChange={(e) => setMyAnimeMalIdsText(e.target.value)}
+                            placeholder="Ex.: 5114, 9253"
+                            required
+                        />
+
+                        <div className={styles.modalActions}>
+                            <button type="button" onClick={closeMyAnimeModal} disabled={submittingMyAnime}>
+                                Cancelar
+                            </button>
+                            <button type="submit" disabled={submittingMyAnime}>
+                                {submittingMyAnime ? 'Cadastrando...' : 'Confirmar cadastro'}
+                            </button>
+                        </div>
+                    </form>
+                </ModalDialog>
+
+                <ModalDialog
+                    isOpen={isAnimeModalOpen}
+                    onClose={closeAnimeModal}
+                    title="Cadastrar como Anime"
+                >
+                    <form className={styles.modalForm} onSubmit={submitCadastrarAnime}>
+                        <div className={styles.modalAnimePreview}>
+                            <img
+                                src={imageUrl}
+                                alt={dados?.title || 'Anime'}
+                                className={styles.modalAnimePreviewImage}
+                                onError={(e) => {
+                                    e.currentTarget.src = placeholderImage;
+                                }}
+                            />
+                            <div className={styles.modalAnimePreviewInfo}>
+                                <p><strong>Titulo:</strong> {dados?.title || dados?.titulo || 'Sem titulo'}</p>
+                                <p><strong>MalId:</strong> {Number(dados?.malId || dados?.mal_id || animeId || 0) || 'Nao encontrado'}</p>
+                            </div>
+                        </div>
+
+                        <label className={styles.modalLabel} htmlFor="anime-myanimeid">
+                            ID MyAnime
+                        </label>
+                        <input
+                            id="anime-myanimeid"
+                            type="number"
+                            min="1"
+                            step="1"
+                            className={styles.modalInput}
+                            value={animeMyAnimeId}
+                            onChange={(e) => setAnimeMyAnimeId(e.target.value)}
+                            placeholder="Ex.: 3"
+                            required
+                        />
+
+                        <div className={styles.modalActions}>
+                            <button type="button" onClick={closeAnimeModal} disabled={submittingAnime}>
+                                Cancelar
+                            </button>
+                            <button type="submit" disabled={submittingAnime}>
+                                {submittingAnime ? 'Cadastrando...' : 'Confirmar cadastro'}
+                            </button>
+                        </div>
+                    </form>
+                </ModalDialog>
+                <div className={styles.rawJsonContainer}>
+                    <details className={styles.rawJson}>
+                        <summary>Ver objeto completo (JSON)</summary>
+                        <pre>{JSON.stringify(dados, null, 2)}</pre>
+                    </details>                            
+                </div>                        
             </main>
         </>
     );

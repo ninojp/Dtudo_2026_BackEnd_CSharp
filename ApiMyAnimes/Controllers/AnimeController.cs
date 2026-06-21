@@ -73,6 +73,7 @@ public class AnimeController(
                 MalId = animeImportado.MalId,
                 Titulo = animeImportado.Titulo,
                 Episodios = animeImportado.Episodios,
+                MyAnimeID = adicionaAnimeDto?.MyAnimeID ?? 0,
                 MalUrl = animeImportado.MalUrl,
                 ImagensUrlMal = animeImportado.ImagensUrlMal,
                 SubTitulos = animeImportado.SubTitulos,
@@ -125,6 +126,7 @@ public class AnimeController(
             MalId = adicionaAnimeDto.MalId,
             Titulo = adicionaAnimeDto.Titulo,
             Episodios = adicionaAnimeDto.Episodios,
+            MyAnimeID = adicionaAnimeDto.MyAnimeID,
             MalUrl = adicionaAnimeDto.MalUrl,
             ImagensUrlMal = adicionaAnimeDto.ImagensUrlMal,
             SubTitulos = adicionaAnimeDto.SubTitulos,
@@ -240,6 +242,7 @@ public class AnimeController(
 
         anime.Titulo = atualizaAnimeDto.Titulo;
         anime.Episodios = atualizaAnimeDto.Episodios;
+        anime.MyAnimeID = atualizaAnimeDto.MyAnimeID;
         anime.MalUrl = atualizaAnimeDto.MalUrl;
         anime.ImagensUrlMal = atualizaAnimeDto.ImagensUrlMal;
         anime.SubTitulos = atualizaAnimeDto.SubTitulos;
@@ -306,6 +309,7 @@ public class AnimeController(
         {
             Titulo = anime.Titulo,
             Episodios = anime.Episodios,
+            MyAnimeID = anime.MyAnimeID,
             MalUrl = anime.MalUrl,
             ImagensUrlMal = anime.ImagensUrlMal,
             SubTitulos = anime.SubTitulos,
@@ -347,6 +351,7 @@ public class AnimeController(
 
         anime.Titulo = animeParaAtualizar.Titulo;
         anime.Episodios = animeParaAtualizar.Episodios;
+        anime.MyAnimeID = animeParaAtualizar.MyAnimeID;
         anime.MalUrl = animeParaAtualizar.MalUrl;
         anime.ImagensUrlMal = animeParaAtualizar.ImagensUrlMal;
         anime.SubTitulos = animeParaAtualizar.SubTitulos;
@@ -431,6 +436,7 @@ public class AnimeController(
             MalId = anime.MalId,
             Titulo = anime.Titulo,
             Episodios = anime.Episodios,
+            MyAnimeID = anime.MyAnimeID,
             MalUrl = anime.MalUrl,
             ImagensUrlMal = anime.ImagensUrlMal,
             SubTitulos = anime.SubTitulos,

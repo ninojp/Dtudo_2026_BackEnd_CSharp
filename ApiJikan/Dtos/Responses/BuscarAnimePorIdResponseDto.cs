@@ -8,8 +8,8 @@ public class BuscarAnimePorIdResponseDto
     public int MalId { get; set; }
     public string? Url { get; set; }
     public AnimeImagesDto? Images { get; set; }
-
     public string? Trailer { get; set; }
+    public int MyAnimeID { get; set; }
     public bool Approved { get; set; }
     public string? Title { get; set; }
     public string? TitleEnglish { get; set; }

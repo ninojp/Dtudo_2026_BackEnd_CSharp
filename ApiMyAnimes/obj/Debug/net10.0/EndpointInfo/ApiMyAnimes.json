@@ -1039,7 +1039,6 @@
     "schemas": {
       "AdicionaAnimeDto": {
         "required": [
-          "episodios",
           "malId",
           "titulo"
         ],
@@ -1082,6 +1081,10 @@
           "trailer": {
             "type": "string",
             "nullable": true
+          },
+          "myAnimeID": {
+            "type": "integer",
+            "format": "int32"
           },
           "approved": {
             "type": "boolean"
@@ -1244,8 +1247,7 @@
         "type": "object",
         "properties": {
           "titulo": {
-            "maxLength": 100,
-            "minLength": 0,
+            "minLength": 1,
             "type": "string"
           },
           "animesMalId": {
@@ -1260,7 +1262,6 @@
       },
       "AtualizaAnimeDto": {
         "required": [
-          "episodios",
           "titulo"
         ],
         "type": "object",
@@ -1296,6 +1297,10 @@
           "trailer": {
             "type": "string",
             "nullable": true
+          },
+          "myAnimeID": {
+            "type": "integer",
+            "format": "int32"
           },
           "approved": {
             "type": "boolean"
@@ -1504,6 +1509,10 @@
               "type": "string"
             },
             "nullable": true
+          },
+          "myAnimeID": {
+            "type": "integer",
+            "format": "int32"
           },
           "trailer": {
             "type": "string",

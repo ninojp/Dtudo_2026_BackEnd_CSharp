@@ -95,6 +95,84 @@
     padding-bottom: 0.65rem;
 }
 
+.feedbackSuccess,
+.feedbackError {
+    padding: 0.75rem 0.9rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.feedbackSuccess {
+    color: #d8ffe4;
+    border: 1px solid #61bf84;
+    background: rgba(59, 125, 84, 0.35);
+}
+
+.feedbackError {
+    color: #ffd9d9;
+    border: 1px solid #cb4b4b;
+    background: rgba(125, 59, 59, 0.35);
+}
+
+.modalForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    color: #ffffff;
+}
+
+.modalLabel {
+    font-weight: 700;
+}
+
+.modalInput {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    padding: 0.65rem 0.75rem;
+}
+
+.modalInput::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 0.35rem;
+}
+
+.modalAnimePreview {
+    display: flex;
+    gap: 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 0.7rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.modalAnimePreviewImage {
+    width: 90px;
+    height: 126px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.modalAnimePreviewInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.modalAnimePreviewInfo p {
+    margin: 0;
+    line-height: 1.2;
+}
+
 .relationsSection {
     width: 100%;
     display: flex;
@@ -257,4 +335,17 @@
     .gridInfo {
         grid-template-columns: 1fr;
     }
+
+    .modalAnimePreview {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .modalAnimePreviewInfo {
+        width: 100%;
+    }
+}
+.rawJsonContainer {
+    width: 1000px;
+
 }
