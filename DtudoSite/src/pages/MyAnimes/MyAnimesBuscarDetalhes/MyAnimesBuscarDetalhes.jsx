@@ -285,11 +285,9 @@ export default function MyAnimesBuscarDetalhes() {
             episodios: Number(dados?.episodes) > 0 ? Number(dados.episodes) : 1,
             myAnimeID: myAnimeIdParsed,
         };
-
         try {
             setSubmittingAnime(true);
             resetFeedback();
-
             const response = await fetch(`${API_LOCAL_MYANIMES_BASE_URL}/anime?jikanId=${malIdAtual}`, {
                 method: 'POST',
                 headers: {
@@ -297,12 +295,10 @@ export default function MyAnimesBuscarDetalhes() {
                 },
                 body: JSON.stringify(animePayload),
             });
-
             if (!response.ok) {
                 const responseText = await response.text();
                 throw new Error(parseApiError(responseText, `Falha ao cadastrar Anime (HTTP ${response.status}).`));
             }
-
             setFeedbackType('success');
             setFeedbackMessage('Anime cadastrado com sucesso no banco local.');
             setIsAnimeModalOpen(false);
@@ -431,7 +427,6 @@ export default function MyAnimesBuscarDetalhes() {
                                 {temValorDentro(dados?.source) && <div><strong>Source:</strong> {dados.source}</div>}
                                 {temValorDentro(dados?.approved) && <div><strong>Aprovado:</strong> {formatBoolean(dados.approved)}</div>}
                             </div>
-
                             <div className={styles.gridInfo}>
                                 {temValorDentro(dados?.background) && (
                                     <div className={styles.sectionBlock}>
@@ -439,49 +434,42 @@ export default function MyAnimesBuscarDetalhes() {
                                         <p>{dados.background}</p>
                                     </div>
                                 )}
-
                                 {temValorDentro(renderizarLista(dados?.explicitGenres)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Generos Explicitos</h4>
                                         <p>{renderizarLista(dados?.explicitGenres)}</p>
                                     </div>
                                 )}
-
                                 {temValorDentro(renderizarLista(dados?.themes)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Temas</h4>
                                         <p>{renderizarLista(dados?.themes)}</p>
                                     </div>
                                 )}
-
                                 {temValorDentro(renderizarLista(dados?.demographics)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Demografia</h4>
                                         <p>{renderizarLista(dados?.demographics)}</p>
                                     </div>
                                 )}
-
                                 {temValorDentro(renderizarLista(dados?.studios)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Studios</h4>
                                         <p>{renderizarLista(dados?.studios)}</p>
                                     </div>
                                 )}
-
                                 {temValorDentro(renderizarLista(dados?.producers)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Produtores</h4>
                                         <p>{renderizarLista(dados?.producers)}</p>
                                     </div>
                                 )}
-
                                 {temValorDentro(renderizarLista(dados?.licensors)) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Licensors</h4>
                                         <p>{renderizarLista(dados?.licensors)}</p>
                                     </div>
                                 )}
-
                                 {(dados?.trailer) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Trailer</h4>
@@ -490,7 +478,6 @@ export default function MyAnimesBuscarDetalhes() {
                                         </a>
                                     </div>
                                 )}
-
                                 {temValorDentro(dados?.url) && (
                                     <div className={styles.sectionBlock}>
                                         <h4>Link MyAnimeList</h4>
@@ -521,7 +508,6 @@ export default function MyAnimesBuscarDetalhes() {
                             placeholder="Digite o titulo da colecao"
                             required
                         />
-
                         <label className={styles.modalLabel} htmlFor="myanime-malids">
                             Lista de MalId (separados por virgula)
                         </label>
@@ -534,7 +520,6 @@ export default function MyAnimesBuscarDetalhes() {
                             placeholder="Ex.: 5114, 9253"
                             required
                         />
-
                         <div className={styles.modalActions}>
                             <button type="button" onClick={closeMyAnimeModal} disabled={submittingMyAnime}>
                                 Cancelar
@@ -566,7 +551,6 @@ export default function MyAnimesBuscarDetalhes() {
                                 <p><strong>MalId:</strong> {Number(dados?.malId || dados?.mal_id || animeId || 0) || 'Nao encontrado'}</p>
                             </div>
                         </div>
-
                         <label className={styles.modalLabel} htmlFor="anime-myanimeid">
                             ID MyAnime
                         </label>
@@ -581,7 +565,6 @@ export default function MyAnimesBuscarDetalhes() {
                             placeholder="Ex.: 3"
                             required
                         />
-
                         <div className={styles.modalActions}>
                             <button type="button" onClick={closeAnimeModal} disabled={submittingAnime}>
                                 Cancelar

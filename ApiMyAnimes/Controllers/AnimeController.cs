@@ -162,10 +162,8 @@ public class AnimeController(
             Themes = adicionaAnimeDto.Themes,
             Demographics = adicionaAnimeDto.Demographics
         };
-
         context.Animes.Add(anime);
         context.SaveChanges();
-
         return CreatedAtAction(nameof(ObterAnimePorId), new { id = anime.MalId }, ParaObterAnimeDto(anime));
     }
     //================================================================
@@ -388,7 +386,6 @@ public class AnimeController(
         anime.Demographics = animeParaAtualizar.Demographics;
 
         context.SaveChanges();
-
         return NoContent();
     }
 

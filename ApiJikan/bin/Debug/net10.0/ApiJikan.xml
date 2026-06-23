@@ -108,14 +108,10 @@
             </summary>
         </member>
         <member name="T:ApiJikan.Dtos.Responses.AnimeImagesDto">
-            <summary>
-            Coleção pública de imagens do anime.
-            </summary>
+            <summary>Coleção pública de imagens do anime.</summary>
         </member>
         <member name="T:ApiJikan.Dtos.Responses.AnimeImageVariantDto">
-            <summary>
-            Variante pública de imagem do anime.
-            </summary>
+            <summary>Variante pública de imagem do anime.</summary>
         </member>
         <member name="T:ApiJikan.Dtos.Responses.BuscarAnimePorNomeResponseDto">
             <summary>

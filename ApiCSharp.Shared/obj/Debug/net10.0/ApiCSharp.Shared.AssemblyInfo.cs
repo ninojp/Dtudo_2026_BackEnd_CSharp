@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiCSharp.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cf1b7689def25f0d6461c1a438a512fa839c2cb4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1dbefcd1fa7481b55b4cd0caf1a579188841acb5")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiCSharp.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiCSharp.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

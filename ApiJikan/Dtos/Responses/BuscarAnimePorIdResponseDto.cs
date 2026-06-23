@@ -42,17 +42,13 @@ public class BuscarAnimePorIdResponseDto
     public List<string> Demographics { get; set; } = new();
 }
 
-/// <summary>
-/// Coleção pública de imagens do anime.
-/// </summary>
+/// <summary>Coleção pública de imagens do anime.</summary>
 public class AnimeImagesDto
 {
     public AnimeImageVariantDto? Jpg { get; set; }
 }
 
-/// <summary>
-/// Variante pública de imagem do anime.
-/// </summary>
+/// <summary>Variante pública de imagem do anime.</summary>
 public class AnimeImageVariantDto
 {
     public string? ImageUrl { get; set; }
