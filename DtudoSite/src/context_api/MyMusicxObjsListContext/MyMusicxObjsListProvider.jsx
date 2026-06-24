@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import axiosHttpRequest from "../../api_conect/conectApiLocal";
+import {axiosHttpRequest} from "../../api_conect/conectApiLocal";
 import MyMusicxObjsListContext from "./MyMusicxObjsListContext";
 
 export default function MyMusicxObjsListProvider({ children }) {
@@ -9,7 +9,7 @@ export default function MyMusicxObjsListProvider({ children }) {
     async function fetchAllObjsMyMusicx() {
         setIsLoading(true);
         try {
-            const response = await axiosHttpRequest.get('/mymusicx');
+            const response = await axiosHttpRequest().get('/mymusicx');
             //console.log(response.data);
             setListObjsMyMusicx(response.data);
             return response.data;

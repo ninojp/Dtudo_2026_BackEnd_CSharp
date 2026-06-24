@@ -1,10 +1,10 @@
 import axios from "axios";
-import process from "process";
 
-const API_LOCAL_BASE_URL = process.env.API_LOCAL_BASE_URL || "http://localhost:3666/";
+const API_LOCAL_BASE_URL = import.meta.env.VITE_API_LOCAL_BASE_URL || "http://localhost:3666/";
+const API_LOCAL_MYANIMES_BASE_URL = import.meta.env.VITE_API_LOCAL_MYANIMES_BASE_URL || "https://localhost:63980/";
 
 export function axiosHttpRequest() {
-    axios.create({
+    return axios.create({
         baseURL: API_LOCAL_BASE_URL,
         headers: {
             "Content-Type": "application/json",
@@ -13,8 +13,8 @@ export function axiosHttpRequest() {
 };
 //=====================================================
 export function axiosHttpApiLocalMyAnimes() {
-    axios.create({
-        baseURL: process.env.API_LOCAL_MYANIMES_BASE_URL || "https://localhost:63980/",
+    return axios.create({
+        baseURL: API_LOCAL_MYANIMES_BASE_URL,
         headers: {
             "Content-Type": "application/json",
         },

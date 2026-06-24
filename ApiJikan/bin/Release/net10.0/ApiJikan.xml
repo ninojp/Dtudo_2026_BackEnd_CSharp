@@ -1,0 +1,231 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ApiJikan</name>
+    </assembly>
+    <members>
+        <member name="T:ApiJikan.Controllers.ApiJikanController">
+            <summary>
+            Controlador responsável por expor os endpoints da API local que interage com a API externa Jikan para buscar informações sobre animes.
+            </summary>
+        </member>
+        <member name="M:ApiJikan.Controllers.ApiJikanController.#ctor(ApiJikan.Services.ServiceBuscarPorID,ApiJikan.Services.ServiceBuscarPorNome,ApiJikan.Services.ServiceBuscarAnimeRelacionadoPorID,Microsoft.Extensions.Logging.ILogger{ApiJikan.Controllers.ApiJikanController})">
+            <summary>
+            Controlador responsável por expor os endpoints da API local que interage com a API externa Jikan para buscar informações sobre animes.
+            </summary>
+        </member>
+        <member name="M:ApiJikan.Controllers.ApiJikanController.BuscarAnimePorNome(System.String,System.Int32)">
+            <summary>
+            End-Point da minha Api Local que faz uma busca na Api externa Jikan, por nome do anime.
+            </summary>
+            <param name="q">Termo de busca</param>
+            <param name="page">Número da página (padrão: 1)</param>
+            <returns>Lista de animes encontrados</returns>
+        </member>
+        <member name="M:ApiJikan.Controllers.ApiJikanController.BuscarAnimePorId(System.Int32)">
+            <summary>
+            Busca um anime específico por ID do MyAnimeList
+            </summary>
+            <param name="id">ID do anime no MyAnimeList</param>
+            <returns>Detalhes completos do anime</returns>
+        </member>
+        <member name="M:ApiJikan.Controllers.ApiJikanController.BuscarAnimeRelacionadoPorId(System.Int32)">
+            <summary>
+            Busca os animes relacionados a um anime específico pelo ID do MyAnimeList.
+            Utiliza o endpoint dedicado /anime/{id}/relations da Jikan e retorna as imagens hidratadas de cada entrada.
+            </summary>
+            <param name="id">ID do anime no MyAnimeList</param>
+            <returns>Lista de relações do anime com imagens hidratadas</returns>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanAnimeByIdResponseDto">
+            <summary>
+            Envelope bruto retornado pela Jikan na busca de anime por ID.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanAnimeDetailsDto">
+            <summary>
+            Detalhes brutos do anime retornados pela Jikan.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanAnimeRelationsResponseDto">
+            <summary>
+            Resposta bruta da Jikan para o endpoint de relações por ID.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanAnimeRelationGroupDto">
+            <summary>
+            Grupo de relações retornado pela Jikan.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanAnimeSearchResponseDto">
+            <summary>
+            Resposta bruta da Jikan para busca por nome.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanAnimeSearchItemDto">
+            <summary>
+            Item bruto retornado pela Jikan na busca por nome.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanPaginationDto">
+            <summary>
+            DTO comum para paginação retornada pela Jikan.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanPaginationItemsDto">
+            <summary>
+            DTO comum para informações resumidas da paginação da Jikan.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanImageVariantDto">
+            <summary>
+            DTO de variante de imagem retornada pela Jikan.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanTrailerDto">
+            <summary>
+            DTO comum para trailer retornado pela Jikan.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanAiredDto">
+            <summary>
+            DTO comum para períodos de exibição retornados pela Jikan.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanNamedItemDto">
+            <summary>
+            DTO comum para itens nomeados retornados pela Jikan.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.External.JikanRelationEntryDto">
+            <summary>
+            DTO comum para entrada de relação retornada pela Jikan.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.Responses.BuscarAnimePorIdResponseDto">
+            <summary>
+            Resposta pública do endpoint de detalhes de anime por ID.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.Responses.AnimeImagesDto">
+            <summary>Coleção pública de imagens do anime.</summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.Responses.AnimeImageVariantDto">
+            <summary>Variante pública de imagem do anime.</summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.Responses.BuscarAnimePorNomeResponseDto">
+            <summary>
+            Resposta pública do endpoint de busca por nome.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.Responses.AnimeBuscaResumoDto">
+            <summary>
+            Resumo público de anime retornado na listagem de busca.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.Responses.AnimeRelationGroupDto">
+            <summary>
+            Grupo público de relações de um anime.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Dtos.Responses.AnimeRelationEntryDto">
+            <summary>
+            Entrada pública de anime relacionado.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Mappers.ApiJikanResponseMapper">
+            <summary>
+            Centraliza o mapeamento entre DTOs externos da Jikan e DTOs públicos da API.
+            </summary>
+        </member>
+        <member name="M:ApiJikan.Mappers.ApiJikanResponseMapper.Map(ApiJikan.Dtos.External.JikanAnimeSearchResponseDto)">
+            <summary>
+            BuscarAnimePorNomeResponseDto...
+            </summary>
+            <param name="source"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ApiJikan.Mappers.ApiJikanResponseMapper.MapImages(System.Collections.Generic.Dictionary{System.String,ApiJikan.Dtos.External.JikanImageVariantDto})">
+            <summary>
+            Mapea as imagens...
+            </summary>
+            <param name="source"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ApiJikan.Services.ServiceBuscarAnimeRelacionadoPorID">
+            <summary>
+            Serviço responsável por buscar os animes relacionados a um anime específico na API Jikan.
+            Chama o endpoint dedicado /anime/{id}/relations e popula a ImageUrl de cada entrada
+            usando o ServiceBuscarPorID, que sempre retorna a imagem correta do anime.
+            </summary>
+            <remarks>
+            A Jikan NÃO retorna "relations" nos endpoints /anime?q= nem /anime/{id}.
+            Este serviço usa o endpoint exclusivo: GET /anime/{id}/relations
+            </remarks>
+        </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarAnimeRelacionadoPorID.#ctor(System.Net.Http.HttpClient,ApiJikan.Services.ServiceBuscarPorID,Microsoft.Extensions.Logging.ILogger{ApiJikan.Services.ServiceBuscarAnimeRelacionadoPorID})">
+            <summary>
+            Inicializa o serviço de busca de animes relacionados por ID.
+            </summary>
+        </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarAnimeRelacionadoPorID.JikanBuscarRelacoesPorIDAsync(System.Int32)">
+            <summary>
+            Busca as relações de um anime na Jikan API (/anime/{id}/relations).
+            Para cada entrada retornada, busca a imagem correta via ServiceBuscarPorID (uma por vez).
+            </summary>
+            <param name="malId">ID do anime no MyAnimeList</param>
+            <returns>Lista de relações com ImageUrl populada em cada entrada</returns>
+        </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarAnimeRelacionadoPorID.PopularImagensEntradasAsync(System.Collections.Generic.List{ApiJikan.Dtos.Responses.AnimeRelationGroupDto})">
+            <summary>
+            Itera cada entrada das relações e busca a imagem via ServiceBuscarPorID (uma por vez).
+            ServiceBuscarPorID usa GET /anime/{id} da Jikan, que sempre retorna a imagem correta.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Services.ServiceBuscarPorID">
+            <summary>
+            Serviço responsável por interagir com a API externa Jikan para buscar informações de um Anime por ID
+            </summary>
+        </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarPorID.GetComRetryRateLimitAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Executa GET com retry automático em caso de 429 (Too Many Requests).
+            Respeita o header Retry-After da Jikan; usa 2s de fallback se não informado.
+            </summary>
+        </member>
+        <member name="T:ApiJikan.Services.ServiceBuscarPorNome">
+            <summary>
+            Serviço responsável por interagir com a API externa Jikan para buscar informações sobre animes.
+            API externa Jikan, tem a Limitação de 3 requisições por segundo e 60 requisições por minuto.
+            </summary>
+        </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarPorNome.#ctor(System.Net.Http.HttpClient,Microsoft.Extensions.Logging.ILogger{ApiJikan.Services.ServiceBuscarPorNome})">
+            <summary>
+            Inicializa uma nova instância do serviço JikanService.
+            </summary>
+            <param name="httpClient">Cliente HTTP para realizar requisições à API Jikan.</param>
+            <param name="logger">Logger para registrar informações e erros.</param>
+        </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarPorNome.JikanBuscarPorNomeAsync(System.String,System.Int32)">
+            <summary>
+            Busca animes na API Jikan com base em uma consulta de texto e número da página. Retorna uma resposta estruturada contendo os resultados da busca e informações de paginação.
+            </summary>
+            <param name="query">Termo de busca</param>
+            <param name="page">Número da página (padrão: 1)</param>
+            <returns>Lista de animes encontrados</returns>
+            <exception cref="T:System.TimeoutException"></exception>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarPorNome.LogarRespostaDetalhada(System.String)">
+            <summary>
+            Loga o JSON bruto da Jikan API antes de qualquer mapeamento.
+            Exibe o JSON completo, o primeiro item com TODAS as propriedades e a propriedade 'relations' isolada.
+            </summary>
+        </member>
+        <member name="T:Program">
+            <summary>
+            Auto-generated public partial Program class for top-level statement apps.
+            </summary>
+        </member>
+    </members>
+</doc>

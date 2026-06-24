@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import AnimexObjsListContext from "./AnimexObjsListContext";
-import axiosHttpRequest from "../../api_conect/conectApiLocal";
+import {axiosHttpRequest} from "../../api_conect/conectApiLocal";
 
 export default function AnimexObjsListProvider({ children }) {
     const [listObjsAnimex, setListObjsAnimex] = useState([]);
@@ -9,7 +9,7 @@ export default function AnimexObjsListProvider({ children }) {
     async function fetchAllObjsAnimex() {
         setIsLoading(true);
         try {
-            const response = await axiosHttpRequest.get('/animex');
+            const response = await axiosHttpRequest().get('/animex');
             setListObjsAnimex(response.data);
             return response.data;
         } catch (error) {
@@ -24,14 +24,14 @@ export default function AnimexObjsListProvider({ children }) {
         fetchAllObjsAnimex();
     }, []);
     return (
-        <AnimexObjsListContext
+        <AnimexObjsListContext.Provider
             value={{ 
                 listObjsAnimex,
                 isLoading,
             }}
         >
             {children}
-        </AnimexObjsListContext>
+        </AnimexObjsListContext.Provider>
     );
 };
 

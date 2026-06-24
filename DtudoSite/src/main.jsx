@@ -7,17 +7,20 @@ import DtudoRouter from './router/DtudoRouter.jsx';
 import { AuthProvider } from './context_api/AuthContext/AuthProvider.jsx';
 import MyAnimesObjsListProvider from './context_api/MyAnimesObjsListContext/MyAnimesObjsListProvider.jsx';
 import AnimesObjsListDetalhesProvider from './context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListProvider.jsx';
+import MyAnimesBDLocalProvider from './context_api/MyAnimesBDLocalContext/MyAnimesBDLocalProvider.jsx';
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
         <AuthProvider>
             <MyAnimesObjsListProvider>
                 <AnimesObjsListDetalhesProvider>
-                    <AnimexObjsListProvider>
-                        <DtudoRouter >
-                            <ScrollToTop />
-                        </DtudoRouter>
-                    </AnimexObjsListProvider>
+                    <MyAnimesBDLocalProvider>
+                        <AnimexObjsListProvider>
+                            <DtudoRouter >
+                                <ScrollToTop />
+                            </DtudoRouter>
+                        </AnimexObjsListProvider>
+                    </MyAnimesBDLocalProvider>
                 </AnimesObjsListDetalhesProvider>
             </MyAnimesObjsListProvider>
         </AuthProvider>

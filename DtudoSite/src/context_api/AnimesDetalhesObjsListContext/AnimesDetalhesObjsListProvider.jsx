@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosHttpRequest from "../../api_conect/conectApiLocal";
+import { axiosHttpRequest } from "../../api_conect/conectApiLocal";
 import AnimesDetalhesObjsListContext from "./AnimesDetalhesObjsListContext";
 
 export default function AnimesDetalhesObjsListProvider({ children }) {
@@ -9,7 +9,7 @@ export default function AnimesDetalhesObjsListProvider({ children }) {
     async function fetchAllObjsDetalhesAnimes() {
         setIsLoading(true);
         try {
-            const response = await axiosHttpRequest.get('/animesDetalhes');
+            const response = await axiosHttpRequest().get('/animesDetalhes');
             setListObjsDetalhesAnimes(response.data);
             // console.log("Dados fetchAllObjsDetalhesAnimes: ", response.data);
             return response.data;

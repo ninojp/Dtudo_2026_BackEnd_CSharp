@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosHttpRequest from "../../api_conect/conectApiLocal";
+import {axiosHttpRequest} from "../../api_conect/conectApiLocal";
 import MyAnimesObjsListContext from "./MyAnimesObjsListContext";
 
 export default function MyAnimesObjsListProvider({ children }) {
@@ -9,7 +9,7 @@ export default function MyAnimesObjsListProvider({ children }) {
     async function fetchAllObjsMyAnimes() {
         setIsLoading(true);
         try {
-            const response = await axiosHttpRequest.get('/myanimes');
+            const response = await axiosHttpRequest().get('/myanimes');
             setListObjsMyAnimes(response.data);
             return response.data;
         } catch (error) {
@@ -18,14 +18,15 @@ export default function MyAnimesObjsListProvider({ children }) {
         } finally {
             setIsLoading(false);
         }
-        }
+    };
     //Total de objetos, adicionar, atualizar, deletar...
     useEffect(() => {
         fetchAllObjsMyAnimes();
     }, []);
+    //===============================================================
     return (
         <MyAnimesObjsListContext.Provider
-            value={{ 
+            value={{
                 listObjsMyAnimes,
                 isLoading,
             }}

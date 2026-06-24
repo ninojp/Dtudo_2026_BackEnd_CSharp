@@ -9,8 +9,10 @@ import CardMyAnimes from '../CardMyAnimes/CardMyAnimes';
 import FiltrarPorLetra from '../../FiltrarPorLetra/FiltrarPorLetra';
 import FiltrarPorAno from '../../FiltrarPorAno/FiltrarPorAno';
 import MyAnimesObjsListContext from '../../../context_api/MyAnimesObjsListContext/MyAnimesObjsListContext';
+import MyAnimesBDLocalContext from '../../../context_api/MyAnimesBDLocalContext/MyAnimesBDLocalContext';
 
 export default function CardsMyAnimesList() {
+    const { iCollectionObjsMyAnimes } = useContext(MyAnimesBDLocalContext);
     //Contexto, lista completa MyAnimes (json-server: http://localhost:3666/animacoes)
     const { listObjsMyAnimes } = useContext(MyAnimesObjsListContext);
     const navigate = useNavigate();
@@ -123,6 +125,20 @@ export default function CardsMyAnimesList() {
                 ))}
             </ModalDialog>
             )}
+            <br />
+            <br />
+            <br />
+            <div>
+                <p>Teste de exibição dos dados JSON DBLocal ApiMyAnimes</p>
+                    {console.log(JSON.stringify(iCollectionObjsMyAnimes, null, 2))}
+                    
+                <pre className={styles.preExibicaoJSON}>
+                    {iCollectionObjsMyAnimes.data?.map((item, index) => (
+                        <p key={index}><strong>{JSON.stringify(item, null, 2)}</strong></p>
+                    ))}
+                    {/* {console.log("iCollectionObjsMyAnimes.data: ", iCollectionObjsMyAnimes.data)} */}
+                </pre>
+            </div>
         </main>
     );
 };
