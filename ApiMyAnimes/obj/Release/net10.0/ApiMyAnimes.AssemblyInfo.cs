@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiMyAnimes")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dce7558975905de9c0cf7f720756f446921f7bfd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+649ea74837b6eb79172d44451e1a8c244e3cbb36")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiMyAnimes")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiMyAnimes")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

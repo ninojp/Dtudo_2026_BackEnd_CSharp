@@ -4,7 +4,6 @@ C:\2026MeusProjetos\Dtudo2026\WinAppControlStore\bin\Release\net10.0-windows7.0\
 C:\2026MeusProjetos\Dtudo2026\WinAppControlStore\bin\Release\net10.0-windows7.0\WinAppControlStore.dll
 C:\2026MeusProjetos\Dtudo2026\WinAppControlStore\bin\Release\net10.0-windows7.0\WinAppControlStore.pdb
 C:\2026MeusProjetos\Dtudo2026\WinAppControlStore\obj\Release\net10.0-windows7.0\WinAppControlStore.Form_WinAppControlStore.resources
-C:\2026MeusProjetos\Dtudo2026\WinAppControlStore\obj\Release\net10.0-windows7.0\WinAppControlStore.Frm_DemonstracaoKey.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppControlStore\obj\Release\net10.0-windows7.0\WinAppControlStore.Properties.Resources.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppControlStore\obj\Release\net10.0-windows7.0\WinAppControlStore.csproj.GenerateResource.cache
 C:\2026MeusProjetos\Dtudo2026\WinAppControlStore\obj\Release\net10.0-windows7.0\WinAppControlStore.GeneratedMSBuildEditorConfig.editorconfig

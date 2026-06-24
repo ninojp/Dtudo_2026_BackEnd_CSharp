@@ -34,6 +34,8 @@ namespace WinAppControlStore
             Btn_Sair_App = new Button();
             Btn_Modifica_Label = new Button();
             Txb_Texto_Temp = new TextBox();
+            Btn_Abrir_Form = new Button();
+            Lbl_Modifica_Titulo = new Label();
             SuspendLayout();
             // 
             // Lbl_Titulo
@@ -71,7 +73,7 @@ namespace WinAppControlStore
             // Btn_Modifica_Label
             // 
             Btn_Modifica_Label.BackColor = SystemColors.ActiveCaption;
-            Btn_Modifica_Label.Location = new Point(297, 85);
+            Btn_Modifica_Label.Location = new Point(568, 114);
             Btn_Modifica_Label.Name = "Btn_Modifica_Label";
             Btn_Modifica_Label.Size = new Size(187, 23);
             Btn_Modifica_Label.TabIndex = 3;
@@ -87,6 +89,25 @@ namespace WinAppControlStore
             Txb_Texto_Temp.Size = new Size(188, 23);
             Txb_Texto_Temp.TabIndex = 4;
             // 
+            // Btn_Abrir_Form
+            // 
+            Btn_Abrir_Form.BackColor = SystemColors.ActiveCaption;
+            Btn_Abrir_Form.Location = new Point(29, 391);
+            Btn_Abrir_Form.Name = "Btn_Abrir_Form";
+            Btn_Abrir_Form.Size = new Size(110, 23);
+            Btn_Abrir_Form.TabIndex = 5;
+            Btn_Abrir_Form.Text = "Abrir Formulário";
+            Btn_Abrir_Form.UseVisualStyleBackColor = false;
+            // 
+            // Lbl_Modifica_Titulo
+            // 
+            Lbl_Modifica_Titulo.AutoSize = true;
+            Lbl_Modifica_Titulo.Location = new Point(600, 67);
+            Lbl_Modifica_Titulo.Name = "Lbl_Modifica_Titulo";
+            Lbl_Modifica_Titulo.Size = new Size(114, 15);
+            Lbl_Modifica_Titulo.TabIndex = 6;
+            Lbl_Modifica_Titulo.Text = "Digite o Novo Título";
+            // 
             // Form_WinAppControlStore
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -95,6 +116,8 @@ namespace WinAppControlStore
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Center;
             ClientSize = new Size(800, 450);
+            Controls.Add(Lbl_Modifica_Titulo);
+            Controls.Add(Btn_Abrir_Form);
             Controls.Add(Txb_Texto_Temp);
             Controls.Add(Btn_Modifica_Label);
             Controls.Add(Btn_Sair_App);
@@ -115,5 +138,7 @@ namespace WinAppControlStore
         private Button Btn_Sair_App;
         private Button Btn_Modifica_Label;
         private TextBox Txb_Texto_Temp;
+        private Button Btn_Abrir_Form;
+        private Label Lbl_Modifica_Titulo;
     }
 }
