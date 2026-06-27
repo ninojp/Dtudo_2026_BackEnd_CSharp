@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WinAppControlStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+649ea74837b6eb79172d44451e1a8c244e3cbb36")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+35dc61056273686b80427e5370a87495a7c32a04")]
 [assembly: System.Reflection.AssemblyProductAttribute("WinAppControlStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WinAppControlStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
