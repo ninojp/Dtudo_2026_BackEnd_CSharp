@@ -8,7 +8,43 @@ public partial class Frm_WinAppControlStore : Form
     {
         InitializeComponent();
     }
-
+    //Menu FormTest - Abrir formulário Frm_FormTest.
+    private void FormTestToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        Frm_FormTest formTest = new();
+        formTest.Show();
+    }
+    //Menu Sair - Fechar a aplicação Toda.
+    private void SairToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        Application.Exit();
+    }
+    //Menu HelloWorld - Abrir formulário Frm_HelloWorld.
+    private void FormHelloWorldToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        Frm_HelloWorld formHelloWorld = new();
+        formHelloWorld.Show();
+    }
+    //Menu MyAnimes - Abrir formulário Frm_MyAnimes.
+    private void MnI_MyAnimesMenuItem_Click(object sender, EventArgs e)
+    {
+        Frm_MyAnimes formMyAnimes = new();
+        formMyAnimes.Show();
+    }
+    //Menu MyAnimes - Abrir formulário Frm_MyAnimes.
+    private void MnI_MyAnimesMenuItem_Click_1(object sender, EventArgs e)
+    {
+        Frm_MyAnimes formMyAnimes = new();
+        formMyAnimes.Show();
+    }
+    //Menu MyMusicX - Abrir formulário Frm_MyMusicX.
+    private void myMusicXToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        Frm_MyMusicX formMyMusicX = new();
+        formMyMusicX.Show();
+    }
+    //=================================================================
+    //Botão - Abrir o site Dtudo.
     private void Btn_Site_Dtudo_Click(object sender, EventArgs e)
     {
         //Deve abrir o FrontEnd.
@@ -21,56 +57,16 @@ public partial class Frm_WinAppControlStore : Form
         //"serv": "concurrently \"npm run start\" \"npm run proxy\" \"npm run dev\"",
 
     }
-
+    //Botão - Fecha apenas o Formulário atual.
     private void Btn_Sair_App_Click(object sender, EventArgs e)
     {
-        // Fechar apenas o Formulário atual
         this.Close();
     }
-
+    //Botão - Abrir formulário Frm_FormTest.
     private void Btn_Abrir_Form_Click(object sender, EventArgs e)
     {
         Frm_FormTest formTest = new();
         formTest.ShowDialog();
     }
 
-    private void FormTestToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        Frm_FormTest formTest = new();
-        formTest.MdiParent = this;
-        formTest.Show();
-    }
-
-    private void SairToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        // Fechar a aplicação
-        Application.Exit();
-    }
-
-    private void FormHelloWorldToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        Frm_HelloWorld formHelloWorld = new();
-        formHelloWorld.Show();
-    }
-    //Menu MyAnimes - Abrir formulário Frm_MyAnimes.
-    private void MnI_MyAnimesMenuItem_Click(object sender, EventArgs e)
-    {
-        Frm_MyAnimes formMyAnimes = new();
-        formMyAnimes.Show();
-    }
-    //Menu Windows - Exibir janelas em cascata.
-    private void CascataToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        this.LayoutMdi(MdiLayout.Cascade);
-    }
-    //Menu Windows - Exibir janelas na horizontal.
-    private void HorizontalToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        this.LayoutMdi(MdiLayout.TileHorizontal);
-    }
-    //Menu Windows - Exibir janelas em vertical.
-    private void VerticalToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        this.LayoutMdi(MdiLayout.TileVertical);
-    }
 }

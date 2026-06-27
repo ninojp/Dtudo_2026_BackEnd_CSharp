@@ -73,6 +73,26 @@ namespace WinAppControlStore.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap InterrogacaoBrasil {
+            get {
+                object obj = ResourceManager.GetObject("InterrogacaoBrasil", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Byte[].
+        /// </summary>
+        internal static byte[] InterrogacaoBrasilV1 {
+            get {
+                object obj = ResourceManager.GetObject("InterrogacaoBrasilV1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Logo_Dtudo_300p {
             get {
                 object obj = ResourceManager.GetObject("Logo_Dtudo_300p", resourceCulture);
@@ -111,6 +131,16 @@ namespace WinAppControlStore.Properties {
         }
         
         /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Byte[].
+        /// </summary>
+        internal static byte[] maskVRealIco {
+            get {
+                object obj = ResourceManager.GetObject("maskVRealIco", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap NotaMusica {
@@ -143,6 +173,46 @@ namespace WinAppControlStore.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap pngwing_com {
+            get {
+                object obj = ResourceManager.GetObject("pngwing.com", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pngwing3 {
+            get {
+                object obj = ResourceManager.GetObject("pngwing3", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap RadioAtivo {
+            get {
+                object obj = ResourceManager.GetObject("RadioAtivo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap RosaDosVentos {
+            get {
+                object obj = ResourceManager.GetObject("RosaDosVentos", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap SlaveMoney {
             get {
                 object obj = ResourceManager.GetObject("SlaveMoney", resourceCulture);
@@ -166,6 +236,16 @@ namespace WinAppControlStore.Properties {
         internal static System.Drawing.Bitmap violaoEmChamas {
             get {
                 object obj = ResourceManager.GetObject("violaoEmChamas", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Vvendetta {
+            get {
+                object obj = ResourceManager.GetObject("Vvendetta", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
