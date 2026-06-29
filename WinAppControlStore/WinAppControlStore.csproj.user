@@ -7,6 +7,15 @@
     <Compile Update="FormsUC\FUC_BuscarPorNome.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="FormsUC\FUC_CadastrarUsuario.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Forms\Frm_CadastrarUsuario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Frm_Login.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Frm_MyAnimes.cs">
       <SubType>Form</SubType>
     </Compile>

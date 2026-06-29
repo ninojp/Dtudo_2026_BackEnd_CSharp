@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WinAppControlStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a5d26ecb5c9709410259fb371ec31d087fa06895")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+80f0a8871fda6b1eb427972ad34151fe1c2be8ce")]
 [assembly: System.Reflection.AssemblyProductAttribute("WinAppControlStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WinAppControlStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -63,9 +63,69 @@ namespace WinAppControlStore.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap BaixoGatilho {
+            get {
+                object obj = ResourceManager.GetObject("BaixoGatilho", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap CaveraMetal {
+            get {
+                object obj = ResourceManager.GetObject("CaveraMetal", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Byte[].
+        /// </summary>
+        internal static byte[] CaveraMetalIco {
+            get {
+                object obj = ResourceManager.GetObject("CaveraMetalIco", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap CimaGatilho {
+            get {
+                object obj = ResourceManager.GetObject("CimaGatilho", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap code01_background {
             get {
                 object obj = ResourceManager.GetObject("code01-background", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap DireitaGatilho {
+            get {
+                object obj = ResourceManager.GetObject("DireitaGatilho", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap EsquerdaGatilho {
+            get {
+                object obj = ResourceManager.GetObject("EsquerdaGatilho", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

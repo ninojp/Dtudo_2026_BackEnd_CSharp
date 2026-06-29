@@ -101,6 +101,7 @@ namespace WinAppControlStore.Forms
             Margin = new Padding(4, 5, 4, 5);
             MaximizeBox = false;
             Name = "Frm_HelloWorld";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Frm_HelloWorld";
             ResumeLayout(false);
             PerformLayout();

@@ -34,15 +34,17 @@ namespace WinAppControlStore
             Btn_Sair_App = new Button();
             Btn_Abrir_Form = new Button();
             Mnu_Principal = new MenuStrip();
-            arquivoToolStripMenuItem = new ToolStripMenuItem();
-            abrirToolStripMenuItem = new ToolStripMenuItem();
-            formTestToolStripMenuItem = new ToolStripMenuItem();
-            formHelloWorldToolStripMenuItem = new ToolStripMenuItem();
-            outroFormToolStripMenuItem = new ToolStripMenuItem();
-            sairToolStripMenuItem = new ToolStripMenuItem();
-            MnI_MyAnimesMenuItem = new ToolStripMenuItem();
-            myMusicXToolStripMenuItem = new ToolStripMenuItem();
-            ninoTIToolStripMenuItem = new ToolStripMenuItem();
+            MnI_Arquivo = new ToolStripMenuItem();
+            MnI_Abrir = new ToolStripMenuItem();
+            MnI_FormTest = new ToolStripMenuItem();
+            MnI_FormHelloWorld = new ToolStripMenuItem();
+            MnI_CadastrarUsuario = new ToolStripMenuItem();
+            MnI_Conectar = new ToolStripMenuItem();
+            MnI_Desconectar = new ToolStripMenuItem();
+            MnI_Sair = new ToolStripMenuItem();
+            MnI_MyAnimes = new ToolStripMenuItem();
+            MnI_MyMusicX = new ToolStripMenuItem();
+            MnI_NinoTI = new ToolStripMenuItem();
             Mnu_Principal.SuspendLayout();
             SuspendLayout();
             // 
@@ -123,7 +125,7 @@ namespace WinAppControlStore
             Mnu_Principal.BackColor = Color.DimGray;
             Mnu_Principal.BackgroundImageLayout = ImageLayout.None;
             Mnu_Principal.Font = new Font("Segoe UI", 12.8571434F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            Mnu_Principal.Items.AddRange(new ToolStripItem[] { arquivoToolStripMenuItem, MnI_MyAnimesMenuItem, myMusicXToolStripMenuItem, ninoTIToolStripMenuItem });
+            Mnu_Principal.Items.AddRange(new ToolStripItem[] { MnI_Arquivo, MnI_MyAnimes, MnI_MyMusicX, MnI_NinoTI });
             Mnu_Principal.Location = new Point(0, 0);
             Mnu_Principal.Name = "Mnu_Principal";
             Mnu_Principal.Padding = new Padding(9, 4, 0, 4);
@@ -131,88 +133,109 @@ namespace WinAppControlStore
             Mnu_Principal.TabIndex = 7;
             Mnu_Principal.Text = "MenuPrincipal";
             // 
-            // arquivoToolStripMenuItem
+            // MnI_Arquivo
             // 
-            arquivoToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { abrirToolStripMenuItem, sairToolStripMenuItem });
-            arquivoToolStripMenuItem.Image = Properties.Resources.MaskV;
-            arquivoToolStripMenuItem.Name = "arquivoToolStripMenuItem";
-            arquivoToolStripMenuItem.Size = new Size(108, 29);
-            arquivoToolStripMenuItem.Text = "Arquivo";
+            MnI_Arquivo.DropDownItems.AddRange(new ToolStripItem[] { MnI_Abrir, MnI_CadastrarUsuario, MnI_Conectar, MnI_Desconectar, MnI_Sair });
+            MnI_Arquivo.Image = Properties.Resources.MaskV;
+            MnI_Arquivo.Name = "MnI_Arquivo";
+            MnI_Arquivo.Size = new Size(108, 29);
+            MnI_Arquivo.Text = "Arquivo";
             // 
-            // abrirToolStripMenuItem
+            // MnI_Abrir
             // 
-            abrirToolStripMenuItem.BackColor = Color.Transparent;
-            abrirToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { formTestToolStripMenuItem, formHelloWorldToolStripMenuItem, outroFormToolStripMenuItem });
-            abrirToolStripMenuItem.ForeColor = Color.Gold;
-            abrirToolStripMenuItem.Image = Properties.Resources.YingYang_HD;
-            abrirToolStripMenuItem.Name = "abrirToolStripMenuItem";
-            abrirToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.A;
-            abrirToolStripMenuItem.Size = new Size(190, 30);
-            abrirToolStripMenuItem.Text = "&Abrir";
+            MnI_Abrir.BackColor = Color.Transparent;
+            MnI_Abrir.DropDownItems.AddRange(new ToolStripItem[] { MnI_FormTest, MnI_FormHelloWorld });
+            MnI_Abrir.ForeColor = Color.Gold;
+            MnI_Abrir.Image = Properties.Resources.YingYang_HD;
+            MnI_Abrir.Name = "MnI_Abrir";
+            MnI_Abrir.ShortcutKeys = Keys.Alt | Keys.A;
+            MnI_Abrir.Size = new Size(235, 30);
+            MnI_Abrir.Text = "&Abrir";
             // 
-            // formTestToolStripMenuItem
+            // MnI_FormTest
             // 
-            formTestToolStripMenuItem.BackColor = Color.Transparent;
-            formTestToolStripMenuItem.ForeColor = Color.Gold;
-            formTestToolStripMenuItem.Image = Properties.Resources.TI_link;
-            formTestToolStripMenuItem.Name = "formTestToolStripMenuItem";
-            formTestToolStripMenuItem.ShortcutKeyDisplayString = "";
-            formTestToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.T;
-            formTestToolStripMenuItem.Size = new Size(288, 30);
-            formTestToolStripMenuItem.Text = "Form&Test";
-            formTestToolStripMenuItem.Click += FormTestToolStripMenuItem_Click;
+            MnI_FormTest.BackColor = Color.Transparent;
+            MnI_FormTest.ForeColor = Color.Gold;
+            MnI_FormTest.Image = Properties.Resources.TI_link;
+            MnI_FormTest.Name = "MnI_FormTest";
+            MnI_FormTest.ShortcutKeyDisplayString = "";
+            MnI_FormTest.ShortcutKeys = Keys.Alt | Keys.T;
+            MnI_FormTest.Size = new Size(288, 30);
+            MnI_FormTest.Text = "Form&Test";
+            MnI_FormTest.Click += MnI_FormTest_Click;
             // 
-            // formHelloWorldToolStripMenuItem
+            // MnI_FormHelloWorld
             // 
-            formHelloWorldToolStripMenuItem.BackColor = Color.Transparent;
-            formHelloWorldToolStripMenuItem.BackgroundImageLayout = ImageLayout.None;
-            formHelloWorldToolStripMenuItem.ForeColor = Color.Gold;
-            formHelloWorldToolStripMenuItem.Image = Properties.Resources.OlhoBRHacker1024;
-            formHelloWorldToolStripMenuItem.Name = "formHelloWorldToolStripMenuItem";
-            formHelloWorldToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.H;
-            formHelloWorldToolStripMenuItem.Size = new Size(288, 30);
-            formHelloWorldToolStripMenuItem.Text = "Form&HelloWorld";
-            formHelloWorldToolStripMenuItem.Click += FormHelloWorldToolStripMenuItem_Click;
+            MnI_FormHelloWorld.BackColor = Color.Transparent;
+            MnI_FormHelloWorld.BackgroundImageLayout = ImageLayout.None;
+            MnI_FormHelloWorld.ForeColor = Color.Gold;
+            MnI_FormHelloWorld.Image = Properties.Resources.OlhoBRHacker1024;
+            MnI_FormHelloWorld.Name = "MnI_FormHelloWorld";
+            MnI_FormHelloWorld.ShortcutKeys = Keys.Alt | Keys.H;
+            MnI_FormHelloWorld.Size = new Size(288, 30);
+            MnI_FormHelloWorld.Text = "Form&HelloWorld";
+            MnI_FormHelloWorld.Click += MnI_FormHelloWorld_Click;
             // 
-            // outroFormToolStripMenuItem
+            // MnI_CadastrarUsuario
             // 
-            outroFormToolStripMenuItem.Name = "outroFormToolStripMenuItem";
-            outroFormToolStripMenuItem.Size = new Size(288, 30);
-            outroFormToolStripMenuItem.Text = "OutroForm...";
+            MnI_CadastrarUsuario.ForeColor = Color.Gold;
+            MnI_CadastrarUsuario.Image = Properties.Resources.CaveraMetal;
+            MnI_CadastrarUsuario.Name = "MnI_CadastrarUsuario";
+            MnI_CadastrarUsuario.Size = new Size(235, 30);
+            MnI_CadastrarUsuario.Text = "Cadastrar Usuário";
+            MnI_CadastrarUsuario.Click += MnI_CadastrarUsuario_Click;
             // 
-            // sairToolStripMenuItem
+            // MnI_Conectar
             // 
-            sairToolStripMenuItem.BackColor = Color.Transparent;
-            sairToolStripMenuItem.ForeColor = Color.Gold;
-            sairToolStripMenuItem.Image = Properties.Resources.SlaveMoney;
-            sairToolStripMenuItem.Name = "sairToolStripMenuItem";
-            sairToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.S;
-            sairToolStripMenuItem.Size = new Size(190, 30);
-            sairToolStripMenuItem.Text = "&Sair";
-            sairToolStripMenuItem.Click += SairToolStripMenuItem_Click;
+            MnI_Conectar.ForeColor = Color.Gold;
+            MnI_Conectar.Image = Properties.Resources.CaveraMetal;
+            MnI_Conectar.Name = "MnI_Conectar";
+            MnI_Conectar.Size = new Size(235, 30);
+            MnI_Conectar.Text = "Conectar";
+            MnI_Conectar.Click += MnI_Conectar_Click;
             // 
-            // MnI_MyAnimesMenuItem
+            // MnI_Desconectar
             // 
-            MnI_MyAnimesMenuItem.Image = Properties.Resources.TI_link;
-            MnI_MyAnimesMenuItem.Name = "MnI_MyAnimesMenuItem";
-            MnI_MyAnimesMenuItem.Size = new Size(130, 29);
-            MnI_MyAnimesMenuItem.Text = "MyAnimes";
-            MnI_MyAnimesMenuItem.Click += MnI_MyAnimesMenuItem_Click_1;
+            MnI_Desconectar.ForeColor = Color.Gold;
+            MnI_Desconectar.Image = Properties.Resources.CaveraMetal;
+            MnI_Desconectar.Name = "MnI_Desconectar";
+            MnI_Desconectar.Size = new Size(235, 30);
+            MnI_Desconectar.Text = "Desconectar";
+            MnI_Desconectar.Click += MnI_Desconectar_Click;
             // 
-            // myMusicXToolStripMenuItem
+            // MnI_Sair
             // 
-            myMusicXToolStripMenuItem.Image = Properties.Resources.NotaMusica;
-            myMusicXToolStripMenuItem.Name = "myMusicXToolStripMenuItem";
-            myMusicXToolStripMenuItem.Size = new Size(129, 29);
-            myMusicXToolStripMenuItem.Text = "MyMusicX";
-            myMusicXToolStripMenuItem.Click += myMusicXToolStripMenuItem_Click;
+            MnI_Sair.BackColor = Color.Transparent;
+            MnI_Sair.ForeColor = Color.Gold;
+            MnI_Sair.Image = Properties.Resources.SlaveMoney;
+            MnI_Sair.Name = "MnI_Sair";
+            MnI_Sair.ShortcutKeys = Keys.Alt | Keys.S;
+            MnI_Sair.Size = new Size(235, 30);
+            MnI_Sair.Text = "&Sair";
+            MnI_Sair.Click += MnI_Sair_Click;
             // 
-            // ninoTIToolStripMenuItem
+            // MnI_MyAnimes
             // 
-            ninoTIToolStripMenuItem.Image = Properties.Resources.OlhoBRHacker1024;
-            ninoTIToolStripMenuItem.Name = "ninoTIToolStripMenuItem";
-            ninoTIToolStripMenuItem.Size = new Size(98, 29);
-            ninoTIToolStripMenuItem.Text = "NinoTI";
+            MnI_MyAnimes.Image = Properties.Resources.TI_link;
+            MnI_MyAnimes.Name = "MnI_MyAnimes";
+            MnI_MyAnimes.Size = new Size(130, 29);
+            MnI_MyAnimes.Text = "MyAnimes";
+            MnI_MyAnimes.Click += MnI_MyAnimes_Click;
+            // 
+            // MnI_MyMusicX
+            // 
+            MnI_MyMusicX.Image = Properties.Resources.NotaMusica;
+            MnI_MyMusicX.Name = "MnI_MyMusicX";
+            MnI_MyMusicX.Size = new Size(129, 29);
+            MnI_MyMusicX.Text = "MyMusicX";
+            MnI_MyMusicX.Click += MnI_MyMusicX_Click;
+            // 
+            // MnI_NinoTI
+            // 
+            MnI_NinoTI.Image = Properties.Resources.OlhoBRHacker1024;
+            MnI_NinoTI.Name = "MnI_NinoTI";
+            MnI_NinoTI.Size = new Size(98, 29);
+            MnI_NinoTI.Text = "NinoTI";
             // 
             // Frm_WinAppControlStore
             // 
@@ -233,6 +256,7 @@ namespace WinAppControlStore
             MainMenuStrip = Mnu_Principal;
             Margin = new Padding(4, 5, 4, 5);
             Name = "Frm_WinAppControlStore";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "App Controle Armazenamento";
             Mnu_Principal.ResumeLayout(false);
             Mnu_Principal.PerformLayout();
@@ -247,14 +271,16 @@ namespace WinAppControlStore
         private Button Btn_Sair_App;
         private Button Btn_Abrir_Form;
         private MenuStrip Mnu_Principal;
-        private ToolStripMenuItem arquivoToolStripMenuItem;
-        private ToolStripMenuItem abrirToolStripMenuItem;
-        private ToolStripMenuItem sairToolStripMenuItem;
-        private ToolStripMenuItem formTestToolStripMenuItem;
-        private ToolStripMenuItem formHelloWorldToolStripMenuItem;
-        private ToolStripMenuItem outroFormToolStripMenuItem;
-        private ToolStripMenuItem MnI_MyAnimesMenuItem;
-        private ToolStripMenuItem myMusicXToolStripMenuItem;
-        private ToolStripMenuItem ninoTIToolStripMenuItem;
+        private ToolStripMenuItem MnI_Arquivo;
+        private ToolStripMenuItem MnI_Abrir;
+        private ToolStripMenuItem MnI_Sair;
+        private ToolStripMenuItem MnI_FormTest;
+        private ToolStripMenuItem MnI_FormHelloWorld;
+        private ToolStripMenuItem MnI_MyAnimes;
+        private ToolStripMenuItem MnI_MyMusicX;
+        private ToolStripMenuItem MnI_NinoTI;
+        private ToolStripMenuItem MnI_CadastrarUsuario;
+        private ToolStripMenuItem MnI_Conectar;
+        private ToolStripMenuItem MnI_Desconectar;
     }
 }

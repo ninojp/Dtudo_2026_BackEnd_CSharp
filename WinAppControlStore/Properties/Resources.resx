@@ -118,8 +118,26 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="BaixoGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BaixoGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CaveraMetal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CaveraMetal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CaveraMetalIco" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CaveraMetalIco.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="CimaGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CimaGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="code01-background" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\code01-background.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DireitaGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DireitaGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="EsquerdaGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\EsquerdaGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="InterrogacaoBrasil" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\InterrogacaoBrasil.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

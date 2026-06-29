@@ -32,17 +32,16 @@ namespace WinAppControlStore
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Frm_MyAnimes));
             menuStrip1 = new MenuStrip();
             AbasToolStripMenuItem = new ToolStripMenuItem();
-            AbrirAbaMascarasToolStripMenuItem = new ToolStripMenuItem();
-            abaMascarasToolStripMenuItem = new ToolStripMenuItem();
-            FecharAbasToolStripMenuItem = new ToolStripMenuItem();
-            FecharAbaAtualToolStripMenuItem = new ToolStripMenuItem();
-            FecharTodasAbasToolStripMenuItem = new ToolStripMenuItem();
-            FecharAbasÀEsquerdaToolStripMenuItem = new ToolStripMenuItem();
-            FecharAbasÀDireitaToolStripMenuItem = new ToolStripMenuItem();
-            ProcurarAnimeToolStripMenuItem = new ToolStripMenuItem();
-            ProcurarAnimePorMalidToolStripMenuItem = new ToolStripMenuItem();
-            TesteCursoToolStripMenuItem = new ToolStripMenuItem();
-            Msb_MsgBoxToolStripMenuItem = new ToolStripMenuItem();
+            MnI_AbrirAbas = new ToolStripMenuItem();
+            MnI_AbaMascaras = new ToolStripMenuItem();
+            MnI_FormMsgBox = new ToolStripMenuItem();
+            MnI_FecharAbas = new ToolStripMenuItem();
+            MnI_FecharAbaAtual = new ToolStripMenuItem();
+            MnI_FecharTodasAbas = new ToolStripMenuItem();
+            MnI_FecharAbasAEsquerda = new ToolStripMenuItem();
+            MnI_FecharAbasADireita = new ToolStripMenuItem();
+            MnI_ProcurarAnimePorNome = new ToolStripMenuItem();
+            MnI_ProcurarAnimePorID = new ToolStripMenuItem();
             Tbc_MyAnimes = new TabControl();
             Iml_ImagensList = new ImageList(components);
             menuStrip1.SuspendLayout();
@@ -50,7 +49,7 @@ namespace WinAppControlStore
             // 
             // menuStrip1
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { AbasToolStripMenuItem, ProcurarAnimeToolStripMenuItem, ProcurarAnimePorMalidToolStripMenuItem, TesteCursoToolStripMenuItem, Msb_MsgBoxToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { AbasToolStripMenuItem, MnI_ProcurarAnimePorNome, MnI_ProcurarAnimePorID });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(800, 33);
@@ -59,87 +58,82 @@ namespace WinAppControlStore
             // 
             // AbasToolStripMenuItem
             // 
-            AbasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { AbrirAbaMascarasToolStripMenuItem, FecharAbasToolStripMenuItem });
+            AbasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MnI_AbrirAbas, MnI_FecharAbas });
             AbasToolStripMenuItem.Name = "AbasToolStripMenuItem";
             AbasToolStripMenuItem.Size = new Size(64, 29);
             AbasToolStripMenuItem.Text = "Abas";
             // 
-            // AbrirAbaMascarasToolStripMenuItem
+            // MnI_AbrirAbas
             // 
-            AbrirAbaMascarasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { abaMascarasToolStripMenuItem });
-            AbrirAbaMascarasToolStripMenuItem.Image = Properties.Resources.MaskVendettaReal;
-            AbrirAbaMascarasToolStripMenuItem.Name = "AbrirAbaMascarasToolStripMenuItem";
-            AbrirAbaMascarasToolStripMenuItem.Size = new Size(180, 30);
-            AbrirAbaMascarasToolStripMenuItem.Text = "Abrir Abas";
+            MnI_AbrirAbas.DropDownItems.AddRange(new ToolStripItem[] { MnI_AbaMascaras, MnI_FormMsgBox });
+            MnI_AbrirAbas.Image = Properties.Resources.MaskVendettaReal;
+            MnI_AbrirAbas.Name = "MnI_AbrirAbas";
+            MnI_AbrirAbas.Size = new Size(180, 30);
+            MnI_AbrirAbas.Text = "Abrir Abas";
             // 
-            // abaMascarasToolStripMenuItem
+            // MnI_AbaMascaras
             // 
-            abaMascarasToolStripMenuItem.Image = Properties.Resources.MaskV;
-            abaMascarasToolStripMenuItem.Name = "abaMascarasToolStripMenuItem";
-            abaMascarasToolStripMenuItem.Size = new Size(189, 30);
-            abaMascarasToolStripMenuItem.Text = "AbaMascaras";
-            abaMascarasToolStripMenuItem.Click += AbaMascarasToolStripMenuItem_Click;
+            MnI_AbaMascaras.Image = Properties.Resources.MaskV;
+            MnI_AbaMascaras.Name = "MnI_AbaMascaras";
+            MnI_AbaMascaras.Size = new Size(190, 30);
+            MnI_AbaMascaras.Text = "AbaMascaras";
+            MnI_AbaMascaras.Click += MnI_AbaMascaras_Click;
             // 
-            // FecharAbasToolStripMenuItem
+            // MnI_FormMsgBox
             // 
-            FecharAbasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { FecharAbaAtualToolStripMenuItem, FecharTodasAbasToolStripMenuItem, FecharAbasÀEsquerdaToolStripMenuItem, FecharAbasÀDireitaToolStripMenuItem });
-            FecharAbasToolStripMenuItem.Image = Properties.Resources.SlaveMoney;
-            FecharAbasToolStripMenuItem.Name = "FecharAbasToolStripMenuItem";
-            FecharAbasToolStripMenuItem.Size = new Size(180, 30);
-            FecharAbasToolStripMenuItem.Text = "Fechar Abas";
+            MnI_FormMsgBox.Image = Properties.Resources.InterrogacaoBrasil;
+            MnI_FormMsgBox.Name = "MnI_FormMsgBox";
+            MnI_FormMsgBox.Size = new Size(190, 30);
+            MnI_FormMsgBox.Text = "FormMsgBox";
+            MnI_FormMsgBox.Click += MnI_FormMsgBox_Click;
             // 
-            // FecharAbaAtualToolStripMenuItem
+            // MnI_FecharAbas
             // 
-            FecharAbaAtualToolStripMenuItem.Name = "FecharAbaAtualToolStripMenuItem";
-            FecharAbaAtualToolStripMenuItem.Size = new Size(272, 30);
-            FecharAbaAtualToolStripMenuItem.Text = "Fechar Aba Atual";
-            FecharAbaAtualToolStripMenuItem.Click += FecharAbaAtualToolStripMenuItem_Click;
+            MnI_FecharAbas.DropDownItems.AddRange(new ToolStripItem[] { MnI_FecharAbaAtual, MnI_FecharTodasAbas, MnI_FecharAbasAEsquerda, MnI_FecharAbasADireita });
+            MnI_FecharAbas.Image = Properties.Resources.SlaveMoney;
+            MnI_FecharAbas.Name = "MnI_FecharAbas";
+            MnI_FecharAbas.Size = new Size(180, 30);
+            MnI_FecharAbas.Text = "Fechar Abas";
             // 
-            // FecharTodasAbasToolStripMenuItem
+            // MnI_FecharAbaAtual
             // 
-            FecharTodasAbasToolStripMenuItem.Name = "FecharTodasAbasToolStripMenuItem";
-            FecharTodasAbasToolStripMenuItem.Size = new Size(272, 30);
-            FecharTodasAbasToolStripMenuItem.Text = "Fechar Todas Abas";
+            MnI_FecharAbaAtual.Name = "MnI_FecharAbaAtual";
+            MnI_FecharAbaAtual.Size = new Size(272, 30);
+            MnI_FecharAbaAtual.Text = "Fechar Aba Atual";
+            MnI_FecharAbaAtual.Click += MnI_FecharAbaAtual_Click;
             // 
-            // FecharAbasÀEsquerdaToolStripMenuItem
+            // MnI_FecharTodasAbas
             // 
-            FecharAbasÀEsquerdaToolStripMenuItem.Name = "FecharAbasÀEsquerdaToolStripMenuItem";
-            FecharAbasÀEsquerdaToolStripMenuItem.Size = new Size(272, 30);
-            FecharAbasÀEsquerdaToolStripMenuItem.Text = "Fechar Abas à Esquerda";
+            MnI_FecharTodasAbas.Name = "MnI_FecharTodasAbas";
+            MnI_FecharTodasAbas.Size = new Size(272, 30);
+            MnI_FecharTodasAbas.Text = "Fechar Todas Abas";
+            MnI_FecharTodasAbas.Click += MnI_FecharTodasAbas_Click;
             // 
-            // FecharAbasÀDireitaToolStripMenuItem
+            // MnI_FecharAbasAEsquerda
             // 
-            FecharAbasÀDireitaToolStripMenuItem.Name = "FecharAbasÀDireitaToolStripMenuItem";
-            FecharAbasÀDireitaToolStripMenuItem.Size = new Size(272, 30);
-            FecharAbasÀDireitaToolStripMenuItem.Text = "Fechar Abas à Direita";
+            MnI_FecharAbasAEsquerda.Name = "MnI_FecharAbasAEsquerda";
+            MnI_FecharAbasAEsquerda.Size = new Size(272, 30);
+            MnI_FecharAbasAEsquerda.Text = "Fechar Abas à Esquerda";
             // 
-            // ProcurarAnimeToolStripMenuItem
+            // MnI_FecharAbasADireita
             // 
-            ProcurarAnimeToolStripMenuItem.Name = "ProcurarAnimeToolStripMenuItem";
-            ProcurarAnimeToolStripMenuItem.Size = new Size(165, 29);
-            ProcurarAnimeToolStripMenuItem.Text = "ProcurarPorNome";
-            ProcurarAnimeToolStripMenuItem.Click += ProcurarAnimeToolStripMenuItem_Click;
+            MnI_FecharAbasADireita.Name = "MnI_FecharAbasADireita";
+            MnI_FecharAbasADireita.Size = new Size(272, 30);
+            MnI_FecharAbasADireita.Text = "Fechar Abas à Direita";
             // 
-            // ProcurarAnimePorMalidToolStripMenuItem
+            // MnI_ProcurarAnimePorNome
             // 
-            ProcurarAnimePorMalidToolStripMenuItem.Name = "ProcurarAnimePorMalidToolStripMenuItem";
-            ProcurarAnimePorMalidToolStripMenuItem.Size = new Size(134, 29);
-            ProcurarAnimePorMalidToolStripMenuItem.Text = "ProcurarPorID";
-            ProcurarAnimePorMalidToolStripMenuItem.Click += ProcurarAnimePorMalidToolStripMenuItem_Click;
+            MnI_ProcurarAnimePorNome.Name = "MnI_ProcurarAnimePorNome";
+            MnI_ProcurarAnimePorNome.Size = new Size(165, 29);
+            MnI_ProcurarAnimePorNome.Text = "ProcurarPorNome";
+            MnI_ProcurarAnimePorNome.Click += MnI_ProcurarAnimePorNome_Click;
             // 
-            // TesteCursoToolStripMenuItem
+            // MnI_ProcurarAnimePorID
             // 
-            TesteCursoToolStripMenuItem.Name = "TesteCursoToolStripMenuItem";
-            TesteCursoToolStripMenuItem.Size = new Size(109, 29);
-            TesteCursoToolStripMenuItem.Text = "TesteCurso";
-            TesteCursoToolStripMenuItem.Click += AbaMascarasToolStripMenuItem_Click;
-            // 
-            // Msb_MsgBoxToolStripMenuItem
-            // 
-            Msb_MsgBoxToolStripMenuItem.Name = "Msb_MsgBoxToolStripMenuItem";
-            Msb_MsgBoxToolStripMenuItem.Size = new Size(88, 29);
-            Msb_MsgBoxToolStripMenuItem.Text = "MsgBox";
-            Msb_MsgBoxToolStripMenuItem.Click += Msb_MsgBoxToolStripMenuItem_Click;
+            MnI_ProcurarAnimePorID.Name = "MnI_ProcurarAnimePorID";
+            MnI_ProcurarAnimePorID.Size = new Size(134, 29);
+            MnI_ProcurarAnimePorID.Text = "ProcurarPorID";
+            MnI_ProcurarAnimePorID.Click += MnI_ProcurarAnimePorID_Click;
             // 
             // Tbc_MyAnimes
             // 
@@ -171,7 +165,7 @@ namespace WinAppControlStore
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
             Name = "Frm_MyAnimes";
-            StartPosition = FormStartPosition.CenterParent;
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "MyAnimes - Abas";
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
@@ -182,19 +176,18 @@ namespace WinAppControlStore
         #endregion
 
         private MenuStrip menuStrip1;
-        private ToolStripMenuItem ProcurarAnimeToolStripMenuItem;
-        private ToolStripMenuItem ProcurarAnimePorMalidToolStripMenuItem;
+        private ToolStripMenuItem MnI_ProcurarAnimePorNome;
+        private ToolStripMenuItem MnI_ProcurarAnimePorID;
         private TabControl Tbc_MyAnimes;
         private ImageList Iml_ImagensList;
-        private ToolStripMenuItem TesteCursoToolStripMenuItem;
         private ToolStripMenuItem AbasToolStripMenuItem;
-        private ToolStripMenuItem AbrirAbaMascarasToolStripMenuItem;
-        private ToolStripMenuItem abaMascarasToolStripMenuItem;
-        private ToolStripMenuItem FecharAbasToolStripMenuItem;
-        private ToolStripMenuItem FecharTodasAbasToolStripMenuItem;
-        private ToolStripMenuItem FecharAbaAtualToolStripMenuItem;
-        private ToolStripMenuItem FecharAbasÀEsquerdaToolStripMenuItem;
-        private ToolStripMenuItem FecharAbasÀDireitaToolStripMenuItem;
-        private ToolStripMenuItem Msb_MsgBoxToolStripMenuItem;
+        private ToolStripMenuItem MnI_AbrirAbas;
+        private ToolStripMenuItem MnI_AbaMascaras;
+        private ToolStripMenuItem MnI_FecharAbas;
+        private ToolStripMenuItem MnI_FecharTodasAbas;
+        private ToolStripMenuItem MnI_FecharAbaAtual;
+        private ToolStripMenuItem MnI_FecharAbasAEsquerda;
+        private ToolStripMenuItem MnI_FecharAbasADireita;
+        private ToolStripMenuItem MnI_FormMsgBox;
     }
 }

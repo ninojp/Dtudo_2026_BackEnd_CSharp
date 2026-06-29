@@ -13,13 +13,13 @@ public partial class Frm_Questao : Form
 
     private void Btn_Continue_Click(object sender, EventArgs e)
     {
-        DialogResult = DialogResult.Yes;
+        this.DialogResult = DialogResult.OK;
         this.Close();
     }
 
     private void Btn_Pare_Click(object sender, EventArgs e)
     {
-        DialogResult = DialogResult.Cancel;
+        this.DialogResult = DialogResult.Cancel;
         this.Close();
     }
 }

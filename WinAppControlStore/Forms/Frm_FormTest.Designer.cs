@@ -41,9 +41,10 @@ namespace WinAppControlStore
             Btn_Voltar.FlatStyle = FlatStyle.Flat;
             Btn_Voltar.Font = new Font("Segoe UI", 9.900001F, FontStyle.Regular, GraphicsUnit.Point, 0);
             Btn_Voltar.ForeColor = SystemColors.ActiveCaption;
-            Btn_Voltar.Location = new Point(12, 362);
+            Btn_Voltar.Location = new Point(17, 603);
+            Btn_Voltar.Margin = new Padding(4, 5, 4, 5);
             Btn_Voltar.Name = "Btn_Voltar";
-            Btn_Voltar.Size = new Size(138, 76);
+            Btn_Voltar.Size = new Size(197, 127);
             Btn_Voltar.TabIndex = 0;
             Btn_Voltar.Text = "Abrir Form Principal";
             Btn_Voltar.TextAlign = ContentAlignment.TopCenter;
@@ -52,17 +53,19 @@ namespace WinAppControlStore
             // 
             // Frm_FormTest
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ControlText;
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Center;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1143, 750);
             Controls.Add(Btn_Voltar);
             DoubleBuffered = true;
             ForeColor = SystemColors.Highlight;
             Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(4, 5, 4, 5);
             Name = "Frm_FormTest";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Formulário de Testes";
             ResumeLayout(false);
         }

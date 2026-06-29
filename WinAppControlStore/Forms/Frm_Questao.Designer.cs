@@ -60,11 +60,11 @@ namespace WinAppControlStore.Forms
             // 
             Lbl_TextoDaCaixa.AutoSize = true;
             Lbl_TextoDaCaixa.Font = new Font("Segoe UI Black", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            Lbl_TextoDaCaixa.Location = new Point(137, 32);
+            Lbl_TextoDaCaixa.Location = new Point(200, 31);
             Lbl_TextoDaCaixa.Name = "Lbl_TextoDaCaixa";
-            Lbl_TextoDaCaixa.Size = new Size(323, 32);
+            Lbl_TextoDaCaixa.Size = new Size(263, 32);
             Lbl_TextoDaCaixa.TabIndex = 2;
-            Lbl_TextoDaCaixa.Text = "Voce deseja Validar o CPF?";
+            Lbl_TextoDaCaixa.Text = "Questão a perguntar?";
             // 
             // Pic_PictureBox
             // 
@@ -87,6 +87,7 @@ namespace WinAppControlStore.Forms
             Controls.Add(Btn_Continue);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Frm_Questao";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Questão?";
             ((System.ComponentModel.ISupportInitialize)Pic_PictureBox).EndInit();
             ResumeLayout(false);

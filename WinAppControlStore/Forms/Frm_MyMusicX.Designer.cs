@@ -149,6 +149,7 @@ namespace WinAppControlStore.Forms
             IsMdiContainer = true;
             MainMenuStrip = menuStrip1;
             Name = "Frm_MyMusicX";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "MyMusicX - MDI";
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();

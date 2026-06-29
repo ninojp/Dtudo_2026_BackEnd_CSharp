@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiCSharp.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+35dc61056273686b80427e5370a87495a7c32a04")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+80f0a8871fda6b1eb427972ad34151fe1c2be8ce")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiCSharp.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiCSharp.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
