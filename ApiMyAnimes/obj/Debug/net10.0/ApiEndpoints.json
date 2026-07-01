@@ -1,6 +1,6 @@
 [
   {
-    "ContainingType": "ApiCSharp.Controllers.AnimeController",
+    "ContainingType": "ApiMyAnimes.Controllers.AnimeController",
     "Method": "AdicionarAnime",
     "RelativePath": "apiLocal/Anime",
     "HttpMethod": "POST",
@@ -9,7 +9,7 @@
     "Parameters": [
       {
         "Name": "adicionaAnimeDto",
-        "Type": "ApiCSharp.Shared.Dtos.AdicionaAnimeDto",
+        "Type": "LibDtudo.Shared.Dtos.AdicionaAnimeDto",
         "IsRequired": false
       },
       {
@@ -20,7 +20,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "ApiCSharp.Shared.Dtos.ObterAnimeDto",
+        "Type": "LibDtudo.Shared.Dtos.ObterAnimeDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -63,7 +63,7 @@
     ]
   },
   {
-    "ContainingType": "ApiCSharp.Controllers.AnimeController",
+    "ContainingType": "ApiMyAnimes.Controllers.AnimeController",
     "Method": "ObterAnimes",
     "RelativePath": "apiLocal/Anime",
     "HttpMethod": "GET",
@@ -83,7 +83,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.List\u00601[[ApiCSharp.Shared.Dtos.ObterAnimeDto, ApiCSharp.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "System.Collections.Generic.List\u00601[[LibDtudo.Shared.Dtos.ObterAnimeDto, LibDtudo.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -103,7 +103,7 @@
     ]
   },
   {
-    "ContainingType": "ApiCSharp.Controllers.AnimeController",
+    "ContainingType": "ApiMyAnimes.Controllers.AnimeController",
     "Method": "ObterAnimePorId",
     "RelativePath": "apiLocal/Anime/{id}",
     "HttpMethod": "GET",
@@ -118,7 +118,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "ApiCSharp.Shared.Dtos.ObterAnimeDto",
+        "Type": "LibDtudo.Shared.Dtos.ObterAnimeDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -147,7 +147,7 @@
     ]
   },
   {
-    "ContainingType": "ApiCSharp.Controllers.AnimeController",
+    "ContainingType": "ApiMyAnimes.Controllers.AnimeController",
     "Method": "AtualizarAnime",
     "RelativePath": "apiLocal/Anime/{id}",
     "HttpMethod": "PUT",
@@ -161,7 +161,7 @@
       },
       {
         "Name": "atualizaAnimeDto",
-        "Type": "ApiCSharp.Shared.Dtos.AtualizaAnimeDto",
+        "Type": "LibDtudo.Shared.Dtos.AtualizaAnimeDto",
         "IsRequired": true
       }
     ],
@@ -192,7 +192,7 @@
     ]
   },
   {
-    "ContainingType": "ApiCSharp.Controllers.AnimeController",
+    "ContainingType": "ApiMyAnimes.Controllers.AnimeController",
     "Method": "AtualizarAnimeParcial",
     "RelativePath": "apiLocal/Anime/{id}",
     "HttpMethod": "PATCH",
@@ -237,7 +237,7 @@
     ]
   },
   {
-    "ContainingType": "ApiCSharp.Controllers.AnimeController",
+    "ContainingType": "ApiMyAnimes.Controllers.AnimeController",
     "Method": "DeletarAnime",
     "RelativePath": "apiLocal/Anime/{id}",
     "HttpMethod": "DELETE",
@@ -286,13 +286,13 @@
     "Parameters": [
       {
         "Name": "adicionaMyAnimeDto",
-        "Type": "ApiCSharp.Shared.Dtos.AdicionaMyAnimeDto",
+        "Type": "LibDtudo.Shared.Dtos.AdicionaMyAnimeDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "ApiCSharp.Shared.Dtos.ObterMyAnimeDto",
+        "Type": "LibDtudo.Shared.Dtos.ObterMyAnimeDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -332,7 +332,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.List\u00601[[ApiCSharp.Shared.Dtos.ObterMyAnimeDto, ApiCSharp.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "System.Collections.Generic.List\u00601[[LibDtudo.Shared.Dtos.ObterMyAnimeDto, LibDtudo.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -367,7 +367,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "ApiCSharp.Shared.Dtos.ObterMyAnimeDto",
+        "Type": "LibDtudo.Shared.Dtos.ObterMyAnimeDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -410,7 +410,7 @@
       },
       {
         "Name": "atualizaMyAnimeDto",
-        "Type": "ApiCSharp.Shared.Dtos.AtualizaMyAnimeDto",
+        "Type": "LibDtudo.Shared.Dtos.AtualizaMyAnimeDto",
         "IsRequired": true
       }
     ],

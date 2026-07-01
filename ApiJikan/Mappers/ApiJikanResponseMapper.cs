@@ -9,10 +9,10 @@ namespace ApiJikan.Mappers;
 public static class ApiJikanResponseMapper
 {
     /// <summary>
-    /// BuscarAnimePorNomeResponseDto...
+    /// Mapeia os resultados da busca de animes de um DTO Jikan para um DTO de resposta.
     /// </summary>
-    /// <param name="source"></param>
-    /// <returns></returns>
+    /// <param name="source">O DTO de busca de animes da Jikan.</param>
+    /// <returns>Um DTO de resposta com os resultados da busca de animes.</returns>
     public static BuscarAnimePorNomeResponseDto Map(JikanAnimeSearchResponseDto source)
     {
         var results = source.Data?
@@ -47,7 +47,11 @@ public static class ApiJikanResponseMapper
             TotalResults = source.Pagination?.Items?.Total ?? results.Count
         };
     }
-
+    /// <summary>
+    /// Mapeia os detalhes de um anime de um DTO Jikan para um DTO de resposta.
+    /// </summary>
+    /// <param name="source">O DTO de detalhes do anime da Jikan.</param>
+    /// <returns>Um DTO de resposta com os detalhes do anime.</returns>
     public static BuscarAnimePorIdResponseDto Map(JikanAnimeDetailsDto source)
     {
         return new BuscarAnimePorIdResponseDto
@@ -88,7 +92,11 @@ public static class ApiJikanResponseMapper
             Demographics = MapNamedItems(source.Demographics)
         };
     }
-
+    /// <summary>
+    /// Mapeia as relações de animes de um DTO Jikan para um DTO de resposta.
+    /// </summary>
+    /// <param name="source">A lista de grupos de relações de animes do DTO Jikan.</param>
+    /// <returns>Uma lista de grupos de relações de animes mapeados.</returns>
     public static List<AnimeRelationGroupDto> Map(List<JikanAnimeRelationGroupDto>? source)
     {
         return source?.Select(group => new AnimeRelationGroupDto
@@ -104,10 +112,10 @@ public static class ApiJikanResponseMapper
             }).ToList() ?? new List<AnimeRelationGroupDto>();
     }
     /// <summary>
-    /// Mapea as imagens...
+    /// Mapeia as imagens de um DTO Jikan para um DTO de resposta.
     /// </summary>
-    /// <param name="source"></param>
-    /// <returns></returns>
+    /// <param name="source">O dicionário de variantes de imagens do DTO Jikan.</param>
+    /// <returns>Um DTO de imagens mapeado ou null se não houver imagens.</returns>
     public static AnimeImagesDto? MapImages(Dictionary<string, JikanImageVariantDto>? source)
     {
         if (source == null) return null;
@@ -132,6 +140,11 @@ public static class ApiJikanResponseMapper
     {
         return source?.String;
     }
+    /// <summary>
+    /// Mapeia uma lista de JikanNamedItemDto para uma lista de strings contendo apenas os nomes válidos.
+    /// </summary>
+    /// <param name="source">A lista de JikanNamedItemDto.</param>
+    /// <returns>Uma lista de strings contendo apenas os nomes válidos.</returns>
     private static List<string> MapNamedItems(List<JikanNamedItemDto>? source)
     {
         return source?

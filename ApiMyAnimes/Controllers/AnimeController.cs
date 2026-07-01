@@ -1,18 +1,20 @@
-using ApiCSharp.Shared.Dtos;
-using ApiCSharp.Shared.Models;
+ using LibDtudo.Shared.Dtos;
+using LibDtudo.Shared.Models;
 using ApiMyAnimes.Data;
 using ApiMyAnimes.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace ApiCSharp.Controllers;
+namespace ApiMyAnimes.Controllers;
 
 /// <summary>
 /// Controlador responsável por gerenciar os registros da entidade <see cref="Anime"/> em banco local.
 /// Disponibiliza endpoints de criação, leitura, atualização (total e parcial) e exclusão.
 /// </summary>
 /// <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
+/// <param name="apiJikanClient"></param>
+/// <param name="logger"></param>
 [ApiController]
 [Route("apiLocal/[controller]")]
 public class AnimeController(

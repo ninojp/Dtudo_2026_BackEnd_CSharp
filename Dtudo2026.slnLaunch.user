@@ -1,16 +1,18 @@
 [
   {
-    "Name": "IniciaTudo",
+    "Name": "Novo Perfil",
     "Projects": [
       {
         "Path": "ApiJikan\\ApiJikan.csproj",
-        "Action": "Start",
-        "DebugTarget": "ApiJikan"
+        "Action": "Start"
       },
       {
         "Path": "ApiMyAnimes\\ApiMyAnimes.csproj",
-        "Action": "Start",
-        "DebugTarget": "ApiMyAnimes"
+        "Action": "Start"
+      },
+      {
+        "Path": "WinAppControlStore\\WinAppDtudo.csproj",
+        "Action": "Start"
       }
     ]
   }

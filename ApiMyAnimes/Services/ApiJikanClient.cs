@@ -1,12 +1,21 @@
 using System.Net;
-using System.Net.Http.Json;
 
 namespace ApiMyAnimes.Services;
 
+/// <summary>
+/// Cliente para interagir com a API Jikan.
+/// </summary>
 public class ApiJikanClient(HttpClient httpClient)
 {
     private readonly HttpClient _httpClient = httpClient;
 
+    /// <summary>
+    /// Obtém os dados de importação de um anime a partir do seu ID no MyAnimeList (malId) usando a API Jikan.
+    /// </summary>
+    /// <param name="malId">O ID do anime no MyAnimeList.</param>
+    /// <param name="cancellationToken">Token de cancelamento para a operação assíncrona.</param>
+    /// <returns>Os dados de importação do anime ou null se não encontrado.</returns>
+    /// <exception cref="HttpRequestException">Lançada quando ocorre um erro na solicitação HTTP.</exception>
     public async Task<AnimeImportData?> ObterAnimePorIdAsync(int malId, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"ApiJikan/{malId}", cancellationToken);
@@ -20,7 +29,6 @@ public class ApiJikanClient(HttpClient httpClient)
                 null,
                 response.StatusCode);
         }
-
         var payload = await response.Content.ReadFromJsonAsync<ApiJikanAnimeDetailsResponseDto>(cancellationToken: cancellationToken);
         if (payload is null) return null;
 
@@ -84,7 +92,9 @@ public class ApiJikanClient(HttpClient httpClient)
         };
     }
 }
-
+/// <summary>
+/// Representa os dados de importação de um anime obtidos da API Jikan.
+/// </summary>
 public class AnimeImportData
 {
     public int MalId { get; set; }

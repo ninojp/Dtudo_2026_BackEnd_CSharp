@@ -1,6 +1,6 @@
-using ApiCSharp.Shared.Dtos;
-using ApiCSharp.Shared.Models;
 using ApiMyAnimes.Data;
+using LibDtudo.Shared.Dtos;
+using LibDtudo.Shared.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 

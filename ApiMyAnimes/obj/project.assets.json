@@ -1195,17 +1195,17 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "ApiCSharp.Shared/1.0.0": {
+      "LibDtudo.Shared/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "10.0.9"
         },
         "compile": {
-          "bin/placeholder/ApiCSharp.Shared.dll": {}
+          "bin/placeholder/LibDtudo.Shared.dll": {}
         },
         "runtime": {
-          "bin/placeholder/ApiCSharp.Shared.dll": {}
+          "bin/placeholder/LibDtudo.Shared.dll": {}
         }
       }
     }
@@ -3687,15 +3687,15 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "ApiCSharp.Shared/1.0.0": {
+    "LibDtudo.Shared/1.0.0": {
       "type": "project",
-      "path": "../ApiCSharp.Shared/ApiCSharp.Shared.csproj",
-      "msbuildProject": "../ApiCSharp.Shared/ApiCSharp.Shared.csproj"
+      "path": "../LibDtudo.Shared/LibDtudo.Shared.csproj",
+      "msbuildProject": "../LibDtudo.Shared/LibDtudo.Shared.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "ApiCSharp.Shared >= 1.0.0",
+      "LibDtudo.Shared >= 1.0.0",
       "Microsoft.AspNetCore.Mvc.NewtonsoftJson >= 10.0.9",
       "Microsoft.EntityFrameworkCore >= 10.0.9",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.9",
@@ -3740,8 +3740,8 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\2026MeusProjetos\\Dtudo2026\\ApiCSharp.Shared\\ApiCSharp.Shared.csproj": {
-              "projectPath": "C:\\2026MeusProjetos\\Dtudo2026\\ApiCSharp.Shared\\ApiCSharp.Shared.csproj"
+            "C:\\2026MeusProjetos\\Dtudo2026\\LibDtudo.Shared\\LibDtudo.Shared.csproj": {
+              "projectPath": "C:\\2026MeusProjetos\\Dtudo2026\\LibDtudo.Shared\\LibDtudo.Shared.csproj"
             }
           }
         }

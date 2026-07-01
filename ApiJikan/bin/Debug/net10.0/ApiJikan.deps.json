@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v10.0": {
       "ApiJikan/1.0.0": {
         "dependencies": {
-          "ApiCSharp.Shared": "1.0.0",
+          "LibDtudo.Shared": "1.0.0",
           "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "10.0.9",
           "Microsoft.EntityFrameworkCore.Design": "10.0.9",
           "Microsoft.OpenApi": "2.7.5",
@@ -551,12 +551,12 @@
           }
         }
       },
-      "ApiCSharp.Shared/1.0.0": {
+      "LibDtudo.Shared/1.0.0": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "10.0.9"
         },
         "runtime": {
-          "ApiCSharp.Shared.dll": {
+          "LibDtudo.Shared.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -787,7 +787,7 @@
       "path": "system.composition.typedparts/9.0.0",
       "hashPath": "system.composition.typedparts.9.0.0.nupkg.sha512"
     },
-    "ApiCSharp.Shared/1.0.0": {
+    "LibDtudo.Shared/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

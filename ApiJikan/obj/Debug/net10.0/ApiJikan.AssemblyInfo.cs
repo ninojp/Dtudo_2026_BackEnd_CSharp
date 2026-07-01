@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiJikan")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+80f0a8871fda6b1eb427972ad34151fe1c2be8ce")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5f7b21729617a894ae0a4615a4799f4ecf89f9e8")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiJikan")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiJikan")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

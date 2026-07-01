@@ -28,11 +28,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ApiCSharp.Shared\ApiCSharp.Shared.csproj" />
+        <Folder Include="Migrations\" />
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Migrations\" />
+      <ProjectReference Include="..\LibDtudo.Shared\LibDtudo.Shared.csproj" />
     </ItemGroup>
 
 </Project>

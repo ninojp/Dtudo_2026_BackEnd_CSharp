@@ -888,7 +888,7 @@
           }
         ],
         "requestBody": {
-          "description": "Documento de operações JSON Patch aplicado sobre ApiCSharp.Shared.Dtos.AtualizaMyAnimeDto.",
+          "description": "Documento de operações JSON Patch aplicado sobre LibDtudo.Shared.Dtos.AtualizaMyAnimeDto.",
           "content": {
             "application/json-patch+json": {
               "schema": {

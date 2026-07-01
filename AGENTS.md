@@ -5,7 +5,7 @@ Treat this repository as one full-stack workspace, not as separate apps.
 ## Workspace boundary
 
 - Repository root is the source of truth.
-- Visual Studio may open only `ApiCSharp.slnx`, but `DtudoSite/`, `ApiNode/`, and `ApiCSharp/` are all part of the same product.
+- Visual Studio may open `LibDtudo.Shared.slnx`, but `DtudoSite/`, `ApiNode/`, `ApiMyAnimes/`, `ApiJikan/`, `WinAppDtudo/` are all part of the same product.
 - Backend targets .NET 10.
 
 ## Main areas
@@ -26,14 +26,6 @@ Treat this repository as one full-stack workspace, not as separate apps.
 - Music proxy: `ApiNode/mymusicx/discogsProxy.js`
 - Helper scripts are part of the development workflow and may support frontend features directly.
 
-### C# backend
-
-- Path: `ApiCSharp/`
-- Startup: `ApiCSharp/Program.cs`
-- Controllers: `ApiCSharp/Controllers/`
-- Services: `ApiCSharp/Services/`
-- Models: `ApiCSharp/Models/`
-- Anime API integration: `AnimeController`, `IJikanService`, `JikanService`
 
 ## Working rules
 
@@ -47,11 +39,7 @@ Treat this repository as one full-stack workspace, not as separate apps.
 ## Useful commands
 
 - `npm run serv`
-- `npm run dev`
-- `npm run start`
-- `npm run proxy`
-- `npm run build`
-- `dotnet build ApiCSharp/ApiCSharp.csproj`
+
 
 ## Persistence
 

@@ -27,9 +27,6 @@ C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\Swashbuckle.AspNetCore.
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
-C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\ApiCSharp.Shared.dll
-C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\ApiCSharp.Shared.pdb
-C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\ApiCSharp.Shared.xml
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\rjimswa.dswa.cache.json
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
@@ -131,3 +128,6 @@ C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\ru\Microsoft.CodeAnalys
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\tr\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
+C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\LibDtudo.Shared.dll
+C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\LibDtudo.Shared.pdb
+C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Debug\net10.0\LibDtudo.Shared.xml

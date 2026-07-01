@@ -13,6 +13,11 @@ public class ServiceBuscarPorID
     private readonly HttpClient _httpClient;
     private readonly ILogger<ServiceBuscarPorID> _logger;
     private readonly JsonSerializerOptions _jsonOptions;
+    /// <summary>
+    /// Construtor do serviço ServiceBuscarPorID
+    /// </summary>
+    /// <param name="httpClient">O HttpClient utilizado para realizar as requisições à API Jikan.</param>
+    /// <param name="logger">O logger utilizado para registrar informações e erros.</param>
     public ServiceBuscarPorID(HttpClient httpClient, ILogger<ServiceBuscarPorID> logger)
     {
         _httpClient = httpClient;
@@ -23,7 +28,12 @@ public class ServiceBuscarPorID
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
         };
     }
-
+    /// <summary>
+    /// Busca informações de um anime na API Jikan pelo seu ID (malId).
+    /// </summary>
+    /// <param name="malId">O ID do anime na MyAnimeList.</param>
+    /// <returns>Um DTO de resposta com os detalhes do anime, ou null se não encontrado.</returns>
+    /// <exception cref="Exception">Lançada em caso de erro na comunicação com a API Jikan.</exception>
     public async Task<BuscarAnimePorIdResponseDto?> JikanBuscarPorIDAsync(int malId)
     {
         try
@@ -60,6 +70,9 @@ public class ServiceBuscarPorID
     /// Executa GET com retry automático em caso de 429 (Too Many Requests).
     /// Respeita o header Retry-After da Jikan; usa 2s de fallback se não informado.
     /// </summary>
+    /// <param name="relativeUrl">A URL relativa para a requisição GET.</param>
+    /// <param name="cancellationToken">Token de cancelamento para a operação assíncrona.</param>
+    /// <returns>O HttpResponseMessage da requisição GET.</returns>
     private async Task<HttpResponseMessage> GetComRetryRateLimitAsync(
         string relativeUrl, CancellationToken cancellationToken = default)
     {
@@ -84,7 +97,11 @@ public class ServiceBuscarPorID
         }
         throw new HttpRequestException($"Falha ao buscar '{relativeUrl}' na Jikan após múltiplas tentativas.");
     }
-
+    /// <summary>
+    /// Obtém o tempo de delay para retry baseado no header Retry-After da resposta.
+    /// </summary>
+    /// <param name="response">A resposta HTTP que contém o header Retry-After.</param>
+    /// <returns>O tempo de delay para retry.</returns>
     private static TimeSpan ObterDelayRetry(HttpResponseMessage response)
     {
         var retryAfter = response.Headers.RetryAfter;
