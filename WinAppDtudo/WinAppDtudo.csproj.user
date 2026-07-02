@@ -7,6 +7,9 @@
     <ActiveDebugProfile>WinAppControlStore</ActiveDebugProfile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="Controls\UC_AnimeCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="FormsUC\FUC_BuscarPorID.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -14,6 +17,9 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="FormsUC\FUC_CadastrarUsuario.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="FormsUC\FUC_DetalhesAnime.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Forms\Frm_CadastrarUsuario.cs">

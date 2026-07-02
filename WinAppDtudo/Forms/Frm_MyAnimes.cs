@@ -15,25 +15,33 @@ public partial class Frm_MyAnimes : Form
     //=============================================================================
     private void MnI_ProcurarAnimePorNome_Click(object sender, EventArgs e)
     {
-        if(_tabIndexMyAnimesPorNome == 0)
+        if (_tabIndexMyAnimesPorNome == 0)
         {
             _tabIndexMyAnimesPorNome++;
-            FUC_BuscarPorNome ucMascaras = new()
+            FUC_BuscarPorNome ucBuscarNome = new()
             {
-                //Dock = DockStyle.Fill
+                Dock = DockStyle.Fill
             };
+            ucBuscarNome.CardClicado += AbrirDetalhesAnime;
             TabPage tabPage = new()
             {
-                Text = $"Procurar Anime",
-                Name = $"ProcurarAnime",
+                Text = "Procurar Anime",
+                Name = "ProcurarAnime",
                 ImageIndex = 2,
             };
-            tabPage.Controls.Add(ucMascaras);
+            tabPage.Controls.Add(ucBuscarNome);
             Tbc_MyAnimes.TabPages.Add(tabPage);
+            Tbc_MyAnimes.SelectedTab = tabPage;
         }
         else
         {
-            MessageBox.Show($"A aba 'Procurar Anime' já está aberta.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            var tabExistente = Tbc_MyAnimes.TabPages
+                .Cast<TabPage>().FirstOrDefault(tp => tp.Name == "ProcurarAnime");
+            if (tabExistente != null)
+                Tbc_MyAnimes.SelectedTab = tabExistente;
+            else
+                MessageBox.Show($"A aba 'Procurar Anime' já está aberta.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }
     //=============================================================================
@@ -209,5 +217,32 @@ public partial class Frm_MyAnimes : Form
             }
             Tbc_MyAnimes.TabPages.Remove(tabPage);
         }
+    }
+
+    //=============================================================================
+    private void AbrirDetalhesAnime(object? sender, int malId)
+    {
+        var tabName = $"Detalhes_{malId}";
+        var tabExistente = Tbc_MyAnimes.TabPages
+            .Cast<TabPage>().FirstOrDefault(tp => tp.Name == tabName);
+        if (tabExistente != null)
+        {
+            Tbc_MyAnimes.SelectedTab = tabExistente;
+            return;
+        }
+
+        var ucDetalhes = new FUC_DetalhesAnime(malId)
+        {
+            Dock = DockStyle.Fill
+        };
+        var tabPage = new TabPage
+        {
+            Text = $"Detalhes #{malId}",
+            Name = tabName,
+            ImageIndex = 1,
+        };
+        tabPage.Controls.Add(ucDetalhes);
+        Tbc_MyAnimes.TabPages.Add(tabPage);
+        Tbc_MyAnimes.SelectedTab = tabPage;
     }
 }
