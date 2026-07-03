@@ -1,3 +1,5 @@
+using WinAppDtudo.Services;
+
 namespace WinAppDtudo;
 
 internal static class Program
@@ -11,6 +13,10 @@ internal static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
+
+        // Inicializa o gerenciador de temas (detecta Dark Mode do Windows 11)
+        ThemeManager.Initialize();
+
         Application.Run(new Frm_WinAppDtudo());
     }
 }

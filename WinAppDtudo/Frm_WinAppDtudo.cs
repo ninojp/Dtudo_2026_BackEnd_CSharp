@@ -1,14 +1,23 @@
 using WinAppDtudo.Forms;
+using WinAppDtudo.Services;
 using LibDtudo.Shared.Utils;
+
 namespace WinAppDtudo;
+
 /// <summary>
 /// Frm_WinAppDtudo é a classe principal do aplicativo WinForms, representando o formulário principal da aplicação Dtudo.
 /// </summary>
-public partial class Frm_WinAppDtudo : Form
+public partial class Frm_WinAppDtudo : CustomFormNoBorder
 {
     public Frm_WinAppDtudo()
     {
         InitializeComponent();
+        // Aplicar o tema Dark Mode ao formulário e seus componentes
+        ThemeManager.ApplyDarkModeToForm(this);
+        // Inicializa o formulário customizado sem barra de título
+        InitializeCustomFormNoBorder(Mnu_Principal);
+        AddControlButtonsToMenuStrip(Mnu_Principal);
+
         //Opções de inicialização do formulário, após a inicialização dos componentes.
         MnI_Abrir.Enabled = false;
         MnI_MyAnimes.Enabled = true;

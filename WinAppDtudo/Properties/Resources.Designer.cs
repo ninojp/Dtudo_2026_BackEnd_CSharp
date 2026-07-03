@@ -63,6 +63,16 @@ namespace WinAppDtudo.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap AnimesElas {
+            get {
+                object obj = ResourceManager.GetObject("AnimesElas", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap BaixoGatilho {
             get {
                 object obj = ResourceManager.GetObject("BaixoGatilho", resourceCulture);
@@ -226,6 +236,16 @@ namespace WinAppDtudo.Properties {
         internal static System.Drawing.Bitmap OlhoBRHacker1024 {
             get {
                 object obj = ResourceManager.GetObject("OlhoBRHacker1024", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap onePieceGroup {
+            get {
+                object obj = ResourceManager.GetObject("onePieceGroup", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

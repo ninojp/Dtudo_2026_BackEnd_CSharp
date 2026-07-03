@@ -1,3 +1,4 @@
+using WinAppDtudo.Controls;
 using WinAppDtudo.Services;
 
 namespace WinAppDtudo.FormsUC;
@@ -8,6 +9,9 @@ namespace WinAppDtudo.FormsUC;
 /// </summary>
 public partial class FUC_DetalhesAnime : UserControl
 {
+    /// <summary>Disparado quando o usuário clica em um mini card de anime relacionado. O argumento é o MalId.</summary>
+    public event EventHandler<int>? CardClicado;
+
     private readonly JikanApiService _jikanService = new();
     private readonly int _malId;
     private int _yOffset;
@@ -61,6 +65,7 @@ public partial class FUC_DetalhesAnime : UserControl
         }
 
         PopularUI(anime);
+        _ = CarregarRelacoesAsync();
     }
 
     // ===================================================================
@@ -253,6 +258,120 @@ public partial class FUC_DetalhesAnime : UserControl
         Pnl_Info.Controls.Add(sep);
         _yOffset += 10;
     }
+
+    // ===================================================================
+
+    private async Task CarregarRelacoesAsync()
+    {
+        int largura = Math.Max(Pnl_Info.ClientSize.Width - 12, 300);
+
+        // Fase 1: exibir cabeçalho e indicador de carregamento
+        Pnl_Info.SuspendLayout();
+        AdicionarSeparador(largura);
+
+        var lblTituloSecao = new Label
+        {
+            AutoSize = false,
+            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            ForeColor = Color.FromArgb(25, 50, 120),
+            Location = new Point(4, _yOffset),
+            Size = new Size(148 + largura, 26),
+            Text = "🔗 Animes Relacionados"
+        };
+        _yOffset += 30;
+
+        var lblCarregando = new Label
+        {
+            AutoSize = false,
+            Font = new Font("Segoe UI", 8.5F, FontStyle.Italic),
+            ForeColor = Color.Gray,
+            Location = new Point(8, _yOffset),
+            Size = new Size(400, 22),
+            Text = "⏳ Carregando animes relacionados..."
+        };
+        int yBaseRelacoes = _yOffset;
+        _yOffset += 26;
+
+        Pnl_Info.Controls.Add(lblTituloSecao);
+        Pnl_Info.Controls.Add(lblCarregando);
+        Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
+        Pnl_Info.ResumeLayout(true);
+
+        // Fase 2: buscar relações assincronamente
+        List<JikanAnimeRelacaoGroup> relacoes = [];
+        try
+        {
+            relacoes = await _jikanService.BuscarRelacoesAsync(_malId);
+        }
+        catch
+        {
+            lblCarregando.Text = "⚠️ Não foi possível carregar os animes relacionados.";
+            return;
+        }
+
+        // Fase 3: substituir indicador pelos mini cards
+        Pnl_Info.Controls.Remove(lblCarregando);
+        lblCarregando.Dispose();
+        _yOffset = yBaseRelacoes;
+
+        var entradasAnime = relacoes
+            .SelectMany(g => g.Entry)
+            .Where(e => e.Type == "anime")
+            .ToList();
+
+        if (entradasAnime.Count == 0)
+        {
+            var lblSemRel = new Label
+            {
+                AutoSize = false,
+                Font = new Font("Segoe UI", 8.5F, FontStyle.Italic),
+                ForeColor = Color.DimGray,
+                Location = new Point(8, _yOffset),
+                Size = new Size(400, 22),
+                Text = "Nenhum anime relacionado encontrado."
+            };
+            Pnl_Info.SuspendLayout();
+            Pnl_Info.Controls.Add(lblSemRel);
+            _yOffset += 26;
+            Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
+            Pnl_Info.ResumeLayout(true);
+            return;
+        }
+
+        int larguraFlp = Math.Max(Pnl_Info.ClientSize.Width - 16, 300);
+        var flp = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            WrapContents = true,
+            FlowDirection = FlowDirection.LeftToRight,
+            Location = new Point(4, _yOffset),
+            MinimumSize = new Size(larguraFlp, 0),
+            MaximumSize = new Size(larguraFlp, 0),
+            Padding = new Padding(4),
+            BackColor = Color.White
+        };
+
+        foreach (var entry in entradasAnime)
+        {
+            var card = new UC_MiniAnimeCard();
+            card.CarregarDados(entry);
+            card.CardClicado += (s, id) => CardClicado?.Invoke(this, id);
+            flp.Controls.Add(card);
+        }
+
+        Pnl_Info.SuspendLayout();
+        Pnl_Info.Controls.Add(flp);
+        flp.CreateControl();
+        // Usa GetPreferredSize para estimar a altura antes da escala de DPI ser aplicada;
+        // AutoSize=true no FLP corrige o tamanho final quando o controle é exibido.
+        int alturaEstimada = flp.GetPreferredSize(new Size(larguraFlp, int.MaxValue)).Height;
+        _yOffset += Math.Max(alturaEstimada, flp.Height) + 12;
+        Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
+        Pnl_Info.ResumeLayout(true);
+    }
+
+    // ===================================================================
 
     private void MostrarCarregando(bool carregando)
     {

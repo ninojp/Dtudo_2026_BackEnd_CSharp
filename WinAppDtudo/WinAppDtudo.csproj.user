@@ -10,6 +10,12 @@
     <Compile Update="Controls\UC_AnimeCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Controls\UC_MiniAnimeCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="CustomFormNoBorder.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="FormsUC\FUC_BuscarPorID.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -37,6 +43,9 @@
     <Compile Update="Forms\Frm_MyMusicX.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\Frm_NinoTI.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Frm_Questao.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -48,6 +57,9 @@
     </Compile>
     <Compile Update="FormsUC\FUC_Mascaras.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Helpers\FormHelpers.cs">
+      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>

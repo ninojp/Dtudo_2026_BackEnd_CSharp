@@ -7,7 +7,9 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationHighDpiMode>SystemAware</ApplicationHighDpiMode>
-    <ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
+    <ApplicationVisualStyles>true</ApplicationVisualStyles>
+    <ApplicationUseCompatibleTextRendering>false</ApplicationUseCompatibleTextRendering>
+    <ApplicationDefaultFont>Microsoft Sans Serif, 8.25pt</ApplicationDefaultFont>
     <StartupObject>WinAppDtudo.Program</StartupObject>
     <ApplicationIcon>Resources\YingYang_HD_Ico.ico</ApplicationIcon>
   </PropertyGroup>

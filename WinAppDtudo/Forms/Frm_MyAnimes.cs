@@ -1,9 +1,10 @@
 using WinAppDtudo.Forms;
 using WinAppDtudo.FormsUC;
+using WinAppDtudo.Services;
 
 namespace WinAppDtudo;
 
-public partial class Frm_MyAnimes : Form
+public partial class Frm_MyAnimes : CustomFormNoBorder
 {
     public int _tabIndexMascaras = 0;
     public int _tabIndexMyAnimesPorNome = 0;
@@ -11,6 +12,11 @@ public partial class Frm_MyAnimes : Form
     public Frm_MyAnimes()
     {
         InitializeComponent();
+        // Aplicar o tema Dark Mode ao formulário e seus componentes
+        ThemeManager.ApplyDarkModeToForm(this);
+        // Inicializa o formulário customizado sem barra de título
+        InitializeCustomFormNoBorder(Mnu_MenuMyAnimes);
+        AddControlButtonsToMenuStrip(Mnu_MenuMyAnimes);
     }
     //=============================================================================
     private void MnI_ProcurarAnimePorNome_Click(object sender, EventArgs e)
@@ -162,14 +168,14 @@ public partial class Frm_MyAnimes : Form
         { menuFlutuanteItem.Image = imgMenuItem; }
         return menuFlutuanteItem;
     }
-    void MenuFlutuanteItem1_Click(object sender, EventArgs e)
+    void MenuFlutuanteItem1_Click(object? sender, EventArgs e)
     {
         if (Tbc_MyAnimes.SelectedTab != null)
         {
             ApagaAbaAtual(Tbc_MyAnimes.SelectedTab);
         }
     }
-    void MenuFlutuanteItem2_Click(object sender, EventArgs e)
+    void MenuFlutuanteItem2_Click(object? sender, EventArgs e)
     {
         if (Tbc_MyAnimes.SelectedTab != null)
         {
@@ -177,14 +183,14 @@ public partial class Frm_MyAnimes : Form
             ApagarEsquerda(Tbc_MyAnimes.SelectedIndex);
         }
     }
-    void MenuFlutuanteItem3_Click(object sender, EventArgs e)
+    void MenuFlutuanteItem3_Click(object? sender, EventArgs e)
     {
         if (Tbc_MyAnimes.SelectedTab != null)
         {
             ApagarDireita(Tbc_MyAnimes.SelectedIndex);
         }
     }
-    void MenuFlutuanteItem4_Click(object sender, EventArgs e)
+    void MenuFlutuanteItem4_Click(object? sender, EventArgs e)
     {
         if (Tbc_MyAnimes.SelectedTab != null)
         {
@@ -235,6 +241,7 @@ public partial class Frm_MyAnimes : Form
         {
             Dock = DockStyle.Fill
         };
+        ucDetalhes.CardClicado += AbrirDetalhesAnime;
         var tabPage = new TabPage
         {
             Text = $"Detalhes #{malId}",
@@ -244,5 +251,10 @@ public partial class Frm_MyAnimes : Form
         tabPage.Controls.Add(ucDetalhes);
         Tbc_MyAnimes.TabPages.Add(tabPage);
         Tbc_MyAnimes.SelectedTab = tabPage;
+    }
+
+    private void Frm_MyAnimes_Load(object sender, EventArgs e)
+    {
+
     }
 }

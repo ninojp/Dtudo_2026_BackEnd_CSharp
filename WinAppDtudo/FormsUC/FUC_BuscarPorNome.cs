@@ -20,6 +20,7 @@ public partial class FUC_BuscarPorNome : UserControl
     public FUC_BuscarPorNome()
     {
         InitializeComponent();
+        ThemeManager.ApplyDarkModeToUserControl(this);
         Btn_BuscarPorNome.Click += Btn_Buscar_Click;
         Btn_PaginaAnterior.Click += Btn_PaginaAnterior_Click;
         Btn_ProximaPagina.Click += Btn_ProximaPagina_Click;

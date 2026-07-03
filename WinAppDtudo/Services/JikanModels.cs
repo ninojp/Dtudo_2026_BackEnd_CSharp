@@ -79,3 +79,20 @@ public class JikanImageVariant
     public string? SmallImageUrl { get; set; }
     public string? LargeImageUrl { get; set; }
 }
+
+/// <summary>Grupo de relações de anime (ex: Prequel, Sequel, Side Story).</summary>
+public class JikanAnimeRelacaoGroup
+{
+    public string? Relation { get; set; }
+    public List<JikanRelacaoEntry> Entry { get; set; } = [];
+}
+
+/// <summary>Entrada de um anime relacionado.</summary>
+public class JikanRelacaoEntry
+{
+    public int MalId { get; set; }
+    public string? Type { get; set; }
+    public string? Name { get; set; }
+    public string? Url { get; set; }
+    public string? ImageUrl { get; set; }
+}

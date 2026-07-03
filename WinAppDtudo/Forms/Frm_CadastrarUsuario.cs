@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using WinAppDtudo.Services;
 
 namespace WinAppDtudo.Forms;
 
@@ -13,6 +14,8 @@ public partial class Frm_CadastrarUsuario : Form
     public Frm_CadastrarUsuario()
     {
         InitializeComponent();
+        // Aplicar o tema Dark Mode ao formulário e seus componentes
+        ThemeManager.ApplyDarkModeToForm(this);
     }
 
     private void Btn_Cancelar_Click(object sender, EventArgs e)

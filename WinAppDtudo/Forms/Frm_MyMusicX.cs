@@ -1,18 +1,25 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+using WinAppDtudo.Services;
 
 namespace WinAppDtudo.Forms;
 
-public partial class Frm_MyMusicX : Form
+public partial class Frm_MyMusicX : CustomFormNoBorder
 {
     public Frm_MyMusicX()
     {
         InitializeComponent();
+        // Aplicar o tema Dark Mode ao formulário e seus componentes
+        ThemeManager.ApplyDarkModeToForm(this);
+        // Inicializa o formulário customizado sem barra de título
+        MenuStrip? menuStrip = this.Controls.OfType<MenuStrip>().FirstOrDefault();
+        if (menuStrip != null)
+        {
+            InitializeCustomFormNoBorder(menuStrip);
+            AddControlButtonsToMenuStrip(menuStrip);
+        }
+        else
+        {
+            InitializeCustomFormNoBorder();
+        }
     }
     //Menu Windows - Exibir janelas em cascata.
     private void CascataToolStripMenuItem_Click(object sender, EventArgs e)

@@ -23,7 +23,7 @@ public class JikanApiService
         _httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri(ApiBase + "/"),
-            Timeout = TimeSpan.FromSeconds(30)
+            Timeout = TimeSpan.FromSeconds(120)
         };
     }
 
@@ -44,5 +44,14 @@ public class JikanApiService
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<JikanAnimeDetalhes>(json, _jsonOptions);
+    }
+
+    /// <summary>Busca os animes relacionados a um anime pelo ID do MAL.</summary>
+    public async Task<List<JikanAnimeRelacaoGroup>> BuscarRelacoesAsync(int malId)
+    {
+        using var response = await _httpClient.GetAsync($"ApiJikan/{malId}/relations");
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<JikanAnimeRelacaoGroup>>(json, _jsonOptions) ?? [];
     }
 }
