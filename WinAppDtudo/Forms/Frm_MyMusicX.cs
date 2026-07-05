@@ -36,18 +36,10 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
     {
         this.LayoutMdi(MdiLayout.TileVertical);
     }
-
-    private void FormTestToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        Frm_FormTest formTest = new();
-        formTest.MdiParent = this;
-        formTest.Show();
-    }
-
-    private void FormHelloWorldToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        Frm_HelloWorld formHelloWorld = new();
-        formHelloWorld.MdiParent = this;
-        formHelloWorld.Show();
-    }
+    //private void FormTestToolStripMenuItem_Click(object sender, EventArgs e)
+    //{
+    //    Frm_FormTest formTest = new();
+    //    formTest.MdiParent = this;
+    //    formTest.Show();
+    //}
 }

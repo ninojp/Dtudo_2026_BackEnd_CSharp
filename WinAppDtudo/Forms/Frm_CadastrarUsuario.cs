@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using WinAppDtudo.Services;
 
 namespace WinAppDtudo.Forms;
@@ -20,7 +13,6 @@ public partial class Frm_CadastrarUsuario : Form
 
     private void Btn_Cancelar_Click(object sender, EventArgs e)
     {
-
     }
 
     private void Btn_ImagemPerfil_Click(object sender, EventArgs e)

@@ -1,5 +1,4 @@
 namespace WinAppDtudo;
-
 partial class Frm_MyAnimes
 {
     /// <summary>
@@ -31,7 +30,7 @@ partial class Frm_MyAnimes
         components = new System.ComponentModel.Container();
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Frm_MyAnimes));
         Mnu_MenuMyAnimes = new MenuStrip();
-        AbasToolStripMenuItem = new ToolStripMenuItem();
+        Mnu_MenuAbas = new ToolStripMenuItem();
         MnI_AbrirAbas = new ToolStripMenuItem();
         MnI_AbaMascaras = new ToolStripMenuItem();
         MnI_FormMsgBox = new ToolStripMenuItem();
@@ -49,36 +48,37 @@ partial class Frm_MyAnimes
         // 
         // Mnu_MenuMyAnimes
         // 
+        Mnu_MenuMyAnimes.BackColor = Color.DimGray;
         Mnu_MenuMyAnimes.ImageScalingSize = new Size(32, 32);
-        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { AbasToolStripMenuItem, MnI_ProcurarAnimePorNome, MnI_ProcurarAnimePorID });
+        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_ProcurarAnimePorNome, MnI_ProcurarAnimePorID });
         Mnu_MenuMyAnimes.Location = new Point(0, 0);
         Mnu_MenuMyAnimes.Name = "Mnu_MenuMyAnimes";
         Mnu_MenuMyAnimes.Padding = new Padding(15, 4, 0, 4);
-        Mnu_MenuMyAnimes.Size = new Size(1278, 53);
+        Mnu_MenuMyAnimes.Size = new Size(1920, 53);
         Mnu_MenuMyAnimes.TabIndex = 0;
         Mnu_MenuMyAnimes.Text = "menuMyAnimes";
         // 
-        // AbasToolStripMenuItem
+        // Mnu_MenuAbas
         // 
-        AbasToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { MnI_AbrirAbas, MnI_FecharAbas });
-        AbasToolStripMenuItem.Image = Properties.Resources.MaskVendettaReal;
-        AbasToolStripMenuItem.Name = "AbasToolStripMenuItem";
-        AbasToolStripMenuItem.Size = new Size(135, 45);
-        AbasToolStripMenuItem.Text = "Abas";
+        Mnu_MenuAbas.DropDownItems.AddRange(new ToolStripItem[] { MnI_AbrirAbas, MnI_FecharAbas });
+        Mnu_MenuAbas.Image = Properties.Resources.MaskVendettaReal;
+        Mnu_MenuAbas.Name = "Mnu_MenuAbas";
+        Mnu_MenuAbas.Size = new Size(135, 45);
+        Mnu_MenuAbas.Text = "Abas";
         // 
         // MnI_AbrirAbas
         // 
         MnI_AbrirAbas.DropDownItems.AddRange(new ToolStripItem[] { MnI_AbaMascaras, MnI_FormMsgBox });
         MnI_AbrirAbas.Image = Properties.Resources.MaskVendettaReal;
         MnI_AbrirAbas.Name = "MnI_AbrirAbas";
-        MnI_AbrirAbas.Size = new Size(315, 50);
+        MnI_AbrirAbas.Size = new Size(359, 50);
         MnI_AbrirAbas.Text = "Abrir Abas";
         // 
         // MnI_AbaMascaras
         // 
         MnI_AbaMascaras.Image = Properties.Resources.MaskV;
         MnI_AbaMascaras.Name = "MnI_AbaMascaras";
-        MnI_AbaMascaras.Size = new Size(331, 50);
+        MnI_AbaMascaras.Size = new Size(359, 50);
         MnI_AbaMascaras.Text = "AbaMascaras";
         MnI_AbaMascaras.Click += MnI_AbaMascaras_Click;
         // 
@@ -86,7 +86,7 @@ partial class Frm_MyAnimes
         // 
         MnI_FormMsgBox.Image = Properties.Resources.InterrogacaoBrasil;
         MnI_FormMsgBox.Name = "MnI_FormMsgBox";
-        MnI_FormMsgBox.Size = new Size(331, 50);
+        MnI_FormMsgBox.Size = new Size(359, 50);
         MnI_FormMsgBox.Text = "FormMsgBox";
         MnI_FormMsgBox.Click += MnI_FormMsgBox_Click;
         // 
@@ -95,7 +95,7 @@ partial class Frm_MyAnimes
         MnI_FecharAbas.DropDownItems.AddRange(new ToolStripItem[] { MnI_FecharAbaAtual, MnI_FecharTodasAbas, MnI_FecharAbasAEsquerda, MnI_FecharAbasADireita });
         MnI_FecharAbas.Image = Properties.Resources.SlaveMoney;
         MnI_FecharAbas.Name = "MnI_FecharAbas";
-        MnI_FecharAbas.Size = new Size(315, 50);
+        MnI_FecharAbas.Size = new Size(359, 50);
         MnI_FecharAbas.Text = "Fechar Abas";
         // 
         // MnI_FecharAbaAtual
@@ -144,13 +144,17 @@ partial class Frm_MyAnimes
         // 
         // Tbc_MyAnimes
         // 
+        Tbc_MyAnimes.AccessibleName = "Controle de Abas";
+        Tbc_MyAnimes.AllowDrop = true;
+        Tbc_MyAnimes.Appearance = TabAppearance.Buttons;
         Tbc_MyAnimes.Dock = DockStyle.Fill;
         Tbc_MyAnimes.ImageList = Iml_ImagensList;
+        Tbc_MyAnimes.ImeMode = ImeMode.On;
         Tbc_MyAnimes.Location = new Point(0, 53);
         Tbc_MyAnimes.Margin = new Padding(4, 3, 4, 3);
         Tbc_MyAnimes.Name = "Tbc_MyAnimes";
         Tbc_MyAnimes.SelectedIndex = 0;
-        Tbc_MyAnimes.Size = new Size(1278, 574);
+        Tbc_MyAnimes.Size = new Size(1920, 1027);
         Tbc_MyAnimes.TabIndex = 1;
         Tbc_MyAnimes.MouseDown += Tbc_MyAnimes_MouseDown;
         // 
@@ -168,15 +172,23 @@ partial class Frm_MyAnimes
         // 
         AutoScaleDimensions = new SizeF(13F, 26F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(1278, 627);
+        AutoSize = true;
+        BackColor = SystemColors.Desktop;
+        BackgroundImage = Properties.Resources.AnimesElas;
+        BackgroundImageLayout = ImageLayout.Stretch;
+        ClientSize = new Size(1920, 1080);
         Controls.Add(Tbc_MyAnimes);
         Controls.Add(Mnu_MenuMyAnimes);
+        DoubleBuffered = true;
+        ForeColor = Color.Gold;
+        FormBorderStyle = FormBorderStyle.None;
         Icon = (Icon)resources.GetObject("$this.Icon");
         MainMenuStrip = Mnu_MenuMyAnimes;
         Margin = new Padding(4, 3, 4, 3);
         Name = "Frm_MyAnimes";
         StartPosition = FormStartPosition.CenterScreen;
         Text = "MyAnimes - Abas";
+        TransparencyKey = Color.Transparent;
         Load += Frm_MyAnimes_Load;
         Mnu_MenuMyAnimes.ResumeLayout(false);
         Mnu_MenuMyAnimes.PerformLayout();
@@ -191,7 +203,7 @@ partial class Frm_MyAnimes
     private ToolStripMenuItem MnI_ProcurarAnimePorID;
     private TabControl Tbc_MyAnimes;
     private ImageList Iml_ImagensList;
-    private ToolStripMenuItem AbasToolStripMenuItem;
+    private ToolStripMenuItem Mnu_MenuAbas;
     private ToolStripMenuItem MnI_AbrirAbas;
     private ToolStripMenuItem MnI_AbaMascaras;
     private ToolStripMenuItem MnI_FecharAbas;

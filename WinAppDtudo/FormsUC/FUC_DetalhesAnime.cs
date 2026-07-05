@@ -21,21 +21,19 @@ public partial class FUC_DetalhesAnime : UserControl
         InitializeComponent();
         _malId = malId;
         Load += async (s, e) => await CarregarAsync();
+        ThemeManager.ApplyDarkModeToUserControl(this);
     }
-
     // ===================================================================
-
+    /// <summary>
+    /// Carrega os detalhes do anime via ApiJikan e popula a interface do usuário.
+    /// </summary>
     private async Task CarregarAsync()
     {
         MostrarCarregando(true);
-
         JikanAnimeDetalhes? anime = null;
         string? erro = null;
-
         try
-        {
-            anime = await _jikanService.BuscarPorIdAsync(_malId);
-        }
+        { anime = await _jikanService.BuscarPorIdAsync(_malId); }
         catch (HttpRequestException ex)
         {
             erro = $"Não foi possível conectar à API Jikan.\n\n" +
@@ -43,10 +41,7 @@ public partial class FUC_DetalhesAnime : UserControl
                    $"Detalhes: {ex.Message}";
         }
         catch (Exception ex)
-        {
-            erro = ex.Message;
-        }
-
+        { erro = ex.Message; }
         // Torna o painel visível ANTES de popular para que ClientSize seja válido
         MostrarCarregando(false);
 
@@ -67,9 +62,11 @@ public partial class FUC_DetalhesAnime : UserControl
         PopularUI(anime);
         _ = CarregarRelacoesAsync();
     }
-
     // ===================================================================
-
+    /// <summary>
+    /// Popula a interface do usuário com os detalhes do anime fornecido.
+    /// </summary>
+    /// <param name="anime">Os detalhes do anime a serem exibidos.</param>
     private void PopularUI(JikanAnimeDetalhes anime)
     {
         // Header
@@ -156,7 +153,7 @@ public partial class FUC_DetalhesAnime : UserControl
     private void AdicionarDetalhe(string campo, string? valor, int larguraValor)
     {
         if (string.IsNullOrWhiteSpace(valor)) return;
-        AdicionarParDeLabels(campo, valor, Color.FromArgb(20, 20, 20), larguraValor, isLink: false);
+        AdicionarParDeLabels(campo, valor, Color.Gold, larguraValor, isLink: false);
     }
 
     private void AdicionarLink(string campo, string url, int larguraValor)
@@ -172,7 +169,7 @@ public partial class FUC_DetalhesAnime : UserControl
         {
             AutoSize = false,
             Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
-            ForeColor = Color.DarkSlateGray,
+            ForeColor = Color.Gold,
             Location = new Point(4, _yOffset + 2),
             Size = new Size(148, 20),
             Text = campo + ":",
@@ -221,7 +218,7 @@ public partial class FUC_DetalhesAnime : UserControl
         {
             AutoSize = false,
             Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-            ForeColor = Color.FromArgb(30, 30, 110),
+            ForeColor = Color.Gold,
             Location = new Point(4, _yOffset),
             Size = new Size(148 + larguraValor, 22),
             Text = campo + ":"

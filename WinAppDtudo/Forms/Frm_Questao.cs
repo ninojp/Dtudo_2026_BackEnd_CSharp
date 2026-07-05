@@ -1,3 +1,5 @@
+using WinAppDtudo.Services;
+
 namespace WinAppDtudo.Forms;
 
 public partial class Frm_Questao : Form
@@ -9,6 +11,7 @@ public partial class Frm_Questao : Form
         Image? imagemTemp = (Image?)Properties.Resources.ResourceManager.GetObject(nomeImagem);
         Pic_PictureBox.Image = imagemTemp;
         Lbl_TextoDaCaixa.Text = mensagem;
+        ThemeManager.ApplyDarkModeToForm(this);
     }
 
     private void Btn_Continue_Click(object sender, EventArgs e)

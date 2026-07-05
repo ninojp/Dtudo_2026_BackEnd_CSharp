@@ -1,6 +1,6 @@
 [
   {
-    "Name": "Novo Perfil",
+    "Name": "IniciaTudo",
     "Projects": [
       {
         "Path": "ApiJikan\\ApiJikan.csproj",

@@ -70,7 +70,9 @@ Para quando for criar o ANIME, exigir (solicitar do usuario) o ID de um MyAnime 
 
 3. Na tabela MyAnime, criar um campo (object) chamado PastaLocalMyAnimes, que depois será preenchido com dados (ano, nomeAnime, tipo, id) vindos do serviço local (será criado).
 
+=========================================================================
 
+Neste meu projeto WinAppDtudo, neste meu UC: C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\_.cs,
 
 
 

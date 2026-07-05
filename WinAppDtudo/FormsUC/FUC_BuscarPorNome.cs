@@ -20,15 +20,14 @@ public partial class FUC_BuscarPorNome : UserControl
     public FUC_BuscarPorNome()
     {
         InitializeComponent();
-        ThemeManager.ApplyDarkModeToUserControl(this);
+        // Configura os eventos dos botões e do TextBox
         Btn_BuscarPorNome.Click += Btn_Buscar_Click;
         Btn_PaginaAnterior.Click += Btn_PaginaAnterior_Click;
         Btn_ProximaPagina.Click += Btn_ProximaPagina_Click;
         Txb_InputBuscarPorNome.KeyDown += Txb_Input_KeyDown;
+        ThemeManager.ApplyDarkModeToUserControl(this);
     }
-
     // ===================================================================
-
     private async void Btn_Buscar_Click(object? sender, EventArgs e)
     {
         var query = Txb_InputBuscarPorNome.Text.Trim();

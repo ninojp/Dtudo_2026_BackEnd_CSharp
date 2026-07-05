@@ -1,3 +1,5 @@
+using WinAppDtudo.Services;
+
 namespace WinAppDtudo.FormsUC;
 
 public partial class FUC_Mascaras : UserControl
@@ -5,6 +7,7 @@ public partial class FUC_Mascaras : UserControl
     public FUC_Mascaras()
     {
         InitializeComponent();
+        ThemeManager.ApplyDarkModeToUserControl(this);
     }
     private void Btn_VerConteudo_Click(object sender, EventArgs e)
     {

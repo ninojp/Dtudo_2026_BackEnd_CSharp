@@ -17,6 +17,7 @@ public partial class UC_MiniAnimeCard : UserControl
     {
         InitializeComponent();
         SubscreverCliques();
+        ThemeManager.ApplyDarkModeToUserControl(this);
     }
 
     // ===================================================================

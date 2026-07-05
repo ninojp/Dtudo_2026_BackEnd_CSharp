@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -11,6 +11,8 @@
     <ApplicationUseCompatibleTextRendering>false</ApplicationUseCompatibleTextRendering>
     <ApplicationDefaultFont>Microsoft Sans Serif, 8.25pt</ApplicationDefaultFont>
     <StartupObject>WinAppDtudo.Program</StartupObject>
+    <SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>
+    <AssemblyTitle>WinAppDtudo</AssemblyTitle>
     <ApplicationIcon>Resources\YingYang_HD_Ico.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -23,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Forms\Frm_MyAnimesAbas.cs" />
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

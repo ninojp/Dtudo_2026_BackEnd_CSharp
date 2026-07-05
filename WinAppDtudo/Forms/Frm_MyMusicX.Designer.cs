@@ -29,29 +29,28 @@ partial class Frm_MyMusicX
     private void InitializeComponent()
     {
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Frm_MyMusicX));
-        menuStrip1 = new MenuStrip();
+        Mnu_MenuMyMusiX = new MenuStrip();
         arquivoToolStripMenuItem = new ToolStripMenuItem();
         abrirToolStripMenuItem = new ToolStripMenuItem();
-        formTestToolStripMenuItem = new ToolStripMenuItem();
-        formHelloWorldToolStripMenuItem = new ToolStripMenuItem();
         sairToolStripMenuItem = new ToolStripMenuItem();
         mDIWindowsToolStripMenuItem = new ToolStripMenuItem();
         HorizontalToolStripMenuItem = new ToolStripMenuItem();
         VerticalToolStripMenuItem = new ToolStripMenuItem();
         CascataToolStripMenuItem = new ToolStripMenuItem();
-        menuStrip1.SuspendLayout();
+        Mnu_MenuMyMusiX.SuspendLayout();
         SuspendLayout();
         // 
-        // menuStrip1
+        // Mnu_MenuMyMusiX
         // 
-        menuStrip1.ImageScalingSize = new Size(32, 32);
-        menuStrip1.Items.AddRange(new ToolStripItem[] { arquivoToolStripMenuItem, mDIWindowsToolStripMenuItem });
-        menuStrip1.Location = new Point(0, 0);
-        menuStrip1.Name = "menuStrip1";
-        menuStrip1.Padding = new Padding(8, 2, 0, 2);
-        menuStrip1.Size = new Size(1374, 49);
-        menuStrip1.TabIndex = 0;
-        menuStrip1.Text = "menuStrip1";
+        Mnu_MenuMyMusiX.BackColor = Color.DimGray;
+        Mnu_MenuMyMusiX.ImageScalingSize = new Size(32, 32);
+        Mnu_MenuMyMusiX.Items.AddRange(new ToolStripItem[] { arquivoToolStripMenuItem, mDIWindowsToolStripMenuItem });
+        Mnu_MenuMyMusiX.Location = new Point(0, 0);
+        Mnu_MenuMyMusiX.Name = "Mnu_MenuMyMusiX";
+        Mnu_MenuMyMusiX.Padding = new Padding(8, 2, 0, 2);
+        Mnu_MenuMyMusiX.Size = new Size(1374, 49);
+        Mnu_MenuMyMusiX.TabIndex = 0;
+        Mnu_MenuMyMusiX.Text = "menuMyMusicX";
         // 
         // arquivoToolStripMenuItem
         // 
@@ -64,37 +63,12 @@ partial class Frm_MyMusicX
         // abrirToolStripMenuItem
         // 
         abrirToolStripMenuItem.BackColor = Color.Transparent;
-        abrirToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { formTestToolStripMenuItem, formHelloWorldToolStripMenuItem });
         abrirToolStripMenuItem.ForeColor = Color.Gold;
         abrirToolStripMenuItem.Image = Properties.Resources.YingYang_HD;
         abrirToolStripMenuItem.Name = "abrirToolStripMenuItem";
         abrirToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.A;
-        abrirToolStripMenuItem.Size = new Size(359, 50);
+        abrirToolStripMenuItem.Size = new Size(313, 50);
         abrirToolStripMenuItem.Text = "&Abrir";
-        // 
-        // formTestToolStripMenuItem
-        // 
-        formTestToolStripMenuItem.BackColor = Color.Transparent;
-        formTestToolStripMenuItem.ForeColor = Color.Gold;
-        formTestToolStripMenuItem.Image = Properties.Resources.TI_link;
-        formTestToolStripMenuItem.Name = "formTestToolStripMenuItem";
-        formTestToolStripMenuItem.ShortcutKeyDisplayString = "";
-        formTestToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.T;
-        formTestToolStripMenuItem.Size = new Size(469, 50);
-        formTestToolStripMenuItem.Text = "Form&Test";
-        formTestToolStripMenuItem.Click += FormTestToolStripMenuItem_Click;
-        // 
-        // formHelloWorldToolStripMenuItem
-        // 
-        formHelloWorldToolStripMenuItem.BackColor = Color.Transparent;
-        formHelloWorldToolStripMenuItem.BackgroundImageLayout = ImageLayout.None;
-        formHelloWorldToolStripMenuItem.ForeColor = Color.Gold;
-        formHelloWorldToolStripMenuItem.Image = Properties.Resources.OlhoBRHacker1024;
-        formHelloWorldToolStripMenuItem.Name = "formHelloWorldToolStripMenuItem";
-        formHelloWorldToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.H;
-        formHelloWorldToolStripMenuItem.Size = new Size(469, 50);
-        formHelloWorldToolStripMenuItem.Text = "Form&HelloWorld";
-        formHelloWorldToolStripMenuItem.Click += FormHelloWorldToolStripMenuItem_Click;
         // 
         // sairToolStripMenuItem
         // 
@@ -103,7 +77,7 @@ partial class Frm_MyMusicX
         sairToolStripMenuItem.Image = Properties.Resources.SlaveMoney;
         sairToolStripMenuItem.Name = "sairToolStripMenuItem";
         sairToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.S;
-        sairToolStripMenuItem.Size = new Size(359, 50);
+        sairToolStripMenuItem.Size = new Size(313, 50);
         sairToolStripMenuItem.Text = "&Sair";
         // 
         // mDIWindowsToolStripMenuItem
@@ -141,32 +115,33 @@ partial class Frm_MyMusicX
         AutoScaleDimensions = new SizeF(13F, 26F);
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = SystemColors.Desktop;
+        BackgroundImage = Properties.Resources.violaoEmChamas;
         BackgroundImageLayout = ImageLayout.Stretch;
         ClientSize = new Size(1374, 829);
-        Controls.Add(menuStrip1);
+        Controls.Add(Mnu_MenuMyMusiX);
+        ForeColor = Color.Gold;
+        FormBorderStyle = FormBorderStyle.None;
         Icon = (Icon)resources.GetObject("$this.Icon");
         IsMdiContainer = true;
-        MainMenuStrip = menuStrip1;
+        MainMenuStrip = Mnu_MenuMyMusiX;
         Margin = new Padding(4, 3, 4, 3);
         Name = "Frm_MyMusicX";
         StartPosition = FormStartPosition.CenterScreen;
         Text = "MyMusicX - MDI";
-        menuStrip1.ResumeLayout(false);
-        menuStrip1.PerformLayout();
+        Mnu_MenuMyMusiX.ResumeLayout(false);
+        Mnu_MenuMyMusiX.PerformLayout();
         ResumeLayout(false);
         PerformLayout();
     }
 
     #endregion
 
-    private MenuStrip menuStrip1;
+    private MenuStrip Mnu_MenuMyMusiX;
     private ToolStripMenuItem mDIWindowsToolStripMenuItem;
     private ToolStripMenuItem HorizontalToolStripMenuItem;
     private ToolStripMenuItem VerticalToolStripMenuItem;
     private ToolStripMenuItem CascataToolStripMenuItem;
     private ToolStripMenuItem arquivoToolStripMenuItem;
     private ToolStripMenuItem abrirToolStripMenuItem;
-    private ToolStripMenuItem formTestToolStripMenuItem;
-    private ToolStripMenuItem formHelloWorldToolStripMenuItem;
     private ToolStripMenuItem sairToolStripMenuItem;
 }

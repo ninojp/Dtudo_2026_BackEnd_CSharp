@@ -30,7 +30,6 @@ public class CustomFormNoBorder : Form
         this.ControlBox = false;
         this.Text = string.Empty;
         this.FormBorderStyle = FormBorderStyle.None;
-        this.Icon = null;
 
         // Implementa o suporte a arrastar a janela pelo MenuStrip, se fornecido
         if (menuStrip != null)

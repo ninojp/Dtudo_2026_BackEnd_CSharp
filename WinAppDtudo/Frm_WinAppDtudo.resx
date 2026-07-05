@@ -1022,23 +1022,23 @@
   <metadata name="Mnu_Principal.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <data name="richTextBox1.Text" xml:space="preserve">
-    <value>MyAnimes Central
+  <data name="Lbl_DescricaoMyAnimes.Text" xml:space="preserve">
+    <value>MyAnimes - Frm_MyAnimes
 Através do nome Encontramos os Animes
 Exibimos detalhes e Animes Relacionados
 MyAnime (tabela_db) - Coleção de animes
 Anime (tabela_db) - Anime e seus detalhes
-Criar um estrutura local de pastas e arquivos
+Cria estrutura de pastas e arquivos
 Monitorar e manipular as pastas e arquivos</value>
   </data>
-  <data name="richTextBox2.Text" xml:space="preserve">
-    <value>MyMusicX Central
+  <data name="Lbl_DescricaoMyMusicX.Text" xml:space="preserve">
+    <value>MyMusicX - Frm_MyMusicX
 Através do nome encontramos o Artista
 Exibimos detalhes e Albuns Relacionados
 Discografia...
 Releases, Albuns, Simgles...
-Criar uma estrutura local de pastas e arquivos
-Monitorar e manipular as pastas e arquivos</value>
+Cria estrutura de pastas e arquivos
+Monitorar e Manipular as pastas</value>
   </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>218</value>
