@@ -32,6 +32,9 @@ partial class FUC_DetalhesAnime
         Pnl_Conteudo = new Panel();
         Pnl_Info = new Panel();
         Pnl_Esquerda = new Panel();
+        Pnl_Acoes = new Panel();
+        Btn_SalvarComoAnime = new Button();
+        Btn_SalvarComoMyAnime = new Button();
         Pnl_Stats = new Panel();
         Lbl_Ano = new Label();
         Lbl_ScoreStat = new Label();
@@ -43,6 +46,7 @@ partial class FUC_DetalhesAnime
         Pnl_Header.SuspendLayout();
         Pnl_Conteudo.SuspendLayout();
         Pnl_Esquerda.SuspendLayout();
+        Pnl_Acoes.SuspendLayout();
         Pnl_Stats.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)Pbx_Capa).BeginInit();
         SuspendLayout();
@@ -62,13 +66,14 @@ partial class FUC_DetalhesAnime
         // 
         // Lbl_TituloAnime
         // 
+        Lbl_TituloAnime.AutoSize = true;
         Lbl_TituloAnime.Dock = DockStyle.Top;
         Lbl_TituloAnime.Font = new Font("Segoe UI Black", 13F, FontStyle.Bold);
         Lbl_TituloAnime.ForeColor = Color.White;
         Lbl_TituloAnime.Location = new Point(13, 6);
         Lbl_TituloAnime.Margin = new Padding(4, 0, 4, 0);
         Lbl_TituloAnime.Name = "Lbl_TituloAnime";
-        Lbl_TituloAnime.Size = new Size(1222, 35);
+        Lbl_TituloAnime.Size = new Size(55, 47);
         Lbl_TituloAnime.TabIndex = 0;
         Lbl_TituloAnime.Text = "—";
         // 
@@ -125,6 +130,7 @@ partial class FUC_DetalhesAnime
         // Pnl_Esquerda
         // 
         Pnl_Esquerda.BackColor = Color.FromArgb(243, 244, 250);
+        Pnl_Esquerda.Controls.Add(Pnl_Acoes);
         Pnl_Esquerda.Controls.Add(Pnl_Stats);
         Pnl_Esquerda.Controls.Add(Pbx_Capa);
         Pnl_Esquerda.Dock = DockStyle.Left;
@@ -133,6 +139,48 @@ partial class FUC_DetalhesAnime
         Pnl_Esquerda.Name = "Pnl_Esquerda";
         Pnl_Esquerda.Size = new Size(354, 498);
         Pnl_Esquerda.TabIndex = 1;
+        // 
+        // Pnl_Acoes
+        // 
+        Pnl_Acoes.Controls.Add(Btn_SalvarComoAnime);
+        Pnl_Acoes.Controls.Add(Btn_SalvarComoMyAnime);
+        Pnl_Acoes.Dock = DockStyle.Bottom;
+        Pnl_Acoes.Location = new Point(0, 406);
+        Pnl_Acoes.Margin = new Padding(4, 3, 4, 3);
+        Pnl_Acoes.Name = "Pnl_Acoes";
+        Pnl_Acoes.Padding = new Padding(13, 6, 13, 6);
+        Pnl_Acoes.Size = new Size(354, 92);
+        Pnl_Acoes.TabIndex = 2;
+        // 
+        // Btn_SalvarComoAnime
+        // 
+        Btn_SalvarComoAnime.BackColor = Color.FromArgb(35, 40, 90);
+        Btn_SalvarComoAnime.Dock = DockStyle.Top;
+        Btn_SalvarComoAnime.FlatStyle = FlatStyle.Flat;
+        Btn_SalvarComoAnime.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+        Btn_SalvarComoAnime.ForeColor = Color.Gold;
+        Btn_SalvarComoAnime.Location = new Point(13, 43);
+        Btn_SalvarComoAnime.Margin = new Padding(4, 3, 4, 3);
+        Btn_SalvarComoAnime.Name = "Btn_SalvarComoAnime";
+        Btn_SalvarComoAnime.Size = new Size(328, 36);
+        Btn_SalvarComoAnime.TabIndex = 1;
+        Btn_SalvarComoAnime.Text = "SALVAR COMO ANIME";
+        Btn_SalvarComoAnime.UseVisualStyleBackColor = false;
+        // 
+        // Btn_SalvarComoMyAnime
+        // 
+        Btn_SalvarComoMyAnime.BackColor = Color.DarkOrange;
+        Btn_SalvarComoMyAnime.Dock = DockStyle.Top;
+        Btn_SalvarComoMyAnime.FlatStyle = FlatStyle.Flat;
+        Btn_SalvarComoMyAnime.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+        Btn_SalvarComoMyAnime.ForeColor = Color.White;
+        Btn_SalvarComoMyAnime.Location = new Point(13, 6);
+        Btn_SalvarComoMyAnime.Margin = new Padding(4, 3, 4, 3);
+        Btn_SalvarComoMyAnime.Name = "Btn_SalvarComoMyAnime";
+        Btn_SalvarComoMyAnime.Size = new Size(328, 37);
+        Btn_SalvarComoMyAnime.TabIndex = 0;
+        Btn_SalvarComoMyAnime.Text = "SALVAR COMO MYANIME";
+        Btn_SalvarComoMyAnime.UseVisualStyleBackColor = false;
         // 
         // Pnl_Stats
         // 
@@ -235,8 +283,10 @@ partial class FUC_DetalhesAnime
         Name = "FUC_DetalhesAnime";
         Size = new Size(1248, 562);
         Pnl_Header.ResumeLayout(false);
+        Pnl_Header.PerformLayout();
         Pnl_Conteudo.ResumeLayout(false);
         Pnl_Esquerda.ResumeLayout(false);
+        Pnl_Acoes.ResumeLayout(false);
         Pnl_Stats.ResumeLayout(false);
         ((System.ComponentModel.ISupportInitialize)Pbx_Capa).EndInit();
         ResumeLayout(false);
@@ -250,6 +300,9 @@ partial class FUC_DetalhesAnime
     private Label Lbl_Carregando;
     private Panel Pnl_Conteudo;
     private Panel Pnl_Esquerda;
+    private Panel Pnl_Acoes;
+    private Button Btn_SalvarComoAnime;
+    private Button Btn_SalvarComoMyAnime;
     private PictureBox Pbx_Capa;
     private Panel Pnl_Stats;
     private Label Lbl_Ano;

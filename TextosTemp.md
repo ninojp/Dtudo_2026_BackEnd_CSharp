@@ -1,29 +1,24 @@
+Abaixo vou descrever minha SOLUÇÃO (conjunto de projetos) chamada "Dtudo2026" e seus projetos internos relacionados. 
 
-🎯 Próximas Ações Recomendadas para solução "Dtudo2026":
+PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA.
+EU CRIEI TODOS OS PROJETOS, ME PERGUNTE SE PRECISAR DE ALGUMA INFORMAÇÃO SOBRE ALGUM PROJETO.
 
-1. Adicionar logging centralizado (Serilog)
-2. Docker Compose para orquestrar ambos os serviços
-3. 
-========================================================
-
-Abaixo vou descrever minha SOLUÇÃO chamada "Dtudo2026" e seus projetos relacionados. 
-Após as descrições, vou detalhar o que quero que seja feito na solução.
+Após as descrições, vou detalhar o que quero que seja feito.
 Caso você, I.A, não entenda algum termo ou conceito, por favor, me pergunte antes de prosseguir.
 
-Minha SOLUÇÃO chamada "Dtudo2026", é a pasta raiz de todos os meus Projetos.
-Front-End: DtudoSite, WinAppDtudo e Back-End: ApiMyAnimes, ApiJikan, LibDtudo.Shared. 
-O projeto ApiNode (deve ser ignorado) está sendo gradativamente substituído pelos projetos ApiMyAnimes e ApiJikan.
+Front-End: DtudoSite, WinAppDtudo e Back-End: ApiMyAnimes, ApiJikan, LibDtudo.Shared.
 
-Projeto LibDtudo.Shared - Biblioteca para compartilhar Dtos, Modelos, Utils... entre os meus projetos
+O projeto ApiNode (deve ser ignorado) está sendo gradativamente sendo substituído pelos projetos ApiMyAnimes e ApiJikan.
 
-Projeto ApiMyAnimes - Api Local MyAnimes (documentada com Swagger) - https://localhost:63980
-Esta é uma Api Local que manipula (CRUD completo) um Banco de dados Relacional local que contém informações relacionadas as minhas coleções de animes.  
-(/apiLocal/MyAnime) MyAnime (DBtabela) representa as coleções nomeadas que agrupam APENAS os IDs dos animes relacionados.
-(/apiLocal/Anime) Anime (DBtabela) contém informações detalhadas sobre cada anime.
+Projeto LibDtudo.Shared - Biblioteca para compartilhar Dtos, Modelos, Utils... entre os projetos dentro da solução Dtudo2026.
+
+Projeto ApiMyAnimes - Api Local MyAnimes (CRUD completo, documentada com Swagger) - https://localhost:63980
+Esta é uma Api Local que manipula Meu Banco de dados, Relacional (SQL Server) que contém minhas coleções, MyAnimes e seus Animes.  
+(/apiLocal/MyAnime) MyAnime (tabela_db) representa as coleções nomeadas MyAnime por titulo e uma lista de IDs de animes relacionados.
+(/apiLocal/Anime) Anime (tabela_db) contém informações detalhadas sobre cada anime.
 
 Projeto ApiJikan - Api Jikan Consulta Externa (documentada com Swagger) - https://localhost:63982
 Esta é uma Api de consulta à API externa Jikan (MyAnimeList). Fornece endpoints para buscar (por nome ou ID) informações detalhadas sobre animes e seus relacionamentos.
-ApiJikan  
 GET/ApiJikan/search  
 End-Point da minha Api Local que faz uma busca na Api externa Jikan, por nome do anime.
 /ApiJikan/{id}  
@@ -31,15 +26,28 @@ Busca um anime específico por ID do MyAnimeList.
 /ApiJikan/{id}/relations
 Busca os animes relacionados a um anime específico pelo ID do MyAnimeList. Utiliza o endpoint dedicado /anime/{id}/relations da Jikan e retorna as imagens hidratadas de cada entrada.
 
-Projeto WinAppDtudo - Aplicativo Desktop para consulta e manipulação de dados
+Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação de dados (Lê e grava no DB_Local, pastas e arquivos).
 
-PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA.
-EU CRIEI TODOS OS PROJETOS, ME PERGUNTE SE PRECISAR DE ALGUMA INFORMAÇÃO SOBRE ALGUM PROJETO.
+-------------------------------------------------------------------------------------------------------------------------------------
 
-Agora neste meu projeto WinAppDtudo, no meu Form: C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\Frm_WinAppDtudo.cs. Quero retirar
+Agora neste meu projeto WinAppDtudo, no meu arquivo UC: \WinAppDtudo\FUC_DetalhesAnime.cs (que está funcionando, e já exibe os detalhes do anime).
+Agora quero implementar dois botões. Um, SALVAR COMO MYANIME, para salvar as informações (anime atual) na minha (\Dtudo2026\ApiMyAnimes -> https://localhost:63980/apiLocal/MyAnime) MyAnime (tabela_db) que representa as coleções nomeadas MyAnime por titulo, usaremos o titulo como MyAnime.Titulo e os IDs (mal_id) dos animes relacionados (exibidos no anime atual) devem ser colocados dentro da lista MyAnimes.AnimesMalId.
+No segundo botão, SALVAR COMO ANIME, usando minha (\Dtudo2026\ApiMyAnimes -> https://localhost:63980/apiLocal/Anime) Anime (tabela_db), para salvar TODAS as informaçoes do anime atual.
+Nesta mesma tabela, Anime vamos usar o campo, MyAnimeId, para fazer o relacionamento (de um para muitos) entre as tabelas MyAnime(id) e Anime(MyAnimeId).
+Quando clicado no botão SALVAR COMO ANIME, exigir (solicitar do usuario) o ID de um MyAnime (préviamente criada).
+Após inserir este ID (MyAnimeId), deve ser feito automaticamente a relação, adicionando na tabela MyAnime (verificar se já existe antes), na propriedade MyAnimes.AnimesMalId (que é uma lista de mal_id, dos animes relacionados entre sí, desta coleção MyAnime, agora relacionadas)
+Quero uma implementação ROBUSTA e ATUALIZADA. Me pergunte o que for necessário.
+
+
+Mas está com algumas falhas na parte visual, os textos (titulo, tipo, exibição) estão se sobrepondo e tem partes (exemplo: titulo da Aba, parte superior da imagem de capa) que estão transparentes e ao clicar, clica na janela que estiver a atrás, como se o meu aplicativo tive-se partes tranparentes.
 
 ===================================================================================================
+🎯 Próximas Ações Recomendadas para solução "Dtudo2026":
 
+0. Implementar o serviço local para salvar os dados (MyAnime) em forma de uma estrutura de pastas e arquivos.
+1. Adicionar logging centralizado (Serilog)
+2. Docker Compose para orquestrar ambos os serviços
+3. 
 
 MyAnimes Central (\WinAppDtudo\Frm_MyAnimes.cs)
 Através do nome Encontramos o Anime - (ApiJikan)

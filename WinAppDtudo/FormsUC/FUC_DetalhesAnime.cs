@@ -1,3 +1,6 @@
+using LibDtudo.Shared.Dtos;
+using Microsoft.VisualBasic;
+using System.Net;
 using WinAppDtudo.Controls;
 using WinAppDtudo.Services;
 
@@ -13,14 +16,21 @@ public partial class FUC_DetalhesAnime : UserControl
     public event EventHandler<int>? CardClicado;
 
     private readonly JikanApiService _jikanService = new();
+    private readonly ApiMyAnimesService _apiMyAnimesService = new();
     private readonly int _malId;
     private int _yOffset;
+    private JikanAnimeDetalhes? _animeAtual;
+    private List<JikanRelacaoEntry> _animesRelacionados = [];
 
     public FUC_DetalhesAnime(int malId)
     {
         InitializeComponent();
         _malId = malId;
+        Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
+        Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
         Load += async (s, e) => await CarregarAsync();
+        // Melhora renderização do UserControl
+        DoubleBuffered = true;
         ThemeManager.ApplyDarkModeToUserControl(this);
     }
     // ===================================================================
@@ -59,6 +69,7 @@ public partial class FUC_DetalhesAnime : UserControl
             return;
         }
 
+        _animeAtual = anime;
         PopularUI(anime);
         _ = CarregarRelacoesAsync();
     }
@@ -212,7 +223,6 @@ public partial class FUC_DetalhesAnime : UserControl
     private void AdicionarTextoLongo(string campo, string? texto, int larguraValor)
     {
         if (string.IsNullOrWhiteSpace(texto)) return;
-
         _yOffset += 6;
         var lblCampo = new Label
         {
@@ -224,18 +234,16 @@ public partial class FUC_DetalhesAnime : UserControl
             Text = campo + ":"
         };
         _yOffset += 24;
-
         int larguraTexto = Math.Max(148 + larguraValor - 12, 350);
         var lblTexto = new Label
         {
             AutoSize = true,
             MaximumSize = new Size(larguraTexto, 0),
             Font = new Font("Segoe UI", 8.5F),
-            ForeColor = Color.FromArgb(35, 35, 35),
+            ForeColor = Color.FromArgb(255, 115, 0),
             Location = new Point(8, _yOffset),
             Text = texto
         };
-
         Pnl_Info.Controls.Add(lblCampo);
         Pnl_Info.Controls.Add(lblTexto);
         // Força o cálculo do tamanho antes de ler a altura
@@ -255,7 +263,6 @@ public partial class FUC_DetalhesAnime : UserControl
         Pnl_Info.Controls.Add(sep);
         _yOffset += 10;
     }
-
     // ===================================================================
 
     private async Task CarregarRelacoesAsync()
@@ -316,6 +323,8 @@ public partial class FUC_DetalhesAnime : UserControl
             .Where(e => e.Type == "anime")
             .ToList();
 
+        _animesRelacionados = entradasAnime;
+
         if (entradasAnime.Count == 0)
         {
             var lblSemRel = new Label
@@ -346,7 +355,8 @@ public partial class FUC_DetalhesAnime : UserControl
             MinimumSize = new Size(larguraFlp, 0),
             MaximumSize = new Size(larguraFlp, 0),
             Padding = new Padding(4),
-            BackColor = Color.White
+            //Aqui foi modificado para usar a cor de fundo secundária do DarkModeColors
+            BackColor = DarkModeColors.BackgroundSecondaryColor
         };
 
         foreach (var entry in entradasAnime)
@@ -366,6 +376,240 @@ public partial class FUC_DetalhesAnime : UserControl
         _yOffset += Math.Max(alturaEstimada, flp.Height) + 12;
         Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
         Pnl_Info.ResumeLayout(true);
+    }
+
+    private async void Btn_SalvarComoMyAnime_Click(object? sender, EventArgs e)
+    {
+        if (_animeAtual is null)
+        {
+            MessageBox.Show("Os detalhes do anime ainda não foram carregados.", "Aviso",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var tituloMyAnime = ObterTituloMyAnime(_animeAtual);
+        var malIdsRelacionados = ObterMalIdsRelacionados();
+
+        Btn_SalvarComoMyAnime.Enabled = false;
+        try
+        {
+            var tituloJaExiste = await ExisteMyAnimeComTituloAsync(tituloMyAnime);
+            if (tituloJaExiste)
+            {
+                MessageBox.Show(
+                    $"Já existe uma coleção MyAnime com o título '{tituloMyAnime}'.",
+                    "Cadastro bloqueado",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            var dto = new AdicionaMyAnimeDto
+            {
+                Titulo = tituloMyAnime,
+                AnimesMalId = malIdsRelacionados
+            };
+
+            await _apiMyAnimesService.AdicionarMyAnimeAsync(dto);
+
+            MessageBox.Show(
+                $"Coleção '{tituloMyAnime}' salva com sucesso em MyAnime.",
+                "Sucesso",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+        catch (HttpRequestException)
+        {
+            MessageBox.Show(
+                $"Falha ao salvar em MyAnime.",
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        finally
+        {
+            Btn_SalvarComoMyAnime.Enabled = true;
+        }
+    }
+
+    private async void Btn_SalvarComoAnime_Click(object? sender, EventArgs e)
+    {
+        if (_animeAtual is null)
+        {
+            MessageBox.Show("Os detalhes do anime ainda não foram carregados.", "Aviso",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var entrada = Interaction.InputBox(
+            "Informe o ID de um MyAnime já existente para relacionar este anime:",
+            "Salvar como Anime",
+            "");
+
+        if (string.IsNullOrWhiteSpace(entrada)) return;
+
+        if (!int.TryParse(entrada, out var myAnimeId) || myAnimeId <= 0)
+        {
+            MessageBox.Show("Informe um MyAnimeId válido (número inteiro positivo).", "Aviso",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        Btn_SalvarComoAnime.Enabled = false;
+        try
+        {
+            var myAnimeExistente = await _apiMyAnimesService.ObterMyAnimePorIdAsync(myAnimeId);
+            if (myAnimeExistente is null)
+            {
+                MessageBox.Show($"MyAnime com ID {myAnimeId} não encontrado.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var dtoAnime = MapearParaAdicionaAnimeDto(_animeAtual, myAnimeId);
+            await _apiMyAnimesService.AdicionarAnimeAsync(dtoAnime);
+
+            var malIdsAtualizados = myAnimeExistente.AnimesMalId
+                .Concat(ObterMalIdsRelacionados())
+                .Distinct()
+                .ToList();
+
+            if (malIdsAtualizados.Count != myAnimeExistente.AnimesMalId.Count)
+            {
+                var atualizaMyAnime = new AtualizaMyAnimeDto
+                {
+                    Titulo = myAnimeExistente.Titulo,
+                    AnimesMalId = malIdsAtualizados
+                };
+                await _apiMyAnimesService.AtualizarMyAnimeAsync(myAnimeId, atualizaMyAnime);
+            }
+
+            MessageBox.Show(
+                $"Anime salvo com sucesso e relacionado ao MyAnime ID {myAnimeId}.",
+                "Sucesso",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+        {
+            MessageBox.Show(
+                $"Este anime já existe na base local (MalId {_animeAtual.MalId}).",
+                "Conflito",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+        catch (HttpRequestException)
+        {
+            MessageBox.Show(
+                "Falha ao salvar anime na ApiMyAnimes.",
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        finally
+        {
+            Btn_SalvarComoAnime.Enabled = true;
+        }
+    }
+
+    private async Task<bool> ExisteMyAnimeComTituloAsync(string titulo)
+    {
+        const int take = 100;
+        var skip = 0;
+
+        while (true)
+        {
+            var pagina = await _apiMyAnimesService.ObterMyAnimesAsync(skip, take);
+            if (pagina.Count == 0) return false;
+
+            var existe = pagina.Any(item =>
+                string.Equals(item.Titulo?.Trim(), titulo.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (existe) return true;
+
+            if (pagina.Count < take) return false;
+            skip += take;
+        }
+    }
+
+    private string ObterTituloMyAnime(JikanAnimeDetalhes anime)
+    {
+        return !string.IsNullOrWhiteSpace(anime.Title)
+            ? anime.Title
+            : !string.IsNullOrWhiteSpace(anime.TitleEnglish)
+                ? anime.TitleEnglish
+                : $"Anime_{anime.MalId}";
+    }
+
+    private List<int> ObterMalIdsRelacionados()
+    {
+        var ids = _animesRelacionados
+            .Select(a => a.MalId)
+            .Where(id => id > 0)
+            .ToList();
+
+        if (_animeAtual is not null && _animeAtual.MalId > 0)
+            ids.Add(_animeAtual.MalId);
+
+        return ids.Distinct().ToList();
+    }
+
+    private static AdicionaAnimeDto MapearParaAdicionaAnimeDto(JikanAnimeDetalhes anime, int myAnimeId)
+    {
+        var episodios = anime.Episodes.HasValue && anime.Episodes.Value > 0
+            ? anime.Episodes.Value
+            : 1;
+
+        var imagens = new List<string>();
+        if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.ImageUrl)) imagens.Add(anime.Images.Jpg.ImageUrl);
+        if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.SmallImageUrl)) imagens.Add(anime.Images.Jpg.SmallImageUrl);
+        if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.LargeImageUrl)) imagens.Add(anime.Images.Jpg.LargeImageUrl);
+
+        var subtitulos = new List<string>();
+        if (!string.IsNullOrWhiteSpace(anime.TitleEnglish)) subtitulos.Add(anime.TitleEnglish);
+        if (!string.IsNullOrWhiteSpace(anime.TitleJapanese)) subtitulos.Add(anime.TitleJapanese);
+        subtitulos.AddRange(anime.TitleSynonyms);
+
+        return new AdicionaAnimeDto
+        {
+            MalId = anime.MalId,
+            Titulo = !string.IsNullOrWhiteSpace(anime.Title) ? anime.Title : $"Anime_{anime.MalId}",
+            Episodios = episodios,
+            MyAnimeID = myAnimeId,
+            MalUrl = anime.Url ?? string.Empty,
+            ImagensUrlMal = imagens.Distinct().ToList(),
+            SubTitulos = subtitulos.Distinct().ToList(),
+            Trailer = anime.Trailer,
+            Approved = anime.Approved,
+            Title = anime.Title,
+            TitleEnglish = anime.TitleEnglish,
+            TitleJapanese = anime.TitleJapanese,
+            TitleSynonyms = [.. anime.TitleSynonyms],
+            Type = anime.Type,
+            Source = anime.Source,
+            Episodes = anime.Episodes,
+            Status = anime.Status,
+            Airing = anime.Airing,
+            Aired = anime.Aired,
+            Duration = anime.Duration,
+            Rating = anime.Rating,
+            Score = anime.Score,
+            ScoredBy = anime.ScoredBy,
+            Rank = anime.Rank,
+            Popularity = anime.Popularity,
+            Members = anime.Members,
+            Favorites = anime.Favorites,
+            Synopsis = anime.Synopsis,
+            Background = anime.Background,
+            Season = anime.Season,
+            Year = anime.Year,
+            Producers = [.. anime.Producers],
+            Licensors = [.. anime.Licensors],
+            Studios = [.. anime.Studios],
+            Genres = [.. anime.Genres],
+            ExplicitGenres = [.. anime.ExplicitGenres],
+            Themes = [.. anime.Themes],
+            Demographics = [.. anime.Demographics]
+        };
     }
 
     // ===================================================================

@@ -25,6 +25,8 @@ public partial class FUC_BuscarPorNome : UserControl
         Btn_PaginaAnterior.Click += Btn_PaginaAnterior_Click;
         Btn_ProximaPagina.Click += Btn_ProximaPagina_Click;
         Txb_InputBuscarPorNome.KeyDown += Txb_Input_KeyDown;
+        // Melhora renderização do UserControl
+        DoubleBuffered = true;
         ThemeManager.ApplyDarkModeToUserControl(this);
     }
     // ===================================================================

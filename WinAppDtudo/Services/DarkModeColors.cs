@@ -26,7 +26,7 @@ public static class DarkModeColors
 
     /// <summary>Cor de destaque/hover</summary>
     //(era, (0, 120, 215)) agora transparente, RGB:(0, 0, 0, 0)
-    public static Color AccentColor { get; } = Color.FromArgb(218, 165, 32);
+    public static Color AccentColor { get; } = Color.FromArgb(0, 0, 0, 0);
 
     /// <summary>Cor de fundo para itens selecionados</summary>
     // (era, (0, 120, 215)) agora transparente, RGB:(0, 0, 0, 0)

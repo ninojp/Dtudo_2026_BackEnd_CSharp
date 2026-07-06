@@ -87,6 +87,7 @@ partial class FUC_BuscarPorNome
         // 
         Lbl_Titulo.Anchor = AnchorStyles.Top;
         Lbl_Titulo.AutoSize = true;
+        Lbl_Titulo.BackColor = Color.Black;
         Lbl_Titulo.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold);
         Lbl_Titulo.ForeColor = Color.Gold;
         Lbl_Titulo.Location = new Point(1243, 34);
@@ -100,7 +101,9 @@ partial class FUC_BuscarPorNome
         // 
         Lbl_InputLabel.Anchor = AnchorStyles.Top;
         Lbl_InputLabel.AutoSize = true;
+        Lbl_InputLabel.BackColor = Color.Black;
         Lbl_InputLabel.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        Lbl_InputLabel.ForeColor = Color.Gold;
         Lbl_InputLabel.Location = new Point(695, 37);
         Lbl_InputLabel.Margin = new Padding(4, 0, 4, 0);
         Lbl_InputLabel.Name = "Lbl_InputLabel";
@@ -125,8 +128,9 @@ partial class FUC_BuscarPorNome
         // 
         Btn_BuscarPorNome.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         Btn_BuscarPorNome.BackColor = Color.DimGray;
-        Btn_BuscarPorNome.FlatStyle = FlatStyle.Flat;
+        Btn_BuscarPorNome.FlatStyle = FlatStyle.Standard;
         Btn_BuscarPorNome.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+        Btn_BuscarPorNome.ForeColor = Color.White;
         Btn_BuscarPorNome.Location = new Point(1406, 85);
         Btn_BuscarPorNome.Margin = new Padding(4, 3, 4, 3);
         Btn_BuscarPorNome.Name = "Btn_BuscarPorNome";
