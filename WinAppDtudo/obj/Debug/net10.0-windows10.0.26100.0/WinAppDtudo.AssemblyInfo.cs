@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WinAppDtudo")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1d6d1c1de8e24071907dbf463c549c88f791b1d3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aeec8c94b48eec9861514cadfc8e584d4f9f88eb")]
 [assembly: System.Reflection.AssemblyProductAttribute("WinAppDtudo")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WinAppDtudo")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

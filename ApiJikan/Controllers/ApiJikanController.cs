@@ -1,6 +1,7 @@
 using ApiJikan.Dtos.Responses;
 using ApiJikan.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace ApiJikan.Controllers;
 
@@ -64,6 +65,8 @@ public class ApiJikanController(
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(BuscarAnimePorIdResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+    [ProducesResponseType(StatusCodes.Status502BadGateway)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<BuscarAnimePorIdResponseDto>> BuscarAnimePorId(int id)
     {
@@ -74,6 +77,24 @@ public class ApiJikanController(
             var anime = await _serviceBuscarPorID.JikanBuscarPorIDAsync(id);
             if (anime == null) return NotFound(new { message = $"Anime com ID {id} não encontrado." });
             return Ok(anime);
+        }
+        catch (TimeoutException ex)
+        {
+            _logger.LogWarning(ex, "Timeout ao buscar anime por ID: {Id}", id);
+            return StatusCode(StatusCodes.Status504GatewayTimeout,
+                new { message = "A API externa Jikan demorou para responder. Tente novamente em instantes." });
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.GatewayTimeout)
+        {
+            _logger.LogWarning(ex, "Gateway Timeout ao buscar anime por ID: {Id}", id);
+            return StatusCode(StatusCodes.Status504GatewayTimeout,
+                new { message = "A API externa Jikan retornou 504 (Gateway Time-out)." });
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Falha HTTP ao buscar anime por ID: {Id}", id);
+            return StatusCode(StatusCodes.Status502BadGateway,
+                new { message = "Falha ao comunicar com a API externa Jikan." });
         }
         catch (Exception ex)
         {

@@ -16,16 +16,25 @@
     <Compile Update="CustomFormNoBorder.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="FormsUC\FUC_BuscaIntegradaPorNome.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="FormsUC\FUC_BuscarPorID.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="FormsUC\FUC_BuscarPorNome.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="FormsUC\FUC_BuscarPorNomeLocal.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="FormsUC\FUC_CadastrarUsuario.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="FormsUC\FUC_DetalhesAnime.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="FormsUC\FUC_MyAnimeDetalhes.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Forms\Frm_CadastrarUsuario.cs">
@@ -41,6 +50,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\Frm_NinoTI.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Frm_ProgressoOperacao.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\Frm_Questao.cs">

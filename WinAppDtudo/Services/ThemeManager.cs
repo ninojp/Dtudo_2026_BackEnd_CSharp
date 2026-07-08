@@ -165,8 +165,12 @@ public static class ThemeManager
             button.ForeColor = Color.White;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderColor = DarkModeColors.BorderColor;
-            //button.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, 150, 255);
-            button.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, 0, 0, 0);
+            button.FlatAppearance.MouseOverBackColor = DarkModeColors.SelectionColor;
+            button.FlatAppearance.MouseDownBackColor = DarkModeColors.SelectionColor;
+            if (button.Font.Size < 9.5F)
+            {
+                button.Font = new Font(button.Font.FontFamily, 9.5F, FontStyle.Bold);
+            }
             return;
         }
 
@@ -198,6 +202,11 @@ public static class ThemeManager
         {
             tabControl.BackColor = DarkModeColors.BackgroundSecondaryColor;
             tabControl.ForeColor = DarkModeColors.TextColor;
+            foreach (TabPage tabPage in tabControl.TabPages)
+            {
+                tabPage.BackColor = DarkModeColors.BackgroundColor;
+                tabPage.ForeColor = DarkModeColors.TextColor;
+            }
             return;
         }
 
@@ -216,19 +225,19 @@ public static class ThemeManager
         dgv.GridColor = DarkModeColors.BorderColor;
         dgv.DefaultCellStyle.BackColor = DarkModeColors.BackgroundColor;
         dgv.DefaultCellStyle.ForeColor = DarkModeColors.TextColor;
-        dgv.DefaultCellStyle.SelectionBackColor = DarkModeColors.AccentColor;
+        dgv.DefaultCellStyle.SelectionBackColor = DarkModeColors.SelectionColor;
         dgv.DefaultCellStyle.SelectionForeColor = Color.White;
         dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
 
         // Cabeçalho das colunas
         dgv.ColumnHeadersDefaultCellStyle.BackColor = DarkModeColors.BackgroundSecondaryColor;
         dgv.ColumnHeadersDefaultCellStyle.ForeColor = DarkModeColors.TextColor;
-        dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = DarkModeColors.AccentColor;
+        dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = DarkModeColors.SelectionColor;
 
         // Cabeçalho das linhas
         dgv.RowHeadersDefaultCellStyle.BackColor = DarkModeColors.BackgroundSecondaryColor;
         dgv.RowHeadersDefaultCellStyle.ForeColor = DarkModeColors.TextColor;
-        dgv.RowHeadersDefaultCellStyle.SelectionBackColor = DarkModeColors.AccentColor;
+        dgv.RowHeadersDefaultCellStyle.SelectionBackColor = DarkModeColors.SelectionColor;
 
         dgv.EnableHeadersVisualStyles = false;
     }

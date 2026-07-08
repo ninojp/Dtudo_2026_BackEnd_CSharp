@@ -1,6 +1,8 @@
 using LibDtudo.Shared.Dtos;
 using Microsoft.VisualBasic;
+using System.Globalization;
 using System.Net;
+using System.Text.RegularExpressions;
 using WinAppDtudo.Controls;
 using WinAppDtudo.Services;
 
@@ -80,6 +82,8 @@ public partial class FUC_DetalhesAnime : UserControl
     /// <param name="anime">Os detalhes do anime a serem exibidos.</param>
     private void PopularUI(JikanAnimeDetalhes anime)
     {
+        var anoLancamento = ExtrairAnoLancamentoPeloAired(anime.Aired);
+
         // Header
         Lbl_TituloAnime.Text = anime.Title ?? $"Anime #{anime.MalId}";
         var exibicao = anime.Airing ? " (Em exibição)" : string.Empty;
@@ -90,7 +94,7 @@ public partial class FUC_DetalhesAnime : UserControl
             anime.Images?.Jpg?.LargeImageUrl ?? anime.Images?.Jpg?.ImageUrl);
 
         // Estatísticas rápidas (painel esquerdo)
-        Lbl_Ano.Text = anime.Year.HasValue ? $"📅 {anime.Year}" : string.Empty;
+        Lbl_Ano.Text = anoLancamento.HasValue ? $"📅 {anoLancamento}" : string.Empty;
         Lbl_ScoreStat.Text = anime.Score.HasValue ? $"⭐ {anime.Score:0.00}" : string.Empty;
         Lbl_Rank.Text = anime.Rank.HasValue ? $"🏆 Rank #{anime.Rank}" : string.Empty;
         Lbl_Popularidade.Text = anime.Popularity.HasValue ? $"👥 Pop. #{anime.Popularity}" : string.Empty;
@@ -119,8 +123,8 @@ public partial class FUC_DetalhesAnime : UserControl
         AdicionarDetalhe("Duração", anime.Duration, larguraValor);
         AdicionarDetalhe("Classificação", anime.Rating, larguraValor);
 
-        if (!string.IsNullOrWhiteSpace(anime.Season) && anime.Year.HasValue)
-            AdicionarDetalhe("Temporada", $"{anime.Season} {anime.Year}", larguraValor);
+        if (!string.IsNullOrWhiteSpace(anime.Season) && anoLancamento.HasValue)
+            AdicionarDetalhe("Temporada", $"{anime.Season} {anoLancamento}", larguraValor);
 
         if (anime.Score.HasValue)
             AdicionarDetalhe("Pontuação",
@@ -176,13 +180,21 @@ public partial class FUC_DetalhesAnime : UserControl
     private void AdicionarParDeLabels(string campo, string valor, Color corValor,
         int larguraValor, bool isLink)
     {
+        int alturaValor = Math.Max(
+            24,
+            TextRenderer.MeasureText(
+                valor,
+                new Font("Segoe UI", 9.5F, isLink ? FontStyle.Underline : FontStyle.Regular),
+                new Size(larguraValor, int.MaxValue),
+                TextFormatFlags.WordBreak).Height + 4);
+
         var lblCampo = new Label
         {
             AutoSize = false,
-            Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
+            Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Location = new Point(4, _yOffset + 2),
-            Size = new Size(148, 20),
+            Size = new Size(148, alturaValor),
             Text = campo + ":",
             TextAlign = ContentAlignment.MiddleRight
         };
@@ -190,11 +202,11 @@ public partial class FUC_DetalhesAnime : UserControl
         var lblValor = new Label
         {
             AutoSize = false,
-            Font = new Font("Segoe UI", 8.5F,
+            Font = new Font("Segoe UI", 9.5F,
                 isLink ? FontStyle.Underline : FontStyle.Regular),
             ForeColor = corValor,
             Location = new Point(156, _yOffset + 2),
-            Size = new Size(larguraValor, 20),
+            Size = new Size(larguraValor, alturaValor),
             Text = valor,
             TextAlign = ContentAlignment.MiddleLeft,
             Cursor = isLink ? Cursors.Hand : Cursors.Default
@@ -217,7 +229,7 @@ public partial class FUC_DetalhesAnime : UserControl
 
         Pnl_Info.Controls.Add(lblCampo);
         Pnl_Info.Controls.Add(lblValor);
-        _yOffset += 24;
+        _yOffset += alturaValor + 6;
     }
 
     private void AdicionarTextoLongo(string campo, string? texto, int larguraValor)
@@ -226,20 +238,23 @@ public partial class FUC_DetalhesAnime : UserControl
         _yOffset += 6;
         var lblCampo = new Label
         {
-            AutoSize = false,
-            Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+            AutoSize = true,
+            MaximumSize = new Size(148 + larguraValor, 0),
+            Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Location = new Point(4, _yOffset),
-            Size = new Size(148 + larguraValor, 22),
             Text = campo + ":"
         };
-        _yOffset += 24;
+
+        lblCampo.CreateControl();
+        _yOffset += lblCampo.Height + 8;
+
         int larguraTexto = Math.Max(148 + larguraValor - 12, 350);
         var lblTexto = new Label
         {
             AutoSize = true,
             MaximumSize = new Size(larguraTexto, 0),
-            Font = new Font("Segoe UI", 8.5F),
+            Font = new Font("Segoe UI", 9.5F),
             ForeColor = Color.FromArgb(255, 115, 0),
             Location = new Point(8, _yOffset),
             Text = texto
@@ -248,7 +263,7 @@ public partial class FUC_DetalhesAnime : UserControl
         Pnl_Info.Controls.Add(lblTexto);
         // Força o cálculo do tamanho antes de ler a altura
         lblTexto.CreateControl();
-        _yOffset += lblTexto.Height + 14;
+        _yOffset += lblTexto.Height + 18;
         AdicionarSeparador(larguraValor);
     }
 
@@ -267,11 +282,11 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private async Task CarregarRelacoesAsync()
     {
-        int largura = Math.Max(Pnl_Info.ClientSize.Width - 12, 300);
+        int larguraSecao = Math.Max(Pnl_Info.ClientSize.Width - 12, 300);
 
         // Fase 1: exibir cabeçalho e indicador de carregamento
         Pnl_Info.SuspendLayout();
-        AdicionarSeparador(largura);
+        AdicionarSeparador(larguraSecao - 148);
 
         var lblTituloSecao = new Label
         {
@@ -279,7 +294,7 @@ public partial class FUC_DetalhesAnime : UserControl
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
             ForeColor = Color.FromArgb(25, 50, 120),
             Location = new Point(4, _yOffset),
-            Size = new Size(148 + largura, 26),
+            Size = new Size(larguraSecao, 26),
             Text = "🔗 Animes Relacionados"
         };
         _yOffset += 30;
@@ -344,18 +359,29 @@ public partial class FUC_DetalhesAnime : UserControl
             return;
         }
 
-        int larguraFlp = Math.Max(Pnl_Info.ClientSize.Width - 16, 300);
+        int larguraContainer = Math.Max(Pnl_Info.ClientSize.Width - 16, 300);
+        int larguraCards = Math.Max(larguraContainer - 8, 280);
+
+        var pnlRelacoes = new Panel
+        {
+            Location = new Point(4, _yOffset),
+            Size = new Size(larguraContainer, 260),
+            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+            BackColor = DarkModeColors.BackgroundSecondaryColor,
+            AutoScroll = true,
+            BorderStyle = BorderStyle.FixedSingle
+        };
+
         var flp = new FlowLayoutPanel
         {
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             WrapContents = true,
             FlowDirection = FlowDirection.LeftToRight,
-            Location = new Point(4, _yOffset),
-            MinimumSize = new Size(larguraFlp, 0),
-            MaximumSize = new Size(larguraFlp, 0),
+            Location = new Point(4, 4),
+            MinimumSize = new Size(larguraCards, 0),
+            MaximumSize = new Size(larguraCards, 0),
             Padding = new Padding(4),
-            //Aqui foi modificado para usar a cor de fundo secundária do DarkModeColors
             BackColor = DarkModeColors.BackgroundSecondaryColor
         };
 
@@ -368,12 +394,13 @@ public partial class FUC_DetalhesAnime : UserControl
         }
 
         Pnl_Info.SuspendLayout();
-        Pnl_Info.Controls.Add(flp);
+        pnlRelacoes.Controls.Add(flp);
+        Pnl_Info.Controls.Add(pnlRelacoes);
         flp.CreateControl();
-        // Usa GetPreferredSize para estimar a altura antes da escala de DPI ser aplicada;
-        // AutoSize=true no FLP corrige o tamanho final quando o controle é exibido.
-        int alturaEstimada = flp.GetPreferredSize(new Size(larguraFlp, int.MaxValue)).Height;
-        _yOffset += Math.Max(alturaEstimada, flp.Height) + 12;
+        int alturaEstimada = flp.GetPreferredSize(new Size(larguraCards, int.MaxValue)).Height;
+        int alturaContainer = Math.Max(210, Math.Min(380, alturaEstimada + 12));
+        pnlRelacoes.Height = alturaContainer;
+        _yOffset += alturaContainer + 12;
         Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
         Pnl_Info.ResumeLayout(true);
     }
@@ -415,6 +442,14 @@ public partial class FUC_DetalhesAnime : UserControl
             MessageBox.Show(
                 $"Coleção '{tituloMyAnime}' salva com sucesso em MyAnime.",
                 "Sucesso",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+        {
+            MessageBox.Show(
+                $"Já existe uma coleção MyAnime com o título '{tituloMyAnime}'.",
+                "Cadastro bloqueado",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
         }
@@ -555,6 +590,8 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private static AdicionaAnimeDto MapearParaAdicionaAnimeDto(JikanAnimeDetalhes anime, int myAnimeId)
     {
+        var anoLancamento = ExtrairAnoLancamentoPeloAired(anime.Aired);
+
         var episodios = anime.Episodes.HasValue && anime.Episodes.Value > 0
             ? anime.Episodes.Value
             : 1;
@@ -601,7 +638,7 @@ public partial class FUC_DetalhesAnime : UserControl
             Synopsis = anime.Synopsis,
             Background = anime.Background,
             Season = anime.Season,
-            Year = anime.Year,
+            Year = anoLancamento,
             Producers = [.. anime.Producers],
             Licensors = [.. anime.Licensors],
             Studios = [.. anime.Studios],
@@ -610,6 +647,29 @@ public partial class FUC_DetalhesAnime : UserControl
             Themes = [.. anime.Themes],
             Demographics = [.. anime.Demographics]
         };
+    }
+
+    private static int? ExtrairAnoLancamentoPeloAired(string? aired)
+    {
+        if (string.IsNullOrWhiteSpace(aired)) return null;
+
+        var dataInicialTexto = aired.Split(" to ", StringSplitOptions.TrimEntries)[0];
+
+        if (DateTime.TryParseExact(
+            dataInicialTexto,
+            ["MMM dd, yyyy", "MMM d, yyyy"],
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var dataInicial))
+        {
+            return dataInicial.Year;
+        }
+
+        var matchAno = Regex.Match(dataInicialTexto, @"\b(19|20)\d{2}\b");
+        if (matchAno.Success && int.TryParse(matchAno.Value, out var ano))
+            return ano;
+
+        return null;
     }
 
     // ===================================================================

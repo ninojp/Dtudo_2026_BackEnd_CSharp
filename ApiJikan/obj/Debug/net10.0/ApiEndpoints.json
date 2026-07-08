@@ -35,6 +35,16 @@
       {
         "Type": "System.Void",
         "MediaTypes": [],
+        "StatusCode": 504
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 502
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
         "StatusCode": 500
       }
     ]

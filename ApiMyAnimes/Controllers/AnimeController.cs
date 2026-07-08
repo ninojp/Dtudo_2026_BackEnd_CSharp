@@ -4,7 +4,9 @@ using ApiMyAnimes.Data;
 using ApiMyAnimes.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace ApiMyAnimes.Controllers;
 
@@ -102,7 +104,7 @@ public class AnimeController(
                 Synopsis = animeImportado.Synopsis,
                 Background = animeImportado.Background,
                 Season = animeImportado.Season,
-                Year = animeImportado.Year,
+                Year = animeImportado.Year ?? ExtrairAnoLancamentoPeloAired(animeImportado.Aired),
                 Producers = animeImportado.Producers,
                 Licensors = animeImportado.Licensors,
                 Studios = animeImportado.Studios,
@@ -155,7 +157,7 @@ public class AnimeController(
             Synopsis = adicionaAnimeDto.Synopsis,
             Background = adicionaAnimeDto.Background,
             Season = adicionaAnimeDto.Season,
-            Year = adicionaAnimeDto.Year,
+            Year = adicionaAnimeDto.Year ?? ExtrairAnoLancamentoPeloAired(adicionaAnimeDto.Aired),
             Producers = adicionaAnimeDto.Producers,
             Licensors = adicionaAnimeDto.Licensors,
             Studios = adicionaAnimeDto.Studios,
@@ -167,6 +169,29 @@ public class AnimeController(
         context.Animes.Add(anime);
         context.SaveChanges();
         return CreatedAtAction(nameof(ObterAnimePorId), new { id = anime.MalId }, ParaObterAnimeDto(anime));
+    }
+
+    private static int? ExtrairAnoLancamentoPeloAired(string? aired)
+    {
+        if (string.IsNullOrWhiteSpace(aired)) return null;
+
+        var dataInicialTexto = aired.Split(" to ", StringSplitOptions.TrimEntries)[0];
+
+        if (DateTime.TryParseExact(
+            dataInicialTexto,
+            ["MMM dd, yyyy", "MMM d, yyyy"],
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var dataInicial))
+        {
+            return dataInicial.Year;
+        }
+
+        var matchAno = Regex.Match(dataInicialTexto, @"\b(19|20)\d{2}\b");
+        if (matchAno.Success && int.TryParse(matchAno.Value, out var ano))
+            return ano;
+
+        return null;
     }
     //================================================================
     /// <summary>

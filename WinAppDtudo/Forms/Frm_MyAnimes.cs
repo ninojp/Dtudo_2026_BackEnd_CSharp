@@ -1,11 +1,17 @@
 using WinAppDtudo.Forms;
 using WinAppDtudo.FormsUC;
 using WinAppDtudo.Services;
+using System.Net;
 
 namespace WinAppDtudo;
 
 public partial class Frm_MyAnimes : CustomFormNoBorder
 {
+    private const int CloseButtonSize = 14;
+    private readonly ApiMyAnimesService _apiMyAnimesService = new();
+    private readonly AnalizadorDeEstruturas _analizadorDeEstruturas = new();
+    private readonly ImportadorAnimesMyAnimeService _importadorAnimesMyAnimeService = new();
+    private AnaliseEstruturas? _ultimaAnaliseEstruturas;
     public int _tabIndexMascaras = 0;
     public int _tabIndexMyAnimesPorNome = 0;
     public int _tabIndexMyAnimesPorID = 0;
@@ -24,20 +30,34 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         if (_tabIndexMyAnimesPorNome == 0)
         {
             _tabIndexMyAnimesPorNome++;
-            FUC_BuscarPorNome ucBuscarNome = new()
+            try
             {
-                Dock = DockStyle.Fill
-            };
-            ucBuscarNome.CardClicado += AbrirDetalhesAnime;
-            TabPage tabPage = new()
+                var ucBuscaIntegrada = new FUC_BuscaIntegradaPorNome
+                {
+                    Dock = DockStyle.Fill
+                };
+
+                ucBuscaIntegrada.MyAnimeSelecionado += AbrirDetalhesMyAnime;
+                ucBuscaIntegrada.AnimeJikanSelecionado += AbrirDetalhesAnime;
+
+                TabPage tabPage = new()
+                {
+                    Text = "Procurar Anime (Local + Jikan)",
+                    Name = "ProcurarAnime",
+                    ImageIndex = 2,
+                };
+                tabPage.Controls.Add(ucBuscaIntegrada);
+                Tbc_MyAnimes.TabPages.Add(tabPage);
+                Tbc_MyAnimes.SelectedTab = tabPage;
+            }
+            catch (Exception ex)
             {
-                Text = "Procurar Anime",
-                Name = "ProcurarAnime",
-                ImageIndex = 2,
-            };
-            tabPage.Controls.Add(ucBuscarNome);
-            Tbc_MyAnimes.TabPages.Add(tabPage);
-            Tbc_MyAnimes.SelectedTab = tabPage;
+                _tabIndexMyAnimesPorNome = 0;
+                MessageBox.Show($"Erro ao abrir a aba Procurar Anime:\n{ex.Message}",
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
         else
         {
@@ -143,6 +163,20 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     //Menu Flutuante - Captura o evento MouseDown do controle Tbc_MyAnimes e exibe um menu de contexto ao clicar com o botão direito do mouse.
     private void Tbc_MyAnimes_MouseDown(object sender, MouseEventArgs e)
     {
+        if (e.Button == MouseButtons.Left)
+        {
+            int tabIndex = GetTabIndexAt(e.Location);
+            if (tabIndex >= 0)
+            {
+                Rectangle closeBounds = GetCloseButtonBounds(tabIndex);
+                if (closeBounds.Contains(e.Location))
+                {
+                    ApagaAbaAtual(Tbc_MyAnimes.TabPages[tabIndex]);
+                    return;
+                }
+            }
+        }
+
         if (e.Button == MouseButtons.Right)
         {
             ContextMenuStrip contextMenu = new();
@@ -161,6 +195,76 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             menuFlutuanteItem4.Click += new EventHandler(MenuFlutuanteItem4_Click);
         }
     }
+
+    private void Tbc_MyAnimes_DrawItem(object? sender, DrawItemEventArgs e)
+    {
+        if (e.Index < 0 || e.Index >= Tbc_MyAnimes.TabPages.Count)
+            return;
+
+        TabPage tabPage = Tbc_MyAnimes.TabPages[e.Index];
+        Rectangle tabRect = Tbc_MyAnimes.GetTabRect(e.Index);
+        bool selecionada = e.Index == Tbc_MyAnimes.SelectedIndex;
+
+        Color fundo = selecionada ? DarkModeColors.SelectionColor : DarkModeColors.BackgroundSecondaryColor;
+        Color texto = selecionada ? Color.Black : DarkModeColors.TextColor;
+
+        using (SolidBrush brush = new(fundo))
+        {
+            e.Graphics.FillRectangle(brush, tabRect);
+        }
+
+        Rectangle closeRect = GetCloseButtonBounds(e.Index);
+        int espacamentoDireita = closeRect.Width + 12;
+        Rectangle textRect = new(
+            tabRect.X + 10,
+            tabRect.Y + 12,
+            Math.Max(10, tabRect.Width - espacamentoDireita - 12),
+            tabRect.Height - 4);
+
+        TextRenderer.DrawText(
+            e.Graphics,
+            tabPage.Text,
+            Tbc_MyAnimes.Font,
+            textRect,
+            texto,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+
+        using (Font closeFont = new("Segoe UI", 7.5F, FontStyle.Bold))
+        {
+            TextRenderer.DrawText(
+                e.Graphics,
+                "✕",
+                closeFont,
+                closeRect,
+                texto,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        }
+
+        using Pen borderPen = new(DarkModeColors.BorderColor);
+        e.Graphics.DrawRectangle(borderPen, tabRect);
+    }
+
+    private int GetTabIndexAt(Point location)
+    {
+        for (int i = 0; i < Tbc_MyAnimes.TabCount; i++)
+        {
+            if (Tbc_MyAnimes.GetTabRect(i).Contains(location))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private Rectangle GetCloseButtonBounds(int tabIndex)
+    {
+        Rectangle tabRect = Tbc_MyAnimes.GetTabRect(tabIndex);
+        return new Rectangle(
+            tabRect.Right - CloseButtonSize - 8,
+            tabRect.Top + Math.Max(2, (tabRect.Height - CloseButtonSize) / 2 - 3),
+            CloseButtonSize,
+            CloseButtonSize);
+    }
+
     private static ToolStripMenuItem CriaMenuFlutuanteItem(string textMenuItem, string imageName)
     {
         ToolStripMenuItem menuFlutuanteItem = new(textMenuItem);
@@ -253,8 +357,272 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         Tbc_MyAnimes.SelectedTab = tabPage;
     }
 
+    private void AbrirDetalhesMyAnime(object? sender, int myAnimeId)
+    {
+        var tabName = $"MyAnime_{myAnimeId}";
+        var tabExistente = Tbc_MyAnimes.TabPages
+            .Cast<TabPage>().FirstOrDefault(tp => tp.Name == tabName);
+        if (tabExistente != null)
+        {
+            Tbc_MyAnimes.SelectedTab = tabExistente;
+            return;
+        }
+
+        var ucDetalhes = new FUC_MyAnimeDetalhes(myAnimeId)
+        {
+            Dock = DockStyle.Fill
+        };
+        ucDetalhes.CardClicado += AbrirDetalhesAnime;
+
+        var tabPage = new TabPage
+        {
+            Text = $"MyAnime #{myAnimeId}",
+            Name = tabName,
+            ImageIndex = 1
+        };
+
+        tabPage.Controls.Add(ucDetalhes);
+        Tbc_MyAnimes.TabPages.Add(tabPage);
+        Tbc_MyAnimes.SelectedTab = tabPage;
+    }
+
     private void Frm_MyAnimes_Load(object sender, EventArgs e)
     {
 
+    }
+
+    private async void Mnu_AnalizarEstruturas_Click(object sender, EventArgs e)
+    {
+        using var folderDialog = new FolderBrowserDialog
+        {
+            Description = "Selecione a pasta raiz que contém os MyAnimes.",
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton = false
+        };
+
+        if (folderDialog.ShowDialog(this) != DialogResult.OK || string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
+            return;
+
+        Frm_ProgressoOperacao? frmProgresso = null;
+        List<MyAnimeCriadoInfo> myAnimesCriados = [];
+        var errosDetalhados = new List<string>();
+
+        try
+        {
+            UseWaitCursor = true;
+            Mnu_AnalizarEstruturas.Enabled = false;
+
+            frmProgresso = new Frm_ProgressoOperacao("Analisando estruturas e salvando MyAnime");
+            frmProgresso.Atualizar(0, "Iniciando análise...");
+            frmProgresso.Show(this);
+            frmProgresso.BringToFront();
+
+            var progressoAnalise = new Progress<ProgressoAnalise>(p =>
+            {
+                var percentualEtapa = p.PercentualConcluido / 2;
+                frmProgresso.Atualizar(percentualEtapa, p.Mensagem);
+            });
+
+            var analise = await Task.Run(() => _analizadorDeEstruturas.AnalisarDiretorio(folderDialog.SelectedPath, progressoAnalise));
+            _ultimaAnaliseEstruturas = analise;
+
+            if (analise.MyAnimesParaPersistir.Count == 0)
+            {
+                frmProgresso.Close();
+                frmProgresso.Dispose();
+                frmProgresso = null;
+
+                MessageBox.Show(
+                    analise.CriarResumo(),
+                    "Análise concluída",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            var resultadoCadastroMyAnime = await SalvarMyAnimesDaAnaliseComProgressoAsync(analise, frmProgresso, errosDetalhados);
+            myAnimesCriados = resultadoCadastroMyAnime.Criados;
+
+            frmProgresso.Close();
+            frmProgresso.Dispose();
+            frmProgresso = null;
+
+            var resumoMyAnime =
+                $"{analise.CriarResumo()}\n\n" +
+                $"MyAnime criados: {myAnimesCriados.Count}\n" +
+                $"MyAnime já existentes (ignorados): {resultadoCadastroMyAnime.Ignorados}\n" +
+                $"Falhas no cadastro de MyAnime: {resultadoCadastroMyAnime.Falhas}\n\n" +
+                "Deseja continuar e salvar agora os animes da coleção no banco local?";
+
+            var desejaImportarAnimes = MessageBox.Show(
+                resumoMyAnime,
+                "Cadastro de MyAnime concluído",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (desejaImportarAnimes == DialogResult.Yes && myAnimesCriados.Count > 0)
+                await ImportarAnimesDosMyAnimesCriadosAsync(analise.DiretorioRaiz, myAnimesCriados, errosDetalhados);
+
+            if (myAnimesCriados.Count > 0)
+            {
+                var ultimoMyAnimeCriado = myAnimesCriados.Last();
+                var abrirDetalhes = MessageBox.Show(
+                    $"Processamento finalizado.\n\nDeseja abrir MyAnimeDetalhes da coleção recém criada: '{ultimoMyAnimeCriado.Titulo}' (ID {ultimoMyAnimeCriado.Id})?",
+                    "Abrir detalhes",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Information);
+
+                if (abrirDetalhes == DialogResult.Yes)
+                    AbrirDetalhesMyAnime(this, ultimoMyAnimeCriado.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Erro ao analisar as estruturas:\n{ex.Message}",
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        finally
+        {
+            if (frmProgresso is not null && !frmProgresso.IsDisposed)
+            {
+                frmProgresso.Close();
+                frmProgresso.Dispose();
+            }
+
+            UseWaitCursor = false;
+            Mnu_AnalizarEstruturas.Enabled = true;
+        }
+    }
+
+    private async Task<ResultadoCadastroMyAnime> SalvarMyAnimesDaAnaliseComProgressoAsync(
+        AnaliseEstruturas analise,
+        Frm_ProgressoOperacao frmProgresso,
+        List<string> errosDetalhados)
+    {
+        var resultado = new ResultadoCadastroMyAnime();
+        var total = analise.MyAnimesParaPersistir.Count;
+        if (total == 0)
+            return resultado;
+
+        for (var indice = 0; indice < total; indice++)
+        {
+            var myAnime = analise.MyAnimesParaPersistir[indice];
+            try
+            {
+                var myAnimeId = await _apiMyAnimesService.AdicionarMyAnimeAsync(myAnime);
+                if (!myAnimeId.HasValue || myAnimeId.Value <= 0)
+                {
+                    errosDetalhados.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] MyAnime '{myAnime.Titulo}' não retornou ID após criação.");
+                    resultado.Falhas++;
+                }
+                else
+                {
+                    resultado.Criados.Add(new MyAnimeCriadoInfo(myAnimeId.Value, myAnime.Titulo, myAnime.AnimesMalId));
+                }
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                resultado.Ignorados++;
+
+                var myAnimeExistente = await _apiMyAnimesService.ObterMyAnimePorTituloAsync(myAnime.Titulo);
+                if (myAnimeExistente is not null
+                    && myAnimeExistente.Id > 0
+                    && !resultado.Criados.Any(c => c.Id == myAnimeExistente.Id))
+                {
+                    resultado.Criados.Add(new MyAnimeCriadoInfo(myAnimeExistente.Id, myAnimeExistente.Titulo, myAnime.AnimesMalId));
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado.Falhas++;
+                errosDetalhados.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha ao criar MyAnime '{myAnime.Titulo}': {ex.Message}");
+            }
+
+            var percentual = 50 + (int)Math.Round(((indice + 1) / (double)total) * 50, MidpointRounding.AwayFromZero);
+            frmProgresso.Atualizar(Math.Clamp(percentual, 50, 100), $"Salvando MyAnime {indice + 1}/{total}: {myAnime.Titulo}");
+        }
+
+        return resultado;
+    }
+
+    private async Task ImportarAnimesDosMyAnimesCriadosAsync(
+        string diretorioRaizAnalise,
+        List<MyAnimeCriadoInfo> myAnimesCriados,
+        List<string> errosDetalhados)
+    {
+        using var frmProgresso = new Frm_ProgressoOperacao("Salvando animes das coleções");
+        frmProgresso.Atualizar(0, "Iniciando importação de animes...");
+        frmProgresso.Show(this);
+        frmProgresso.BringToFront();
+
+        var totalAnimesSalvos = 0;
+        var totalAnimesSalvosDegradacao = 0;
+        var totalAnimesIgnorados = 0;
+        var totalAnimesFalha = 0;
+
+        for (var indiceMyAnime = 0; indiceMyAnime < myAnimesCriados.Count; indiceMyAnime++)
+        {
+            var item = myAnimesCriados[indiceMyAnime];
+            var progressoLocal = new Progress<ProgressoImportacaoAnimes>(p =>
+            {
+                var basePercent = (indiceMyAnime / (double)myAnimesCriados.Count) * 100d;
+                var faixa = 100d / myAnimesCriados.Count;
+                var percentualGlobal = (int)Math.Round(basePercent + (p.Percentual / 100d) * faixa, MidpointRounding.AwayFromZero);
+
+                frmProgresso.Atualizar(Math.Clamp(percentualGlobal, 0, 100), p.Mensagem);
+            });
+
+            var resultado = await _importadorAnimesMyAnimeService.ImportarAsync(
+                item.Id,
+                item.Titulo,
+                item.AnimesMalId,
+                progressoLocal);
+
+            totalAnimesSalvos += resultado.AnimesSalvos;
+            totalAnimesSalvosDegradacao += resultado.AnimesSalvosModoDegradacao;
+            totalAnimesIgnorados += resultado.AnimesIgnorados;
+            totalAnimesFalha += resultado.AnimesComFalha;
+            errosDetalhados.AddRange(resultado.ErrosDetalhados);
+        }
+
+        frmProgresso.Atualizar(100, "Importação finalizada.");
+        frmProgresso.Close();
+
+        var mensagem =
+            $"Salvamento dos animes finalizado.\n" +
+            $"Animes salvos: {totalAnimesSalvos}\n" +
+            $"Animes salvos em modo degradação: {totalAnimesSalvosDegradacao}\n" +
+            $"Animes ignorados (já existentes): {totalAnimesIgnorados}\n" +
+            $"Animes com falha: {totalAnimesFalha}\n" +
+            $"Erros detalhados: {errosDetalhados.Count}";
+
+        string? caminhoLog = null;
+        if (errosDetalhados.Count > 0)
+        {
+            caminhoLog = ImportadorAnimesMyAnimeService.SalvarLogErros("importacao-myanime", errosDetalhados);
+            var detalhesFalha = string.Join(Environment.NewLine, errosDetalhados.Take(8));
+            mensagem += $"\n\nPrimeiros erros:\n{detalhesFalha}";
+
+            if (!string.IsNullOrWhiteSpace(caminhoLog))
+                mensagem += $"\n\nLog salvo em:\n{caminhoLog}";
+        }
+
+        MessageBox.Show(
+            mensagem,
+            "Importação MyAnime",
+            MessageBoxButtons.OK,
+            errosDetalhados.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+    }
+
+    private sealed record MyAnimeCriadoInfo(int Id, string Titulo, List<int> AnimesMalId);
+
+    private sealed class ResultadoCadastroMyAnime
+    {
+        public List<MyAnimeCriadoInfo> Criados { get; } = [];
+        public int Ignorados { get; set; }
+        public int Falhas { get; set; }
     }
 }

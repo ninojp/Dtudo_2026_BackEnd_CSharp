@@ -26,13 +26,21 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ObterMyAnimeDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public IActionResult AdicionarMyAnime([FromBody] AdicionaMyAnimeDto adicionaMyAnimeDto)
     {
         if (adicionaMyAnimeDto is null) return BadRequest("Corpo da requisição inválido.");
 
+        var tituloNormalizado = adicionaMyAnimeDto.Titulo?.Trim() ?? string.Empty;
+        var myAnimeExistente = context.MyAnimes.FirstOrDefault(a =>
+            a.Titulo.Trim().ToLower() == tituloNormalizado.ToLower());
+
+        if (myAnimeExistente is not null)
+            return Conflict($"MyAnime '{tituloNormalizado}' já existe.");
+
         var myAnime = new MyAnime
         {
-            Titulo = adicionaMyAnimeDto.Titulo,
+            Titulo = tituloNormalizado,
             AnimesMalId = adicionaMyAnimeDto.AnimesMalId
         };
         context.MyAnimes.Add(myAnime);
@@ -191,6 +199,7 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     {
         return new ObterMyAnimeDto
         {
+            Id = myAnime.Id,
             Titulo = myAnime.Titulo,
             AnimesMalId = myAnime.AnimesMalId,
             HoraDaConsulta = DateTime.Now

@@ -6,6 +6,8 @@ namespace LibDtudo.Shared.Dtos;
 /// </summary>
 public class ObterMyAnimeDto
 {
+    public int Id { get; set; }
+
     public string Titulo { get; set; } = string.Empty;
 
     public List<int> AnimesMalId { get; set; } = new();
