@@ -40,10 +40,10 @@ partial class Frm_MyAnimes
         MnI_FecharAbasAEsquerda = new ToolStripMenuItem();
         MnI_FecharAbasADireita = new ToolStripMenuItem();
         MnI_ProcurarAnimePorNome = new ToolStripMenuItem();
-        MnI_ProcurarAnimePorID = new ToolStripMenuItem();
+        MnI_ApiJikanBuscarNome = new ToolStripMenuItem();
+        Mnu_AnalizarEstruturas = new ToolStripMenuItem();
         Tbc_MyAnimes = new TabControl();
         Iml_ImagensList = new ImageList(components);
-        Mnu_AnalizarEstruturas = new ToolStripMenuItem();
         Mnu_MenuMyAnimes.SuspendLayout();
         SuspendLayout();
         // 
@@ -51,7 +51,7 @@ partial class Frm_MyAnimes
         // 
         Mnu_MenuMyAnimes.BackColor = Color.DimGray;
         Mnu_MenuMyAnimes.ImageScalingSize = new Size(32, 32);
-        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_ProcurarAnimePorNome, MnI_ProcurarAnimePorID, Mnu_AnalizarEstruturas });
+        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_ProcurarAnimePorNome, MnI_ApiJikanBuscarNome, Mnu_AnalizarEstruturas });
         Mnu_MenuMyAnimes.Location = new Point(0, 0);
         Mnu_MenuMyAnimes.Name = "Mnu_MenuMyAnimes";
         Mnu_MenuMyAnimes.Padding = new Padding(15, 4, 0, 4);
@@ -131,17 +131,25 @@ partial class Frm_MyAnimes
         // 
         MnI_ProcurarAnimePorNome.Image = Properties.Resources.pngwing_com;
         MnI_ProcurarAnimePorNome.Name = "MnI_ProcurarAnimePorNome";
-        MnI_ProcurarAnimePorNome.Size = new Size(291, 42);
-        MnI_ProcurarAnimePorNome.Text = "ProcurarPorNome";
+        MnI_ProcurarAnimePorNome.Size = new Size(325, 42);
+        MnI_ProcurarAnimePorNome.Text = "DBLocalBuscarNome";
         MnI_ProcurarAnimePorNome.Click += MnI_ProcurarAnimePorNome_Click;
         // 
-        // MnI_ProcurarAnimePorID
+        // MnI_ApiJikanBuscarNome
         // 
-        MnI_ProcurarAnimePorID.Image = Properties.Resources.RosaDosVentos;
-        MnI_ProcurarAnimePorID.Name = "MnI_ProcurarAnimePorID";
-        MnI_ProcurarAnimePorID.Size = new Size(242, 42);
-        MnI_ProcurarAnimePorID.Text = "ProcurarPorID";
-        MnI_ProcurarAnimePorID.Click += MnI_ProcurarAnimePorID_Click;
+        MnI_ApiJikanBuscarNome.Image = Properties.Resources.RosaDosVentos;
+        MnI_ApiJikanBuscarNome.Name = "MnI_ApiJikanBuscarNome";
+        MnI_ApiJikanBuscarNome.Size = new Size(328, 42);
+        MnI_ApiJikanBuscarNome.Text = "ApiJikanBuscarNome";
+        MnI_ApiJikanBuscarNome.Click += MnI_ApiJikanBuscarNome_Click;
+        // 
+        // Mnu_AnalizarEstruturas
+        // 
+        Mnu_AnalizarEstruturas.Image = Properties.Resources.pngwing3;
+        Mnu_AnalizarEstruturas.Name = "Mnu_AnalizarEstruturas";
+        Mnu_AnalizarEstruturas.Size = new Size(290, 42);
+        Mnu_AnalizarEstruturas.Text = "AnalizarEstruturas";
+        Mnu_AnalizarEstruturas.Click += Mnu_AnalizarEstruturas_Click;
         // 
         // Tbc_MyAnimes
         // 
@@ -174,14 +182,6 @@ partial class Frm_MyAnimes
         Iml_ImagensList.Images.SetKeyName(2, "RosaDosVentos.png");
         Iml_ImagensList.Images.SetKeyName(3, "Vvendetta.png");
         // 
-        // Mnu_AnalizarEstruturas
-        // 
-        Mnu_AnalizarEstruturas.Image = Properties.Resources.pngwing3;
-        Mnu_AnalizarEstruturas.Name = "Mnu_AnalizarEstruturas";
-        Mnu_AnalizarEstruturas.Size = new Size(290, 42);
-        Mnu_AnalizarEstruturas.Text = "AnalizarEstruturas";
-        Mnu_AnalizarEstruturas.Click += Mnu_AnalizarEstruturas_Click;
-        // 
         // Frm_MyAnimes
         // 
         AutoScaleDimensions = new SizeF(13F, 26F);
@@ -213,7 +213,6 @@ partial class Frm_MyAnimes
 
     private MenuStrip Mnu_MenuMyAnimes;
     private ToolStripMenuItem MnI_ProcurarAnimePorNome;
-    private ToolStripMenuItem MnI_ProcurarAnimePorID;
     private TabControl Tbc_MyAnimes;
     private ImageList Iml_ImagensList;
     private ToolStripMenuItem Mnu_MenuAbas;
@@ -226,4 +225,5 @@ partial class Frm_MyAnimes
     private ToolStripMenuItem MnI_FecharAbasADireita;
     private ToolStripMenuItem MnI_FormMsgBox;
     private ToolStripMenuItem Mnu_AnalizarEstruturas;
+    private ToolStripMenuItem MnI_ApiJikanBuscarNome;
 }

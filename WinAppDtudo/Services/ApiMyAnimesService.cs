@@ -27,6 +27,64 @@ public class ApiMyAnimesService
         };
     }
 
+    public async Task<ApiMyColecoesBuscaResult> BuscarMyAnimesPorTituloAsync(string query, int page = 1, int pageSize = 20)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return new ApiMyColecoesBuscaResult
+            {
+                CurrentPage = 1,
+                TotalPages = 1,
+                HasNextPage = false,
+                TotalResults = 0,
+                Results = []
+            };
+
+        var termo = query.Trim();
+        var todos = new List<ObterMyAnimeDto>();
+        var skip = 0;
+        const int take = 200;
+
+        while (true)
+        {
+            var paginaMyAnimes = await ObterMyAnimesAsync(skip, take);
+            if (paginaMyAnimes.Count == 0)
+                break;
+
+            todos.AddRange(paginaMyAnimes);
+
+            if (paginaMyAnimes.Count < take)
+                break;
+
+            skip += take;
+        }
+
+        var filtrados = todos
+            .Where(m => !string.IsNullOrWhiteSpace(m.Titulo)
+                && m.Titulo.Contains(termo, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(m => m.Titulo)
+            .ThenBy(m => m.Id)
+            .ToList();
+
+        var totalResultados = filtrados.Count;
+        var tamanhoPagina = Math.Max(1, pageSize);
+        var totalPaginas = Math.Max(1, (int)Math.Ceiling(totalResultados / (double)tamanhoPagina));
+        var paginaAtual = Math.Min(Math.Max(1, page), totalPaginas);
+
+        var paginaResultados = filtrados
+            .Skip((paginaAtual - 1) * tamanhoPagina)
+            .Take(tamanhoPagina)
+            .ToList();
+
+        return new ApiMyColecoesBuscaResult
+        {
+            Results = paginaResultados,
+            CurrentPage = paginaAtual,
+            TotalPages = totalPaginas,
+            HasNextPage = paginaAtual < totalPaginas,
+            TotalResults = totalResultados
+        };
+    }
+
     public async Task<List<ObterMyAnimeDto>> ObterMyAnimesAsync(int skip = 0, int take = 100)
     {
         using var response = await _httpClient.GetAsync($"apiLocal/MyAnime?skip={skip}&take={take}");
@@ -126,74 +184,6 @@ public class ApiMyAnimesService
             .OrderBy(a => a.Year ?? int.MaxValue)
             .ThenBy(a => a.Titulo)
             .ToList();
-    }
-
-    public async Task<ApiMyAnimesBuscaResult> BuscarAnimesPorNomeAsync(string query, int page = 1, int pageSize = 20)
-    {
-        if (string.IsNullOrWhiteSpace(query))
-            return new ApiMyAnimesBuscaResult
-            {
-                CurrentPage = 1,
-                TotalPages = 1,
-                HasNextPage = false,
-                TotalResults = 0,
-                Results = []
-            };
-
-        var termo = query.Trim();
-        var todos = new List<ObterAnimeDto>();
-        var skip = 0;
-        const int take = 200;
-
-        while (true)
-        {
-            var pagina = await ObterAnimesAsync(skip, take);
-            if (pagina.Count == 0)
-                break;
-
-            todos.AddRange(pagina);
-
-            if (pagina.Count < take)
-                break;
-
-            skip += take;
-        }
-
-        var filtrados = todos
-            .Where(a => ContemTermo(a, termo))
-            .OrderBy(a => a.Titulo)
-            .ThenBy(a => a.MalId)
-            .ToList();
-
-        var totalResultados = filtrados.Count;
-        var totalPaginas = Math.Max(1, (int)Math.Ceiling(totalResultados / (double)Math.Max(1, pageSize)));
-        var paginaAtual = Math.Min(Math.Max(1, page), totalPaginas);
-
-        var paginaResultados = filtrados
-            .Skip((paginaAtual - 1) * Math.Max(1, pageSize))
-            .Take(Math.Max(1, pageSize))
-            .ToList();
-
-        return new ApiMyAnimesBuscaResult
-        {
-            Results = paginaResultados,
-            CurrentPage = paginaAtual,
-            TotalPages = totalPaginas,
-            HasNextPage = paginaAtual < totalPaginas,
-            TotalResults = totalResultados
-        };
-    }
-
-    private static bool ContemTermo(ObterAnimeDto anime, string termo)
-    {
-        bool Em(string? valor) => !string.IsNullOrWhiteSpace(valor)
-            && valor.Contains(termo, StringComparison.OrdinalIgnoreCase);
-
-        return Em(anime.Titulo)
-            || Em(anime.Title)
-            || Em(anime.TitleEnglish)
-            || Em(anime.TitleJapanese)
-            || anime.SubTitulos.Any(Em);
     }
 
     private static StringContent SerializarJson<T>(T dto)

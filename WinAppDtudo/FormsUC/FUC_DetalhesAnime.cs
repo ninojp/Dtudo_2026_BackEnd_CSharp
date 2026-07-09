@@ -19,6 +19,7 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private readonly JikanApiService _jikanService = new();
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
+    private readonly CriadorAnimeAutomaticoService _criadorAnimeAutomaticoService = new();
     private readonly int _malId;
     private int _yOffset;
     private JikanAnimeDetalhes? _animeAtual;
@@ -437,13 +438,33 @@ public partial class FUC_DetalhesAnime : UserControl
                 AnimesMalId = malIdsRelacionados
             };
 
-            await _apiMyAnimesService.AdicionarMyAnimeAsync(dto);
+            var myAnimeId = await AdicionarMyAnimeComRetornoDeIdAsync(dto);
+
+            var mensagemSucesso =
+                $"Coleção '{tituloMyAnime}' salva com sucesso em MyAnime e anime atual cadastrado automaticamente.";
+            var iconeSucesso = MessageBoxIcon.Information;
+
+            try
+            {
+                await _criadorAnimeAutomaticoService.CriarAnimeDoMyAnimeAsync(_animeAtual, myAnimeId);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                mensagemSucesso =
+                    $"Coleção '{tituloMyAnime}' salva com sucesso em MyAnime. O anime atual já existia no banco local.";
+            }
+            catch (HttpRequestException)
+            {
+                mensagemSucesso =
+                    $"Coleção '{tituloMyAnime}' salva com sucesso em MyAnime, mas houve falha ao cadastrar automaticamente o anime atual.";
+                iconeSucesso = MessageBoxIcon.Warning;
+            }
 
             MessageBox.Show(
-                $"Coleção '{tituloMyAnime}' salva com sucesso em MyAnime.",
+                mensagemSucesso,
                 "Sucesso",
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+                iconeSucesso);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
         {
@@ -501,7 +522,7 @@ public partial class FUC_DetalhesAnime : UserControl
                 return;
             }
 
-            var dtoAnime = MapearParaAdicionaAnimeDto(_animeAtual, myAnimeId);
+            var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(_animeAtual, myAnimeId);
             await _apiMyAnimesService.AdicionarAnimeAsync(dtoAnime);
 
             var malIdsAtualizados = myAnimeExistente.AnimesMalId
@@ -575,6 +596,19 @@ public partial class FUC_DetalhesAnime : UserControl
                 : $"Anime_{anime.MalId}";
     }
 
+    private async Task<int> AdicionarMyAnimeComRetornoDeIdAsync(AdicionaMyAnimeDto dto)
+    {
+        var idRetornado = await _apiMyAnimesService.AdicionarMyAnimeAsync(dto);
+        if (idRetornado.HasValue && idRetornado.Value > 0)
+            return idRetornado.Value;
+
+        var myAnimeCriado = await _apiMyAnimesService.ObterMyAnimePorTituloAsync(dto.Titulo);
+        if (myAnimeCriado is not null && myAnimeCriado.Id > 0)
+            return myAnimeCriado.Id;
+
+        throw new InvalidOperationException("MyAnime criado, mas o ID não pôde ser recuperado para cadastrar o anime automaticamente.");
+    }
+
     private List<int> ObterMalIdsRelacionados()
     {
         var ids = _animesRelacionados
@@ -586,67 +620,6 @@ public partial class FUC_DetalhesAnime : UserControl
             ids.Add(_animeAtual.MalId);
 
         return ids.Distinct().ToList();
-    }
-
-    private static AdicionaAnimeDto MapearParaAdicionaAnimeDto(JikanAnimeDetalhes anime, int myAnimeId)
-    {
-        var anoLancamento = ExtrairAnoLancamentoPeloAired(anime.Aired);
-
-        var episodios = anime.Episodes.HasValue && anime.Episodes.Value > 0
-            ? anime.Episodes.Value
-            : 1;
-
-        var imagens = new List<string>();
-        if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.ImageUrl)) imagens.Add(anime.Images.Jpg.ImageUrl);
-        if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.SmallImageUrl)) imagens.Add(anime.Images.Jpg.SmallImageUrl);
-        if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.LargeImageUrl)) imagens.Add(anime.Images.Jpg.LargeImageUrl);
-
-        var subtitulos = new List<string>();
-        if (!string.IsNullOrWhiteSpace(anime.TitleEnglish)) subtitulos.Add(anime.TitleEnglish);
-        if (!string.IsNullOrWhiteSpace(anime.TitleJapanese)) subtitulos.Add(anime.TitleJapanese);
-        subtitulos.AddRange(anime.TitleSynonyms);
-
-        return new AdicionaAnimeDto
-        {
-            MalId = anime.MalId,
-            Titulo = !string.IsNullOrWhiteSpace(anime.Title) ? anime.Title : $"Anime_{anime.MalId}",
-            Episodios = episodios,
-            MyAnimeID = myAnimeId,
-            MalUrl = anime.Url ?? string.Empty,
-            ImagensUrlMal = imagens.Distinct().ToList(),
-            SubTitulos = subtitulos.Distinct().ToList(),
-            Trailer = anime.Trailer,
-            Approved = anime.Approved,
-            Title = anime.Title,
-            TitleEnglish = anime.TitleEnglish,
-            TitleJapanese = anime.TitleJapanese,
-            TitleSynonyms = [.. anime.TitleSynonyms],
-            Type = anime.Type,
-            Source = anime.Source,
-            Episodes = anime.Episodes,
-            Status = anime.Status,
-            Airing = anime.Airing,
-            Aired = anime.Aired,
-            Duration = anime.Duration,
-            Rating = anime.Rating,
-            Score = anime.Score,
-            ScoredBy = anime.ScoredBy,
-            Rank = anime.Rank,
-            Popularity = anime.Popularity,
-            Members = anime.Members,
-            Favorites = anime.Favorites,
-            Synopsis = anime.Synopsis,
-            Background = anime.Background,
-            Season = anime.Season,
-            Year = anoLancamento,
-            Producers = [.. anime.Producers],
-            Licensors = [.. anime.Licensors],
-            Studios = [.. anime.Studios],
-            Genres = [.. anime.Genres],
-            ExplicitGenres = [.. anime.ExplicitGenres],
-            Themes = [.. anime.Themes],
-            Demographics = [.. anime.Demographics]
-        };
     }
 
     private static int? ExtrairAnoLancamentoPeloAired(string? aired)

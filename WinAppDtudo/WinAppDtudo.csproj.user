@@ -16,19 +16,13 @@
     <Compile Update="CustomFormNoBorder.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="FormsUC\FUC_BuscaIntegradaPorNome.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="FormsUC\FUC_BuscarPorID.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="FormsUC\FUC_BuscarPorNome.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="FormsUC\FUC_BuscarPorNomeLocal.cs">
+    <Compile Update="FormsUC\FUC_ApiJikanBuscarNome.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="FormsUC\FUC_CadastrarUsuario.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="FormsUC\FUC_DBLocalBuscarNome.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="FormsUC\FUC_DetalhesAnime.cs">

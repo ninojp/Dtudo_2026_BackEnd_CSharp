@@ -4,14 +4,12 @@ using WinAppDtudo.Services;
 
 namespace WinAppDtudo.FormsUC;
 
-public class FUC_BuscarPorNomeLocal : UserControl
+public class FUC_DBLocalBuscarNome : UserControl
 {
     public event EventHandler<int>? MyAnimeSelecionado;
 
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
 
-    private readonly Label _lblTitulo;
-    private readonly Label _lblInput;
     private readonly TextBox _txbBusca;
     private readonly Button _btnBuscar;
     private readonly Label _lblStatus;
@@ -24,7 +22,7 @@ public class FUC_BuscarPorNomeLocal : UserControl
     private string _consultaAtual = string.Empty;
     private bool _carregando;
 
-    public FUC_BuscarPorNomeLocal()
+    public FUC_DBLocalBuscarNome()
     {
         var tlpMain = new TableLayoutPanel
         {
@@ -43,7 +41,7 @@ public class FUC_BuscarPorNomeLocal : UserControl
             BackColor = Color.Black
         };
 
-        _lblTitulo = new Label
+        var lblTitulo = new Label
         {
             AutoSize = true,
             Text = "📁 Busca Local (ApiMyAnimes)",
@@ -52,10 +50,10 @@ public class FUC_BuscarPorNomeLocal : UserControl
             Location = new Point(20, 16)
         };
 
-        _lblInput = new Label
+        var lblInput = new Label
         {
             AutoSize = true,
-            Text = "Digite o nome do anime:",
+            Text = "Digite o título da coleção MyAnime:",
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Location = new Point(20, 62)
@@ -63,14 +61,14 @@ public class FUC_BuscarPorNomeLocal : UserControl
 
         _txbBusca = new TextBox
         {
-            Location = new Point(260, 56),
+            Location = new Point(390, 56),
             Width = 320
         };
 
         _btnBuscar = new Button
         {
             Text = "🔍 Buscar",
-            Location = new Point(590, 54),
+            Location = new Point(720, 54),
             Width = 120,
             Height = 34
         };
@@ -79,11 +77,12 @@ public class FUC_BuscarPorNomeLocal : UserControl
         {
             AutoSize = true,
             ForeColor = Color.DarkGray,
-            Location = new Point(20, 96)
+            Location = new Point(20, 96),
+            Text = "Informe o nome e clique em Buscar."
         };
 
-        pnlTopo.Controls.Add(_lblTitulo);
-        pnlTopo.Controls.Add(_lblInput);
+        pnlTopo.Controls.Add(lblTitulo);
+        pnlTopo.Controls.Add(lblInput);
         pnlTopo.Controls.Add(_txbBusca);
         pnlTopo.Controls.Add(_btnBuscar);
         pnlTopo.Controls.Add(_lblStatus);
@@ -139,10 +138,16 @@ public class FUC_BuscarPorNomeLocal : UserControl
 
         Controls.Add(tlpMain);
 
-        _btnBuscar.Click += BtnBuscar_Click;
-        _btnAnterior.Click += BtnAnterior_Click;
-        _btnProxima.Click += BtnProxima_Click;
-        _txbBusca.KeyDown += TxbBusca_KeyDown;
+        _btnBuscar.Click += async (_, _) => await BuscarPrimeiraPaginaAsync();
+        _btnAnterior.Click += async (_, _) => await BuscarPaginaAsync(Math.Max(1, _paginaAtual - 1));
+        _btnProxima.Click += async (_, _) => await BuscarPaginaAsync(_paginaAtual + 1);
+        _txbBusca.KeyDown += async (_, e) =>
+        {
+            if (e.KeyCode != Keys.Enter) return;
+            e.SuppressKeyPress = true;
+            await BuscarPrimeiraPaginaAsync();
+        };
+
         pnlPaginacao.Resize += (_, _) =>
         {
             _btnProxima.Left = Math.Max(12, pnlPaginacao.Width - _btnProxima.Width - 12);
@@ -152,73 +157,53 @@ public class FUC_BuscarPorNomeLocal : UserControl
         ThemeManager.ApplyDarkModeToUserControl(this);
     }
 
-    private async void BtnBuscar_Click(object? sender, EventArgs e)
+    private async Task BuscarPrimeiraPaginaAsync()
     {
-        var query = _txbBusca.Text.Trim();
-        if (string.IsNullOrWhiteSpace(query))
+        var termo = _txbBusca.Text.Trim();
+        if (string.IsNullOrWhiteSpace(termo))
         {
-            MessageBox.Show("Digite o nome do anime para buscar na ApiMyAnimes.", "Aviso",
+            MessageBox.Show("Digite o nome para buscar na ApiMyAnimes.", "Aviso",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
             _txbBusca.Focus();
             return;
         }
 
-        _consultaAtual = query;
-        _paginaAtual = 1;
-        await ExecutarBuscaAsync();
+        _consultaAtual = termo;
+        await BuscarPaginaAsync(1);
     }
 
-    private async void BtnAnterior_Click(object? sender, EventArgs e)
-    {
-        if (_paginaAtual <= 1) return;
-        _paginaAtual--;
-        await ExecutarBuscaAsync();
-    }
-
-    private async void BtnProxima_Click(object? sender, EventArgs e)
-    {
-        _paginaAtual++;
-        await ExecutarBuscaAsync();
-    }
-
-    private async void TxbBusca_KeyDown(object? sender, KeyEventArgs e)
-    {
-        if (e.KeyCode != Keys.Enter) return;
-
-        e.SuppressKeyPress = true;
-        _btnBuscar.PerformClick();
-        await Task.CompletedTask;
-    }
-
-    private async Task ExecutarBuscaAsync()
+    private async Task BuscarPaginaAsync(int pagina)
     {
         if (_carregando) return;
+        if (string.IsNullOrWhiteSpace(_consultaAtual))
+            return;
 
         _carregando = true;
-        SetControlesHabilitados(false);
+        SetControlesBuscaHabilitados(false);
         LimparCards();
         _lblStatus.Text = "⏳ Buscando na ApiMyAnimes...";
         _lblPagina.Text = "Carregando...";
+        _btnAnterior.Enabled = false;
+        _btnProxima.Enabled = false;
 
         try
         {
-            var resultado = await _apiMyAnimesService.BuscarAnimesPorNomeAsync(_consultaAtual, _paginaAtual, 20);
+            var resultado = await _apiMyAnimesService.BuscarMyAnimesPorTituloAsync(_consultaAtual, pagina, 20);
+            _paginaAtual = Math.Max(1, resultado.CurrentPage);
 
-            if (resultado.Results.Count == 0)
+            if (resultado.TotalResults == 0 || resultado.Results.Count == 0)
             {
-                _lblStatus.Text = "Nenhum anime local encontrado.";
-                _lblPagina.Text = "—";
-                _btnAnterior.Enabled = false;
-                _btnProxima.Enabled = false;
+                _lblStatus.Text = "Nenhum resultado encontrado na ApiMyAnimes.";
+                _lblPagina.Text = "Página 1 de 1 | 0 resultado(s)";
                 return;
             }
 
             _flpCards.SuspendLayout();
-            foreach (var animeLocal in resultado.Results)
+            foreach (var myAnime in resultado.Results)
             {
                 var card = new UC_AnimeCard();
-                card.CarregarDados(MapearParaCard(animeLocal));
-                var myAnimeIdSelecionado = animeLocal.MyAnimeID;
+                card.CarregarDados(MapearParaCard(myAnime));
+                var myAnimeIdSelecionado = myAnime.Id;
                 card.CardClicado += (_, _) =>
                 {
                     if (myAnimeIdSelecionado > 0)
@@ -228,10 +213,11 @@ public class FUC_BuscarPorNomeLocal : UserControl
             }
             _flpCards.ResumeLayout();
 
-            _lblStatus.Text = $"✅ {resultado.TotalResults:N0} anime(s) local(is) encontrado(s).";
-            _lblPagina.Text = $"Página {resultado.CurrentPage} de {resultado.TotalPages} | {resultado.TotalResults:N0} resultado(s)";
+            _lblStatus.Text = $"✅ Busca local concluída. {resultado.TotalResults:N0} resultado(s).";
+            _lblPagina.Text =
+                $"Página {resultado.CurrentPage} de {resultado.TotalPages} | {resultado.TotalResults:N0} resultado(s)";
             _btnAnterior.Enabled = resultado.CurrentPage > 1;
-            _btnProxima.Enabled = resultado.HasNextPage;
+            _btnProxima.Enabled = resultado.HasNextPage && resultado.CurrentPage < resultado.TotalPages;
         }
         catch (HttpRequestException ex)
         {
@@ -245,19 +231,19 @@ public class FUC_BuscarPorNomeLocal : UserControl
         }
         catch (Exception ex)
         {
-            _lblStatus.Text = "❌ Erro ao buscar localmente.";
+            _lblStatus.Text = "❌ Erro ao buscar na ApiMyAnimes.";
             _lblPagina.Text = "—";
-            MessageBox.Show($"Erro ao buscar animes locais:\n\n{ex.Message}", "Erro",
+            MessageBox.Show($"Erro ao buscar coleções locais:\n\n{ex.Message}", "Erro",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
             _carregando = false;
-            SetControlesHabilitados(true);
+            SetControlesBuscaHabilitados(true);
         }
     }
 
-    private void SetControlesHabilitados(bool habilitado)
+    private void SetControlesBuscaHabilitados(bool habilitado)
     {
         _btnBuscar.Enabled = habilitado;
         _txbBusca.Enabled = habilitado;
@@ -271,17 +257,17 @@ public class FUC_BuscarPorNomeLocal : UserControl
             card.Dispose();
     }
 
-    private static JikanAnimeCard MapearParaCard(ObterAnimeDto anime)
+    private static JikanAnimeCard MapearParaCard(ObterMyAnimeDto myAnime)
     {
         return new JikanAnimeCard
         {
-            MalId = anime.MalId,
-            Title = anime.Titulo,
-            TitleEnglish = anime.TitleEnglish,
-            Type = anime.Type,
-            Score = anime.Score,
-            Year = anime.Year,
-            ImageUrl = anime.ImagensUrlMal.FirstOrDefault()
+            MalId = myAnime.Id,
+            Title = myAnime.Titulo,
+            TitleEnglish = null,
+            Type = "Coleção MyAnime",
+            Score = null,
+            Year = null,
+            ImageUrl = null
         };
     }
 }

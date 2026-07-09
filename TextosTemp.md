@@ -30,7 +30,37 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 
 -------------------------------------------------------------------------------------------------------------------------------------
 
-Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, em: \FormsUC\Frm_MyAnimes.cs.
+Erro ao buscar na ApiJikan:
+Response status code does not indicate sucess: 504 (Gateway Timeout)
+
+Proximo passo:
+Minha Api Local (ApiJikan) está com serios problemas de timeout nos ultimos dias. Não quero removela, podemos deixala como está (para uso posterior, se necessário).
+No momento quero implementar uma nova API, original MyAnimeList (já fiz o cadastro e tenho o: App Name e Client ID)
+
+
+
+
+
+Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, em: \FormsUC\FUC_DetalhesAnime.cs.
+Quando estamos exibindo os detalhes do anime atual, tem um botão para salvar o ANIME atual como um MYANIME (coleção de animes, relacionados) no banco de dados local.
+Ao criar um MYANIME, ele automaticamente já adiciona o anime atual (mal_id) na lista de animes relacionados a este MYANIME (corretamente).
+Mas faltou criar este mesmo ANIME (agora na lista de animes relacionados) no banco de dados local. 
+Pois todo ANIME que é usado (mal_id) para criar um MYANIME deve também ser criado como ANIME (logo após a criação do MYANIME, pois vai precisar do ID dele para cadastar um novo Anime (MyAnimeId=<ID_DO_MYANIME>)), com seus dados completos na TABELA ANIME do banco de dados local.
+(já existe o serviço que cria o ANIME, mas ele pergunta ao usuário o MyAnimeId (que deve ser mantido), agora vamos fazer OUTRO serviço para criar o ANIME automaticamente (lembrei que no \Services\AnalizadorDeEstruturas.cs já faz algo semelhante também) após a criação do MYANIME (modularize e reaproveite o que der))
+Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
+
+
+SALVAR COMO MYANIME 
+
+
+
+(a paginação também não está funcionando corretamente)
+
+Quero uma implementação completa e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
+
+
+
+===================================================================================================
 ```
 Dragon Ball/                        (usaremos este nome da pasta como myAnime.titulo)
 |
@@ -39,23 +69,8 @@ Dragon Ball/                        (usaremos este nome da pasta como myAnime.ti
 ├── 📁 1996 Dragon Ball Z - Filme/
 │   ├── 54322.jpg 
 ```
-Quero uma implementação completa e ROBUSTA, com todos os detalhes necessários, incluindo a criação do serviço local (AnalizadorDeEstruturas) que vai analisar a estrutura de pastas e arquivos no diretório escolhido pelo usuário.
 
 
-
-
-Continuando neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, em: \FormsUC\Frm_MyAnimes.cs. quando clicamos no botão AnalizarEstruturas para analizar e depois salvar o MyAnime.
-Está salvando o mesmo MyAnime novamnete em outro registro. OBVIAMENTE QUE ISSO NÃO PODE ACONTECER! salvar o mesmo MyAnime e Anime (quando for salvar os ANIMEs TAMBÉM!).
-Corrija isso nos dois serviços (ou onde mais for necessário), MyAnimesService e AnimeService, para que ao salvar um MyAnime ou Anime, ele verifique se já existe no banco de dados (DB_Local), se existir, não faça NADA apenas NOTIFIQUE que este MyAnime ou ANIME JÁ EXISTE.
-
-
-
-
-
-Erro ao buscar na ApiJikan:
-Response status code does not indicate sucess: 504 (Gateway Timeout)
-
-===================================================================================================
 
 🎯 Próximas Ações Recomendadas para solução "Dtudo2026":
 

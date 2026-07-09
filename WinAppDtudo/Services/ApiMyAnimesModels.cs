@@ -2,9 +2,9 @@ using LibDtudo.Shared.Dtos;
 
 namespace WinAppDtudo.Services;
 
-public class ApiMyAnimesBuscaResult
+public class ApiMyColecoesBuscaResult
 {
-    public List<ObterAnimeDto> Results { get; set; } = [];
+    public List<ObterMyAnimeDto> Results { get; set; } = [];
     public int CurrentPage { get; set; }
     public int TotalPages { get; set; }
     public bool HasNextPage { get; set; }

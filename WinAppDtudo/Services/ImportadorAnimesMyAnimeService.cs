@@ -58,7 +58,7 @@ public class ImportadorAnimesMyAnimeService
 
             try
             {
-                var dtoAnime = MapearParaAdicionaAnimeDto(detalhes, myAnimeId);
+                var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(detalhes, myAnimeId);
                 await _apiMyAnimesService.AdicionarAnimeAsync(dtoAnime);
                 resultado.AnimesSalvos++;
             }
@@ -158,65 +158,6 @@ public class ImportadorAnimesMyAnimeService
         errosDetalhados.Add(
             $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha ao consultar ApiJikan para MalId {malId} (coleção '{tituloMyAnime}') após {MaxTentativasApiJikan} tentativas. Detalhes: {string.Join(" | ", errosTentativas)}");
         return null;
-    }
-
-    private static AdicionaAnimeDto MapearParaAdicionaAnimeDto(JikanAnimeDetalhes anime, int myAnimeId)
-    {
-        var episodios = anime.Episodes.HasValue && anime.Episodes.Value > 0
-            ? anime.Episodes.Value
-            : 1;
-
-        var imagens = new List<string>();
-        if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.ImageUrl)) imagens.Add(anime.Images.Jpg.ImageUrl);
-        if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.SmallImageUrl)) imagens.Add(anime.Images.Jpg.SmallImageUrl);
-        if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.LargeImageUrl)) imagens.Add(anime.Images.Jpg.LargeImageUrl);
-
-        var subtitulos = new List<string>();
-        if (!string.IsNullOrWhiteSpace(anime.TitleEnglish)) subtitulos.Add(anime.TitleEnglish);
-        if (!string.IsNullOrWhiteSpace(anime.TitleJapanese)) subtitulos.Add(anime.TitleJapanese);
-        subtitulos.AddRange(anime.TitleSynonyms);
-
-        return new AdicionaAnimeDto
-        {
-            MalId = anime.MalId,
-            Titulo = !string.IsNullOrWhiteSpace(anime.Title) ? anime.Title : $"Anime_{anime.MalId}",
-            Episodios = episodios,
-            MyAnimeID = myAnimeId,
-            MalUrl = anime.Url ?? string.Empty,
-            ImagensUrlMal = imagens.Distinct().ToList(),
-            SubTitulos = subtitulos.Distinct().ToList(),
-            Trailer = anime.Trailer,
-            Approved = anime.Approved,
-            Title = anime.Title,
-            TitleEnglish = anime.TitleEnglish,
-            TitleJapanese = anime.TitleJapanese,
-            TitleSynonyms = [.. anime.TitleSynonyms],
-            Type = anime.Type,
-            Source = anime.Source,
-            Episodes = anime.Episodes,
-            Status = anime.Status,
-            Airing = anime.Airing,
-            Aired = anime.Aired,
-            Duration = anime.Duration,
-            Rating = anime.Rating,
-            Score = anime.Score,
-            ScoredBy = anime.ScoredBy,
-            Rank = anime.Rank,
-            Popularity = anime.Popularity,
-            Members = anime.Members,
-            Favorites = anime.Favorites,
-            Synopsis = anime.Synopsis,
-            Background = anime.Background,
-            Season = anime.Season,
-            Year = anime.Year,
-            Producers = [.. anime.Producers],
-            Licensors = [.. anime.Licensors],
-            Studios = [.. anime.Studios],
-            Genres = [.. anime.Genres],
-            ExplicitGenres = [.. anime.ExplicitGenres],
-            Themes = [.. anime.Themes],
-            Demographics = [.. anime.Demographics]
-        };
     }
 
     public static string SalvarLogErros(string prefixoArquivo, IEnumerable<string> errosDetalhados)

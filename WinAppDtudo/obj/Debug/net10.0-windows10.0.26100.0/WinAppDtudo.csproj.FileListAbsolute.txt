@@ -20,8 +20,6 @@ C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\LibDtudo.Shared.xml
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.csproj.AssemblyReference.cache
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.Controls.UC_AnimeCard.resources
-C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_BuscarPorID.resources
-C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_BuscarPorNome.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_CadastrarUsuario.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_DetalhesAnime.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_Mascaras.resources

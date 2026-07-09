@@ -14,7 +14,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     private AnaliseEstruturas? _ultimaAnaliseEstruturas;
     public int _tabIndexMascaras = 0;
     public int _tabIndexMyAnimesPorNome = 0;
-    public int _tabIndexMyAnimesPorID = 0;
+    public int _tabIndexApiJikanPorNome = 0;
     public Frm_MyAnimes()
     {
         InitializeComponent();
@@ -27,65 +27,68 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     //=============================================================================
     private void MnI_ProcurarAnimePorNome_Click(object sender, EventArgs e)
     {
-        if (_tabIndexMyAnimesPorNome == 0)
+        _tabIndexMyAnimesPorNome++;
+        try
         {
-            _tabIndexMyAnimesPorNome++;
-            try
+            var ucBuscaLocal = new FUC_DBLocalBuscarNome
             {
-                var ucBuscaIntegrada = new FUC_BuscaIntegradaPorNome
-                {
-                    Dock = DockStyle.Fill
-                };
+                Dock = DockStyle.Fill
+            };
 
-                ucBuscaIntegrada.MyAnimeSelecionado += AbrirDetalhesMyAnime;
-                ucBuscaIntegrada.AnimeJikanSelecionado += AbrirDetalhesAnime;
+            ucBuscaLocal.MyAnimeSelecionado += AbrirDetalhesMyAnime;
 
-                TabPage tabPage = new()
-                {
-                    Text = "Procurar Anime (Local + Jikan)",
-                    Name = "ProcurarAnime",
-                    ImageIndex = 2,
-                };
-                tabPage.Controls.Add(ucBuscaIntegrada);
-                Tbc_MyAnimes.TabPages.Add(tabPage);
-                Tbc_MyAnimes.SelectedTab = tabPage;
-            }
-            catch (Exception ex)
+            TabPage tabPage = new()
             {
-                _tabIndexMyAnimesPorNome = 0;
-                MessageBox.Show($"Erro ao abrir a aba Procurar Anime:\n{ex.Message}",
-                    "Erro",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+                Text = $"{_tabIndexMyAnimesPorNome} DBLocalBuscarNome",
+                Name = $"DBLocalBuscarNome_{_tabIndexMyAnimesPorNome}",
+                ImageIndex = 2,
+            };
+
+            tabPage.Controls.Add(ucBuscaLocal);
+            Tbc_MyAnimes.TabPages.Add(tabPage);
+            Tbc_MyAnimes.SelectedTab = tabPage;
         }
-        else
+        catch (Exception ex)
         {
-            var tabExistente = Tbc_MyAnimes.TabPages
-                .Cast<TabPage>().FirstOrDefault(tp => tp.Name == "ProcurarAnime");
-            if (tabExistente != null)
-                Tbc_MyAnimes.SelectedTab = tabExistente;
-            else
-                MessageBox.Show($"A aba 'Procurar Anime' já está aberta.", "Aviso",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            _tabIndexMyAnimesPorNome = Math.Max(0, _tabIndexMyAnimesPorNome - 1);
+            MessageBox.Show($"Erro ao abrir a aba DBLocalBuscarNome:\n{ex.Message}",
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
         }
     }
-    //=============================================================================
-    private void MnI_ProcurarAnimePorID_Click(object sender, EventArgs e)
+
+    private void MnI_ApiJikanBuscarNome_Click(object sender, EventArgs e)
     {
-        _tabIndexMyAnimesPorID++;
-        FUC_BuscarPorID ucMascaras = new()
+        _tabIndexApiJikanPorNome++;
+        try
         {
-            //Dock = DockStyle.Fill
-        };
-        TabPage tabPage = new()
+            var ucBuscaApiJikan = new FUC_ApiJikanBuscarNome
+            {
+                Dock = DockStyle.Fill
+            };
+
+            ucBuscaApiJikan.AnimeJikanSelecionado += AbrirDetalhesAnime;
+
+            TabPage tabPage = new()
+            {
+                Text = $"{_tabIndexApiJikanPorNome} ApiJikanBuscarNome",
+                Name = $"ApiJikanBuscarNome_{_tabIndexApiJikanPorNome}",
+                ImageIndex = 1,
+            };
+
+            tabPage.Controls.Add(ucBuscaApiJikan);
+            Tbc_MyAnimes.TabPages.Add(tabPage);
+            Tbc_MyAnimes.SelectedTab = tabPage;
+        }
+        catch (Exception ex)
         {
-            Text = $"{_tabIndexMyAnimesPorID} Procurar Anime ID",
-            Name = $"{_tabIndexMyAnimesPorID} ProcurarAnimeID",
-            ImageIndex = 1,
-        };
-        tabPage.Controls.Add(ucMascaras);
-        Tbc_MyAnimes.TabPages.Add(tabPage);
+            _tabIndexApiJikanPorNome = Math.Max(0, _tabIndexApiJikanPorNome - 1);
+            MessageBox.Show($"Erro ao abrir a aba ApiJikanBuscarNome:\n{ex.Message}",
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
     }
     //=============================================================================
     private void MnI_AbaMascaras_Click(object sender, EventArgs e)
@@ -321,10 +324,6 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     {
         if (Tbc_MyAnimes.SelectedTab != null)
         {
-            if (tabPage.Name == "ProcurarAnime")
-            {
-                _tabIndexMyAnimesPorNome = 0;
-            }
             Tbc_MyAnimes.TabPages.Remove(tabPage);
         }
     }
