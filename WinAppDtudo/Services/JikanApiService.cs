@@ -2,14 +2,10 @@ using System.Text.Json;
 
 namespace WinAppDtudo.Services;
 
-/// <summary>
-/// Serviço HTTP que consome a API local ApiJikan em https://localhost:63982.
-/// Utiliza um HttpClient estático compartilhado e aceita certificados de desenvolvimento.
-/// </summary>
-public class JikanApiService
+public sealed class JikanApiService
 {
-    private static readonly HttpClient _httpClient;
-    private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
+    private static readonly HttpClient HttpClient;
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public const string ApiBase = "https://localhost:63982";
 
@@ -20,38 +16,36 @@ public class JikanApiService
             ServerCertificateCustomValidationCallback =
                 HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
-        _httpClient = new HttpClient(handler)
+
+        HttpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri(ApiBase + "/"),
             Timeout = TimeSpan.FromSeconds(120)
         };
     }
 
-    /// <summary>Busca animes por nome com paginação.</summary>
-    public async Task<JikanBuscaResult> BuscarPorNomeAsync(string query, int page = 1)
+    public async Task<JikanBuscaResult> BuscarPorNomeAsync(string query, int page = 1, CancellationToken cancellationToken = default)
     {
-        var url = $"ApiJikan/search?q={Uri.EscapeDataString(query)}&page={page}";
-        using var response = await _httpClient.GetAsync(url);
+        using var response = await HttpClient.GetAsync(
+            $"ApiJikan/search?q={Uri.EscapeDataString(query)}&page={page}", cancellationToken);
         response.EnsureSuccessStatusCode();
-        var json = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<JikanBuscaResult>(json, _jsonOptions) ?? new JikanBuscaResult();
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        return JsonSerializer.Deserialize<JikanBuscaResult>(json, JsonOptions) ?? new JikanBuscaResult();
     }
 
-    /// <summary>Busca detalhes completos de um anime por ID do MAL.</summary>
-    public async Task<JikanAnimeDetalhes?> BuscarPorIdAsync(int malId)
+    public async Task<JikanAnimeDetalhes?> BuscarPorIdAsync(int malId, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ApiJikan/{malId}");
+        using var response = await HttpClient.GetAsync($"ApiJikan/{malId}", cancellationToken);
         response.EnsureSuccessStatusCode();
-        var json = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<JikanAnimeDetalhes>(json, _jsonOptions);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        return JsonSerializer.Deserialize<JikanAnimeDetalhes>(json, JsonOptions);
     }
 
-    /// <summary>Busca os animes relacionados a um anime pelo ID do MAL.</summary>
-    public async Task<List<JikanAnimeRelacaoGroup>> BuscarRelacoesAsync(int malId)
+    public async Task<List<JikanAnimeRelacaoGroup>> BuscarRelacoesAsync(int malId, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ApiJikan/{malId}/relations");
+        using var response = await HttpClient.GetAsync($"ApiJikan/{malId}/relations", cancellationToken);
         response.EnsureSuccessStatusCode();
-        var json = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<List<JikanAnimeRelacaoGroup>>(json, _jsonOptions) ?? [];
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        return JsonSerializer.Deserialize<List<JikanAnimeRelacaoGroup>>(json, JsonOptions) ?? [];
     }
 }

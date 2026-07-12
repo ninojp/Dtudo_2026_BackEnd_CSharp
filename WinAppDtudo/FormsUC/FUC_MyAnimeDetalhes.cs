@@ -51,7 +51,7 @@ public class FUC_MyAnimeDetalhes : UserControl
             Font = new Font("Segoe UI Black", 14F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Text = "MyAnime",
-            Location = new Point(18, 14)
+            Location = new Point(100, 15)
         };
 
         _lblResumo = new Label
@@ -60,23 +60,23 @@ public class FUC_MyAnimeDetalhes : UserControl
             Font = new Font("Segoe UI", 10F, FontStyle.Regular),
             ForeColor = Color.Goldenrod,
             Text = "",
-            Location = new Point(20, 58)
+            Location = new Point(100, 70)
         };
 
         _btnSalvarEstrutura = new Button
         {
             Text = "💾 Salvar Estrutura em Disco",
-            Width = 290,
-            Height = 38,
-            Location = new Point(20, 88)
+            Width = 450,
+            Height = 50,
+            Location = new Point(700, 70)
         };
 
         _btnSalvarAnimesNoBanco = new Button
         {
             Text = "🗃️ Salvar todos os Animes no DB",
-            Width = 290,
-            Height = 38,
-            Location = new Point(330, 88)
+            Width = 450,
+            Height = 50,
+            Location = new Point(1200, 70)
         };
 
         pnlTopo.Controls.Add(_lblTitulo);

@@ -141,6 +141,12 @@
               }
             }
           },
+          "504": {
+            "description": "Gateway Timeout"
+          },
+          "502": {
+            "description": "Bad Gateway"
+          },
           "500": {
             "description": "Internal Server Error"
           }

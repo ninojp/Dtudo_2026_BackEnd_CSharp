@@ -19,6 +19,9 @@
     <Compile Update="FormsUC\FUC_ApiJikanBuscarNome.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="FormsUC\FUC_ApiMyAnimeListBuscarNome.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="FormsUC\FUC_CadastrarUsuario.cs">
       <SubType>UserControl</SubType>
     </Compile>

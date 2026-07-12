@@ -4,7 +4,7 @@ namespace WinAppDtudo.Services;
 
 public class CriadorDeEstruturas
 {
-    private readonly JikanApiService _jikanApiService = new();
+    private readonly MyAnimeListApiService _myAnimeListApiService = new();
 
     private static readonly HttpClient _httpClient = new()
     {
@@ -60,10 +60,10 @@ public class CriadorDeEstruturas
 
         try
         {
-            var detalhesJikan = await _jikanApiService.BuscarPorIdAsync(anime.MalId);
-            if (!string.IsNullOrWhiteSpace(detalhesJikan?.Images?.Jpg?.LargeImageUrl)) urls.Add(detalhesJikan.Images.Jpg.LargeImageUrl);
-            if (!string.IsNullOrWhiteSpace(detalhesJikan?.Images?.Jpg?.ImageUrl)) urls.Add(detalhesJikan.Images.Jpg.ImageUrl);
-            if (!string.IsNullOrWhiteSpace(detalhesJikan?.Images?.Jpg?.SmallImageUrl)) urls.Add(detalhesJikan.Images.Jpg.SmallImageUrl);
+            var detalhesMyAnimeList = await _myAnimeListApiService.BuscarPorIdAsync(anime.MalId, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(detalhesMyAnimeList?.Images?.Jpg?.LargeImageUrl)) urls.Add(detalhesMyAnimeList.Images.Jpg.LargeImageUrl);
+            if (!string.IsNullOrWhiteSpace(detalhesMyAnimeList?.Images?.Jpg?.ImageUrl)) urls.Add(detalhesMyAnimeList.Images.Jpg.ImageUrl);
+            if (!string.IsNullOrWhiteSpace(detalhesMyAnimeList?.Images?.Jpg?.SmallImageUrl)) urls.Add(detalhesMyAnimeList.Images.Jpg.SmallImageUrl);
         }
         catch
         {

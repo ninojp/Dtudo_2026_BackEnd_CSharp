@@ -28,14 +28,43 @@ public partial class UC_MiniAnimeCard : UserControl
         _malId = entry.MalId;
         Lbl_MalId.Text = $"ID: {entry.MalId}";
         Lbl_Nome.Text = entry.Name ?? $"#{entry.MalId}";
-        Lbl_Tipo.Text = entry.Type ?? "—";
+        //Lbl_Tipo.Text = entry.Type ?? "—";
 
+        Pbx_Capa.Image?.Dispose();
         Pbx_Capa.Image = null;
-        if (!string.IsNullOrWhiteSpace(entry.ImageUrl))
-            _ = ImageLoaderService.CarregarEmPictureBoxAsync(Pbx_Capa, entry.ImageUrl);
+        if (entry.MalId > 0)
+            _ = CarregarImagemAsync(entry.ImageUrl, entry.MalId);
     }
 
     // ===================================================================
+
+    private async Task CarregarImagemAsync(string? url, int malId)
+    {
+        var imagem = await ImageLoaderService.DownloadAnimeCoverAsync(url, malId);
+        if (imagem is null || Pbx_Capa.IsDisposed)
+        {
+            imagem?.Dispose();
+            return;
+        }
+
+        void AplicarImagem()
+        {
+            if (Pbx_Capa.IsDisposed)
+            {
+                imagem.Dispose();
+                return;
+            }
+
+            var anterior = Pbx_Capa.Image;
+            Pbx_Capa.Image = imagem;
+            anterior?.Dispose();
+        }
+
+        if (Pbx_Capa.InvokeRequired)
+            Pbx_Capa.BeginInvoke(AplicarImagem);
+        else
+            AplicarImagem();
+    }
 
     private void SubscreverCliques()
     {
@@ -47,17 +76,17 @@ public partial class UC_MiniAnimeCard : UserControl
     private void DispararClique(object? sender, EventArgs e)
         => CardClicado?.Invoke(this, _malId);
 
-    protected override void OnMouseEnter(EventArgs e)
-    {
-        base.OnMouseEnter(e);
-        BackColor = Color.FromArgb(218, 232, 255);
-    }
+    //protected override void OnMouseEnter(EventArgs e)
+    //{
+    //    base.OnMouseEnter(e);
+    //    BackColor = Color.FromArgb(218, 232, 255);
+    //}
 
-    protected override void OnMouseLeave(EventArgs e)
-    {
-        base.OnMouseLeave(e);
-        BackColor = Color.FromArgb(247, 248, 252);
-    }
+    //protected override void OnMouseLeave(EventArgs e)
+    //{
+    //    base.OnMouseLeave(e);
+    //    BackColor = Color.FromArgb(247, 248, 252);
+    //}
 
     protected override void OnPaint(PaintEventArgs e)
     {

@@ -47,7 +47,7 @@ public class FUC_DBLocalBuscarNome : UserControl
             Text = "📁 Busca Local (ApiMyAnimes)",
             Font = new Font("Segoe UI Black", 12F, FontStyle.Bold),
             ForeColor = Color.Gold,
-            Location = new Point(20, 16)
+            Location = new Point(20, 26)
         };
 
         var lblInput = new Label
@@ -56,28 +56,28 @@ public class FUC_DBLocalBuscarNome : UserControl
             Text = "Digite o título da coleção MyAnime:",
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
             ForeColor = Color.Gold,
-            Location = new Point(20, 62)
+            Location = new Point(610, 26)
         };
 
         _txbBusca = new TextBox
         {
-            Location = new Point(390, 56),
-            Width = 320
+            Location = new Point(600, 70),
+            Width = 500
         };
 
         _btnBuscar = new Button
         {
             Text = "🔍 Buscar",
-            Location = new Point(720, 54),
-            Width = 120,
-            Height = 34
+            Location = new Point(1200, 60),
+            Width = 200,
+            Height = 44
         };
 
         _lblStatus = new Label
         {
             AutoSize = true,
             ForeColor = Color.DarkGray,
-            Location = new Point(20, 96),
+            Location = new Point(1450, 60),
             Text = "Informe o nome e clique em Buscar."
         };
 
@@ -255,6 +255,11 @@ public class FUC_DBLocalBuscarNome : UserControl
         _flpCards.Controls.Clear();
         foreach (var card in cards)
             card.Dispose();
+    }
+
+    private void InitializeComponent()
+    {
+
     }
 
     private static JikanAnimeCard MapearParaCard(ObterMyAnimeDto myAnime)

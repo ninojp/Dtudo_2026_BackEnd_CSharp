@@ -140,17 +140,38 @@
         </member>
         <member name="M:ApiJikan.Mappers.ApiJikanResponseMapper.Map(ApiJikan.Dtos.External.JikanAnimeSearchResponseDto)">
             <summary>
-            BuscarAnimePorNomeResponseDto...
+            Mapeia os resultados da busca de animes de um DTO Jikan para um DTO de resposta.
             </summary>
-            <param name="source"></param>
-            <returns></returns>
+            <param name="source">O DTO de busca de animes da Jikan.</param>
+            <returns>Um DTO de resposta com os resultados da busca de animes.</returns>
+        </member>
+        <member name="M:ApiJikan.Mappers.ApiJikanResponseMapper.Map(ApiJikan.Dtos.External.JikanAnimeDetailsDto)">
+            <summary>
+            Mapeia os detalhes de um anime de um DTO Jikan para um DTO de resposta.
+            </summary>
+            <param name="source">O DTO de detalhes do anime da Jikan.</param>
+            <returns>Um DTO de resposta com os detalhes do anime.</returns>
+        </member>
+        <member name="M:ApiJikan.Mappers.ApiJikanResponseMapper.Map(System.Collections.Generic.List{ApiJikan.Dtos.External.JikanAnimeRelationGroupDto})">
+            <summary>
+            Mapeia as relações de animes de um DTO Jikan para um DTO de resposta.
+            </summary>
+            <param name="source">A lista de grupos de relações de animes do DTO Jikan.</param>
+            <returns>Uma lista de grupos de relações de animes mapeados.</returns>
         </member>
         <member name="M:ApiJikan.Mappers.ApiJikanResponseMapper.MapImages(System.Collections.Generic.Dictionary{System.String,ApiJikan.Dtos.External.JikanImageVariantDto})">
             <summary>
-            Mapea as imagens...
+            Mapeia as imagens de um DTO Jikan para um DTO de resposta.
             </summary>
-            <param name="source"></param>
-            <returns></returns>
+            <param name="source">O dicionário de variantes de imagens do DTO Jikan.</param>
+            <returns>Um DTO de imagens mapeado ou null se não houver imagens.</returns>
+        </member>
+        <member name="M:ApiJikan.Mappers.ApiJikanResponseMapper.MapNamedItems(System.Collections.Generic.List{ApiJikan.Dtos.External.JikanNamedItemDto})">
+            <summary>
+            Mapeia uma lista de JikanNamedItemDto para uma lista de strings contendo apenas os nomes válidos.
+            </summary>
+            <param name="source">A lista de JikanNamedItemDto.</param>
+            <returns>Uma lista de strings contendo apenas os nomes válidos.</returns>
         </member>
         <member name="T:ApiJikan.Services.ServiceBuscarAnimeRelacionadoPorID">
             <summary>
@@ -187,11 +208,36 @@
             Serviço responsável por interagir com a API externa Jikan para buscar informações de um Anime por ID
             </summary>
         </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarPorID.#ctor(System.Net.Http.HttpClient,Microsoft.Extensions.Logging.ILogger{ApiJikan.Services.ServiceBuscarPorID},Microsoft.Extensions.Caching.Memory.IMemoryCache)">
+            <summary>
+            Construtor do serviço ServiceBuscarPorID
+            </summary>
+            <param name="httpClient">O HttpClient utilizado para realizar as requisições à API Jikan.</param>
+            <param name="logger">O logger utilizado para registrar informações e erros.</param>
+        </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarPorID.JikanBuscarPorIDAsync(System.Int32)">
+            <summary>
+            Busca informações de um anime na API Jikan pelo seu ID (malId).
+            </summary>
+            <param name="malId">O ID do anime na MyAnimeList.</param>
+            <returns>Um DTO de resposta com os detalhes do anime, ou null se não encontrado.</returns>
+            <exception cref="T:System.Exception">Lançada em caso de erro na comunicação com a API Jikan.</exception>
+        </member>
         <member name="M:ApiJikan.Services.ServiceBuscarPorID.GetComRetryRateLimitAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Executa GET com retry automático em caso de 429 (Too Many Requests).
             Respeita o header Retry-After da Jikan; usa 2s de fallback se não informado.
             </summary>
+            <param name="relativeUrl">A URL relativa para a requisição GET.</param>
+            <param name="cancellationToken">Token de cancelamento para a operação assíncrona.</param>
+            <returns>O HttpResponseMessage da requisição GET.</returns>
+        </member>
+        <member name="M:ApiJikan.Services.ServiceBuscarPorID.ObterDelayRetry(System.Net.Http.HttpResponseMessage,System.Int32)">
+            <summary>
+            Obtém o tempo de delay para retry baseado no header Retry-After da resposta.
+            </summary>
+            <param name="response">A resposta HTTP que contém o header Retry-After.</param>
+            <returns>O tempo de delay para retry.</returns>
         </member>
         <member name="T:ApiJikan.Services.ServiceBuscarPorNome">
             <summary>

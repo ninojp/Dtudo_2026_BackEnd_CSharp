@@ -33,7 +33,7 @@ public class FUC_ApiJikanBuscarNome : UserControl
         };
         tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 126F));
         tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
+        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 68F));
 
         var pnlTopo = new Panel
         {
@@ -47,7 +47,7 @@ public class FUC_ApiJikanBuscarNome : UserControl
             Text = "🧭 Busca Externa (ApiJikan)",
             Font = new Font("Segoe UI Black", 12F, FontStyle.Bold),
             ForeColor = Color.Gold,
-            Location = new Point(20, 16)
+            Location = new Point(20, 26)
         };
 
         var lblInput = new Label
@@ -56,28 +56,28 @@ public class FUC_ApiJikanBuscarNome : UserControl
             Text = "Digite o nome do anime:",
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
             ForeColor = Color.Gold,
-            Location = new Point(20, 62)
+            Location = new Point(650, 26)
         };
 
         _txbBusca = new TextBox
         {
-            Location = new Point(250, 56),
-            Width = 320
+            Location = new Point(580, 70),
+            Width = 520
         };
 
         _btnBuscar = new Button
         {
             Text = "🔍 Buscar",
-            Location = new Point(580, 54),
-            Width = 120,
-            Height = 34
+            Location = new Point(1200, 60),
+            Width = 200,
+            Height = 44
         };
 
         _lblStatus = new Label
         {
             AutoSize = true,
-            ForeColor = Color.DarkGray,
-            Location = new Point(20, 96),
+            ForeColor = Color.Gold,
+            Location = new Point(1450, 60),
             Text = "Informe o nome e clique em Buscar."
         };
 
@@ -104,17 +104,20 @@ public class FUC_ApiJikanBuscarNome : UserControl
         _btnAnterior = new Button
         {
             Text = "◄ Anterior",
-            Width = 130,
-            Height = 34,
-            Location = new Point(12, 8),
+            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            Width = 160,
+            Height = 48,
+            Location = new Point(12, 10),
             Enabled = false
         };
 
         _btnProxima = new Button
         {
             Text = "Próxima ►",
-            Width = 130,
-            Height = 34,
+            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            Width = 160,
+            Height = 48,
+            Location = new Point(12, 10),
             Anchor = AnchorStyles.Top | AnchorStyles.Right,
             Enabled = false
         };
@@ -128,9 +131,10 @@ public class FUC_ApiJikanBuscarNome : UserControl
             ForeColor = Color.Gold
         };
 
-        pnlPaginacao.Controls.Add(_lblPagina);
         pnlPaginacao.Controls.Add(_btnAnterior);
         pnlPaginacao.Controls.Add(_btnProxima);
+        pnlPaginacao.Controls.Add(_lblPagina);
+        _lblPagina.SendToBack();
 
         tlpMain.Controls.Add(pnlTopo, 0, 0);
         tlpMain.Controls.Add(_flpCards, 0, 1);
@@ -202,7 +206,7 @@ public class FUC_ApiJikanBuscarNome : UserControl
             foreach (var anime in resultado.Results)
             {
                 var card = new UC_AnimeCard();
-                card.CarregarDados(anime);
+                card.CarregarDados(anime, usarFallbackMyAnimeList: false);
                 var malId = anime.MalId;
                 card.CardClicado += (_, _) => AnimeJikanSelecionado?.Invoke(this, malId);
                 _flpCards.Controls.Add(card);
@@ -239,7 +243,9 @@ public class FUC_ApiJikanBuscarNome : UserControl
         {
             _lblStatus.Text = "❌ Erro ao buscar na ApiJikan.";
             _lblPagina.Text = "—";
-            MessageBox.Show($"Erro ao buscar animes na ApiJikan:\n\n{ex.Message}", "Erro",
+            MessageBox.Show(
+                $"Erro ao buscar animes na ApiJikan:\n\n{ex.Message}",
+                "Erro",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
@@ -253,6 +259,19 @@ public class FUC_ApiJikanBuscarNome : UserControl
     {
         _btnBuscar.Enabled = habilitado;
         _txbBusca.Enabled = habilitado;
+    }
+
+    private void InitializeComponent()
+    {
+        SuspendLayout();
+        // 
+        // FUC_ApiJikanBuscarNome
+        // 
+        BackColor = SystemColors.AppWorkspace;
+        Name = "FUC_ApiJikanBuscarNome";
+        Size = new Size(1011, 615);
+        ResumeLayout(false);
+
     }
 
     private void LimparCards()

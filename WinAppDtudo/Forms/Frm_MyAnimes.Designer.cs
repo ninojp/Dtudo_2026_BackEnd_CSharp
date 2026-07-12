@@ -41,6 +41,7 @@ partial class Frm_MyAnimes
         MnI_FecharAbasADireita = new ToolStripMenuItem();
         MnI_ProcurarAnimePorNome = new ToolStripMenuItem();
         MnI_ApiJikanBuscarNome = new ToolStripMenuItem();
+        MnI_ApiMyAnimeListBuscarNome = new ToolStripMenuItem();
         Mnu_AnalizarEstruturas = new ToolStripMenuItem();
         Tbc_MyAnimes = new TabControl();
         Iml_ImagensList = new ImageList(components);
@@ -51,11 +52,11 @@ partial class Frm_MyAnimes
         // 
         Mnu_MenuMyAnimes.BackColor = Color.DimGray;
         Mnu_MenuMyAnimes.ImageScalingSize = new Size(32, 32);
-        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_ProcurarAnimePorNome, MnI_ApiJikanBuscarNome, Mnu_AnalizarEstruturas });
+        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_ProcurarAnimePorNome, MnI_ApiJikanBuscarNome, MnI_ApiMyAnimeListBuscarNome, Mnu_AnalizarEstruturas });
         Mnu_MenuMyAnimes.Location = new Point(0, 0);
         Mnu_MenuMyAnimes.Name = "Mnu_MenuMyAnimes";
         Mnu_MenuMyAnimes.Padding = new Padding(15, 4, 0, 4);
-        Mnu_MenuMyAnimes.Size = new Size(1920, 50);
+        Mnu_MenuMyAnimes.Size = new Size(2160, 50);
         Mnu_MenuMyAnimes.TabIndex = 0;
         Mnu_MenuMyAnimes.Text = "menuMyAnimes";
         // 
@@ -141,7 +142,13 @@ partial class Frm_MyAnimes
         MnI_ApiJikanBuscarNome.Name = "MnI_ApiJikanBuscarNome";
         MnI_ApiJikanBuscarNome.Size = new Size(328, 42);
         MnI_ApiJikanBuscarNome.Text = "ApiJikanBuscarNome";
-        MnI_ApiJikanBuscarNome.Click += MnI_ApiJikanBuscarNome_Click;
+        // 
+        // MnI_ApiMyAnimeListBuscarNome
+        // 
+        MnI_ApiMyAnimeListBuscarNome.Image = Properties.Resources.RosaDosVentos;
+        MnI_ApiMyAnimeListBuscarNome.Name = "MnI_ApiMyAnimeListBuscarNome";
+        MnI_ApiMyAnimeListBuscarNome.Size = new Size(380, 42);
+        MnI_ApiMyAnimeListBuscarNome.Text = "ApiMyAnimeListBuscarNome";
         // 
         // Mnu_AnalizarEstruturas
         // 
@@ -158,15 +165,16 @@ partial class Frm_MyAnimes
         Tbc_MyAnimes.Appearance = TabAppearance.Buttons;
         Tbc_MyAnimes.Dock = DockStyle.Fill;
         Tbc_MyAnimes.DrawMode = TabDrawMode.OwnerDrawFixed;
+        Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 10.125F, FontStyle.Regular, GraphicsUnit.Point, 0);
         Tbc_MyAnimes.ImageList = Iml_ImagensList;
         Tbc_MyAnimes.ImeMode = ImeMode.On;
-        Tbc_MyAnimes.ItemSize = new Size(260, 52);
+        Tbc_MyAnimes.ItemSize = new Size(420, 84);
         Tbc_MyAnimes.Location = new Point(0, 50);
         Tbc_MyAnimes.Margin = new Padding(4, 3, 4, 3);
         Tbc_MyAnimes.Name = "Tbc_MyAnimes";
-        Tbc_MyAnimes.Padding = new Point(16, 8);
+        Tbc_MyAnimes.Padding = new Point(20, 12);
         Tbc_MyAnimes.SelectedIndex = 0;
-        Tbc_MyAnimes.Size = new Size(1920, 1030);
+        Tbc_MyAnimes.Size = new Size(2160, 1295);
         Tbc_MyAnimes.SizeMode = TabSizeMode.Fixed;
         Tbc_MyAnimes.TabIndex = 1;
         Tbc_MyAnimes.DrawItem += Tbc_MyAnimes_DrawItem;
@@ -184,13 +192,15 @@ partial class Frm_MyAnimes
         // 
         // Frm_MyAnimes
         // 
+        AllowDrop = true;
         AutoScaleDimensions = new SizeF(13F, 26F);
         AutoScaleMode = AutoScaleMode.Font;
+        AutoScroll = true;
         AutoSize = true;
         BackColor = SystemColors.Desktop;
         BackgroundImage = Properties.Resources.AnimesElas;
         BackgroundImageLayout = ImageLayout.Stretch;
-        ClientSize = new Size(1920, 1080);
+        ClientSize = new Size(2160, 1345);
         Controls.Add(Tbc_MyAnimes);
         Controls.Add(Mnu_MenuMyAnimes);
         DoubleBuffered = true;
@@ -226,4 +236,5 @@ partial class Frm_MyAnimes
     private ToolStripMenuItem MnI_FormMsgBox;
     private ToolStripMenuItem Mnu_AnalizarEstruturas;
     private ToolStripMenuItem MnI_ApiJikanBuscarNome;
+    private ToolStripMenuItem MnI_ApiMyAnimeListBuscarNome;
 }

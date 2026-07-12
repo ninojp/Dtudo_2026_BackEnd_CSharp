@@ -9,7 +9,7 @@ using WinAppDtudo.Services;
 namespace WinAppDtudo.FormsUC;
 
 /// <summary>
-/// UserControl que exibe todos os detalhes disponíveis de um anime buscado por ID via ApiJikan.
+/// UserControl que exibe todos os detalhes disponíveis de um anime buscado por ID via ApiMyAnimeList.
 /// Carrega os dados assincronamente ao ser exibido pela primeira vez.
 /// </summary>
 public partial class FUC_DetalhesAnime : UserControl
@@ -17,18 +17,21 @@ public partial class FUC_DetalhesAnime : UserControl
     /// <summary>Disparado quando o usuário clica em um mini card de anime relacionado. O argumento é o MalId.</summary>
     public event EventHandler<int>? CardClicado;
 
+    private readonly MyAnimeListApiService _myAnimeListService = new();
     private readonly JikanApiService _jikanService = new();
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
     private readonly CriadorAnimeAutomaticoService _criadorAnimeAutomaticoService = new();
     private readonly int _malId;
+    private readonly bool _usarJikan;
     private int _yOffset;
     private JikanAnimeDetalhes? _animeAtual;
     private List<JikanRelacaoEntry> _animesRelacionados = [];
 
-    public FUC_DetalhesAnime(int malId)
+    public FUC_DetalhesAnime(int malId, bool usarJikan = false)
     {
         InitializeComponent();
         _malId = malId;
+        _usarJikan = usarJikan;
         Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
         Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
         Load += async (s, e) => await CarregarAsync();
@@ -38,7 +41,7 @@ public partial class FUC_DetalhesAnime : UserControl
     }
     // ===================================================================
     /// <summary>
-    /// Carrega os detalhes do anime via ApiJikan e popula a interface do usuário.
+    /// Carrega os detalhes do anime via ApiMyAnimeList e popula a interface do usuário.
     /// </summary>
     private async Task CarregarAsync()
     {
@@ -46,11 +49,15 @@ public partial class FUC_DetalhesAnime : UserControl
         JikanAnimeDetalhes? anime = null;
         string? erro = null;
         try
-        { anime = await _jikanService.BuscarPorIdAsync(_malId); }
+        { anime = _usarJikan
+                ? await _jikanService.BuscarPorIdAsync(_malId)
+                : await _myAnimeListService.BuscarPorIdAsync(_malId); }
         catch (HttpRequestException ex)
         {
-            erro = $"Não foi possível conectar à API Jikan.\n\n" +
-                   $"Verifique se o ApiJikan está em execução em:\n{JikanApiService.ApiBase}\n\n" +
+            var apiNome = _usarJikan ? "ApiJikan" : "ApiMyAnimeList";
+            var apiBase = _usarJikan ? JikanApiService.ApiBase : MyAnimeListApiService.ApiBase;
+            erro = $"Não foi possível conectar à {apiNome}.\n\n" +
+                   $"Verifique se a {apiNome} está em execução em:\n{apiBase}\n\n" +
                    $"Detalhes: {ex.Message}";
         }
         catch (Exception ex)
@@ -73,15 +80,26 @@ public partial class FUC_DetalhesAnime : UserControl
         }
 
         _animeAtual = anime;
-        PopularUI(anime);
-        _ = CarregarRelacoesAsync();
+
+        List<JikanAnimeRelacaoGroup> relacoes = [];
+        try
+        {
+            relacoes = _usarJikan
+                ? await _jikanService.BuscarRelacoesAsync(_malId)
+                : await _myAnimeListService.BuscarRelacoesAsync(_malId);
+        }
+        catch
+        {
+        }
+
+        PopularUI(anime, relacoes);
     }
     // ===================================================================
     /// <summary>
     /// Popula a interface do usuário com os detalhes do anime fornecido.
     /// </summary>
     /// <param name="anime">Os detalhes do anime a serem exibidos.</param>
-    private void PopularUI(JikanAnimeDetalhes anime)
+    private void PopularUI(JikanAnimeDetalhes anime, List<JikanAnimeRelacaoGroup> relacoes)
     {
         var anoLancamento = ExtrairAnoLancamentoPeloAired(anime.Aired);
 
@@ -91,8 +109,7 @@ public partial class FUC_DetalhesAnime : UserControl
         Lbl_TipoStatus.Text = $"{anime.Type ?? "?"}  •  {anime.Status ?? "?"}{exibicao}";
 
         // Imagem de capa
-        _ = ImageLoaderService.CarregarEmPictureBoxAsync(Pbx_Capa,
-            anime.Images?.Jpg?.LargeImageUrl ?? anime.Images?.Jpg?.ImageUrl);
+        _ = CarregarCapaAsync(anime);
 
         // Estatísticas rápidas (painel esquerdo)
         Lbl_Ano.Text = anoLancamento.HasValue ? $"📅 {anoLancamento}" : string.Empty;
@@ -157,11 +174,53 @@ public partial class FUC_DetalhesAnime : UserControl
             AdicionarLink("MAL URL", anime.Url, larguraValor);
 
         AdicionarSeparador(larguraValor);
+        AdicionarRelacoes(relacoes);
         AdicionarTextoLongo("Sinopse", anime.Synopsis, larguraValor);
         AdicionarTextoLongo("Contexto / Fundo", anime.Background, larguraValor);
 
         Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
         Pnl_Info.ResumeLayout(true);
+    }
+
+    private async Task CarregarCapaAsync(JikanAnimeDetalhes anime)
+    {
+        var urls = new[]
+        {
+            anime.Images?.Jpg?.LargeImageUrl,
+            anime.Images?.Jpg?.ImageUrl,
+            anime.Images?.Jpg?.SmallImageUrl
+        }.Where(url => !string.IsNullOrWhiteSpace(url)).Distinct().ToList();
+
+        foreach (var url in urls)
+        {
+            var image = _usarJikan
+                ? await ImageLoaderService.DownloadAsync(url)
+                : await ImageLoaderService.DownloadAnimeCoverAsync(url, _malId);
+            if (image is null || Pbx_Capa.IsDisposed)
+            {
+                image?.Dispose();
+                continue;
+            }
+
+            void AplicarImagem()
+            {
+                if (Pbx_Capa.IsDisposed)
+                {
+                    image.Dispose();
+                    return;
+                }
+
+                var anterior = Pbx_Capa.Image;
+                Pbx_Capa.Image = image;
+                anterior?.Dispose();
+            }
+
+            if (Pbx_Capa.InvokeRequired)
+                Pbx_Capa.BeginInvoke(AplicarImagem);
+            else
+                AplicarImagem();
+            return;
+        }
     }
 
     // ===================================================================
@@ -200,7 +259,7 @@ public partial class FUC_DetalhesAnime : UserControl
             TextAlign = ContentAlignment.MiddleRight
         };
 
-        var lblValor = new Label
+        var lblValor = new TextBox
         {
             AutoSize = false,
             Font = new Font("Segoe UI", 9.5F,
@@ -209,8 +268,13 @@ public partial class FUC_DetalhesAnime : UserControl
             Location = new Point(156, _yOffset + 2),
             Size = new Size(larguraValor, alturaValor),
             Text = valor,
-            TextAlign = ContentAlignment.MiddleLeft,
-            Cursor = isLink ? Cursors.Hand : Cursors.Default
+            TextAlign = HorizontalAlignment.Left,
+            Cursor = isLink ? Cursors.Hand : Cursors.IBeam,
+            ReadOnly = true,
+            BorderStyle = BorderStyle.None,
+            BackColor = Pnl_Info.BackColor,
+            Multiline = true,
+            TabStop = true
         };
 
         if (isLink)
@@ -236,34 +300,39 @@ public partial class FUC_DetalhesAnime : UserControl
     private void AdicionarTextoLongo(string campo, string? texto, int larguraValor)
     {
         if (string.IsNullOrWhiteSpace(texto)) return;
-        _yOffset += 6;
+        _yOffset += 12;
         var lblCampo = new Label
         {
-            AutoSize = true,
-            MaximumSize = new Size(148 + larguraValor, 0),
-            Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
+            AutoSize = false,
+            Font = new Font("Segoe UI", 14F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Location = new Point(4, _yOffset),
-            Text = campo + ":"
+            Size = new Size(148 + larguraValor, 32),
+            Text = campo + ":",
+            TextAlign = ContentAlignment.MiddleLeft
         };
 
-        lblCampo.CreateControl();
         _yOffset += lblCampo.Height + 8;
 
         int larguraTexto = Math.Max(148 + larguraValor - 12, 350);
-        var lblTexto = new Label
+        var lblTexto = new TextBox
         {
-            AutoSize = true,
-            MaximumSize = new Size(larguraTexto, 0),
+            Multiline = true,
+            ReadOnly = true,
+            BorderStyle = BorderStyle.FixedSingle,
             Font = new Font("Segoe UI", 9.5F),
             ForeColor = Color.FromArgb(255, 115, 0),
+            BackColor = Pnl_Info.BackColor,
             Location = new Point(8, _yOffset),
-            Text = texto
+            Size = new Size(larguraTexto, Math.Max(60, TextRenderer.MeasureText(
+                texto, new Font("Segoe UI", 9.5F), new Size(larguraTexto - 8, int.MaxValue),
+                TextFormatFlags.WordBreak).Height + 12)),
+            Text = texto,
+            ScrollBars = ScrollBars.Vertical,
+            TabStop = true
         };
         Pnl_Info.Controls.Add(lblCampo);
         Pnl_Info.Controls.Add(lblTexto);
-        // Força o cálculo do tamanho antes de ler a altura
-        lblTexto.CreateControl();
         _yOffset += lblTexto.Height + 18;
         AdicionarSeparador(larguraValor);
     }
@@ -281,62 +350,26 @@ public partial class FUC_DetalhesAnime : UserControl
     }
     // ===================================================================
 
-    private async Task CarregarRelacoesAsync()
+    private void AdicionarRelacoes(List<JikanAnimeRelacaoGroup> relacoes)
     {
         int larguraSecao = Math.Max(Pnl_Info.ClientSize.Width - 12, 300);
-
-        // Fase 1: exibir cabeçalho e indicador de carregamento
-        Pnl_Info.SuspendLayout();
-        AdicionarSeparador(larguraSecao - 148);
 
         var lblTituloSecao = new Label
         {
             AutoSize = false,
-            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            Font = new Font("Segoe UI", 14F, FontStyle.Bold),
             ForeColor = Color.FromArgb(25, 50, 120),
             Location = new Point(4, _yOffset),
-            Size = new Size(larguraSecao, 26),
-            Text = "🔗 Animes Relacionados"
+            Size = new Size(larguraSecao, 38),
+            Text = "🔗 Animes Relacionados:",
+            TextAlign = ContentAlignment.MiddleLeft
         };
-        _yOffset += 30;
-
-        var lblCarregando = new Label
-        {
-            AutoSize = false,
-            Font = new Font("Segoe UI", 8.5F, FontStyle.Italic),
-            ForeColor = Color.Gray,
-            Location = new Point(8, _yOffset),
-            Size = new Size(400, 22),
-            Text = "⏳ Carregando animes relacionados..."
-        };
-        int yBaseRelacoes = _yOffset;
-        _yOffset += 26;
-
         Pnl_Info.Controls.Add(lblTituloSecao);
-        Pnl_Info.Controls.Add(lblCarregando);
-        Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
-        Pnl_Info.ResumeLayout(true);
-
-        // Fase 2: buscar relações assincronamente
-        List<JikanAnimeRelacaoGroup> relacoes = [];
-        try
-        {
-            relacoes = await _jikanService.BuscarRelacoesAsync(_malId);
-        }
-        catch
-        {
-            lblCarregando.Text = "⚠️ Não foi possível carregar os animes relacionados.";
-            return;
-        }
-
-        // Fase 3: substituir indicador pelos mini cards
-        Pnl_Info.Controls.Remove(lblCarregando);
-        lblCarregando.Dispose();
-        _yOffset = yBaseRelacoes;
+        _yOffset += lblTituloSecao.Height + 8;
 
         var entradasAnime = relacoes
-            .SelectMany(g => g.Entry)
-            .Where(e => e.Type == "anime")
+            .SelectMany(g => g.Entry ?? [])
+            .Where(e => e.MalId > 0)
             .ToList();
 
         _animesRelacionados = entradasAnime;
@@ -366,7 +399,7 @@ public partial class FUC_DetalhesAnime : UserControl
         var pnlRelacoes = new Panel
         {
             Location = new Point(4, _yOffset),
-            Size = new Size(larguraContainer, 260),
+            Size = new Size(larguraContainer, 420),
             Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
             BackColor = DarkModeColors.BackgroundSecondaryColor,
             AutoScroll = true,
@@ -399,7 +432,7 @@ public partial class FUC_DetalhesAnime : UserControl
         Pnl_Info.Controls.Add(pnlRelacoes);
         flp.CreateControl();
         int alturaEstimada = flp.GetPreferredSize(new Size(larguraCards, int.MaxValue)).Height;
-        int alturaContainer = Math.Max(210, Math.Min(380, alturaEstimada + 12));
+        int alturaContainer = Math.Max(360, Math.Min(700, alturaEstimada + 12));
         pnlRelacoes.Height = alturaContainer;
         _yOffset += alturaContainer + 12;
         Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);

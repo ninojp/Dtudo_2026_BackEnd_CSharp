@@ -20,8 +20,6 @@ C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\LibDtudo.Shared.xml
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.csproj.AssemblyReference.cache
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.Controls.UC_AnimeCard.resources
-C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_BuscarPorID.resources
-C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_BuscarPorNome.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_CadastrarUsuario.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_DetalhesAnime.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_Mascaras.resources
@@ -47,3 +45,7 @@ C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.genruntimeconfig.cache
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\ref\WinAppDtudo.dll
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.CustomFormNoBorder.resources
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_ApiJikanBuscarNome.resources
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_DBLocalBuscarNome.resources
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_MyAnimeDetalhes.resources
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_ApiMyAnimeListBuscarNome.resources

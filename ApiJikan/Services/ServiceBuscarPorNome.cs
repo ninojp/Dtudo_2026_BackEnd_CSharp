@@ -50,7 +50,7 @@ public class ServiceBuscarPorNome
             using var response = await GetComRetryAsync(url);
 
             var content = await response.Content.ReadAsStringAsync();
-            LogarRespostaDetalhada(content);
+            //LogarRespostaDetalhada(content);
 
             var jikanResponse = JsonSerializer.Deserialize<JikanAnimeSearchResponseDto>(content, _jsonOptions);
 

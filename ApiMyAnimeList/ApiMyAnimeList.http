@@ -1,0 +1,6 @@
+@ApiMyAnimeList_HostAddress = http://localhost:5044
+
+GET {{ApiMyAnimeList_HostAddress}}/ApiJikan/search?q=one%20piece&page=1
+Accept: application/json
+
+###

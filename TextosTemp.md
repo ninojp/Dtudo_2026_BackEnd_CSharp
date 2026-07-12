@@ -29,38 +29,42 @@ Busca os animes relacionados a um anime específico pelo ID do MyAnimeList. Util
 Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação de dados (Lê e grava no DB_Local e em disco local, pastas e arquivos).
 
 -------------------------------------------------------------------------------------------------------------------------------------
-
-Erro ao buscar na ApiJikan:
-Response status code does not indicate sucess: 504 (Gateway Timeout)
-
 Proximo passo:
-Minha Api Local (ApiJikan) está com serios problemas de timeout nos ultimos dias. Não quero removela, podemos deixala como está (para uso posterior, se necessário).
-No momento quero implementar uma nova API, original MyAnimeList (já fiz o cadastro e tenho o: App Name e Client ID)
+
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, neste meu UC, FUC_DetalhesAnime.cs.
+
+Preciso fazer algumas modificações e melhorias na aba que exibe os detalhes do anime atual:
+
+- precisamos resolver os problema das imagens que algumas não aparecem, nos mini cards dos animes relacionados 
+(mesmo problema anterior, mesma solução, buscar as imagens que faltarem da outra api, ApiJikan) 
+- O campo (container) onde onde aparecem todos os mini cards (podem ser AMPLIADOS para um tamanho BEM maior) dos animes relacionados, agora deve ficar acima do campo de SINOPSE.
+- Os titulos dos campos, Animes Recionados, Sinopse: e Contexto/Fundo: Agora devem ser maiores e ter uma quebra de linha para que fiquem bem mais separados do texto logo abaixo 
+- permitir selecionar (copiar, ctrl+c) os textos dentro da aba atual.
 
 
 
 
+AnimesDetalhes:
 
-Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, em: \FormsUC\FUC_DetalhesAnime.cs.
-Quando estamos exibindo os detalhes do anime atual, tem um botão para salvar o ANIME atual como um MYANIME (coleção de animes, relacionados) no banco de dados local.
-Ao criar um MYANIME, ele automaticamente já adiciona o anime atual (mal_id) na lista de animes relacionados a este MYANIME (corretamente).
-Mas faltou criar este mesmo ANIME (agora na lista de animes relacionados) no banco de dados local. 
-Pois todo ANIME que é usado (mal_id) para criar um MYANIME deve também ser criado como ANIME (logo após a criação do MYANIME, pois vai precisar do ID dele para cadastar um novo Anime (MyAnimeId=<ID_DO_MYANIME>)), com seus dados completos na TABELA ANIME do banco de dados local.
-(já existe o serviço que cria o ANIME, mas ele pergunta ao usuário o MyAnimeId (que deve ser mantido), agora vamos fazer OUTRO serviço para criar o ANIME automaticamente (lembrei que no \Services\AnalizadorDeEstruturas.cs já faz algo semelhante também) após a criação do MYANIME (modularize e reaproveite o que der))
-Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
-
-
-SALVAR COMO MYANIME 
-
-
-
-(a paginação também não está funcionando corretamente)
+(Ao salvar um MyAnime, Mostar o ID e perguntar se quer exibilo)
 
 Quero uma implementação completa e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
 
 
 
 ===================================================================================================
+
+09/07/2026 NUMEROS DEPOIS DE POPULAR O DB LOCAL
+SQL Server, new query:
+```SQL
+SELECT COUNT(*) AS Total
+FROM Animes;
+```
+1064 MyAnimes(coleções) Adicionados
+3815 Animes Adicionados
+564 AmineXs Adicionados
+4379 Total Adicionado
+
 ```
 Dragon Ball/                        (usaremos este nome da pasta como myAnime.titulo)
 |

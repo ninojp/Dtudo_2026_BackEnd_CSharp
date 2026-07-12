@@ -5,11 +5,11 @@ namespace WinAppDtudo.Services;
 
 public class ImportadorAnimesMyAnimeService
 {
-    private const int MaxTentativasApiJikan = 3;
-    private static readonly TimeSpan DelayTentativaApiJikan = TimeSpan.FromSeconds(2);
+    private const int MaxTentativasApiMyAnimeList = 3;
+    private static readonly TimeSpan DelayTentativaApiMyAnimeList = TimeSpan.FromSeconds(2);
 
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
-    private readonly JikanApiService _jikanApiService = new();
+    private readonly MyAnimeListApiService _myAnimeListApiService = new();
 
     public async Task<ResultadoImportacaoAnimes> ImportarAsync(
         int myAnimeId,
@@ -103,7 +103,7 @@ public class ImportadorAnimesMyAnimeService
                 Episodios = 1,
                 MyAnimeID = myAnimeId,
                 Source = "Fallback",
-                Synopsis = $"Registro em modo de degradação. Falha ao consultar detalhes na ApiJikan para a coleção '{tituloMyAnime}'."
+                Synopsis = $"Registro em modo de degradação. Falha ao consultar detalhes na ApiMyAnimeList para a coleção '{tituloMyAnime}'."
             };
 
             await _apiMyAnimesService.AdicionarAnimeAsync(dtoFallback);
@@ -134,13 +134,13 @@ public class ImportadorAnimesMyAnimeService
     {
         var errosTentativas = new List<string>();
 
-        for (var tentativa = 1; tentativa <= MaxTentativasApiJikan; tentativa++)
+        for (var tentativa = 1; tentativa <= MaxTentativasApiMyAnimeList; tentativa++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                var anime = await _jikanApiService.BuscarPorIdAsync(malId);
+                var anime = await _myAnimeListApiService.BuscarPorIdAsync(malId, cancellationToken);
                 if (anime is not null)
                     return anime;
 
@@ -151,12 +151,12 @@ public class ImportadorAnimesMyAnimeService
                 errosTentativas.Add($"Tentativa {tentativa}: {ex.Message}");
             }
 
-            if (tentativa < MaxTentativasApiJikan)
-                await Task.Delay(DelayTentativaApiJikan, cancellationToken);
+            if (tentativa < MaxTentativasApiMyAnimeList)
+                await Task.Delay(DelayTentativaApiMyAnimeList, cancellationToken);
         }
 
         errosDetalhados.Add(
-            $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha ao consultar ApiJikan para MalId {malId} (coleção '{tituloMyAnime}') após {MaxTentativasApiJikan} tentativas. Detalhes: {string.Join(" | ", errosTentativas)}");
+            $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha ao consultar ApiMyAnimeList para MalId {malId} (coleção '{tituloMyAnime}') após {MaxTentativasApiMyAnimeList} tentativas. Detalhes: {string.Join(" | ", errosTentativas)}");
         return null;
     }
 

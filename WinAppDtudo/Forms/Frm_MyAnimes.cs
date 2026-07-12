@@ -7,7 +7,7 @@ namespace WinAppDtudo;
 
 public partial class Frm_MyAnimes : CustomFormNoBorder
 {
-    private const int CloseButtonSize = 14;
+    private const int CloseButtonSize = 34;
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
     private readonly AnalizadorDeEstruturas _analizadorDeEstruturas = new();
     private readonly ImportadorAnimesMyAnimeService _importadorAnimesMyAnimeService = new();
@@ -15,14 +15,50 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     public int _tabIndexMascaras = 0;
     public int _tabIndexMyAnimesPorNome = 0;
     public int _tabIndexApiJikanPorNome = 0;
+    public int _tabIndexApiMyAnimeListPorNome = 0;
     public Frm_MyAnimes()
     {
         InitializeComponent();
+        MnI_ApiJikanBuscarNome.Click += MnI_ApiJikanBuscarNome_Click;
+        MnI_ApiMyAnimeListBuscarNome.Click += MnI_ApiMyAnimeListBuscarNome_Click;
         // Aplicar o tema Dark Mode ao formulário e seus componentes
         ThemeManager.ApplyDarkModeToForm(this);
         // Inicializa o formulário customizado sem barra de título
         InitializeCustomFormNoBorder(Mnu_MenuMyAnimes);
         AddControlButtonsToMenuStrip(Mnu_MenuMyAnimes);
+    }
+
+    private void MnI_ApiMyAnimeListBuscarNome_Click(object sender, EventArgs e)
+    {
+        _tabIndexApiMyAnimeListPorNome++;
+        try
+        {
+            var ucBuscaApiMyAnimeList = new FUC_ApiMyAnimeListBuscarNome
+            {
+                Dock = DockStyle.Fill
+            };
+
+            ucBuscaApiMyAnimeList.AnimeMyAnimeListSelecionado += AbrirDetalhesAnimeMyAnimeList;
+
+            TabPage tabPage = new()
+            {
+                Text = $"{_tabIndexApiMyAnimeListPorNome} ApiMyAnimeListBuscarNome",
+                Name = $"ApiMyAnimeListBuscarNome_{_tabIndexApiMyAnimeListPorNome}",
+                ImageIndex = 1,
+            };
+
+            tabPage.Controls.Add(ucBuscaApiMyAnimeList);
+            Tbc_MyAnimes.TabPages.Add(tabPage);
+            Tbc_MyAnimes.SelectedTab = tabPage;
+        }
+        catch (Exception ex)
+        {
+            _tabIndexApiMyAnimeListPorNome = Math.Max(0, _tabIndexApiMyAnimeListPorNome - 1);
+            MessageBox.Show($"Erro ao abrir a aba ApiMyAnimeListBuscarNome:\n{ex.Message}",
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
     }
     //=============================================================================
     private void MnI_ProcurarAnimePorNome_Click(object sender, EventArgs e)
@@ -68,7 +104,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
                 Dock = DockStyle.Fill
             };
 
-            ucBuscaApiJikan.AnimeJikanSelecionado += AbrirDetalhesAnime;
+            ucBuscaApiJikan.AnimeJikanSelecionado += AbrirDetalhesAnimeJikan;
 
             TabPage tabPage = new()
             {
@@ -220,9 +256,9 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         int espacamentoDireita = closeRect.Width + 12;
         Rectangle textRect = new(
             tabRect.X + 10,
-            tabRect.Y + 12,
+            tabRect.Y + 4,
             Math.Max(10, tabRect.Width - espacamentoDireita - 12),
-            tabRect.Height - 4);
+            tabRect.Height - 8);
 
         TextRenderer.DrawText(
             e.Graphics,
@@ -232,11 +268,11 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             texto,
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
 
-        using (Font closeFont = new("Segoe UI", 7.5F, FontStyle.Bold))
+        using (Font closeFont = new("Segoe UI", 10F, FontStyle.Bold))
         {
             TextRenderer.DrawText(
                 e.Graphics,
-                "✕",
+                "X",
                 closeFont,
                 closeRect,
                 texto,
@@ -262,8 +298,8 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     {
         Rectangle tabRect = Tbc_MyAnimes.GetTabRect(tabIndex);
         return new Rectangle(
-            tabRect.Right - CloseButtonSize - 8,
-            tabRect.Top + Math.Max(2, (tabRect.Height - CloseButtonSize) / 2 - 3),
+            tabRect.Right - CloseButtonSize - 16,
+            tabRect.Top + (tabRect.Height - CloseButtonSize) / 2,
             CloseButtonSize,
             CloseButtonSize);
     }
@@ -329,9 +365,16 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     }
 
     //=============================================================================
-    private void AbrirDetalhesAnime(object? sender, int malId)
+    private void AbrirDetalhesAnimeMyAnimeList(object? sender, int malId)
+        => AbrirDetalhesAnime(malId, usarJikan: false);
+
+    private void AbrirDetalhesAnimeJikan(object? sender, int malId)
+        => AbrirDetalhesAnime(malId, usarJikan: true);
+
+    private void AbrirDetalhesAnime(int malId, bool usarJikan)
     {
-        var tabName = $"Detalhes_{malId}";
+        var origem = usarJikan ? "Jikan" : "MyAnimeList";
+        var tabName = $"Detalhes_{origem}_{malId}";
         var tabExistente = Tbc_MyAnimes.TabPages
             .Cast<TabPage>().FirstOrDefault(tp => tp.Name == tabName);
         if (tabExistente != null)
@@ -340,14 +383,14 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             return;
         }
 
-        var ucDetalhes = new FUC_DetalhesAnime(malId)
+        var ucDetalhes = new FUC_DetalhesAnime(malId, usarJikan)
         {
             Dock = DockStyle.Fill
         };
-        ucDetalhes.CardClicado += AbrirDetalhesAnime;
+        ucDetalhes.CardClicado += usarJikan ? AbrirDetalhesAnimeJikan : AbrirDetalhesAnimeMyAnimeList;
         var tabPage = new TabPage
         {
-            Text = $"Detalhes #{malId}",
+            Text = $"Detalhes {origem} #{malId}",
             Name = tabName,
             ImageIndex = 1,
         };
@@ -371,7 +414,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Dock = DockStyle.Fill
         };
-        ucDetalhes.CardClicado += AbrirDetalhesAnime;
+        ucDetalhes.CardClicado += AbrirDetalhesAnimeMyAnimeList;
 
         var tabPage = new TabPage
         {

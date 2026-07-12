@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "dgSpecHash": "Dr9X9hg/eYo=",
+  "success": true,
+  "projectFilePath": "C:\\2026MeusProjetos\\Dtudo2026\\ApiMyAnimeList\\ApiMyAnimeList.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\comer\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.9\\microsoft.aspnetcore.openapi.10.0.9.nupkg.sha512",
+    "C:\\Users\\comer\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "message": "O pacote 'Microsoft.OpenApi' 2.0.0 tem uma alta vulnerabilidade de gravidade conhecida, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc",
+      "projectPath": "C:\\2026MeusProjetos\\Dtudo2026\\ApiMyAnimeList\\ApiMyAnimeList.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\2026MeusProjetos\\Dtudo2026\\ApiMyAnimeList\\ApiMyAnimeList.csproj",
+      "libraryId": "Microsoft.OpenApi",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
+}

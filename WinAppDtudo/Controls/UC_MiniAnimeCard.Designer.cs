@@ -28,16 +28,16 @@ partial class UC_MiniAnimeCard
         Pbx_Capa = new PictureBox();
         Lbl_MalId = new Label();
         Lbl_Nome = new Label();
-        Lbl_Tipo = new Label();
+        //Lbl_Tipo = new Label();
         ((System.ComponentModel.ISupportInitialize)Pbx_Capa).BeginInit();
         SuspendLayout();
         //
         // Pbx_Capa
         //
-        Pbx_Capa.BackColor = Color.FromArgb(45, 45, 55);
-        Pbx_Capa.Location = new Point(5, 5);
+        Pbx_Capa.BackColor = Color.FromArgb(4, 4, 5);
+        Pbx_Capa.Location = new Point(1, 5);
         Pbx_Capa.Name = "Pbx_Capa";
-        Pbx_Capa.Size = new Size(100, 130);
+        Pbx_Capa.Size = new Size(190, 250);
         Pbx_Capa.SizeMode = PictureBoxSizeMode.Zoom;
         Pbx_Capa.TabStop = false;
         Pbx_Capa.Cursor = Cursors.Hand;
@@ -46,10 +46,10 @@ partial class UC_MiniAnimeCard
         //
         Lbl_MalId.AutoSize = false;
         Lbl_MalId.Font = new Font("Segoe UI", 7.5F);
-        Lbl_MalId.ForeColor = Color.Gray;
-        Lbl_MalId.Location = new Point(3, 137);
+        Lbl_MalId.ForeColor = Color.Gold;
+        Lbl_MalId.Location = new Point(1, 260);
         Lbl_MalId.Name = "Lbl_MalId";
-        Lbl_MalId.Size = new Size(104, 15);
+        Lbl_MalId.Size = new Size(198, 25);
         Lbl_MalId.TextAlign = ContentAlignment.MiddleCenter;
         Lbl_MalId.Cursor = Cursors.Hand;
         //
@@ -59,35 +59,36 @@ partial class UC_MiniAnimeCard
         Lbl_Nome.AutoEllipsis = true;
         Lbl_Nome.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
         Lbl_Nome.ForeColor = Color.FromArgb(30, 30, 30);
-        Lbl_Nome.Location = new Point(3, 153);
+        Lbl_Nome.Location = new Point(1, 285);
         Lbl_Nome.Name = "Lbl_Nome";
-        Lbl_Nome.Size = new Size(104, 38);
+        Lbl_Nome.Size = new Size(198, 60);
         Lbl_Nome.TextAlign = ContentAlignment.TopCenter;
         Lbl_Nome.Cursor = Cursors.Hand;
         //
         // Lbl_Tipo
         //
-        Lbl_Tipo.AutoSize = false;
-        Lbl_Tipo.Font = new Font("Segoe UI", 7.5F, FontStyle.Bold);
-        Lbl_Tipo.ForeColor = Color.RoyalBlue;
-        Lbl_Tipo.Location = new Point(3, 193);
-        Lbl_Tipo.Name = "Lbl_Tipo";
-        Lbl_Tipo.Size = new Size(104, 16);
-        Lbl_Tipo.TextAlign = ContentAlignment.MiddleCenter;
-        Lbl_Tipo.Cursor = Cursors.Hand;
+        //Lbl_Tipo.AutoSize = false;
+        //Lbl_Tipo.Font = new Font("Segoe UI", 7.5F, FontStyle.Bold);
+        //Lbl_Tipo.ForeColor = Color.RoyalBlue;
+        //Lbl_Tipo.Location = new Point(1, 345);
+        //Lbl_Tipo.Name = "Lbl_Tipo";
+        //Lbl_Tipo.Size = new Size(198, 25);
+        //Lbl_Tipo.TextAlign = ContentAlignment.MiddleCenter;
+        //Lbl_Tipo.Cursor = Cursors.Hand;
+        
         //
         // UC_MiniAnimeCard
         //
-        AutoScaleDimensions = new SizeF(10F, 25F);
+        AutoScaleDimensions = new SizeF(12F, 25F);
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = Color.FromArgb(247, 248, 252);
         Controls.Add(Pbx_Capa);
         Controls.Add(Lbl_MalId);
         Controls.Add(Lbl_Nome);
-        Controls.Add(Lbl_Tipo);
+        //Controls.Add(Lbl_Tipo);
         Cursor = Cursors.Hand;
         Name = "UC_MiniAnimeCard";
-        Size = new Size(112, 215);
+        Size = new Size(200, 350);
         ((System.ComponentModel.ISupportInitialize)Pbx_Capa).EndInit();
         ResumeLayout(false);
     }
@@ -97,5 +98,5 @@ partial class UC_MiniAnimeCard
     private PictureBox Pbx_Capa;
     private Label Lbl_MalId;
     private Label Lbl_Nome;
-    private Label Lbl_Tipo;
+    //private Label Lbl_Tipo;
 }

@@ -47,9 +47,28 @@ public class ServiceBuscarAnimeRelacionadoPorID
         {
             _logger.LogInformation("Buscando relações do anime ID {MalId} na Jikan API (/anime/{MalId}/relations)", malId, malId);
 
-            using var response = await _httpClient.GetAsync($"anime/{malId}/relations");
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
+            string content = string.Empty;
+            for (var tentativa = 1; tentativa <= 3; tentativa++)
+            {
+                using var response = await _httpClient.GetAsync($"anime/{malId}/relations");
+                if (response.IsSuccessStatusCode)
+                {
+                    content = await response.Content.ReadAsStringAsync();
+                    break;
+                }
+
+                var transitório = response.StatusCode == System.Net.HttpStatusCode.TooManyRequests
+                    || (int)response.StatusCode >= 500;
+                if (!transitório || tentativa == 3)
+                    response.EnsureSuccessStatusCode();
+
+                var atraso = response.Headers.RetryAfter?.Delta
+                    ?? TimeSpan.FromMilliseconds(1000 * tentativa);
+                await Task.Delay(atraso, CancellationToken.None);
+            }
+
+            if (string.IsNullOrWhiteSpace(content))
+                return new List<AnimeRelationGroupDto>();
 
             var relationResponse = JsonSerializer.Deserialize<JikanAnimeRelationsResponseDto>(content, _jsonOptions);
             var relations = ApiJikanResponseMapper.Map(relationResponse?.Data);

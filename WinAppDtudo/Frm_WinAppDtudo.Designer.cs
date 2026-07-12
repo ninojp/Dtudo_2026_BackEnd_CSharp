@@ -73,7 +73,7 @@ partial class Frm_WinAppDtudo
         Btn_Site_Dtudo.FlatStyle = FlatStyle.Flat;
         Btn_Site_Dtudo.Font = new Font("Segoe UI", 11.1F, FontStyle.Bold, GraphicsUnit.Point, 0);
         Btn_Site_Dtudo.ForeColor = Color.Gold;
-        Btn_Site_Dtudo.Location = new Point(343, 101);
+        Btn_Site_Dtudo.Location = new Point(306, 122);
         Btn_Site_Dtudo.Margin = new Padding(5);
         Btn_Site_Dtudo.Name = "Btn_Site_Dtudo";
         Btn_Site_Dtudo.Size = new Size(401, 125);

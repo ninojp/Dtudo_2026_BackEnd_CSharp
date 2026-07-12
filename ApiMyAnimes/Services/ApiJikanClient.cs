@@ -3,14 +3,14 @@ using System.Net;
 namespace ApiMyAnimes.Services;
 
 /// <summary>
-/// Cliente para interagir com a API Jikan.
+/// Cliente para interagir com a API local compatível com o contrato Jikan.
 /// </summary>
 public class ApiJikanClient(HttpClient httpClient)
 {
     private readonly HttpClient _httpClient = httpClient;
 
     /// <summary>
-    /// Obtém os dados de importação de um anime a partir do seu ID no MyAnimeList (malId) usando a API Jikan.
+    /// Obtém os dados de importação de um anime a partir do seu ID no MyAnimeList.
     /// </summary>
     /// <param name="malId">O ID do anime no MyAnimeList.</param>
     /// <param name="cancellationToken">Token de cancelamento para a operação assíncrona.</param>

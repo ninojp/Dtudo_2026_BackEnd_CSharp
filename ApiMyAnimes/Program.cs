@@ -16,7 +16,7 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.AddMemoryCache();
 
-var apiJikanBaseUrl = builder.Configuration["ApiJikan:BaseUrl"] ?? "http://localhost:63983/";
+var apiJikanBaseUrl = builder.Configuration["ApiMyAnimeList:BaseUrl"] ?? "https://localhost:7146/";
 builder.Services.AddHttpClient<ApiJikanClient>(client =>
 {
     client.BaseAddress = new Uri(apiJikanBaseUrl);

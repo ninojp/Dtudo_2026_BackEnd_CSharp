@@ -102,9 +102,6 @@ C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\ru\Microsoft.CodeAnal
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\tr\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
-C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\ApiCSharp.Shared.dll
-C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\ApiCSharp.Shared.pdb
-C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\ApiCSharp.Shared.xml
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Release\net10.0\ApiJikan.csproj.AssemblyReference.cache
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Release\net10.0\rpswa.dswa.cache.json
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Release\net10.0\ApiJikan.GeneratedMSBuildEditorConfig.editorconfig
@@ -131,3 +128,6 @@ C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Release\net10.0\ApiJikan.xml
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Release\net10.0\ApiJikan.pdb
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Release\net10.0\ApiJikan.genruntimeconfig.cache
 C:\2026MeusProjetos\Dtudo2026\ApiJikan\obj\Release\net10.0\ref\ApiJikan.dll
+C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\LibDtudo.Shared.dll
+C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\LibDtudo.Shared.pdb
+C:\2026MeusProjetos\Dtudo2026\ApiJikan\bin\Release\net10.0\LibDtudo.Shared.xml
