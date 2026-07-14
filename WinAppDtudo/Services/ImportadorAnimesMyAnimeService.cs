@@ -64,7 +64,17 @@ public class ImportadorAnimesMyAnimeService
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
             {
-                resultado.AnimesIgnorados++;
+                try
+                {
+                    await _apiMyAnimesService.AssociarAnimeAoMyAnimeAsync(malId, myAnimeId);
+                    resultado.AnimesSalvos++;
+                }
+                catch (Exception exAssociacao)
+                {
+                    resultado.AnimesIgnorados++;
+                    resultado.ErrosDetalhados.Add(
+                        $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha ao associar MalId {malId} à coleção '{tituloMyAnime}': {exAssociacao.Message}");
+                }
             }
             catch (Exception ex)
             {

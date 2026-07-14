@@ -24,7 +24,7 @@ public partial class UC_AnimeCard : UserControl
     // ===================================================================
 
     /// <summary>Preenche o card com os dados do anime e inicia o carregamento da imagem.</summary>
-    public void CarregarDados(JikanAnimeCard anime, bool usarFallbackMyAnimeList = true)
+    public void CarregarDados(JikanAnimeCard anime, bool usarFallbackMyAnimeList = true, int? malIdParaImagem = null)
     {
         _malId = anime.MalId;
 
@@ -45,7 +45,7 @@ public partial class UC_AnimeCard : UserControl
 
         SubstituirCapa(CriarCapaPadrao(anime.Title, anime.MalId));
         var versaoDaCapa = ++_versaoDaCapa;
-        _ = CarregarImagemAsync(anime.ImageUrl, anime.MalId, versaoDaCapa, usarFallbackMyAnimeList);
+        _ = CarregarImagemAsync(anime.ImageUrl, malIdParaImagem ?? anime.MalId, versaoDaCapa, usarFallbackMyAnimeList);
     }
 
     // ===================================================================

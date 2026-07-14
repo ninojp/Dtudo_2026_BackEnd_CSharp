@@ -4,13 +4,6 @@ namespace WinAppDtudo.Services;
 
 public class CriadorDeEstruturas
 {
-    private readonly MyAnimeListApiService _myAnimeListApiService = new();
-
-    private static readonly HttpClient _httpClient = new()
-    {
-        Timeout = TimeSpan.FromSeconds(120)
-    };
-
     public async Task<CriacaoEstruturaResultado> CriarEstruturaAsync(
         ObterMyAnimeDto myAnime,
         IReadOnlyCollection<ObterAnimeDto> animes,
@@ -21,8 +14,10 @@ public class CriadorDeEstruturas
         if (animes is null) throw new ArgumentNullException(nameof(animes));
         if (string.IsNullOrWhiteSpace(diretorioBase)) throw new ArgumentException("Diretório inválido.", nameof(diretorioBase));
 
-        var nomePastaRaiz = SanitizarNome(myAnime.Titulo);
-        var pastaRaiz = Path.Combine(diretorioBase, nomePastaRaiz);
+        var pastaRaiz = ObterCaminhoPastaRaiz(myAnime, diretorioBase);
+        if (Directory.Exists(pastaRaiz))
+            throw new InvalidOperationException($"A pasta já existe e não pode ser sobrescrita: {pastaRaiz}");
+
         Directory.CreateDirectory(pastaRaiz);
 
         var resultado = new CriacaoEstruturaResultado
@@ -54,47 +49,30 @@ public class CriadorDeEstruturas
         return resultado;
     }
 
+    public static string ObterCaminhoPastaRaiz(ObterMyAnimeDto myAnime, string diretorioBase)
+    {
+        if (myAnime is null) throw new ArgumentNullException(nameof(myAnime));
+        if (string.IsNullOrWhiteSpace(diretorioBase)) throw new ArgumentException("Diretório inválido.", nameof(diretorioBase));
+
+        return Path.Combine(diretorioBase, SanitizarNome(myAnime.Titulo));
+    }
+
     private async Task<bool> TentarSalvarImagemAsync(ObterAnimeDto anime, string caminhoImagem, CancellationToken cancellationToken)
     {
-        var urls = new List<string>();
+        var imagem = await ImageLoaderService.DownloadAnimeCoverAsync(
+            anime.ImagensUrlMal.FirstOrDefault(),
+            anime.MalId,
+            cancellationToken);
 
-        try
+        if (imagem is null)
+            return false;
+
+        using (imagem)
         {
-            var detalhesMyAnimeList = await _myAnimeListApiService.BuscarPorIdAsync(anime.MalId, cancellationToken);
-            if (!string.IsNullOrWhiteSpace(detalhesMyAnimeList?.Images?.Jpg?.LargeImageUrl)) urls.Add(detalhesMyAnimeList.Images.Jpg.LargeImageUrl);
-            if (!string.IsNullOrWhiteSpace(detalhesMyAnimeList?.Images?.Jpg?.ImageUrl)) urls.Add(detalhesMyAnimeList.Images.Jpg.ImageUrl);
-            if (!string.IsNullOrWhiteSpace(detalhesMyAnimeList?.Images?.Jpg?.SmallImageUrl)) urls.Add(detalhesMyAnimeList.Images.Jpg.SmallImageUrl);
-        }
-        catch
-        {
-            // Fallback para URLs já persistidas no anime local.
-        }
-
-        urls.AddRange(anime.ImagensUrlMal);
-
-        foreach (var url in urls.Where(u => !string.IsNullOrWhiteSpace(u)).Distinct())
-        {
-            try
-            {
-                using var response = await _httpClient.GetAsync(url, cancellationToken);
-                if (!response.IsSuccessStatusCode) continue;
-
-                var mediaType = response.Content.Headers.ContentType?.MediaType;
-                if (mediaType is null || !mediaType.StartsWith("image", StringComparison.OrdinalIgnoreCase)) continue;
-
-                var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-                if (bytes.Length == 0) continue;
-
-                await File.WriteAllBytesAsync(caminhoImagem, bytes, cancellationToken);
-                return true;
-            }
-            catch
-            {
-                // tenta próxima URL
-            }
+            imagem.Save(caminhoImagem, System.Drawing.Imaging.ImageFormat.Jpeg);
         }
 
-        return false;
+        return true;
     }
 
     private static string MontarNomePastaAnime(ObterAnimeDto anime)

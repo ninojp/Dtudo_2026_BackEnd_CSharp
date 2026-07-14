@@ -128,6 +128,18 @@ public class ApiMyAnimesService
         response.EnsureSuccessStatusCode();
     }
 
+    public async Task AssociarAnimeAoMyAnimeAsync(int malId, int myAnimeId)
+    {
+        var anime = await ObterAnimePorMalIdAsync(malId);
+        if (anime is null)
+            return;
+
+        anime.MyAnimeID = myAnimeId;
+        var content = SerializarJson(anime);
+        using var response = await _httpClient.PutAsync($"apiLocal/Anime/{malId}", content);
+        response.EnsureSuccessStatusCode();
+    }
+
     public async Task AdicionarAnimeAsync(AdicionaAnimeDto dto)
     {
         var animeExistente = await ObterAnimePorMalIdAsync(dto.MalId);

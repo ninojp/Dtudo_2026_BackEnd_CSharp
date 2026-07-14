@@ -30,27 +30,28 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 
 -------------------------------------------------------------------------------------------------------------------------------------
 Proximo passo:
-
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, neste meu UC, FUC_DetalhesAnime.cs.
-
-Preciso fazer algumas modificações e melhorias na aba que exibe os detalhes do anime atual:
-
-- precisamos resolver os problema das imagens que algumas não aparecem, nos mini cards dos animes relacionados 
-(mesmo problema anterior, mesma solução, buscar as imagens que faltarem da outra api, ApiJikan) 
-- O campo (container) onde onde aparecem todos os mini cards (podem ser AMPLIADOS para um tamanho BEM maior) dos animes relacionados, agora deve ficar acima do campo de SINOPSE.
-- Os titulos dos campos, Animes Recionados, Sinopse: e Contexto/Fundo: Agora devem ser maiores e ter uma quebra de linha para que fiquem bem mais separados do texto logo abaixo 
-- permitir selecionar (copiar, ctrl+c) os textos dentro da aba atual.
+DBLocalBuscar - É meu banco de dados, controlado pela ApiMyAnimes.
+ApiMyAnimeList - Api Atual que fornece os dados e detalhes dos animes buscados por nome. 
 
 
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo. Quero implementar algumas mudanças:
+
+em \FormsUC\FUC_DetalhesAnimes.cs.
+Ao clicar no botão SALVAR COMO MYANIME, após salvar o anime como um MyAnime (coleção), agora quero já abrir a aba com o novo MyAnime recém criado.
+Ao clicar no botão SALVAR COMO MYANIME, Também deve salvar os animes relacionados ao anime atual que foi salvo como MyAnime(coleção). Me parece que AS VEZES até salva os animes relacionados, MAS NÃO É SEMPRE.
+
+em \FormsUC\FUC_MyAnimesDetalhes.cs.
+Agora onde MOSTRA o ID, do MyAnime criado (e deixa-lo selecionavel para que eu possa copiar o id, se possível que já venha copiado (como se eu já tivese copiado o id))
+Também preciso que este UC, se atualize (exiba os novos animes relacionados) automaticamente, pois quando eu adicionar um novo anime a esá coleção (MyAnime), preciso velo.
+Agora antes de salvar Estrutura em Disco, tem que verificar se já existe uma pasta com mesmo nome antes, NÃO pode sobrescrever a pasta já existente. (apenas avise e interrompa a ação).
 
 
-AnimesDetalhes:
 
-(Ao salvar um MyAnime, Mostar o ID e perguntar se quer exibilo)
+
+
+
 
 Quero uma implementação completa e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
-
-
 
 ===================================================================================================
 
@@ -65,14 +66,7 @@ FROM Animes;
 564 AmineXs Adicionados
 4379 Total Adicionado
 
-```
-Dragon Ball/                        (usaremos este nome da pasta como myAnime.titulo)
-|
-├── 📁 1986 Dragon Ball - TV/   
-│   ├── 54321.jpg               (usaremos os numeros como myAnime.List<Anime>54321.id)
-├── 📁 1996 Dragon Ball Z - Filme/
-│   ├── 54322.jpg 
-```
+
 
 
 
@@ -81,17 +75,6 @@ Dragon Ball/                        (usaremos este nome da pasta como myAnime.ti
 1. Adicionar logging centralizado (Serilog)
 2. Docker Compose para orquestrar ambos os serviços
 3. 
-
-MyAnimes Central (\WinAppDtudo\Frm_MyAnimes.cs)
-Através do nome Encontramos o Anime - (ApiJikan)
-Exibimos seus detalhes e Animes Relacionados - (ApiJikan)
-
-Com o Mal_id do Anime podemos fazer C.R.U.D, no DB_Local: 
-MyAnime (tabela_db) - Coleção de animes, agrupados por nome - (ApiMyAnimes)
-Anime (tabela_db) - Anime e seus detalhes - (ApiMyAnimes)
-
-Com o registro do Anime no DB_Local, podemos:
-Exibir seus detalhes e Animes Relacionados - (DtudoSite)
 
 ======================================================================================================
 Estou recebendo este aviso (Este projeto está definido para abrir o Designer WinForms no modo sem Reconhecimento de DPI.)(Agora mudou o aviso) ao abrir meus Forms em modo visual. Estou trabalhando (meu hardware) com uma tv 50" (escala 200%) com RESOLUÇÃO de 3840x2160. Pergunto se isso pode estar causando problemas visuais (por exemplo, itens (textos) dentro da aba animes detalhes estão se sobrepondo).
@@ -102,6 +85,14 @@ Estou recebendo este aviso (Este projeto está definido para abrir o Designer Wi
 <ApplicationHighDpiMode>SystemAware</ApplicationHighDpiMode>
 <ApplicationDefaultFont>Microsoft Sans Serif, 8.25pt</ApplicationDefaultFont>
 
+```
+Dragon Ball/                        (usaremos este nome da pasta como myAnime.titulo)
+|
+├── 📁 1986 Dragon Ball - TV/   
+│   ├── 54321.jpg               (usaremos os numeros como myAnime.List<Anime>54321.id)
+├── 📁 1996 Dragon Ball Z - Filme/
+│   ├── 54322.jpg 
+```
 ```
 WinAppDtudo/
 │

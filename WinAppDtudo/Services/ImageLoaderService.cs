@@ -1,5 +1,7 @@
 using System.Net;
 using System.Text.Json;
+using SixLabors.ImageSharp;
+using DrawingImage = System.Drawing.Image;
 
 namespace WinAppDtudo.Services;
 
@@ -10,14 +12,11 @@ namespace WinAppDtudo.Services;
 public static class ImageLoaderService
 {
     private const string MyAnimeListAnimeUrl = "http://127.0.0.1:5044/MyAnimeList/";
-    private const string JikanAnimeUrl = "https://localhost:63982/ApiJikan/";
     private static readonly HttpClient _client;
     private static readonly SemaphoreSlim _downloadSlots = new(4, 4);
     private static readonly SemaphoreSlim _myAnimeListRequestLock = new(1, 1);
     private static readonly Dictionary<int, Task<IReadOnlyList<string>>> _myAnimeListCoverUrls = [];
     private static readonly Lock _myAnimeListCoverUrlsLock = new();
-    private static readonly Dictionary<int, Task<IReadOnlyList<string>>> _jikanCoverUrls = [];
-    private static readonly Lock _jikanCoverUrlsLock = new();
 
     static ImageLoaderService()
     {
@@ -32,7 +31,7 @@ public static class ImageLoaderService
     }
 
     /// <summary>Faz download e valida uma imagem, repetindo falhas transitórias.</summary>
-    public static async Task<Image?> DownloadAsync(string? url, CancellationToken cancellationToken = default)
+    public static async Task<DrawingImage?> DownloadAsync(string? url, CancellationToken cancellationToken = default)
     {
         await _downloadSlots.WaitAsync(cancellationToken);
         try
@@ -45,7 +44,7 @@ public static class ImageLoaderService
         }
     }
 
-    private static async Task<Image?> DownloadCoreAsync(string? url, CancellationToken cancellationToken)
+    private static async Task<DrawingImage?> DownloadCoreAsync(string? url, CancellationToken cancellationToken)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var imageUri)
             || (imageUri.Scheme != Uri.UriSchemeHttp && imageUri.Scheme != Uri.UriSchemeHttps))
@@ -69,9 +68,7 @@ public static class ImageLoaderService
                 if (bytes.Length == 0)
                     return null;
 
-                using var stream = new MemoryStream(bytes);
-                using var image = Image.FromStream(stream, useEmbeddedColorManagement: false, validateImageData: false);
-                return new Bitmap(image);
+                return DecodificarImagem(bytes);
             }
             catch (Exception ex) when (tentativa < 3 && EhErroTransitorio(ex, cancellationToken))
             {
@@ -86,21 +83,47 @@ public static class ImageLoaderService
         return null;
     }
 
-    /// <summary>Obtém a capa da MAL e usa a ApiJikan local como último recurso para a mesma entrada.</summary>
-    public static async Task<Image?> DownloadAnimeCoverAsync(string? primaryUrl, int malId, CancellationToken cancellationToken = default)
+    private static DrawingImage? DecodificarImagem(byte[] bytes)
+    {
+        try
+        {
+            using var imagem = SixLabors.ImageSharp.Image.Load(bytes);
+            using var png = new MemoryStream();
+            imagem.SaveAsPng(png);
+            png.Position = 0;
+
+            using var decodificada = DrawingImage.FromStream(
+                png,
+                useEmbeddedColorManagement: false,
+                validateImageData: true);
+
+            var bitmap = new Bitmap(
+                decodificada.Width,
+                decodificada.Height,
+                System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.DrawImage(decodificada, new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height));
+            return bitmap;
+        }
+        catch (UnknownImageFormatException)
+        {
+            return null;
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Obtém a capa exclusivamente pelas URLs da ApiMyAnimeList.</summary>
+    public static async Task<DrawingImage?> DownloadAnimeCoverAsync(string? primaryUrl, int malId, CancellationToken cancellationToken = default)
     {
         var image = await DownloadAsync(primaryUrl, cancellationToken);
         if (image is not null || malId <= 0)
             return image;
 
         foreach (var fallbackUrl in await GetMyAnimeListCoverUrlsAsync(malId, cancellationToken))
-        {
-            image = await DownloadAsync(fallbackUrl, cancellationToken);
-            if (image is not null)
-                return image;
-        }
-
-        foreach (var fallbackUrl in await GetJikanCoverUrlsAsync(malId, cancellationToken))
         {
             image = await DownloadAsync(fallbackUrl, cancellationToken);
             if (image is not null)
@@ -182,46 +205,6 @@ public static class ImageLoaderService
         finally
         {
             _myAnimeListRequestLock.Release();
-        }
-    }
-
-    private static Task<IReadOnlyList<string>> GetJikanCoverUrlsAsync(int malId, CancellationToken cancellationToken)
-    {
-        lock (_jikanCoverUrlsLock)
-        {
-            if (_jikanCoverUrls.TryGetValue(malId, out var task))
-                return task;
-
-            task = GetJikanCoverUrlsCoreAsync(malId, cancellationToken);
-            _jikanCoverUrls[malId] = task;
-            return task;
-        }
-    }
-
-    private static async Task<IReadOnlyList<string>> GetJikanCoverUrlsCoreAsync(int malId, CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var response = await _client.GetAsync($"{JikanAnimeUrl}{malId}", cancellationToken);
-            if (!response.IsSuccessStatusCode)
-                return [];
-
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
-            if (!document.RootElement.TryGetProperty("images", out var images)
-                || !images.TryGetProperty("jpg", out var jpg))
-                return [];
-
-            return new[] { "largeImageUrl", "imageUrl", "smallImageUrl", "large_image_url", "image_url", "small_image_url" }
-                .Where(name => jpg.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String)
-                .Select(name => jpg.GetProperty(name).GetString())
-                .OfType<string>()
-                .Distinct(StringComparer.Ordinal)
-                .ToArray();
-        }
-        catch
-        {
-            return [];
         }
     }
 

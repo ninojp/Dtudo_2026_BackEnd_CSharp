@@ -16,7 +16,7 @@ public static class MyAnimeListMapper
                 Title = anime.Title,
                 TitleEnglish = anime.AlternativeTitles?.English,
                 TitleJapanese = anime.AlternativeTitles?.Japanese,
-                ImageUrl = anime.MainPicture?.Medium ?? anime.MainPicture?.Large,
+                ImageUrl = anime.MainPicture?.Large ?? anime.MainPicture?.Medium,
                 Type = anime.MediaType,
                 Episodes = anime.NumEpisodes,
                 Status = anime.Status,

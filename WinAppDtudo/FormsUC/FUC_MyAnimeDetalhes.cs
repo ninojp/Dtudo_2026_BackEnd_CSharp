@@ -16,6 +16,8 @@ public class FUC_MyAnimeDetalhes : UserControl
 
     private readonly Label _lblTitulo;
     private readonly Label _lblResumo;
+    private readonly Label _lblMyAnimeId;
+    private readonly TextBox _txtMyAnimeId;
     private readonly Label _lblStatus;
     private readonly Button _btnSalvarEstrutura;
     private readonly Button _btnSalvarAnimesNoBanco;
@@ -42,25 +44,43 @@ public class FUC_MyAnimeDetalhes : UserControl
         var pnlTopo = new Panel
         {
             Dock = DockStyle.Fill,
+            Height = 400,
             BackColor = Color.Black
         };
 
         _lblTitulo = new Label
         {
             AutoSize = true,
-            Font = new Font("Segoe UI Black", 14F, FontStyle.Bold),
+            Font = new Font("Segoe UI Black", 18F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Text = "MyAnime",
-            Location = new Point(100, 15)
+            Location = new Point(100, 10)
         };
 
         _lblResumo = new Label
         {
             AutoSize = true,
-            Font = new Font("Segoe UI", 10F, FontStyle.Regular),
+            Font = new Font("Segoe UI", 12F, FontStyle.Regular),
             ForeColor = Color.Goldenrod,
             Text = "",
-            Location = new Point(100, 70)
+            Location = new Point(140, 90)
+        };
+
+        _lblMyAnimeId = new Label
+        {
+            AutoSize = true,
+            ForeColor = Color.Gold,
+            Text = "ID do MyAnime:",
+            Location = new Point(1200, 90)
+        };
+
+        _txtMyAnimeId = new TextBox
+        {
+            ReadOnly = true,
+            Width = 120,
+            Location = new Point(1415, 90),
+            Text = _myAnimeId.ToString(),
+            BorderStyle = BorderStyle.FixedSingle
         };
 
         _btnSalvarEstrutura = new Button
@@ -68,7 +88,7 @@ public class FUC_MyAnimeDetalhes : UserControl
             Text = "💾 Salvar Estrutura em Disco",
             Width = 450,
             Height = 50,
-            Location = new Point(700, 70)
+            Location = new Point(700, 80)
         };
 
         _btnSalvarAnimesNoBanco = new Button
@@ -76,11 +96,13 @@ public class FUC_MyAnimeDetalhes : UserControl
             Text = "🗃️ Salvar todos os Animes no DB",
             Width = 450,
             Height = 50,
-            Location = new Point(1200, 70)
+            Location = new Point(1600, 80)
         };
 
         pnlTopo.Controls.Add(_lblTitulo);
         pnlTopo.Controls.Add(_lblResumo);
+        pnlTopo.Controls.Add(_lblMyAnimeId);
+        pnlTopo.Controls.Add(_txtMyAnimeId);
         pnlTopo.Controls.Add(_btnSalvarEstrutura);
         pnlTopo.Controls.Add(_btnSalvarAnimesNoBanco);
 
@@ -89,7 +111,7 @@ public class FUC_MyAnimeDetalhes : UserControl
             Dock = DockStyle.Fill,
             AutoScroll = true,
             BackColor = Color.Black,
-            Padding = new Padding(8, 6, 8, 6)
+            Padding = new Padding(58, 36, 58, 36)
         };
 
         _lblStatus = new Label
@@ -152,7 +174,16 @@ public class FUC_MyAnimeDetalhes : UserControl
                 .ToList();
 
             _lblTitulo.Text = _myAnimeAtual.Titulo;
-            _lblResumo.Text = $"MyAnime ID: {_myAnimeId} | Animes relacionados: {_animesAtuais.Count}";
+            _lblResumo.Text = $"Animes relacionados: {_animesAtuais.Count}";
+            _txtMyAnimeId.Text = _myAnimeId.ToString();
+            _txtMyAnimeId.SelectAll();
+            try
+            {
+                Clipboard.SetText(_myAnimeId.ToString());
+            }
+            catch
+            {
+            }
 
             PopularCards();
 
@@ -179,6 +210,8 @@ public class FUC_MyAnimeDetalhes : UserControl
                 "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
+
+    public Task AtualizarAsync() => CarregarDadosAsync();
 
     private void PopularCards()
     {
@@ -226,6 +259,17 @@ public class FUC_MyAnimeDetalhes : UserControl
 
         if (dialog.ShowDialog() != DialogResult.OK || string.IsNullOrWhiteSpace(dialog.SelectedPath))
             return;
+
+        var pastaRaiz = CriadorDeEstruturas.ObterCaminhoPastaRaiz(_myAnimeAtual, dialog.SelectedPath);
+        if (Directory.Exists(pastaRaiz))
+        {
+            MessageBox.Show(
+                $"A pasta já existe e não será sobrescrita:\n\n{pastaRaiz}",
+                "Exportação interrompida",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
 
         _btnSalvarEstrutura.Enabled = false;
         _lblStatus.Text = "⏳ Criando estrutura de pastas e baixando imagens...";

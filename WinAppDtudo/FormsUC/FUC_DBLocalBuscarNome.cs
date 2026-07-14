@@ -202,7 +202,8 @@ public class FUC_DBLocalBuscarNome : UserControl
             foreach (var myAnime in resultado.Results)
             {
                 var card = new UC_AnimeCard();
-                card.CarregarDados(MapearParaCard(myAnime));
+                var malIdDaCapa = myAnime.AnimesMalId.FirstOrDefault();
+                card.CarregarDados(MapearParaCard(myAnime), malIdParaImagem: malIdDaCapa > 0 ? malIdDaCapa : null);
                 var myAnimeIdSelecionado = myAnime.Id;
                 card.CardClicado += (_, _) =>
                 {

@@ -132,30 +132,30 @@ partial class Frm_MyAnimes
         // 
         MnI_ProcurarAnimePorNome.Image = Properties.Resources.pngwing_com;
         MnI_ProcurarAnimePorNome.Name = "MnI_ProcurarAnimePorNome";
-        MnI_ProcurarAnimePorNome.Size = new Size(325, 42);
-        MnI_ProcurarAnimePorNome.Text = "DBLocalBuscarNome";
+        MnI_ProcurarAnimePorNome.Size = new Size(249, 42);
+        MnI_ProcurarAnimePorNome.Text = "DBLocalBuscar";
         MnI_ProcurarAnimePorNome.Click += MnI_ProcurarAnimePorNome_Click;
         // 
         // MnI_ApiJikanBuscarNome
         // 
         MnI_ApiJikanBuscarNome.Image = Properties.Resources.RosaDosVentos;
         MnI_ApiJikanBuscarNome.Name = "MnI_ApiJikanBuscarNome";
-        MnI_ApiJikanBuscarNome.Size = new Size(328, 42);
-        MnI_ApiJikanBuscarNome.Text = "ApiJikanBuscarNome";
+        MnI_ApiJikanBuscarNome.Size = new Size(171, 42);
+        MnI_ApiJikanBuscarNome.Text = "ApiJikan";
         // 
         // MnI_ApiMyAnimeListBuscarNome
         // 
         MnI_ApiMyAnimeListBuscarNome.Image = Properties.Resources.RosaDosVentos;
         MnI_ApiMyAnimeListBuscarNome.Name = "MnI_ApiMyAnimeListBuscarNome";
-        MnI_ApiMyAnimeListBuscarNome.Size = new Size(380, 42);
-        MnI_ApiMyAnimeListBuscarNome.Text = "ApiMyAnimeListBuscarNome";
+        MnI_ApiMyAnimeListBuscarNome.Size = new Size(270, 42);
+        MnI_ApiMyAnimeListBuscarNome.Text = "ApiMyAnimeList";
         // 
         // Mnu_AnalizarEstruturas
         // 
         Mnu_AnalizarEstruturas.Image = Properties.Resources.pngwing3;
         Mnu_AnalizarEstruturas.Name = "Mnu_AnalizarEstruturas";
-        Mnu_AnalizarEstruturas.Size = new Size(290, 42);
-        Mnu_AnalizarEstruturas.Text = "AnalizarEstruturas";
+        Mnu_AnalizarEstruturas.Size = new Size(244, 42);
+        Mnu_AnalizarEstruturas.Text = "AnalizarPastas";
         Mnu_AnalizarEstruturas.Click += Mnu_AnalizarEstruturas_Click;
         // 
         // Tbc_MyAnimes
@@ -165,14 +165,14 @@ partial class Frm_MyAnimes
         Tbc_MyAnimes.Appearance = TabAppearance.Buttons;
         Tbc_MyAnimes.Dock = DockStyle.Fill;
         Tbc_MyAnimes.DrawMode = TabDrawMode.OwnerDrawFixed;
-        Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 10.125F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
         Tbc_MyAnimes.ImageList = Iml_ImagensList;
         Tbc_MyAnimes.ImeMode = ImeMode.On;
-        Tbc_MyAnimes.ItemSize = new Size(420, 84);
+        Tbc_MyAnimes.ItemSize = new Size(200, 60);
         Tbc_MyAnimes.Location = new Point(0, 50);
-        Tbc_MyAnimes.Margin = new Padding(4, 3, 4, 3);
+        Tbc_MyAnimes.Margin = new Padding(1, 1, 1, 1);
         Tbc_MyAnimes.Name = "Tbc_MyAnimes";
-        Tbc_MyAnimes.Padding = new Point(20, 12);
+        Tbc_MyAnimes.Padding = new Point(10, 6);
         Tbc_MyAnimes.SelectedIndex = 0;
         Tbc_MyAnimes.Size = new Size(2160, 1295);
         Tbc_MyAnimes.SizeMode = TabSizeMode.Fixed;

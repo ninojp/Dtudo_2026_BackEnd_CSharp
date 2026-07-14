@@ -91,8 +91,8 @@ public class CustomFormNoBorder : Form
         btnFechar.Click += (s, e) => this.Close();
 
         // Adicionar os botões ao MenuStrip
-        menuStrip.Items.Add(btnMinimizar);
-        menuStrip.Items.Add(btnMaximizar);
         menuStrip.Items.Add(btnFechar);
+        menuStrip.Items.Add(btnMaximizar);
+        menuStrip.Items.Add(btnMinimizar);
     }
 }

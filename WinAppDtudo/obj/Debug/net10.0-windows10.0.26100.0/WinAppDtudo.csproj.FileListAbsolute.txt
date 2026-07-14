@@ -48,3 +48,6 @@ C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_MyAnimeDetalhes.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_ApiJikanBuscarNome.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_DBLocalBuscarNome.resources
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.Controls.UC_MiniAnimeCard.resources
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_ApiMyAnimeListBuscarNome.resources
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\SixLabors.ImageSharp.dll

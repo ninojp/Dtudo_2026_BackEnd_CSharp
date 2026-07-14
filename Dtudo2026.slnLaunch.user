@@ -3,15 +3,15 @@
     "Name": "IniciaTudo",
     "Projects": [
       {
-        "Path": "ApiJikan\\ApiJikan.csproj",
-        "Action": "Start"
-      },
-      {
         "Path": "ApiMyAnimes\\ApiMyAnimes.csproj",
         "Action": "Start"
       },
       {
         "Path": "WinAppDtudo\\WinAppDtudo.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ApiMyAnimeList\\ApiMyAnimeList.csproj",
         "Action": "Start"
       }
     ]

@@ -21,6 +21,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         InitializeComponent();
         MnI_ApiJikanBuscarNome.Click += MnI_ApiJikanBuscarNome_Click;
         MnI_ApiMyAnimeListBuscarNome.Click += MnI_ApiMyAnimeListBuscarNome_Click;
+        Tbc_MyAnimes.Selected += Tbc_MyAnimes_Selected;
         // Aplicar o tema Dark Mode ao formulário e seus componentes
         ThemeManager.ApplyDarkModeToForm(this);
         // Inicializa o formulário customizado sem barra de título
@@ -37,16 +38,13 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             {
                 Dock = DockStyle.Fill
             };
-
             ucBuscaApiMyAnimeList.AnimeMyAnimeListSelecionado += AbrirDetalhesAnimeMyAnimeList;
-
             TabPage tabPage = new()
             {
-                Text = $"{_tabIndexApiMyAnimeListPorNome} ApiMyAnimeListBuscarNome",
-                Name = $"ApiMyAnimeListBuscarNome_{_tabIndexApiMyAnimeListPorNome}",
+                Text = $"{_tabIndexApiMyAnimeListPorNome} MAL",
+                Name = $"ID_{_tabIndexApiMyAnimeListPorNome}",
                 ImageIndex = 1,
             };
-
             tabPage.Controls.Add(ucBuscaApiMyAnimeList);
             Tbc_MyAnimes.TabPages.Add(tabPage);
             Tbc_MyAnimes.SelectedTab = tabPage;
@@ -54,7 +52,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         catch (Exception ex)
         {
             _tabIndexApiMyAnimeListPorNome = Math.Max(0, _tabIndexApiMyAnimeListPorNome - 1);
-            MessageBox.Show($"Erro ao abrir a aba ApiMyAnimeListBuscarNome:\n{ex.Message}",
+            MessageBox.Show($"Erro ao abrir a aba ApiMyAnimeList:\n{ex.Message}",
                 "Erro",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -75,8 +73,8 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
 
             TabPage tabPage = new()
             {
-                Text = $"{_tabIndexMyAnimesPorNome} DBLocalBuscarNome",
-                Name = $"DBLocalBuscarNome_{_tabIndexMyAnimesPorNome}",
+                Text = $"{_tabIndexMyAnimesPorNome} DBLocal",
+                Name = $"DBLocal_{_tabIndexMyAnimesPorNome}",
                 ImageIndex = 2,
             };
 
@@ -87,7 +85,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         catch (Exception ex)
         {
             _tabIndexMyAnimesPorNome = Math.Max(0, _tabIndexMyAnimesPorNome - 1);
-            MessageBox.Show($"Erro ao abrir a aba DBLocalBuscarNome:\n{ex.Message}",
+            MessageBox.Show($"Erro ao abrir a aba DBLocalBuscar:\n{ex.Message}",
                 "Erro",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -108,8 +106,8 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
 
             TabPage tabPage = new()
             {
-                Text = $"{_tabIndexApiJikanPorNome} ApiJikanBuscarNome",
-                Name = $"ApiJikanBuscarNome_{_tabIndexApiJikanPorNome}",
+                Text = $"{_tabIndexApiJikanPorNome} ApiJikan",
+                Name = $"ApiJikan_{_tabIndexApiJikanPorNome}",
                 ImageIndex = 1,
             };
 
@@ -120,7 +118,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         catch (Exception ex)
         {
             _tabIndexApiJikanPorNome = Math.Max(0, _tabIndexApiJikanPorNome - 1);
-            MessageBox.Show($"Erro ao abrir a aba ApiJikanBuscarNome:\n{ex.Message}",
+            MessageBox.Show($"Erro ao abrir a aba ApiJikan:\n{ex.Message}",
                 "Erro",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -215,14 +213,13 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
                 }
             }
         }
-
         if (e.Button == MouseButtons.Right)
         {
             ContextMenuStrip contextMenu = new();
-            ToolStripMenuItem menuFlutuanteItem1 = CriaMenuFlutuanteItem("Apaga AbaAtual", "BaixoGatilho");
-            ToolStripMenuItem menuFlutuanteItem2 = CriaMenuFlutuanteItem("Apaga TodasAbas", "CimaGatilho");
-            ToolStripMenuItem menuFlutuanteItem3 = CriaMenuFlutuanteItem("Apaga AbaDireita", "DireitaGatilho");
-            ToolStripMenuItem menuFlutuanteItem4 = CriaMenuFlutuanteItem("Apaga AbaEsquerda", "EsquerdaGatilho");
+            ToolStripMenuItem menuFlutuanteItem1 = CriaMenuFlutuanteItem("ApagarAbaAtual", "BaixoGatilho");
+            ToolStripMenuItem menuFlutuanteItem2 = CriaMenuFlutuanteItem("ApagarTodasAbas", "CimaGatilho");
+            ToolStripMenuItem menuFlutuanteItem3 = CriaMenuFlutuanteItem("ApagarAbasDireita", "DireitaGatilho");
+            ToolStripMenuItem menuFlutuanteItem4 = CriaMenuFlutuanteItem("ApagarAbasEsquerda", "EsquerdaGatilho");
             contextMenu.Items.Add(menuFlutuanteItem1);
             contextMenu.Items.Add(menuFlutuanteItem2);
             contextMenu.Items.Add(menuFlutuanteItem3);
@@ -237,8 +234,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
 
     private void Tbc_MyAnimes_DrawItem(object? sender, DrawItemEventArgs e)
     {
-        if (e.Index < 0 || e.Index >= Tbc_MyAnimes.TabPages.Count)
-            return;
+        if (e.Index < 0 || e.Index >= Tbc_MyAnimes.TabPages.Count) return;
 
         TabPage tabPage = Tbc_MyAnimes.TabPages[e.Index];
         Rectangle tabRect = Tbc_MyAnimes.GetTabRect(e.Index);
@@ -248,16 +244,14 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         Color texto = selecionada ? Color.Black : DarkModeColors.TextColor;
 
         using (SolidBrush brush = new(fundo))
-        {
-            e.Graphics.FillRectangle(brush, tabRect);
-        }
+        { e.Graphics.FillRectangle(brush, tabRect); }
 
         Rectangle closeRect = GetCloseButtonBounds(e.Index);
-        int espacamentoDireita = closeRect.Width + 12;
+        int espacamentoDireita = closeRect.Width + 6;
         Rectangle textRect = new(
             tabRect.X + 10,
             tabRect.Y + 4,
-            Math.Max(10, tabRect.Width - espacamentoDireita - 12),
+            Math.Max(10, tabRect.Width - espacamentoDireita - 6),
             tabRect.Height - 8);
 
         TextRenderer.DrawText(
@@ -267,18 +261,16 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             textRect,
             texto,
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
-
         using (Font closeFont = new("Segoe UI", 10F, FontStyle.Bold))
         {
             TextRenderer.DrawText(
                 e.Graphics,
-                "X",
+                "x",
                 closeFont,
                 closeRect,
                 texto,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                TextFormatFlags.Top | TextFormatFlags.Right);
         }
-
         using Pen borderPen = new(DarkModeColors.BorderColor);
         e.Graphics.DrawRectangle(borderPen, tabRect);
     }
@@ -290,7 +282,6 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             if (Tbc_MyAnimes.GetTabRect(i).Contains(location))
                 return i;
         }
-
         return -1;
     }
 
@@ -374,7 +365,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     private void AbrirDetalhesAnime(int malId, bool usarJikan)
     {
         var origem = usarJikan ? "Jikan" : "MyAnimeList";
-        var tabName = $"Detalhes_{origem}_{malId}";
+        var tabName = $"{origem} {malId}";
         var tabExistente = Tbc_MyAnimes.TabPages
             .Cast<TabPage>().FirstOrDefault(tp => tp.Name == tabName);
         if (tabExistente != null)
@@ -388,15 +379,28 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             Dock = DockStyle.Fill
         };
         ucDetalhes.CardClicado += usarJikan ? AbrirDetalhesAnimeJikan : AbrirDetalhesAnimeMyAnimeList;
+        ucDetalhes.MyAnimeAtualizado += (_, myAnimeId) =>
+        {
+            AbrirDetalhesMyAnime(this, myAnimeId);
+            _ = AtualizarAbaMyAnimeAsync(myAnimeId);
+        };
         var tabPage = new TabPage
         {
-            Text = $"Detalhes {origem} #{malId}",
+            Text = $" #{malId}",
             Name = tabName,
             ImageIndex = 1,
         };
         tabPage.Controls.Add(ucDetalhes);
         Tbc_MyAnimes.TabPages.Add(tabPage);
         Tbc_MyAnimes.SelectedTab = tabPage;
+    }
+
+    private async Task AtualizarAbaMyAnimeAsync(int myAnimeId)
+    {
+        var tabName = $"MyAnime_{myAnimeId}";
+        var tab = Tbc_MyAnimes.TabPages.Cast<TabPage>().FirstOrDefault(tp => tp.Name == tabName);
+        if (tab?.Controls.OfType<FUC_MyAnimeDetalhes>().FirstOrDefault() is FUC_MyAnimeDetalhes detalhes)
+            await detalhes.AtualizarAsync();
     }
 
     private void AbrirDetalhesMyAnime(object? sender, int myAnimeId)
@@ -418,7 +422,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
 
         var tabPage = new TabPage
         {
-            Text = $"MyAnime #{myAnimeId}",
+            Text = $"My #{myAnimeId}",
             Name = tabName,
             ImageIndex = 1
         };
@@ -431,6 +435,12 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     private void Frm_MyAnimes_Load(object sender, EventArgs e)
     {
 
+    }
+
+    private async void Tbc_MyAnimes_Selected(object? sender, TabControlEventArgs e)
+    {
+        if (e.TabPage?.Controls.OfType<FUC_MyAnimeDetalhes>().FirstOrDefault() is FUC_MyAnimeDetalhes detalhes)
+            await detalhes.AtualizarAsync();
     }
 
     private async void Mnu_AnalizarEstruturas_Click(object sender, EventArgs e)

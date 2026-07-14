@@ -10,6 +10,7 @@
 - Os novos projetos (`ApiJikan`, `ApiMyAnimes`, `LibDtudo.Shared`, `WinAppDtudo`, `ApiMyAnimeList`) foram criados dentro de `Dtudo2026`.
 - Preferir sempre modularização e reaproveitamento de código, evitando duplicação de layout e lógica.
 - Manter implementações de ApiJikan e ApiMyAnimeList separadas no WinAppDtudo, com UserControls e itens de menu independentes, preservando o fluxo antigo sem quebra e criando novos componentes para a nova API.
+- Validar todos os fluxos de imagens na aplicação, pois a correção anterior foi insuficiente e ainda faltam muitas imagens em diversos pontos.
 
 ## User Interaction Guidelines
 
