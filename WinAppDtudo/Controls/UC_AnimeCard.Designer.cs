@@ -52,7 +52,7 @@ partial class UC_AnimeCard
         // Lbl_Titulo
         // 
         Lbl_Titulo.Cursor = Cursors.Hand;
-        Lbl_Titulo.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+        Lbl_Titulo.Font = new Font("Segoe UI Semibold", 10.125F, FontStyle.Bold, GraphicsUnit.Point, 0);
         Lbl_Titulo.Location = new Point(2, 360);
         Lbl_Titulo.Margin = new Padding(4, 0, 4, 0);
         Lbl_Titulo.Name = "Lbl_Titulo";

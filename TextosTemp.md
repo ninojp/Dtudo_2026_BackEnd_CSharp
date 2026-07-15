@@ -33,12 +33,15 @@ Proximo passo:
 DBLocalBuscar - É meu banco de dados, controlado pela ApiMyAnimes.
 ApiMyAnimeList - Api Atual que fornece os dados e detalhes dos animes buscados por nome. 
 
+Projeto \ApiJikan (DEVE SER IGNORADO POIS NÃO ESTÁ EM USO)
+Projeto \ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
 
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo. Quero implementar algumas mudanças:
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, em \FormsUC\FUC_DBLocalBuscarNome.cs.
+No textBox após digitar o nome da Coleção (MyAnime) e clicar no botão Buscar e feito uma busca via ApiMyAnimes (DB Local), na tabela MyAnimes (Titulo).
+Agora quero que se NÃO ENCONTRAR nenhuma correspondencia na tabela MyAnime procure TAMBÉM na tabela ANIMES (titulo original, titulo Ingles, titulo Japonês, sinonimos).
 
-em \FormsUC\FUC_DetalhesAnimes.cs.
-Ao clicar no botão SALVAR COMO MYANIME, após salvar o anime como um MyAnime (coleção), agora quero já abrir a aba com o novo MyAnime recém criado.
-Ao clicar no botão SALVAR COMO MYANIME, Também deve salvar os animes relacionados ao anime atual que foi salvo como MyAnime(coleção). Me parece que AS VEZES até salva os animes relacionados, MAS NÃO É SEMPRE.
+
+
 
 em \FormsUC\FUC_MyAnimesDetalhes.cs.
 Agora onde MOSTRA o ID, do MyAnime criado (e deixa-lo selecionavel para que eu possa copiar o id, se possível que já venha copiado (como se eu já tivese copiado o id))

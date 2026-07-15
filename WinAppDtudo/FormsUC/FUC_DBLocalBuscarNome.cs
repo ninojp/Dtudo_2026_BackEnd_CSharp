@@ -193,8 +193,37 @@ public class FUC_DBLocalBuscarNome : UserControl
 
             if (resultado.TotalResults == 0 || resultado.Results.Count == 0)
             {
-                _lblStatus.Text = "Nenhum resultado encontrado na ApiMyAnimes.";
-                _lblPagina.Text = "Página 1 de 1 | 0 resultado(s)";
+                _lblStatus.Text = "Nenhum MyAnime encontrado. Procurando em ANIMES...";
+                var resultadoAnimes = await _apiMyAnimesService.BuscarAnimesPorTituloAsync(_consultaAtual, pagina, 20);
+                _paginaAtual = Math.Max(1, resultadoAnimes.CurrentPage);
+
+                if (resultadoAnimes.TotalResults == 0 || resultadoAnimes.Results.Count == 0)
+                {
+                    _lblStatus.Text = "Nenhum resultado encontrado em MyAnime ou ANIMES.";
+                    _lblPagina.Text = "Página 1 de 1 | 0 resultado(s)";
+                    return;
+                }
+
+                _flpCards.SuspendLayout();
+                foreach (var anime in resultadoAnimes.Results)
+                {
+                    var card = new UC_AnimeCard();
+                    card.CarregarDados(MapearParaCard(anime), malIdParaImagem: anime.MalId > 0 ? anime.MalId : null);
+                    var myAnimeIdSelecionado = anime.MyAnimeID;
+                    card.CardClicado += (_, _) =>
+                    {
+                        if (myAnimeIdSelecionado > 0)
+                            MyAnimeSelecionado?.Invoke(this, myAnimeIdSelecionado);
+                    };
+                    _flpCards.Controls.Add(card);
+                }
+                _flpCards.ResumeLayout();
+
+                _lblStatus.Text = $"✅ Busca local em ANIMES concluída. {resultadoAnimes.TotalResults:N0} resultado(s).";
+                _lblPagina.Text =
+                    $"Página {resultadoAnimes.CurrentPage} de {resultadoAnimes.TotalPages} | {resultadoAnimes.TotalResults:N0} resultado(s)";
+                _btnAnterior.Enabled = resultadoAnimes.CurrentPage > 1;
+                _btnProxima.Enabled = resultadoAnimes.HasNextPage && resultadoAnimes.CurrentPage < resultadoAnimes.TotalPages;
                 return;
             }
 
@@ -274,6 +303,20 @@ public class FUC_DBLocalBuscarNome : UserControl
             Score = null,
             Year = null,
             ImageUrl = null
+        };
+    }
+
+    private static JikanAnimeCard MapearParaCard(ObterAnimeDto anime)
+    {
+        return new JikanAnimeCard
+        {
+            MalId = anime.MalId,
+            Title = !string.IsNullOrWhiteSpace(anime.Titulo) ? anime.Titulo : anime.Title,
+            TitleEnglish = anime.TitleEnglish,
+            Type = anime.Type ?? "Anime local",
+            Score = anime.Score,
+            Year = anime.Year,
+            ImageUrl = anime.ImagensUrlMal?.FirstOrDefault()
         };
     }
 }

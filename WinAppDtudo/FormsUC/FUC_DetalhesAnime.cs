@@ -539,7 +539,18 @@ public partial class FUC_DetalhesAnime : UserControl
             }
 
             var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(_animeAtual, myAnimeId);
-            await _apiMyAnimesService.AdicionarAnimeAsync(dtoAnime);
+            var animeExistente = await _apiMyAnimesService.ObterAnimePorMalIdAsync(_animeAtual.MalId);
+            if (animeExistente is not null)
+            {
+                if (!ConfirmarSubstituicaoAnime())
+                    return;
+
+                await _apiMyAnimesService.AtualizarAnimeAsync(_animeAtual.MalId, dtoAnime);
+            }
+            else
+            {
+                await _apiMyAnimesService.AdicionarAnimeAsync(dtoAnime);
+            }
 
             var malIdsAtualizados = myAnimeExistente.AnimesMalId
                 .Concat(ObterMalIdsRelacionados())
@@ -584,6 +595,61 @@ public partial class FUC_DetalhesAnime : UserControl
         {
             Btn_SalvarComoAnime.Enabled = true;
         }
+    }
+
+    private bool ConfirmarSubstituicaoAnime()
+    {
+        using var dialogo = new Form
+        {
+            Text = "Anime já existente",
+            StartPosition = FormStartPosition.CenterParent,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            ShowInTaskbar = false,
+            ClientSize = new Size(430, 145)
+        };
+
+        var mensagem = new Label
+        {
+            AutoSize = false,
+            Dock = DockStyle.Top,
+            Height = 75,
+            Padding = new Padding(12),
+            Text = $"O anime com MalId {_animeAtual?.MalId} já existe na base local.\nDeseja substituir os dados existentes?",
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+
+        var painelBotoes = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Bottom,
+            FlowDirection = FlowDirection.RightToLeft,
+            Height = 55,
+            Padding = new Padding(8),
+            WrapContents = false
+        };
+
+        var cancelar = new Button
+        {
+            Text = "Cancelar",
+            AutoSize = true,
+            DialogResult = DialogResult.Cancel
+        };
+        var substituir = new Button
+        {
+            Text = "Substituir",
+            AutoSize = true,
+            DialogResult = DialogResult.OK
+        };
+
+        painelBotoes.Controls.Add(cancelar);
+        painelBotoes.Controls.Add(substituir);
+        dialogo.Controls.Add(mensagem);
+        dialogo.Controls.Add(painelBotoes);
+        dialogo.AcceptButton = substituir;
+        dialogo.CancelButton = cancelar;
+
+        return dialogo.ShowDialog(FindForm()) == DialogResult.OK;
     }
 
     private async Task<bool> ExisteMyAnimeComTituloAsync(string titulo)

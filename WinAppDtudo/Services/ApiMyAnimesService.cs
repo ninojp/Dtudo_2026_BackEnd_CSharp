@@ -27,6 +27,73 @@ public class ApiMyAnimesService
         };
     }
 
+    public async Task<ApiAnimesBuscaResult> BuscarAnimesPorTituloAsync(string query, int page = 1, int pageSize = 20)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return new ApiAnimesBuscaResult
+            {
+                CurrentPage = 1,
+                TotalPages = 1,
+                HasNextPage = false,
+                TotalResults = 0,
+                Results = []
+            };
+
+        var termo = query.Trim();
+        var todos = new List<ObterAnimeDto>();
+        var skip = 0;
+        const int take = 200;
+
+        while (true)
+        {
+            var paginaAnimes = await ObterAnimesAsync(skip, take);
+            if (paginaAnimes.Count == 0)
+                break;
+
+            todos.AddRange(paginaAnimes);
+
+            if (paginaAnimes.Count < take)
+                break;
+
+            skip += take;
+        }
+
+        var filtrados = todos
+            .Where(a =>
+            {
+                var titulos = new[]
+                {
+                    a.Titulo,
+                    a.Title,
+                    a.TitleEnglish,
+                    a.TitleJapanese
+                }.Concat(a.TitleSynonyms ?? []);
+
+                return titulos.Any(t => !string.IsNullOrWhiteSpace(t)
+                    && t.Contains(termo, StringComparison.OrdinalIgnoreCase));
+            })
+            .OrderBy(a => a.Titulo)
+            .ThenBy(a => a.MalId)
+            .ToList();
+
+        var totalResultados = filtrados.Count;
+        var tamanhoPagina = Math.Max(1, pageSize);
+        var totalPaginas = Math.Max(1, (int)Math.Ceiling(totalResultados / (double)tamanhoPagina));
+        var paginaAtual = Math.Min(Math.Max(1, page), totalPaginas);
+
+        return new ApiAnimesBuscaResult
+        {
+            Results = filtrados
+                .Skip((paginaAtual - 1) * tamanhoPagina)
+                .Take(tamanhoPagina)
+                .ToList(),
+            CurrentPage = paginaAtual,
+            TotalPages = totalPaginas,
+            HasNextPage = paginaAtual < totalPaginas,
+            TotalResults = totalResultados
+        };
+    }
+
     public async Task<ApiMyColecoesBuscaResult> BuscarMyAnimesPorTituloAsync(string query, int page = 1, int pageSize = 20)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -148,6 +215,13 @@ public class ApiMyAnimesService
 
         var content = SerializarJson(dto);
         using var response = await _httpClient.PostAsync("apiLocal/Anime", content);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task AtualizarAnimeAsync(int malId, AdicionaAnimeDto dto)
+    {
+        var content = SerializarJson(dto);
+        using var response = await _httpClient.PutAsync($"apiLocal/Anime/{malId}", content);
         response.EnsureSuccessStatusCode();
     }
 
