@@ -18,6 +18,7 @@ public class JikanAnimeCard
     public string? Title { get; set; }
     public string? TitleEnglish { get; set; }
     public string? TitleJapanese { get; set; }
+    public List<string> TitleSynonyms { get; set; } = new();
     public string? ImageUrl { get; set; }
     public string? Type { get; set; }
     public int? Episodes { get; set; }

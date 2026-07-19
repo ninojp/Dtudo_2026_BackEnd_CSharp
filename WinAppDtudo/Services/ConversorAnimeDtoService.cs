@@ -8,9 +8,8 @@ public static class ConversorAnimeDtoService
 {
     public static AdicionaAnimeDto CriarAdicionaAnimeDto(JikanAnimeDetalhes anime, int myAnimeId)
     {
-        var episodios = anime.Episodes.HasValue && anime.Episodes.Value > 0
-            ? anime.Episodes.Value
-            : 1;
+        var episodiosInformados = anime.Episodes is > 0 ? anime.Episodes : null;
+        var episodios = episodiosInformados ?? 1;
 
         var imagens = new List<string>();
         if (!string.IsNullOrWhiteSpace(anime.Images?.Jpg?.ImageUrl)) imagens.Add(anime.Images.Jpg.ImageUrl);
@@ -39,7 +38,7 @@ public static class ConversorAnimeDtoService
             TitleSynonyms = [.. anime.TitleSynonyms],
             Type = anime.Type,
             Source = anime.Source,
-            Episodes = anime.Episodes,
+            Episodes = episodiosInformados,
             Status = anime.Status,
             Airing = anime.Airing,
             Aired = anime.Aired,

@@ -25,11 +25,13 @@ public class CriadorDeEstruturas
             PastaRaiz = pastaRaiz
         };
 
+        var nomesPastasUsados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var anime in animes.OrderBy(a => a.Year ?? int.MaxValue).ThenBy(a => a.Titulo))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var nomePastaAnime = MontarNomePastaAnime(anime);
+            var nomePastaAnime = MontarNomePastaUnico(anime, nomesPastasUsados);
             var pastaAnime = Path.Combine(pastaRaiz, nomePastaAnime);
             Directory.CreateDirectory(pastaAnime);
             resultado.TotalPastasCriadas++;
@@ -75,6 +77,21 @@ public class CriadorDeEstruturas
         return true;
     }
 
+    private static string MontarNomePastaUnico(ObterAnimeDto anime, HashSet<string> nomesUsados)
+    {
+        var nomeBase = MontarNomePastaAnime(anime);
+        var nome = nomeBase;
+        var sufixo = 2;
+
+        while (!nomesUsados.Add(nome))
+        {
+            var textoSufixo = $" ({sufixo++})";
+            nome = SanitizarNomeComLimite(nomeBase, 255 - textoSufixo.Length) + textoSufixo;
+        }
+
+        return nome;
+    }
+
     private static string MontarNomePastaAnime(ObterAnimeDto anime)
     {
         var ano = anime.Year?.ToString() ?? "0000";
@@ -90,6 +107,17 @@ public class CriadorDeEstruturas
 
     private static string SanitizarNome(string nome)
     {
+        var nomeLimpo = SanitizarNomeComLimite(nome, 255);
+
+        var nomeSemExtensao = Path.GetFileNameWithoutExtension(nomeLimpo);
+        if (NomesReservadosWindows.Contains(nomeSemExtensao))
+            nomeLimpo = $"_{nomeLimpo}";
+
+        return string.IsNullOrWhiteSpace(nomeLimpo) ? "SemNome" : nomeLimpo;
+    }
+
+    private static string SanitizarNomeComLimite(string nome, int limite)
+    {
         var nomeLimpo = nome.Trim();
 
         foreach (var c in Path.GetInvalidFileNameChars())
@@ -98,8 +126,16 @@ public class CriadorDeEstruturas
         while (nomeLimpo.Contains("  "))
             nomeLimpo = nomeLimpo.Replace("  ", " ");
 
-        return string.IsNullOrWhiteSpace(nomeLimpo) ? "SemNome" : nomeLimpo;
+        nomeLimpo = nomeLimpo.Trim().TrimEnd('.', ' ');
+        return nomeLimpo.Length <= limite ? nomeLimpo : nomeLimpo[..limite].TrimEnd('.', ' ');
     }
+
+    private static readonly HashSet<string> NomesReservadosWindows = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+    };
 }
 
 public class CriacaoEstruturaResultado

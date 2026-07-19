@@ -176,14 +176,6 @@ public class FUC_MyAnimeDetalhes : UserControl
             _lblTitulo.Text = _myAnimeAtual.Titulo;
             _lblResumo.Text = $"Animes relacionados: {_animesAtuais.Count}";
             _txtMyAnimeId.Text = _myAnimeId.ToString();
-            _txtMyAnimeId.SelectAll();
-            try
-            {
-                Clipboard.SetText(_myAnimeId.ToString());
-            }
-            catch
-            {
-            }
 
             PopularCards();
 
@@ -229,6 +221,8 @@ public class FUC_MyAnimeDetalhes : UserControl
                 MalId = anime.MalId,
                 Title = anime.Titulo,
                 TitleEnglish = anime.TitleEnglish,
+                TitleJapanese = anime.TitleJapanese,
+                TitleSynonyms = anime.TitleSynonyms,
                 Type = anime.Type,
                 Year = anime.Year,
                 Score = anime.Score,

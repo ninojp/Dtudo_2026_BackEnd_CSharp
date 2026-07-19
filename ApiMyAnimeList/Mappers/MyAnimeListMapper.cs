@@ -16,9 +16,10 @@ public static class MyAnimeListMapper
                 Title = anime.Title,
                 TitleEnglish = anime.AlternativeTitles?.English,
                 TitleJapanese = anime.AlternativeTitles?.Japanese,
+                TitleSynonyms = anime.AlternativeTitles?.Synonyms ?? [],
                 ImageUrl = anime.MainPicture?.Large ?? anime.MainPicture?.Medium,
                 Type = anime.MediaType,
-                Episodes = anime.NumEpisodes,
+                Episodes = NormalizarEpisodios(anime.NumEpisodes),
                 Status = anime.Status,
                 Score = anime.Mean,
                 Year = anime.StartSeason?.Year,
@@ -49,10 +50,11 @@ public static class MyAnimeListMapper
         TitleSynonyms = anime.AlternativeTitles?.Synonyms ?? [],
         Type = anime.MediaType,
         Source = anime.Source,
-        Episodes = anime.NumEpisodes,
+        Episodes = NormalizarEpisodios(anime.NumEpisodes),
         Status = anime.Status,
         Airing = string.Equals(anime.Status, "currently_airing", StringComparison.OrdinalIgnoreCase),
         Aired = FormatDates(anime.StartDate, anime.EndDate),
+        Duration = FormatDuration(anime.AverageEpisodeDuration),
         Rating = anime.Rating,
         Score = anime.Mean,
         ScoredBy = anime.NumScoringUsers,
@@ -84,6 +86,17 @@ public static class MyAnimeListMapper
         }).ToList();
 
     private static string Url(int id) => $"https://myanimelist.net/anime/{id}";
+    private static int? NormalizarEpisodios(int? episodes) => episodes is > 0 ? episodes : null;
+    private static string? FormatDuration(int? durationSeconds)
+    {
+        if (durationSeconds is not > 0)
+            return null;
+
+        var duration = TimeSpan.FromSeconds(durationSeconds.Value);
+        return duration.Hours > 0
+            ? $"{duration.Hours} h {duration.Minutes} min por episódio"
+            : $"{Math.Max(1, (int)Math.Round(duration.TotalMinutes))} min por episódio";
+    }
     private static List<string> Names(IEnumerable<MalNamedItem>? items) => items?.Select(x => x.Name).Where(x => !string.IsNullOrWhiteSpace(x)).Cast<string>().ToList() ?? [];
     private static string? FormatDates(string? start, string? end) => start is null && end is null ? null : $"{start ?? "?"} to {end ?? "?"}";
 }

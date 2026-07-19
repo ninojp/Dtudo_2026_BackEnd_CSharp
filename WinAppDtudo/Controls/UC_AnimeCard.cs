@@ -3,7 +3,7 @@ using WinAppDtudo.Services;
 namespace WinAppDtudo.Controls;
 
 /// <summary>
-/// Card clicável que exibe o pôster, título, título em inglês, ano, tipo e pontuação de um anime.
+/// Card clicável que exibe o pôster, título, subtítulo, ano, tipo e pontuação de um anime.
 /// Dispara o evento <see cref="CardClicado"/> com o MalId ao ser clicado.
 /// </summary>
 public partial class UC_AnimeCard : UserControl
@@ -30,22 +30,32 @@ public partial class UC_AnimeCard : UserControl
 
         Lbl_Titulo.Text = anime.Title ?? $"Anime #{anime.MalId}";
 
-        if (!string.IsNullOrWhiteSpace(anime.TitleEnglish) && anime.TitleEnglish != anime.Title)
+        var subtitulo = ObterSubtitulo(anime);
+        if (!string.IsNullOrWhiteSpace(subtitulo))
         {
-            Lbl_Ingles.Text = anime.TitleEnglish;
+            Lbl_Ingles.Text = subtitulo;
             Lbl_Ingles.Visible = true;
         }
         else
         {
+            Lbl_Ingles.Text = string.Empty;
             Lbl_Ingles.Visible = false;
         }
 
-        Lbl_Info.Text = $"{anime.Year?.ToString() ?? "—"}  •  {anime.Type ?? "?"}";
-        Lbl_Score.Text = anime.Score.HasValue ? $"⭐ {anime.Score:0.00}" : "⭐ —";
+        Lbl_Info.Text = $"📅 {anime.Year?.ToString() ?? "—"}   🎞 {anime.Type ?? "?"}   ⭐ {anime.Score?.ToString("0.00") ?? "—"}";
 
         SubstituirCapa(CriarCapaPadrao(anime.Title, anime.MalId));
         var versaoDaCapa = ++_versaoDaCapa;
         _ = CarregarImagemAsync(anime.ImageUrl, malIdParaImagem ?? anime.MalId, versaoDaCapa, usarFallbackMyAnimeList);
+    }
+
+    private static string? ObterSubtitulo(JikanAnimeCard anime)
+    {
+        if (!string.IsNullOrWhiteSpace(anime.TitleEnglish) && anime.TitleEnglish != anime.Title)
+            return anime.TitleEnglish;
+
+        return anime.TitleSynonyms.FirstOrDefault(s => !string.IsNullOrWhiteSpace(s) && s != anime.Title)
+            ?? anime.TitleJapanese;
     }
 
     // ===================================================================

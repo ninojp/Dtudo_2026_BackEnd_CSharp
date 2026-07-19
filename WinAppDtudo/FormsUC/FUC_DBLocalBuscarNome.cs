@@ -24,60 +24,63 @@ public class FUC_DBLocalBuscarNome : UserControl
 
     public FUC_DBLocalBuscarNome()
     {
-        var tlpMain = new TableLayoutPanel
+        var pnlMain = new Panel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 3,
             BackColor = Color.Black
         };
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 126F));
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
 
         var pnlTopo = new Panel
         {
-            Dock = DockStyle.Fill,
-            BackColor = Color.Black
+            Dock = DockStyle.Top,
+            BackColor = Color.Black,
+            // Altere aqui a altura fixa do header. Os cards começam logo abaixo dele.
+            Height = 230
         };
 
         var lblTitulo = new Label
         {
             AutoSize = true,
-            Text = "📁 Busca Local (ApiMyAnimes)",
-            Font = new Font("Segoe UI Black", 12F, FontStyle.Bold),
+            Text = "📁 Busca DBLocal - ApiMyAnimes",
+            Font = new Font("Segoe UI Black", 16F, FontStyle.Bold),
             ForeColor = Color.Gold,
-            Location = new Point(20, 26)
+            Location = new Point(50, 50)
         };
 
         var lblInput = new Label
         {
             AutoSize = true,
-            Text = "Digite o título da coleção MyAnime:",
-            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            Text = "Digite o título da coleção MyAnime",
+            Font = new Font("Segoe UI", 12F, FontStyle.Bold),
             ForeColor = Color.Gold,
-            Location = new Point(610, 26)
+            Location = new Point(1080, 40)
         };
 
         _txbBusca = new TextBox
         {
-            Location = new Point(600, 70),
-            Width = 500
+            Location = new Point(1000, 100),
+            Font = new Font("Segoe UI", 14F),
+            AutoSize = false,
+            Width = 1000,
+            // Altere aqui a altura fixa do TextBox.
+            Height = 60,
+            
         };
 
         _btnBuscar = new Button
         {
             Text = "🔍 Buscar",
-            Location = new Point(1200, 60),
-            Width = 200,
-            Height = 44
+            Location = new Point(1660, 42),
+            Width = 280,
+            Height = 45
         };
 
         _lblStatus = new Label
         {
             AutoSize = true,
-            ForeColor = Color.DarkGray,
-            Location = new Point(1450, 60),
+            Font = new Font("Segoe UI", 12F),
+            ForeColor = Color.Gold,
+            Location = new Point(100, 140),
             Text = "Informe o nome e clique em Buscar."
         };
 
@@ -92,12 +95,12 @@ public class FUC_DBLocalBuscarNome : UserControl
             Dock = DockStyle.Fill,
             AutoScroll = true,
             BackColor = Color.Black,
-            Padding = new Padding(8, 6, 8, 6)
+            Padding = new Padding(50, 20, 20, 20)
         };
 
         var pnlPaginacao = new Panel
         {
-            Dock = DockStyle.Fill,
+            Dock = DockStyle.Bottom,
             BackColor = Color.Black
         };
 
@@ -132,11 +135,11 @@ public class FUC_DBLocalBuscarNome : UserControl
         pnlPaginacao.Controls.Add(_btnAnterior);
         pnlPaginacao.Controls.Add(_btnProxima);
 
-        tlpMain.Controls.Add(pnlTopo, 0, 0);
-        tlpMain.Controls.Add(_flpCards, 0, 1);
-        tlpMain.Controls.Add(pnlPaginacao, 0, 2);
+        pnlMain.Controls.Add(_flpCards);
+        pnlMain.Controls.Add(pnlPaginacao);
+        pnlMain.Controls.Add(pnlTopo);
 
-        Controls.Add(tlpMain);
+        Controls.Add(pnlMain);
 
         _btnBuscar.Click += async (_, _) => await BuscarPrimeiraPaginaAsync();
         _btnAnterior.Click += async (_, _) => await BuscarPaginaAsync(Math.Max(1, _paginaAtual - 1));
@@ -199,7 +202,7 @@ public class FUC_DBLocalBuscarNome : UserControl
 
                 if (resultadoAnimes.TotalResults == 0 || resultadoAnimes.Results.Count == 0)
                 {
-                    _lblStatus.Text = "Nenhum resultado encontrado em MyAnime ou ANIMES.";
+                    _lblStatus.Text = "Nenhum MyAnime ou Anime encontrado!";
                     _lblPagina.Text = "Página 1 de 1 | 0 resultado(s)";
                     return;
                 }
@@ -289,6 +292,13 @@ public class FUC_DBLocalBuscarNome : UserControl
 
     private void InitializeComponent()
     {
+        SuspendLayout();
+        // 
+        // FUC_DBLocalBuscarNome
+        // 
+        Name = "FUC_DBLocalBuscarNome";
+        Size = new Size(848, 640);
+        ResumeLayout(false);
 
     }
 
@@ -313,6 +323,8 @@ public class FUC_DBLocalBuscarNome : UserControl
             MalId = anime.MalId,
             Title = !string.IsNullOrWhiteSpace(anime.Titulo) ? anime.Titulo : anime.Title,
             TitleEnglish = anime.TitleEnglish,
+            TitleJapanese = anime.TitleJapanese,
+            TitleSynonyms = anime.TitleSynonyms,
             Type = anime.Type ?? "Anime local",
             Score = anime.Score,
             Year = anime.Year,

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LibDtudo.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+15ef2fb2d993fe4ee504567a73cf420d07097f62")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e0219d0cbd587615ac9a132536fc2b2c8174b6b6")]
 [assembly: System.Reflection.AssemblyProductAttribute("LibDtudo.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LibDtudo.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -105,18 +105,21 @@ public partial class FUC_DetalhesAnime : UserControl
 
         // Header
         Lbl_TituloAnime.Text = anime.Title ?? $"Anime #{anime.MalId}";
-        var exibicao = anime.Airing ? " (Em exibição)" : string.Empty;
-        Lbl_TipoStatus.Text = $"{anime.Type ?? "?"}  •  {anime.Status ?? "?"}{exibicao}";
+        //var exibicao = anime.Airing ? " (Em exibição)" : string.Empty;
+        //Lbl_TipoStatus.Text = $"{anime.Type ?? "?"} •  {anime.Status ?? "?"}{exibicao}";
+        //Lbl_TipoStatus.Text = $"{anime.Type ?? "?"}";
 
         // Imagem de capa
         _ = CarregarCapaAsync(anime);
 
         // Estatísticas rápidas (painel esquerdo)
-        Lbl_Ano.Text = anoLancamento.HasValue ? $"📅 {anoLancamento}" : string.Empty;
+        var exibicao = anime.Airing ? " (Em exibição)" : string.Empty;
+        Lbl_Ano.Text = anoLancamento.HasValue ? $"📅 {anoLancamento} • {anime.Type ?? "?"} • {anime.Status ?? "?"}{exibicao}" : string.Empty;
+        //Lbl_TipoStatus.Text = $"{anime.Type ?? "?"} •  {anime.Status ?? "?"}{exibicao}";
         Lbl_ScoreStat.Text = anime.Score.HasValue ? $"⭐ {anime.Score:0.00}" : string.Empty;
-        Lbl_Rank.Text = anime.Rank.HasValue ? $"🏆 Rank #{anime.Rank}" : string.Empty;
-        Lbl_Popularidade.Text = anime.Popularity.HasValue ? $"👥 Pop. #{anime.Popularity}" : string.Empty;
-        Lbl_Episodios.Text = anime.Episodes.HasValue ? $"📺 {anime.Episodes} ep." : string.Empty;
+        //Lbl_Rank.Text = anime.Rank.HasValue ? $"🏆 Rank #{anime.Rank}" : string.Empty;
+        //Lbl_Popularidade.Text = anime.Popularity.HasValue ? $"👥 Pop. #{anime.Popularity}" : string.Empty;
+        Lbl_Episodios.Text = anime.Episodes is > 0 ? $"📺 {anime.Episodes} ep." : string.Empty;
         Lbl_Duracao.Text = !string.IsNullOrWhiteSpace(anime.Duration) ? $"⏱ {anime.Duration}" : string.Empty;
 
         // Painel direito: detalhes dinâmicos
@@ -134,13 +137,15 @@ public partial class FUC_DetalhesAnime : UserControl
         AdicionarDetalhe("Título Japonês", anime.TitleJapanese, larguraValor);
         if (anime.TitleSynonyms?.Count > 0)
             AdicionarDetalhe("Sinônimos", string.Join(", ", anime.TitleSynonyms), larguraValor);
+        if (anime.Genres?.Count > 0)
+            AdicionarDetalhe("Gêneros", string.Join(", ", anime.Genres), larguraValor);
         AdicionarDetalhe("Tipo", anime.Type, larguraValor);
         AdicionarDetalhe("Fonte", anime.Source, larguraValor);
-        AdicionarDetalhe("Episódios", anime.Episodes?.ToString(), larguraValor);
-        AdicionarDetalhe("Status", anime.Status, larguraValor);
+        AdicionarDetalhe("Episódios", anime.Episodes is > 0 ? anime.Episodes.ToString() : null, larguraValor);
+        //AdicionarDetalhe("Status", anime.Status, larguraValor);
+        AdicionarDetalhe("Classificação", anime.Rating, larguraValor);
         AdicionarDetalhe("Exibição", anime.Aired, larguraValor);
         AdicionarDetalhe("Duração", anime.Duration, larguraValor);
-        AdicionarDetalhe("Classificação", anime.Rating, larguraValor);
         if (!string.IsNullOrWhiteSpace(anime.Season) && anoLancamento.HasValue)
             AdicionarDetalhe("Temporada", $"{anime.Season} {anoLancamento}", larguraValor);
         if (anime.Score.HasValue)
@@ -156,8 +161,6 @@ public partial class FUC_DetalhesAnime : UserControl
             AdicionarDetalhe("Produtoras", string.Join(", ", anime.Producers), larguraValor);
         if (anime.Licensors?.Count > 0)
             AdicionarDetalhe("Licenciadores", string.Join(", ", anime.Licensors), larguraValor);
-        if (anime.Genres?.Count > 0)
-            AdicionarDetalhe("Gêneros", string.Join(", ", anime.Genres), larguraValor);
         if (anime.Themes?.Count > 0)
             AdicionarDetalhe("Temas", string.Join(", ", anime.Themes), larguraValor);
         if (anime.Demographics?.Count > 0)

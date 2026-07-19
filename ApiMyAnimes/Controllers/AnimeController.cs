@@ -142,7 +142,7 @@ public class AnimeController(
             TitleSynonyms = adicionaAnimeDto.TitleSynonyms,
             Type = adicionaAnimeDto.Type,
             Source = adicionaAnimeDto.Source,
-            Episodes = adicionaAnimeDto.Episodes,
+            Episodes = NormalizarEpisodios(adicionaAnimeDto.Episodes),
             Status = adicionaAnimeDto.Status,
             Airing = adicionaAnimeDto.Airing,
             Aired = adicionaAnimeDto.Aired,
@@ -279,7 +279,7 @@ public class AnimeController(
         anime.TitleSynonyms = atualizaAnimeDto.TitleSynonyms;
         anime.Type = atualizaAnimeDto.Type;
         anime.Source = atualizaAnimeDto.Source;
-        anime.Episodes = atualizaAnimeDto.Episodes;
+        anime.Episodes = NormalizarEpisodios(atualizaAnimeDto.Episodes);
         anime.Status = atualizaAnimeDto.Status;
         anime.Airing = atualizaAnimeDto.Airing;
         anime.Aired = atualizaAnimeDto.Aired;
@@ -388,7 +388,7 @@ public class AnimeController(
         anime.TitleSynonyms = animeParaAtualizar.TitleSynonyms;
         anime.Type = animeParaAtualizar.Type;
         anime.Source = animeParaAtualizar.Source;
-        anime.Episodes = animeParaAtualizar.Episodes;
+        anime.Episodes = NormalizarEpisodios(animeParaAtualizar.Episodes);
         anime.Status = animeParaAtualizar.Status;
         anime.Airing = animeParaAtualizar.Airing;
         anime.Aired = animeParaAtualizar.Aired;
@@ -498,4 +498,7 @@ public class AnimeController(
             HoraDaConsulta = DateTime.Now
         };
     }
+
+    private static int? NormalizarEpisodios(int? episodios)
+        => episodios is > 0 ? episodios : null;
 }

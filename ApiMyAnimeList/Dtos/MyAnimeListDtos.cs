@@ -41,6 +41,7 @@ public sealed class MalAnimeNode
     [JsonPropertyName("num_list_users")] public int? NumListUsers { get; set; }
     [JsonPropertyName("num_scoring_users")] public int? NumScoringUsers { get; set; }
     [JsonPropertyName("num_episodes")] public int? NumEpisodes { get; set; }
+    [JsonPropertyName("average_episode_duration")] public int? AverageEpisodeDuration { get; set; }
     [JsonPropertyName("media_type")] public string? MediaType { get; set; }
     [JsonPropertyName("status")] public string? Status { get; set; }
     [JsonPropertyName("genres")] public List<MalNamedItem> Genres { get; set; } = [];

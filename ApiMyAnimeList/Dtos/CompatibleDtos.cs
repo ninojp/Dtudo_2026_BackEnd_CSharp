@@ -16,6 +16,7 @@ public sealed class CompatibleSearchItem
     public string? Title { get; set; }
     public string? TitleEnglish { get; set; }
     public string? TitleJapanese { get; set; }
+    public List<string> TitleSynonyms { get; set; } = [];
     public string? ImageUrl { get; set; }
     public string? Type { get; set; }
     public int? Episodes { get; set; }

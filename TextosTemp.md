@@ -33,12 +33,27 @@ Proximo passo:
 DBLocalBuscar - É meu banco de dados, controlado pela ApiMyAnimes.
 ApiMyAnimeList - Api Atual que fornece os dados e detalhes dos animes buscados por nome. 
 
-Projeto \ApiJikan (DEVE SER IGNORADO POIS NÃO ESTÁ EM USO)
 Projeto \ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
 
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, em \FormsUC\FUC_DBLocalBuscarNome.cs.
-No textBox após digitar o nome da Coleção (MyAnime) e clicar no botão Buscar e feito uma busca via ApiMyAnimes (DB Local), na tabela MyAnimes (Titulo).
-Agora quero que se NÃO ENCONTRAR nenhuma correspondencia na tabela MyAnime procure TAMBÉM na tabela ANIMES (titulo original, titulo Ingles, titulo Japonês, sinonimos).
+
+Projeto \ApiJikan (DEVE SER IGNORADO POIS NÃO ESTÁ MAIS EM USO)  
+
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, em \Controls\UC_AnimeCard.cs.
+Quero fazer algumas modificações visuais, no Card temos, imagem, titulo, abaixo dele temos o titulo em Inglês.
+Quando não existir titulo em inglês, quero que exiba um dos SINOMIMOS (se existir) do anime, caso não exista nenhum sinônimo, exibir o titulo em Japones, se não tiver nenhum deixe em branco.
+os detalhes restantes do card, ano, tipo e score devem AGORA vir numa mesma linha, separados por icones.
+
+
+
+Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.  
+
+
+PROBLEMAS:
+Aqui está o site da documentação official da api MyAnimeList:  https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters  
+
+
+
+
 
 
 

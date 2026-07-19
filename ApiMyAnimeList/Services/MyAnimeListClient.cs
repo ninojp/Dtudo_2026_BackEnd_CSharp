@@ -21,13 +21,13 @@ public sealed class MyAnimeListClient(
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public Task<MalPagedResponse<MalAnimeNode>> SearchAsync(string query, int offset, int limit, CancellationToken cancellationToken) =>
-        GetAsync<MalPagedResponse<MalAnimeNode>>($"anime?q={Uri.EscapeDataString(query)}&offset={offset}&limit={limit}&fields={SearchFields}", cancellationToken);
+        GetAsync<MalPagedResponse<MalAnimeNode>>($"anime?q={Uri.EscapeDataString(query)}&offset={offset}&limit={limit}&nsfw=true&fields={SearchFields}", cancellationToken);
 
     public async Task<MalAnimeNode?> GetAnimeAsync(int id, CancellationToken cancellationToken)
     {
         var key = $"mal-anime-{id}";
         if (_cache.TryGetValue(key, out MalAnimeNode? cached)) return cached;
-        var result = await GetAsync<MalAnimeNode>($"anime/{id}?fields={DetailsFields}", cancellationToken);
+        var result = await GetAsync<MalAnimeNode>($"anime/{id}?nsfw=true&fields={DetailsFields}", cancellationToken);
         _cache.Set(key, result, TimeSpan.FromMinutes(Math.Max(1, _options.CacheMinutes)));
         return result;
     }
@@ -63,5 +63,5 @@ public sealed class MyAnimeListClient(
     }
 
     private const string SearchFields = "id,title,main_picture,alternative_titles,start_season,media_type,status,num_episodes,mean,genres";
-    private const string DetailsFields = "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,media_type,status,genres,num_episodes,start_season,source,rating,background,studios,related_anime{node{id,title,main_picture,media_type},relation_type}";
+    private const string DetailsFields = "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,media_type,status,genres,num_episodes,average_episode_duration,start_season,source,rating,background,studios,related_anime{node{id,title,main_picture,media_type},relation_type}";
 }

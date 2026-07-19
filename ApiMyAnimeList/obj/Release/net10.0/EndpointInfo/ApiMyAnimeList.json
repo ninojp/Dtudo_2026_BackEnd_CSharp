@@ -526,6 +526,12 @@
               "string"
             ]
           },
+          "titleSynonyms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "imageUrl": {
             "type": [
               "null",
