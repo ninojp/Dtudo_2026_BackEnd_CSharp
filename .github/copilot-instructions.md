@@ -17,3 +17,4 @@
 - No fluxo de importação do WinAppDtudo, forneça feedback visual em tempo real com texto detalhado durante análise e salvamento em banco, com confirmação por etapas, evitando apenas a exibição de porcentagens.
 - Implementar tratamento resiliente para falhas 504 da ApiJikan.
 - A ApiMyAnimeList deve ser a fonte de dados independente e exclusiva para busca, capas, detalhes e relações; a ApiJikan não deve ser usada como fallback nesse fluxo.
+- Para diálogos do WinAppDtudo, o usuário prefere dimensões maiores e a mensagem do MyAnime existente no formato: "MyAnime ID: Nome do anime", quebra de linha, "O MyAnime já foi cadastrado!".

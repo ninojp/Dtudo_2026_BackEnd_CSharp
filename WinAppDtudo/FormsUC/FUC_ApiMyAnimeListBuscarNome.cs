@@ -84,7 +84,7 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
             Dock = DockStyle.Fill,
             AutoScroll = true,
             BackColor = Color.Black,
-            Padding = new Padding(40, 20, 20, 20)
+            Padding = new Padding(40, 20, 1, 1)
         };
 
         var pnlPaginacao = new Panel { Dock = DockStyle.Fill, BackColor = Color.Black };

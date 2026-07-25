@@ -17,6 +17,7 @@ public partial class FUC_DetalhesAnime : UserControl
     /// <summary>Disparado quando o usuário clica em um mini card de anime relacionado. O argumento é o MalId.</summary>
     public event EventHandler<int>? CardClicado;
     public event EventHandler<int>? MyAnimeAtualizado;
+    public event EventHandler<int>? MyAnimeExistenteSelecionado;
 
     private readonly MyAnimeListApiService _myAnimeListService = new();
     private readonly JikanApiService _jikanService = new();
@@ -102,23 +103,41 @@ public partial class FUC_DetalhesAnime : UserControl
     private void PopularUI(JikanAnimeDetalhes anime, List<JikanAnimeRelacaoGroup> relacoes)
     {
         var anoLancamento = ExtrairAnoLancamentoPeloAired(anime.Aired);
-
         // Header
         Lbl_TituloAnime.Text = anime.Title ?? $"Anime #{anime.MalId}";
-        //var exibicao = anime.Airing ? " (Em exibição)" : string.Empty;
-        //Lbl_TipoStatus.Text = $"{anime.Type ?? "?"} •  {anime.Status ?? "?"}{exibicao}";
-        //Lbl_TipoStatus.Text = $"{anime.Type ?? "?"}";
+        ConfigurarTitulosSecundarios(anime);
 
         // Imagem de capa
         _ = CarregarCapaAsync(anime);
 
         // Estatísticas rápidas (painel esquerdo)
-        var exibicao = anime.Airing ? " (Em exibição)" : string.Empty;
-        Lbl_Ano.Text = anoLancamento.HasValue ? $"📅 {anoLancamento} • {anime.Type ?? "?"} • {anime.Status ?? "?"}{exibicao}" : string.Empty;
-        //Lbl_TipoStatus.Text = $"{anime.Type ?? "?"} •  {anime.Status ?? "?"}{exibicao}";
-        Lbl_ScoreStat.Text = anime.Score.HasValue ? $"⭐ {anime.Score:0.00}" : string.Empty;
-        //Lbl_Rank.Text = anime.Rank.HasValue ? $"🏆 Rank #{anime.Rank}" : string.Empty;
-        //Lbl_Popularidade.Text = anime.Popularity.HasValue ? $"👥 Pop. #{anime.Popularity}" : string.Empty;
+        var estatisticas = new List<string>();
+        if (anoLancamento.HasValue)
+            estatisticas.Add($"📅{anoLancamento}");
+        if (!string.IsNullOrWhiteSpace(anime.Type))
+            estatisticas.Add($"🎬{anime.Type}");
+        if (anime.Score.HasValue)
+            estatisticas.Add($"⭐{anime.Score:0.00}");
+        Lbl_Ano.Text = string.Join("  ", estatisticas);
+        var generos = anime.Genres?
+            .Where(g => !string.IsNullOrWhiteSpace(g))
+            .ToList() ?? [];
+        Lbl_ScoreStat.Text = generos.Count > 0
+            ? $"🎭 {string.Join(" • ", generos)}"
+            : string.Empty;
+        Lbl_ScoreStat.Visible = generos.Count > 0;
+        int larguraGenero = Math.Max(200, Pnl_Stats.ClientSize.Width - Lbl_ScoreStat.Left - 20);
+        Lbl_ScoreStat.Width = larguraGenero;
+        Lbl_ScoreStat.Height = generos.Count > 0
+            ? Math.Max(35, TextRenderer.MeasureText(
+                Lbl_ScoreStat.Text,
+                Lbl_ScoreStat.Font,
+                new Size(larguraGenero, int.MaxValue),
+                TextFormatFlags.WordBreak).Height + 4)
+            : 0;
+        int proximaLinha = Lbl_ScoreStat.Bottom + 5;
+        Lbl_Episodios.Location = new Point(Lbl_Episodios.Left, proximaLinha);
+        Lbl_Duracao.Location = new Point(Lbl_Duracao.Left, Lbl_Episodios.Bottom);
         Lbl_Episodios.Text = anime.Episodes is > 0 ? $"📺 {anime.Episodes} ep." : string.Empty;
         Lbl_Duracao.Text = !string.IsNullOrWhiteSpace(anime.Duration) ? $"⏱ {anime.Duration}" : string.Empty;
 
@@ -132,25 +151,13 @@ public partial class FUC_DetalhesAnime : UserControl
         AdicionarRelacoes(relacoes);
 
         AdicionarDetalhe("Mal ID", anime.MalId.ToString(), larguraValor);
-        AdicionarDetalhe("Título Original", anime.Title, larguraValor);
-        AdicionarDetalhe("Título Inglês", anime.TitleEnglish, larguraValor);
-        AdicionarDetalhe("Título Japonês", anime.TitleJapanese, larguraValor);
-        if (anime.TitleSynonyms?.Count > 0)
-            AdicionarDetalhe("Sinônimos", string.Join(", ", anime.TitleSynonyms), larguraValor);
-        if (anime.Genres?.Count > 0)
-            AdicionarDetalhe("Gêneros", string.Join(", ", anime.Genres), larguraValor);
-        AdicionarDetalhe("Tipo", anime.Type, larguraValor);
         AdicionarDetalhe("Fonte", anime.Source, larguraValor);
-        AdicionarDetalhe("Episódios", anime.Episodes is > 0 ? anime.Episodes.ToString() : null, larguraValor);
-        //AdicionarDetalhe("Status", anime.Status, larguraValor);
         AdicionarDetalhe("Classificação", anime.Rating, larguraValor);
         AdicionarDetalhe("Exibição", anime.Aired, larguraValor);
-        AdicionarDetalhe("Duração", anime.Duration, larguraValor);
         if (!string.IsNullOrWhiteSpace(anime.Season) && anoLancamento.HasValue)
-            AdicionarDetalhe("Temporada", $"{anime.Season} {anoLancamento}", larguraValor);
+            AdicionarDetalhe("Temporada", anime.Season, larguraValor);
         if (anime.Score.HasValue)
-            AdicionarDetalhe("Pontuação",
-                $"{anime.Score:0.00} (por {anime.ScoredBy?.ToString("N0") ?? "?"} usuários)", larguraValor);
+            AdicionarDetalhe("Votos da pontuação", anime.ScoredBy?.ToString("N0"), larguraValor);
         AdicionarDetalhe("Rank", anime.Rank?.ToString(), larguraValor);
         AdicionarDetalhe("Popularidade", anime.Popularity?.ToString(), larguraValor);
         AdicionarDetalhe("Membros", anime.Members?.ToString("N0"), larguraValor);
@@ -179,6 +186,19 @@ public partial class FUC_DetalhesAnime : UserControl
 
         Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
         Pnl_Info.ResumeLayout(true);
+    }
+
+    private void ConfigurarTitulosSecundarios(JikanAnimeDetalhes anime)
+    {
+        Lbl_TituloIngles.Text = anime.TitleEnglish ?? string.Empty;
+        Lbl_TituloIngles.Visible = !string.IsNullOrWhiteSpace(anime.TitleEnglish);
+
+        Lbl_Sinonimo.Text = anime.TitleSynonyms?.FirstOrDefault(s => !string.IsNullOrWhiteSpace(s)) ?? string.Empty;
+        Lbl_Sinonimo.Visible = !string.IsNullOrWhiteSpace(Lbl_Sinonimo.Text);
+
+        Lbl_TituloJapones.Text = anime.TitleJapanese ?? string.Empty;
+        Lbl_TituloJapones.Visible = !string.IsNullOrWhiteSpace(anime.TitleJapanese);
+        Pnl_Header.PerformLayout();
     }
 
     private async Task CarregarCapaAsync(JikanAnimeDetalhes anime)
@@ -292,17 +312,18 @@ public partial class FUC_DetalhesAnime : UserControl
     {
         if (string.IsNullOrWhiteSpace(texto)) return;
         _yOffset += 12;
+        int topoSecao = _yOffset;
         var lblCampo = new Label
         {
             AutoSize = false,
             Font = new Font("Segoe UI", 12F, FontStyle.Bold),
             ForeColor = Color.Gold,
-            Location = new Point(4, _yOffset),
+            Location = new Point(4, topoSecao),
             Size = new Size(148 + larguraValor, 32),
             Text = campo + ":",
             TextAlign = ContentAlignment.MiddleLeft
         };
-        _yOffset += lblCampo.Height + 8;
+        int topoTexto = topoSecao + lblCampo.Height + 10;
 
         int larguraTexto = Math.Max(148 + larguraValor - 12, 450);
         var lblTexto = new TextBox
@@ -313,7 +334,7 @@ public partial class FUC_DetalhesAnime : UserControl
             Font = new Font("Segoe UI", 9.5F),
             ForeColor = Color.FromArgb(255, 115, 0),
             BackColor = Pnl_Info.BackColor,
-            Location = new Point(8, _yOffset),
+            Location = new Point(8, topoTexto),
             Size = new Size(larguraTexto, Math.Max(60, TextRenderer.MeasureText(
                 texto, new Font("Segoe UI", 9.5F), new Size(larguraTexto - 8, int.MaxValue),
                 TextFormatFlags.WordBreak).Height + 12)),
@@ -323,7 +344,7 @@ public partial class FUC_DetalhesAnime : UserControl
         };
         Pnl_Info.Controls.Add(lblCampo);
         Pnl_Info.Controls.Add(lblTexto);
-        _yOffset += lblTexto.Height + 18;
+        _yOffset = lblTexto.Bottom + 18;
         AdicionarSeparador(larguraValor);
     }
 
@@ -332,7 +353,7 @@ public partial class FUC_DetalhesAnime : UserControl
         var sep = new Panel
         {
             BackColor = Color.LightSteelBlue,
-            Location = new Point(4, _yOffset),
+            Location = new Point(20, _yOffset),
             Size = new Size(148 + larguraValor, 1)
         };
         Pnl_Info.Controls.Add(sep);
@@ -444,14 +465,10 @@ public partial class FUC_DetalhesAnime : UserControl
         Btn_SalvarComoMyAnime.Enabled = false;
         try
         {
-            var tituloJaExiste = await ExisteMyAnimeComTituloAsync(tituloMyAnime);
-            if (tituloJaExiste)
+            var myAnimeExistente = await _apiMyAnimesService.ObterMyAnimePorTituloAsync(tituloMyAnime);
+            if (myAnimeExistente is not null)
             {
-                MessageBox.Show(
-                    $"Já existe uma coleção MyAnime com o título '{tituloMyAnime}'.",
-                    "Cadastro bloqueado",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                MostrarMyAnimeExistente(myAnimeExistente);
                 return;
             }
 
@@ -487,11 +504,15 @@ public partial class FUC_DetalhesAnime : UserControl
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
         {
-            MessageBox.Show(
-                $"Já existe uma coleção MyAnime com o título '{tituloMyAnime}'.",
-                "Cadastro bloqueado",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            var myAnimeExistente = await _apiMyAnimesService.ObterMyAnimePorTituloAsync(tituloMyAnime);
+            if (myAnimeExistente is not null)
+                MostrarMyAnimeExistente(myAnimeExistente);
+            else
+                MessageBox.Show(
+                    $"Já existe uma coleção MyAnime com o título '{tituloMyAnime}'.",
+                    "Cadastro bloqueado",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
         }
         catch (HttpRequestException)
         {
@@ -655,23 +676,62 @@ public partial class FUC_DetalhesAnime : UserControl
         return dialogo.ShowDialog(FindForm()) == DialogResult.OK;
     }
 
-    private async Task<bool> ExisteMyAnimeComTituloAsync(string titulo)
+    private void MostrarMyAnimeExistente(ObterMyAnimeDto myAnime)
     {
-        const int take = 100;
-        var skip = 0;
-
-        while (true)
+        using var dialogo = new Form
         {
-            var pagina = await _apiMyAnimesService.ObterMyAnimesAsync(skip, take);
-            if (pagina.Count == 0) return false;
+            Text = "MyAnime já cadastrado",
+            StartPosition = FormStartPosition.CenterParent,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            ShowInTaskbar = false,
+            ClientSize = new Size(1040, 380)
+        };
 
-            var existe = pagina.Any(item =>
-                string.Equals(item.Titulo?.Trim(), titulo.Trim(), StringComparison.OrdinalIgnoreCase));
-            if (existe) return true;
+        var mensagem = new Label
+        {
+            AutoSize = false,
+            Dock = DockStyle.Top,
+            Height = 240,
+            Padding = new Padding(12),
+            Text = $"MyAnime {myAnime.Id}: {myAnime.Titulo}\nO MyAnime já foi cadastrado!",
+            TextAlign = ContentAlignment.MiddleLeft
+        };
 
-            if (pagina.Count < take) return false;
-            skip += take;
-        }
+        var painelBotoes = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Bottom,
+            FlowDirection = FlowDirection.RightToLeft,
+            Height = 140,
+            Padding = new Padding(8),
+            WrapContents = false
+        };
+
+        var ok = new Button
+        {
+            Text = "OK",
+            AutoSize = true,
+            DialogResult = DialogResult.OK
+        };
+        var acessar = new Button
+        {
+            Text = "Acessar MyAnime",
+            AutoSize = true
+        };
+        acessar.Click += (_, _) =>
+        {
+            MyAnimeExistenteSelecionado?.Invoke(this, myAnime.Id);
+            dialogo.Close();
+        };
+
+        painelBotoes.Controls.Add(ok);
+        painelBotoes.Controls.Add(acessar);
+        dialogo.Controls.Add(mensagem);
+        dialogo.Controls.Add(painelBotoes);
+        dialogo.AcceptButton = ok;
+
+        dialogo.ShowDialog(FindForm());
     }
 
     private string ObterTituloMyAnime(JikanAnimeDetalhes anime)

@@ -379,6 +379,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             Dock = DockStyle.Fill
         };
         ucDetalhes.CardClicado += usarJikan ? AbrirDetalhesAnimeJikan : AbrirDetalhesAnimeMyAnimeList;
+        ucDetalhes.MyAnimeExistenteSelecionado += AbrirDetalhesMyAnime;
         ucDetalhes.MyAnimeAtualizado += (_, myAnimeId) =>
         {
             AbrirDetalhesMyAnime(this, myAnimeId);

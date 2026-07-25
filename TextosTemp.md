@@ -36,15 +36,11 @@ ApiMyAnimeList - Api Atual que fornece os dados e detalhes dos animes buscados p
 Projeto \ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
 
 
-Projeto \ApiJikan (DEVE SER IGNORADO POIS NÃO ESTÁ MAIS EM USO)  
+O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiJikan (DEVE SER IGNORADO POIS NÃO ESTÁ MAIS EM USO)  
 
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, em \Controls\UC_AnimeCard.cs.
-Quero fazer algumas modificações visuais, no Card temos, imagem, titulo, abaixo dele temos o titulo em Inglês.
-Quando não existir titulo em inglês, quero que exiba um dos SINOMIMOS (se existir) do anime, caso não exista nenhum sinônimo, exibir o titulo em Japones, se não tiver nenhum deixe em branco.
-os detalhes restantes do card, ano, tipo e score devem AGORA vir numa mesma linha, separados por icones.
-
-
-
+Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, no arquivo \FormsUC\FUC_DetalhesAnime.cs.
+Quando clicamos no botão SALVAR COMO MYANIME, no caso de já existir o anime (coleção, MyAnime) cadastrado como no DB Local, ApiMyAnimes.
+Agora quando aparecer a caixa de dialogo, quero que seja exibido ID do MyAnime já cadastrado e um botão para acessar o MyAnime já cadastrado, crie também um botão ok, para fechar a caixa de dialogo. 
 Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.  
 
 

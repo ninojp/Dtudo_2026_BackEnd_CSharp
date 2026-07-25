@@ -97,7 +97,7 @@ partial class UC_AnimeCard
         ForeColor = Color.Gold;
         Margin = new Padding(4, 3, 4, 3);
         Name = "UC_AnimeCard";
-        Size = new Size(341, 510);
+        Size = new Size(341, 525);
         ((System.ComponentModel.ISupportInitialize)Pbx_Capa).EndInit();
         ResumeLayout(false);
     }
