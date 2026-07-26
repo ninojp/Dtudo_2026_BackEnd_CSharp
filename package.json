@@ -6,6 +6,7 @@
   "scripts": {
     "start": "json-server --watch ./ApiNode/db/animacoes.json --port 3666",
     "proxy": "node ./ApiNode/mymusicx/discogsProxy.js",
+    "api:myanimes": "dotnet run --project ./ApiMyAnimes/ApiMyAnimes.csproj --launch-profile ApiMyAnimes",
     "dev": "vite --config DtudoSite/vite.config.js",
     "serv": "concurrently \"npm run start\" \"npm run proxy\" \"npm run dev\"",
     "populate": "node ./ApiNode/populateAnimeDetails.js",

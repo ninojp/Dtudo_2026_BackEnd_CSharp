@@ -2,19 +2,20 @@ import { useContext, useMemo } from 'react';
 import AnimesObjsListDetalhesContext from '../../context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListContext';
 import styles from './FiltrarPorAno.module.css';
 
-export default function FiltrarPorAno({ anoSelecionado, setAnoSelecionado }) {
+export default function FiltrarPorAno({ anoSelecionado, setAnoSelecionado, animes }) {
     const { listObjsDetalhesAnimes } = useContext(AnimesObjsListDetalhesContext);
+    const listaParaFiltrar = animes || listObjsDetalhesAnimes;
     const anosUnicos = useMemo(() => {
-        if (listObjsDetalhesAnimes.length > 0) {
-            // Extrai todos os anos únicos
-            const allYears = listObjsDetalhesAnimes.map(anime => {
-                // Tenta pegar o ano de diferentes campos
-                return anime.year || (anime.aired && anime.aired.from && anime.aired.from.year);
+        if (listaParaFiltrar.length > 0) {
+            const allYears = listaParaFiltrar.map(anime => {
+                if (anime.year) return anime.year;
+                if (anime.aired?.prop?.from?.year) return anime.aired.prop.from.year;
+                return String(anime.aired || '').match(/\b(19|20)\d{2}\b/)?.[0];
             }).filter(year => year); // Remove valores falsy
             return [...new Set(allYears)].sort((a, b) => b - a); // Ordena decrescente
         }
         return [];
-    }, [listObjsDetalhesAnimes]);
+    }, [listaParaFiltrar]);
     //=======================================================
     return (
         <div className={styles.divFiltrarAno}>

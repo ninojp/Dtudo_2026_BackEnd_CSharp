@@ -1,20 +1,27 @@
 import styles from './CardAnime.module.css';
+import { obterAnoAnime, obterGenerosAnime, obterImagemAnime, obterTituloAnime } from '../../../utils/animeContentUtils';
 
 export default function CardAnime({ anime }) {
+    const titulo = obterTituloAnime(anime);
+    const imagem = obterImagemAnime(anime);
+    const ano = obterAnoAnime(anime);
+    const generos = obterGenerosAnime(anime);
+
     return (
-        <article key={anime.mal_id} className={styles.animesCardArticle}>
+        <article className={styles.animesCardArticle}>
             <div className={styles.divContainerTitulo}>
-                <h3 className={styles.h3Titulo}>{anime.title || anime.nome}</h3>
+                <h3 className={styles.h3Titulo}>{titulo}</h3>
             </div>
             <figure className={styles.figureImagemAnimacao}>
-                <img className={styles.imgAnimacao}
-                    src={anime.images.webp.image_url || anime.image} 
-                    alt={anime.title || anime.nome}
-                />
+                {imagem ? (
+                    <img className={styles.imgAnimacao} src={imagem} alt={titulo} />
+                ) : (
+                    <div className={styles.imagemIndisponivel}>Imagem indisponivel</div>
+                )}
             </figure>
             <div className={styles.divContainerData}>
-                {<span className={styles.spanTextoData}>{anime.aired.prop.from.year}</span>}
-                <p className={styles.pTextoData}>{anime.genres ? anime.genres.map(g => g.name).join(', ') : 'N/A'}</p>
+                <span className={styles.spanTextoData}>{ano || 'Ano nao informado'}</span>
+                <p className={styles.pTextoData}>{generos.join(', ') || 'N/A'}</p>
             </div>
         </article>
     );

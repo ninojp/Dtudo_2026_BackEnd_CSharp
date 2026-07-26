@@ -16,6 +16,18 @@
     align-items: center;
     gap: 1rem;
 }
+.btnConteudoAdulto {
+    background-color: #7a0019;
+    color: #ffffff;
+    border: 0.1px solid #c93552;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.btnConteudoAdulto[aria-pressed='true'] {
+    background-color: #c93552;
+}
 .divContainerListaCardsMyaAnimes{
     display: flex;
     flex-wrap: wrap;

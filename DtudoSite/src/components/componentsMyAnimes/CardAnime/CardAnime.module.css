@@ -42,6 +42,17 @@
     width: 180px;
     height: 270px;
 }
+.imagemIndisponivel {
+    width: 180px;
+    height: 270px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #041832;
+    color: #ffffff;
+    font-family: monospace;
+    text-align: center;
+}
 
 .divContainerData {
     width: 23ch;
@@ -64,4 +75,3 @@
     color: var(--hTituloColor);
     padding: 0 0.3rem;
 }
-

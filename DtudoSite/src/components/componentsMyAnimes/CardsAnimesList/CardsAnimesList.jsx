@@ -4,92 +4,115 @@ import CampoBuscar from '../../CampoBuscar/CampoBuscar';
 import PaginationButtons from '../../PaginationButtons/PaginationButtons';
 import QtdExibirPorPage from '../../QtdExibirPorPage/QtdExibirPorPage';
 import AnimesObjsListDetalhesContext from '../../../context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListContext';
+import AuthContext from '../../../context_api/AuthContext/AuthContext';
 import FiltrarPorGenero from '../../FiltrarPorGenero/FiltrarPorGenero';
 import FiltrarPorLetra from '../../FiltrarPorLetra/FiltrarPorLetra';
 import FiltrarPorAno from '../../FiltrarPorAno/FiltrarPorAno';
 import CardAnime from '../CardAnime/CardAnime';
 import { Link } from 'react-router-dom';
+import { ehAnimeAdulto, obterAnoAnime, obterGenerosAnime, obterIdAnime, obterTituloAnime } from '../../../utils/animeContentUtils';
 
 export default function CardsAnimesList() {
-    //Contexto, lista completa Animes (mal-id), json-server: http://localhost:3666/animesDetalhes 
-    const { listObjsDetalhesAnimes, isLoading } = useContext(AnimesObjsListDetalhesContext);
-    //Filtro por Gênero
+    const { listObjsDetalhesAnimes, isLoading, error, recarregarAnimes } = useContext(AnimesObjsListDetalhesContext);
+    const { isAuthenticated } = useContext(AuthContext);
     const [generoSelecionado, setGeneroSelecionado] = useState('');
-    //Filtro por Letra
     const [letraSelecionada, setLetraSelecionada] = useState('');
-    //Filtro por Ano
     const [anoSelecionado, setAnoSelecionado] = useState('');
-    //Paginação
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(48);
-    //Busca
     const [searchTerm, setSearchTerm] = useState('');
-    //Filtros combinados
+    const [mostrarAdultos, setMostrarAdultos] = useState(false);
+
+    const animesPermitidos = useMemo(() => {
+        if (isAuthenticated && mostrarAdultos) {
+            return listObjsDetalhesAnimes.filter(ehAnimeAdulto);
+        }
+
+        return listObjsDetalhesAnimes.filter((anime) => !ehAnimeAdulto(anime));
+    }, [isAuthenticated, listObjsDetalhesAnimes, mostrarAdultos]);
+
     const filteredItems = useMemo(() => {
-        let animesList = listObjsDetalhesAnimes;
-        // Filtro por busca
+        let animesList = animesPermitidos;
         if (searchTerm) {
             animesList = animesList.filter(item =>
-                String(item.title).toLowerCase().includes(searchTerm.toLowerCase())
+                obterTituloAnime(item).toLocaleLowerCase('pt-BR').includes(searchTerm.toLocaleLowerCase('pt-BR'))
             );
-        };
-        // Filtro por gênero os campos: genres, explicit_genres, themes, demographics
-        // Agora preciso ordenar por ordem alfabetica os resultados
+        }
         if (generoSelecionado) {
             animesList = animesList.filter(anime =>
-                anime.genres && anime.genres.some(g => g.name === generoSelecionado) ||
-                anime.explicit_genres && anime.explicit_genres.some(g => g.name === generoSelecionado) ||
-                anime.themes && anime.themes.some(t => t.name === generoSelecionado) ||
-                anime.demographics && anime.demographics.some(d => d.name === generoSelecionado)
+                obterGenerosAnime(anime).some((genero) => genero === generoSelecionado)
             );
-        };
-        // Filtro por letra inicial do título
+        }
         if (letraSelecionada) {
             animesList = animesList.filter(anime =>
-                String(anime.title).toUpperCase().startsWith(letraSelecionada)
+                obterTituloAnime(anime).toLocaleUpperCase('pt-BR').startsWith(letraSelecionada)
             );
-        };
-        // Filtro por ano
+        }
         if (anoSelecionado) {
-            animesList = animesList.filter(anime => {
-                const anoAnime = anime.year || (anime.aired && anime.aired.from && anime.aired.from.year);
-                return String(anoAnime) === anoSelecionado;
-            });
-        };
-        // Ordenar por título quando filtrar por gênero, letra ou ano.
-        if (generoSelecionado || letraSelecionada || anoSelecionado) {
+            animesList = animesList.filter((anime) => String(obterAnoAnime(anime)) === anoSelecionado);
+        }
+        if (searchTerm || generoSelecionado || letraSelecionada || anoSelecionado || mostrarAdultos) {
             animesList = [...animesList].sort((a, b) =>
-                String(a.title || '').localeCompare(String(b.title || ''), 'pt-BR', {
+                obterTituloAnime(a).localeCompare(obterTituloAnime(b), 'pt-BR', {
                     sensitivity: 'base'
                 })
             );
         }
         return animesList;
-    }, [listObjsDetalhesAnimes, searchTerm, generoSelecionado, letraSelecionada, anoSelecionado]);
-    //Paginação
+    }, [animesPermitidos, searchTerm, generoSelecionado, letraSelecionada, anoSelecionado, mostrarAdultos]);
+
     const totalPages = Math.max(1, Math.ceil(filteredItems.length / limit));
     const paginatedItems = useMemo(() => {
-        const start = (page - 1) * limit;
+        const start = (Math.max(1, Math.min(page, totalPages)) - 1) * limit;
         return filteredItems.slice(start, start + limit);
-    }, [filteredItems, page, limit]);
-    //Função de busca
+    }, [filteredItems, page, limit, totalPages]);
+
     const handleSearch = useCallback((valor) => {
         setSearchTerm(valor);
         setPage(1);
     }, []);
+
+    const atualizarFiltro = useCallback((atualizar) => (valor) => {
+        atualizar(valor);
+        setPage(1);
+    }, []);
+
+    const alternarConteudoAdulto = useCallback(() => {
+        setMostrarAdultos((valor) => !valor);
+        setPage(1);
+    }, []);
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
-    //=======================================================
+    if (error) {
+        return (
+            <div role='alert'>
+                <p>{error}</p>
+                <button type='button' onClick={recarregarAnimes}>Tentar novamente</button>
+            </div>
+        );
+    }
+
     return (
         <main className={styles.mainCardsMyAnimesList}>
             <CampoBuscar onSearch={handleSearch} />
             <div className={styles.divPaginacaoEFiltro}>
                 <div className={styles.divContainerFiltros}>
                     <h4>Filtrar por: </h4>
-                    <FiltrarPorLetra letraSelecionada={letraSelecionada} setLetraSelecionada={setLetraSelecionada} />
-                    <FiltrarPorGenero generoSelecionado={generoSelecionado} setGeneroSelecionado={setGeneroSelecionado} />
-                    <FiltrarPorAno anoSelecionado={anoSelecionado} setAnoSelecionado={setAnoSelecionado} />
+                    <FiltrarPorLetra letraSelecionada={letraSelecionada} setLetraSelecionada={atualizarFiltro(setLetraSelecionada)} />
+                    <FiltrarPorGenero generoSelecionado={generoSelecionado} setGeneroSelecionado={atualizarFiltro(setGeneroSelecionado)} animes={animesPermitidos} />
+                    <FiltrarPorAno anoSelecionado={anoSelecionado} setAnoSelecionado={atualizarFiltro(setAnoSelecionado)} animes={animesPermitidos} />
+                    {isAuthenticated && (
+                        <button
+                            type='button'
+                            className={styles.btnConteudoAdulto}
+                            onClick={alternarConteudoAdulto}
+                            aria-pressed={mostrarAdultos}
+                        >
+                            Hentai +18
+                        </button>
+                    )}
                 </div>
                 <QtdExibirPorPage
                     value={limit}
@@ -98,7 +121,7 @@ export default function CardsAnimesList() {
                 />
             </div>
             <div>
-                {(searchTerm || generoSelecionado || letraSelecionada || anoSelecionado) && (
+                {(searchTerm || generoSelecionado || letraSelecionada || anoSelecionado || mostrarAdultos) && (
                     <span className={styles.spanTotalAnimes}>
                         <strong className={styles.strongTotalAnimes}>{filteredItems.length}</strong> Animes encontrados
                     </span>
@@ -106,11 +129,8 @@ export default function CardsAnimesList() {
             </div>
             <div className={styles.divContainerListaCardsMyaAnimes}>
                 {paginatedItems?.map((animePg) => (
-                    <Link key={animePg.mal_id} to={`/myanimes/myanimes-detalhes/${animePg.mal_id}`} target='_blank'>
-                        <CardAnime
-                            key={animePg.mal_id}
-                            anime={animePg}
-                        />
+                    <Link key={obterIdAnime(animePg)} to={`/myanimes/myanimes-detalhes/${obterIdAnime(animePg)}`} target='_blank'>
+                        <CardAnime anime={animePg} />
                     </Link>
                 ))}
             </div>

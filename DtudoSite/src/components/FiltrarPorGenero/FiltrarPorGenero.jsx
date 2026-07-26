@@ -2,21 +2,21 @@ import { useContext, useMemo } from 'react';
 import AnimesObjsListDetalhesContext from '../../context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListContext';
 import styles from './FiltrarPorGenero.module.css';
 
-export default function FiltrarPorGenero({ generoSelecionado, setGeneroSelecionado }) {
+export default function FiltrarPorGenero({ generoSelecionado, setGeneroSelecionado, animes }) {
     const { listObjsDetalhesAnimes } = useContext(AnimesObjsListDetalhesContext);
+    const listaParaFiltrar = animes || listObjsDetalhesAnimes;
     const generosUnicos = useMemo(() => {
-        if (listObjsDetalhesAnimes.length > 0) {
-            // Extrai todos os genres, explicit_genres, themes, demographics e cria um conjunto único
-            const allGenres = listObjsDetalhesAnimes.flatMap(anime => [
-                ...(anime.genres || []).map(g => g.name),
-                ...(anime.explicit_genres || []).map(g => g.name),
-                ...(anime.themes || []).map(t => t.name),
-                ...(anime.demographics || []).map(d => d.name)
+        if (listaParaFiltrar.length > 0) {
+            const allGenres = listaParaFiltrar.flatMap(anime => [
+                ...(anime.genres || []).map(g => typeof g === 'string' ? g : g.name),
+                ...(anime.explicitGenres || anime.explicit_genres || []).map(g => typeof g === 'string' ? g : g.name),
+                ...(anime.themes || []).map(t => typeof t === 'string' ? t : t.name),
+                ...(anime.demographics || []).map(d => typeof d === 'string' ? d : d.name)
             ]);
-            return [...new Set(allGenres)].sort();
+            return [...new Set(allGenres.filter(Boolean))].sort();
         }
         return [];
-    }, [listObjsDetalhesAnimes]);
+    }, [listaParaFiltrar]);
     //=======================================================
     return (
         <div className={styles.divFiltrarGenero}>

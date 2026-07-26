@@ -31,42 +31,27 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 -------------------------------------------------------------------------------------------------------------------------------------
 Proximo passo:
 DBLocalBuscar - É meu banco de dados, controlado pela ApiMyAnimes.
-ApiMyAnimeList - Api Atual que fornece os dados e detalhes dos animes buscados por nome. 
-
-Projeto \ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
+ApiMyAnimeList - Api Atual que fornece os dados e detalhes dos animes buscados por nome.
 
 
-O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiJikan (DEVE SER IGNORADO POIS NÃO ESTÁ MAIS EM USO)  
 
-Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, no arquivo \FormsUC\FUC_DetalhesAnime.cs.
-Quando clicamos no botão SALVAR COMO MYANIME, no caso de já existir o anime (coleção, MyAnime) cadastrado como no DB Local, ApiMyAnimes.
-Agora quando aparecer a caixa de dialogo, quero que seja exibido ID do MyAnime já cadastrado e um botão para acessar o MyAnime já cadastrado, crie também um botão ok, para fechar a caixa de dialogo. 
-Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.  
+O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiJikan (DEVE SER TOTALMENTE IGNORADO POIS NÃO ESTÁ MAIS EM USO)  
+O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
+O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
+
+Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite, na rota: http://localhost:5173/animes, temos uma página que exibe uma lista de animes (Cards) atualmente os dados dos animes estão vindo da api json-server: http://localhost:3666/animesDetalhes.  
+Agora quero os dados dos animes venham da minha NOVA API: Projeto ApiMyAnimes - Api DB Local MyAnimes (CRUD completo, documentada com Swagger) - https://localhost:63980/apiLocal/. Quero que analize como os dados (já paginados) estão vindo da nova API e faça TODAS as alterações necessárias no front-end para que os dados dos animes venham da nova API, substituindo TOTALMENTE a antiga fonte de dados.  
+Esta nova API retorna conteudo adulto (hentai), então vamos precisar de um filtro, Se a pessoa estiver logada (usar o metodo de login atual mesmo), devemos implementar (mostrar) na página um botão (pode ficar ao lado do filtro por Ano) "Hentai +18", que ao ser clicado, deve exibir SOMEMENTE os animes com conteúdo adulto (hentai). Caso a pessoa não esteja logada, o botão não deve aparecer e os animes com conteúdo adulto não devem ser exibidos.  
+
+Quero uma implementação completa e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
+
+
+
+
 
 
 PROBLEMAS:
 Aqui está o site da documentação official da api MyAnimeList:  https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters  
-
-
-
-
-
-
-
-
-em \FormsUC\FUC_MyAnimesDetalhes.cs.
-Agora onde MOSTRA o ID, do MyAnime criado (e deixa-lo selecionavel para que eu possa copiar o id, se possível que já venha copiado (como se eu já tivese copiado o id))
-Também preciso que este UC, se atualize (exiba os novos animes relacionados) automaticamente, pois quando eu adicionar um novo anime a esá coleção (MyAnime), preciso velo.
-Agora antes de salvar Estrutura em Disco, tem que verificar se já existe uma pasta com mesmo nome antes, NÃO pode sobrescrever a pasta já existente. (apenas avise e interrompa a ação).
-
-
-
-
-
-
-
-Quero uma implementação completa e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
-
 ===================================================================================================
 
 09/07/2026 NUMEROS DEPOIS DE POPULAR O DB LOCAL
