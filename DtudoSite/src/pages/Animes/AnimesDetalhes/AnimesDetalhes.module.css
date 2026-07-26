@@ -53,6 +53,16 @@
     padding: 0.45rem 0.75rem;
 }
 
+.pAvisoRelacionados {
+    width: fit-content;
+    margin: -0.75rem 0 0;
+    border: 1px solid #9e7b31;
+    border-radius: 4px;
+    padding: 0.55rem 0.75rem;
+    color: #ffe1a3;
+    background-color: #3d2d08;
+}
+
 .dlMetadados {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

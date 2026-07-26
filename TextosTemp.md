@@ -46,6 +46,7 @@ Quero uma implementação completa e ROBUSTA, com todos os detalhes necessários
 
 PROBLEMAS:
 Aqui está o site da documentação official da api MyAnimeList:  https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters  
+
 ===================================================================================================
 
 09/07/2026 NUMEROS DEPOIS DE POPULAR O DB LOCAL

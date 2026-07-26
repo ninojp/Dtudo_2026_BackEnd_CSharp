@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { buscarTodosAnimesDaApiLocal } from "../../services/apiMyAnimes";
-import AnimesDetalhesObjsListContext from "./AnimesDetalhesObjsListContext";
+import AnimesContext from "./AnimesContext";
 
-export default function AnimesDetalhesObjsListProvider({ children }) {
+export default function AnimesProvider({ children }) {
     const [listObjsDetalhesAnimes, setListObjsDetalhesAnimes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -38,7 +38,7 @@ export default function AnimesDetalhesObjsListProvider({ children }) {
     }, [tentativa]);
 
     return (
-        <AnimesDetalhesObjsListContext.Provider
+        <AnimesContext.Provider
             value={{
                 listObjsDetalhesAnimes,
                 isLoading,
@@ -47,6 +47,6 @@ export default function AnimesDetalhesObjsListProvider({ children }) {
             }}
         >
             {children}
-        </AnimesDetalhesObjsListContext.Provider>
+        </AnimesContext.Provider>
     );
 };

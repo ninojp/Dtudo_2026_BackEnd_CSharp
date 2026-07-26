@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import CampoBuscar from '../../CampoBuscar/CampoBuscar';
 import PaginationButtons from '../../PaginationButtons/PaginationButtons';
 import QtdExibirPorPage from '../../QtdExibirPorPage/QtdExibirPorPage';
-import AnimesObjsListDetalhesContext from '../../../context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListContext';
+import AnimesContext from '../../../context_api/AnimesContext/AnimesContext';
 import AuthContext from '../../../context_api/AuthContext/AuthContext';
 import FiltrarPorGenero from '../../FiltrarPorGenero/FiltrarPorGenero';
 import FiltrarPorLetra from '../../FiltrarPorLetra/FiltrarPorLetra';
@@ -13,7 +13,7 @@ import CardAnime from '../CardAnime/CardAnime';
 import { ehAnimeAdulto, obterAnoAnime, obterGenerosAnime, obterIdAnime, obterTituloAnime } from '../../../utils/animeContentUtils';
 
 export default function CardsAnimesList() {
-    const { listObjsDetalhesAnimes, isLoading, error, recarregarAnimes } = useContext(AnimesObjsListDetalhesContext);
+    const { listObjsDetalhesAnimes, isLoading, error, recarregarAnimes } = useContext(AnimesContext);
     const { isAuthenticated } = useContext(AuthContext);
     const [generoSelecionado, setGeneroSelecionado] = useState('');
     const [letraSelecionada, setLetraSelecionada] = useState('');

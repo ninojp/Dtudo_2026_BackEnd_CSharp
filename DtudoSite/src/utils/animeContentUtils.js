@@ -49,3 +49,43 @@ export function ehAnimeAdulto(anime) {
         || classificacao.includes('hentai')
         || classificacao.startsWith('rx');
 }
+
+export function idsDaColecao(colecao) {
+    return Array.isArray(colecao?.animesMalId) ? colecao.animesMalId : [];
+}
+
+export function obterColecoesComAnime(colecoes, malId) {
+    const malIdNumerico = Number(malId);
+    return colecoes.filter((colecao) => idsDaColecao(colecao).some((id) => Number(id) === malIdNumerico));
+}
+
+export function obterAnimesRelacionados({
+    animeAtual,
+    colecoesComAnime,
+    incluirAdultos,
+    listObjsDetalhesAnimes,
+    malId,
+}) {
+    const malIdNumerico = Number(malId);
+    const idsRelacionados = new Set(
+        colecoesComAnime.flatMap(idsDaColecao)
+            .map(Number)
+            .filter((id) => id !== malIdNumerico)
+    );
+
+    let relacionados = listObjsDetalhesAnimes.filter((anime) => idsRelacionados.has(Number(obterIdAnime(anime))));
+
+    if (relacionados.length === 0 && animeAtual) {
+        const generosAtual = new Set(obterGenerosAnime(animeAtual));
+        relacionados = listObjsDetalhesAnimes
+            .filter((anime) => Number(obterIdAnime(anime)) !== malIdNumerico)
+            .filter((anime) => obterGenerosAnime(anime).some((genero) => generosAtual.has(genero)))
+            .slice(0, 24);
+    }
+
+    if (!incluirAdultos) {
+        relacionados = relacionados.filter((anime) => !ehAnimeAdulto(anime));
+    }
+
+    return relacionados;
+}

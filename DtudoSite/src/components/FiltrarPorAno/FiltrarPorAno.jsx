@@ -1,10 +1,8 @@
-import { useContext, useMemo } from 'react';
-import AnimesObjsListDetalhesContext from '../../context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListContext';
+import { useMemo } from 'react';
 import styles from './FiltrarPorAno.module.css';
 
 export default function FiltrarPorAno({ anoSelecionado, setAnoSelecionado, animes }) {
-    const { listObjsDetalhesAnimes } = useContext(AnimesObjsListDetalhesContext);
-    const listaParaFiltrar = animes || listObjsDetalhesAnimes;
+    const listaParaFiltrar = animes || [];
     const anosUnicos = useMemo(() => {
         if (listaParaFiltrar.length > 0) {
             const allYears = listaParaFiltrar.map(anime => {

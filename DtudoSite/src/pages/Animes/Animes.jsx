@@ -4,12 +4,12 @@ import H2SubTitulo from '../../components/H2SubTitulo/H2SubTitulo';
 import HeaderPage from '../../components/HeaderPage/HeaderPage';
 import styles from './Animes.module.css';
 import { useContext, useMemo } from 'react';
-import AnimesObjsListDetalhesContext from '../../context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListContext';
+import AnimesContext from '../../context_api/AnimesContext/AnimesContext';
 import { ehAnimeAdulto } from '../../utils/animeContentUtils';
 
 
 export default function Animes() {
-  const { listObjsDetalhesAnimes } = useContext(AnimesObjsListDetalhesContext);
+  const { listObjsDetalhesAnimes } = useContext(AnimesContext);
   const totalAnimesExibiveis = useMemo(
     () => listObjsDetalhesAnimes.filter((anime) => !ehAnimeAdulto(anime)).length,
     [listObjsDetalhesAnimes]

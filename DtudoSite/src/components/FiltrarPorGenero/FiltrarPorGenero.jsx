@@ -1,10 +1,8 @@
-import { useContext, useMemo } from 'react';
-import AnimesObjsListDetalhesContext from '../../context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListContext';
+import { useMemo } from 'react';
 import styles from './FiltrarPorGenero.module.css';
 
 export default function FiltrarPorGenero({ generoSelecionado, setGeneroSelecionado, animes }) {
-    const { listObjsDetalhesAnimes } = useContext(AnimesObjsListDetalhesContext);
-    const listaParaFiltrar = animes || listObjsDetalhesAnimes;
+    const listaParaFiltrar = animes || [];
     const generosUnicos = useMemo(() => {
         if (listaParaFiltrar.length > 0) {
             const allGenres = listaParaFiltrar.flatMap(anime => [

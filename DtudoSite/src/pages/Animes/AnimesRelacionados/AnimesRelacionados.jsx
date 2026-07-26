@@ -5,20 +5,21 @@ import H1TituloPage from '../../../components/H1TituloPage/H1TituloPage';
 import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
 import CardAnime from '../../../components/componentsAnimes/CardAnime/CardAnime';
 import AuthContext from '../../../context_api/AuthContext/AuthContext';
-import AnimesObjsListDetalhesContext from '../../../context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListContext';
+import AnimesContext from '../../../context_api/AnimesContext/AnimesContext';
 import { buscarTodasColecoesMyAnimeDaApiLocal } from '../../../services/apiMyAnimes';
-import { ehAnimeAdulto, obterGenerosAnime, obterIdAnime, obterTituloAnime } from '../../../utils/animeContentUtils';
+import {
+    obterAnimesRelacionados,
+    obterColecoesComAnime,
+    obterIdAnime,
+    obterTituloAnime,
+} from '../../../utils/animeContentUtils';
 import styles from './AnimesRelacionados.module.css';
-
-function idsDaColecao(colecao) {
-    return Array.isArray(colecao?.animesMalId) ? colecao.animesMalId : [];
-}
 
 export default function AnimesRelacionados() {
     const { malId } = useParams();
     const navigate = useNavigate();
     const { isAuthenticated } = useContext(AuthContext);
-    const { listObjsDetalhesAnimes, isLoading: animesCarregando } = useContext(AnimesObjsListDetalhesContext);
+    const { listObjsDetalhesAnimes, isLoading: animesCarregando } = useContext(AnimesContext);
     const [colecoes, setColecoes] = useState([]);
     const [isLoadingColecoes, setIsLoadingColecoes] = useState(true);
     const [error, setError] = useState(null);
@@ -61,34 +62,15 @@ export default function AnimesRelacionados() {
         };
     }, []);
 
-    const colecoesComAnime = useMemo(
-        () => colecoes.filter((colecao) => idsDaColecao(colecao).some((id) => Number(id) === malIdNumerico)),
-        [colecoes, malIdNumerico]
-    );
+    const colecoesComAnime = useMemo(() => obterColecoesComAnime(colecoes, malIdNumerico), [colecoes, malIdNumerico]);
 
-    const animesRelacionados = useMemo(() => {
-        const idsRelacionados = new Set(
-            colecoesComAnime.flatMap(idsDaColecao)
-                .map(Number)
-                .filter((id) => id !== malIdNumerico)
-        );
-
-        let relacionados = listObjsDetalhesAnimes.filter((anime) => idsRelacionados.has(Number(obterIdAnime(anime))));
-
-        if (relacionados.length === 0 && animeAtual) {
-            const generosAtual = new Set(obterGenerosAnime(animeAtual));
-            relacionados = listObjsDetalhesAnimes
-                .filter((anime) => Number(obterIdAnime(anime)) !== malIdNumerico)
-                .filter((anime) => obterGenerosAnime(anime).some((genero) => generosAtual.has(genero)))
-                .slice(0, 24);
-        }
-
-        if (!isAuthenticated) {
-            relacionados = relacionados.filter((anime) => !ehAnimeAdulto(anime));
-        }
-
-        return relacionados;
-    }, [animeAtual, colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes, malIdNumerico]);
+    const animesRelacionados = useMemo(() => obterAnimesRelacionados({
+        animeAtual,
+        colecoesComAnime,
+        incluirAdultos: isAuthenticated,
+        listObjsDetalhesAnimes,
+        malId: malIdNumerico,
+    }), [animeAtual, colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes, malIdNumerico]);
 
     if (animesCarregando || isLoadingColecoes) {
         return <main className={styles.mainRelacionados}>Loading...</main>;

@@ -4,11 +4,13 @@ import HeaderPage from '../../../components/HeaderPage/HeaderPage';
 import H1TituloPage from '../../../components/H1TituloPage/H1TituloPage';
 import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
 import AuthContext from '../../../context_api/AuthContext/AuthContext';
-import AnimesObjsListDetalhesContext from '../../../context_api/AnimesDetalhesObjsListContext/AnimesDetalhesObjsListContext';
-import { buscarAnimePorMalId } from '../../../services/apiMyAnimes';
+import AnimesContext from '../../../context_api/AnimesContext/AnimesContext';
+import { buscarAnimePorMalId, buscarTodasColecoesMyAnimeDaApiLocal } from '../../../services/apiMyAnimes';
 import {
     ehAnimeAdulto,
+    obterAnimesRelacionados,
     obterAnoAnime,
+    obterColecoesComAnime,
     obterGenerosAnime,
     obterIdAnime,
     obterImagemAnime,
@@ -23,10 +25,13 @@ export default function AnimesDetalhes() {
     const { malId } = useParams();
     const navigate = useNavigate();
     const { isAuthenticated } = useContext(AuthContext);
-    const { listObjsDetalhesAnimes, isLoading: listaCarregando } = useContext(AnimesObjsListDetalhesContext);
+    const { listObjsDetalhesAnimes, isLoading: listaCarregando } = useContext(AnimesContext);
     const [animeRemoto, setAnimeRemoto] = useState(null);
+    const [colecoes, setColecoes] = useState([]);
+    const [isLoadingColecoes, setIsLoadingColecoes] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [avisoRelacionados, setAvisoRelacionados] = useState('');
 
     const malIdNumerico = Number(malId);
     const animeDaLista = useMemo(
@@ -34,6 +39,15 @@ export default function AnimesDetalhes() {
         [listObjsDetalhesAnimes, malIdNumerico]
     );
     const anime = animeDaLista || animeRemoto;
+
+    const colecoesComAnime = useMemo(() => obterColecoesComAnime(colecoes, malIdNumerico), [colecoes, malIdNumerico]);
+    const animesRelacionados = useMemo(() => obterAnimesRelacionados({
+        animeAtual: anime,
+        colecoesComAnime,
+        incluirAdultos: isAuthenticated,
+        listObjsDetalhesAnimes,
+        malId: malIdNumerico,
+    }), [anime, colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes, malIdNumerico]);
 
     useEffect(() => {
         if (!Number.isInteger(malIdNumerico) || malIdNumerico <= 0) {
@@ -81,6 +95,47 @@ export default function AnimesDetalhes() {
         }
     }, [anime, isAuthenticated, isLoading, navigate]);
 
+    useEffect(() => {
+        const controller = new AbortController();
+        let ativo = true;
+
+        async function carregarColecoes() {
+            setIsLoadingColecoes(true);
+
+            try {
+                const colecoesDaApi = await buscarTodasColecoesMyAnimeDaApiLocal(controller.signal);
+                if (ativo) setColecoes(colecoesDaApi);
+            } catch (erro) {
+                if (erro.code === 'ERR_CANCELED' || !ativo) return;
+                setColecoes([]);
+            } finally {
+                if (ativo) setIsLoadingColecoes(false);
+            }
+        }
+
+        carregarColecoes();
+        return () => {
+            ativo = false;
+            controller.abort();
+        };
+    }, []);
+
+    function handleClickRelacionados(event) {
+        if (isLoadingColecoes) {
+            event.preventDefault();
+            setAvisoRelacionados('Aguarde, ainda estamos verificando os animes relacionados.');
+            return;
+        }
+
+        if (animesRelacionados.length === 0) {
+            event.preventDefault();
+            setAvisoRelacionados('Nao existem animes relacionados para este anime.');
+            return;
+        }
+
+        setAvisoRelacionados('');
+    }
+
     if (isLoading || listaCarregando) return <main className={styles.mainDetalhes}>Loading...</main>;
 
     if (error) {
@@ -124,7 +179,11 @@ export default function AnimesDetalhes() {
                     <div className={styles.divInfoPrincipal}>
                         <div className={styles.divAcoes}>
                             <Link to="/animes" className={styles.linkVoltar}>Voltar</Link>
-                            <Link to={`/animes/animes-relacionados/${obterIdAnime(anime)}`} className={styles.linkAcao}>
+                            <Link
+                                to={`/animes/animes-relacionados/${obterIdAnime(anime)}`}
+                                className={styles.linkAcao}
+                                onClick={handleClickRelacionados}
+                            >
                                 Relacionados
                             </Link>
                             {anime.malUrl && (
@@ -133,6 +192,9 @@ export default function AnimesDetalhes() {
                                 </a>
                             )}
                         </div>
+                        {avisoRelacionados && (
+                            <p className={styles.pAvisoRelacionados} role="status">{avisoRelacionados}</p>
+                        )}
 
                         <dl className={styles.dlMetadados}>
                             <div><dt>MalId</dt><dd>{obterIdAnime(anime)}</dd></div>

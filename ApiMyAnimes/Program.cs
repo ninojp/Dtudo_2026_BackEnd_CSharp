@@ -40,12 +40,14 @@ builder.Services.AddSwaggerGen(c =>
 });
 //=======================================================================
 // Configuração de CORS para permitir acesso apenas do frontend DtudoSite
-var dtudoSiteOrigin = "http://localhost:5173";
+var dtudoSiteOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? ["http://localhost:5173"];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(dtudoSiteOrigin)
+        policy.WithOrigins(dtudoSiteOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
