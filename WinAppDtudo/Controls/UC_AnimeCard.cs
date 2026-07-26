@@ -1,4 +1,5 @@
 using WinAppDtudo.Services;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 
 namespace WinAppDtudo.Controls;
 
@@ -24,7 +25,7 @@ public partial class UC_AnimeCard : UserControl
     // ===================================================================
 
     /// <summary>Preenche o card com os dados do anime e inicia o carregamento da imagem.</summary>
-    public void CarregarDados(JikanAnimeCard anime, bool usarFallbackMyAnimeList = true, int? malIdParaImagem = null)
+    public void CarregarDados(AnimeSearchCard anime, bool usarFallbackMyAnimeList = true, int? malIdParaImagem = null)
     {
         _malId = anime.MalId;
 
@@ -49,7 +50,7 @@ public partial class UC_AnimeCard : UserControl
         _ = CarregarImagemAsync(anime.ImageUrl, malIdParaImagem ?? anime.MalId, versaoDaCapa, usarFallbackMyAnimeList);
     }
 
-    private static string? ObterSubtitulo(JikanAnimeCard anime)
+    private static string? ObterSubtitulo(AnimeSearchCard anime)
     {
         if (!string.IsNullOrWhiteSpace(anime.TitleEnglish) && anime.TitleEnglish != anime.Title)
             return anime.TitleEnglish;

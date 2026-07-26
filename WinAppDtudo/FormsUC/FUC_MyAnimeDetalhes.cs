@@ -1,4 +1,5 @@
 using LibDtudo.Shared.Dtos;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 using WinAppDtudo.Controls;
 using WinAppDtudo.Forms;
 using WinAppDtudo.Services;
@@ -216,7 +217,7 @@ public class FUC_MyAnimeDetalhes : UserControl
         foreach (var anime in _animesAtuais)
         {
             var card = new UC_AnimeCard();
-            card.CarregarDados(new JikanAnimeCard
+            card.CarregarDados(new AnimeSearchCard
             {
                 MalId = anime.MalId,
                 Title = anime.Titulo,

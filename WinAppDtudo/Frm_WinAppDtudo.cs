@@ -1,6 +1,5 @@
 using WinAppDtudo.Forms;
 using WinAppDtudo.Services;
-using LibDtudo.Shared.Utils;
 
 namespace WinAppDtudo;
 
@@ -9,6 +8,8 @@ namespace WinAppDtudo;
 /// </summary>
 public partial class Frm_WinAppDtudo : CustomFormNoBorder
 {
+    private readonly AuthApiService _authApiService = new();
+
     public Frm_WinAppDtudo()
     {
         InitializeComponent();
@@ -19,9 +20,9 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         AddControlButtonsToMenuStrip(Mnu_Principal);
 
         //Opções de inicialização do formulário, após a inicialização dos componentes.
-        MnI_MyAnimes.Enabled = true;
-        MnI_MyMusicX.Enabled = true;
-        MnI_NinoTI.Enabled = true;
+        MnI_MyAnimes.Enabled = false;
+        MnI_MyMusicX.Enabled = false;
+        MnI_NinoTI.Enabled = false;
         MnI_Desconectar.Enabled = false;
     }
     //=========================================================
@@ -51,7 +52,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         formCadastrarUsuario.Show();
     }
     //Menu Conectar - Abrir formulário Frm_Login.
-    private void MnI_Conectar_Click(object sender, EventArgs e)
+    private async void MnI_Conectar_Click(object sender, EventArgs e)
     {
         using Frm_Login formLogin = new();
         var resultado = formLogin.ShowDialog();
@@ -59,16 +60,27 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         {
             string senha = formLogin.Senha;
             string login = formLogin.Login;
-            if (ValidaSenhaLogin.ValidarSenhaDoLogin(login, senha) == true)
+            try
             {
-                MnI_Conectar.Enabled = false;
-                MnI_MyAnimes.Enabled = true;
-                MnI_MyMusicX.Enabled = true;
-                MnI_NinoTI.Enabled = true;
-                MnI_Desconectar.Enabled = true;
-                MessageBox.Show($"Login realizado com sucesso! Bem-vindo, {login}.", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                var authResponse = await _authApiService.LoginAsync(login, senha);
+                if (authResponse.Success && authResponse.User is not null)
+                {
+                    MnI_Conectar.Enabled = false;
+                    MnI_MyAnimes.Enabled = true;
+                    MnI_MyMusicX.Enabled = true;
+                    MnI_NinoTI.Enabled = true;
+                    MnI_Desconectar.Enabled = true;
+                    MessageBox.Show($"Login realizado com sucesso! Bem-vindo, {authResponse.User.Name}.", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(authResponse.Message ?? "Usuario ou senha invalida.", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            else { MessageBox.Show($"Usuário ou Senha Inválida!", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            catch (HttpRequestException ex)
+            {
+                MessageBox.Show($"Nao foi possivel conectar a ApiMyAnimes em {AppConfigurationService.ApiMyAnimesBaseUrl}.\n\n{ex.Message}", "Erro de conexao", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         else if (resultado == DialogResult.Cancel)
         { MessageBox.Show($"Login cancelado."); }

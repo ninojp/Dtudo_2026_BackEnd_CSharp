@@ -7,14 +7,15 @@ export default function Login() {
     const { login } = use(AuthContext);
     const navigate = useNavigate();
     //-----------------------------------------
-    const onSubmitFormNewUser = (formData) => {
+    const onSubmitFormNewUser = async (formData) => {
         const email = formData.get('email');
         const password = formData.get('password');
-        const response = login(email, password);
+        const response = await login(email, password);
         if (response.success) {
             navigate('/animes')
         } else {
             console.error(response.error)
+            alert(response.error)
         }
     };
     //-----------------------------------------

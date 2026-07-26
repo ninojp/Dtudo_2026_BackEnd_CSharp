@@ -1,10 +1,12 @@
+using LibDtudo.Shared.Dtos.MyAnimeList;
+
 namespace WinAppDtudo.Services;
 
 public class CriadorAnimeAutomaticoService
 {
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
 
-    public async Task CriarAnimeDoMyAnimeAsync(JikanAnimeDetalhes anime, int myAnimeId)
+    public async Task CriarAnimeDoMyAnimeAsync(AnimeDetails anime, int myAnimeId)
     {
         ArgumentNullException.ThrowIfNull(anime);
 

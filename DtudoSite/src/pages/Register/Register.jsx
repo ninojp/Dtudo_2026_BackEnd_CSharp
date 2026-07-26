@@ -7,15 +7,16 @@ export default function Register () {
     const { register } = use(AuthContext);
     const navigate = useNavigate();
 
-    const onSubmitForm = (formData) => {
+    const onSubmitForm = async (formData) => {
         const name = formData.get('name');
         const email = formData.get('email');
         const password = formData.get('password');
-        const response = register(name, email, password);
+        const response = await register(name, email, password);
         if (response.success) {
             navigate('/auth/login');
         } else {
             console.error(response.error);
+            alert(response.error);
         };
     };
     return (

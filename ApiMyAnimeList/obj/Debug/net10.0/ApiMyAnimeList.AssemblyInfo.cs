@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("dtudo2026-apimyanimelist")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiMyAnimeList")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ae3075240b917fb17cdb3682b553536a99d84720")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+823d2acaa933b70bec38db57cdc1cb76267b917b")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiMyAnimeList")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiMyAnimeList")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -4,40 +4,49 @@
         <name>ApiMyAnimes</name>
     </assembly>
     <members>
+        <member name="T:ApiMyAnimes.Configuration.AuthOptions">
+            <summary>Configuracao da autenticacao local.</summary>
+        </member>
+        <member name="F:ApiMyAnimes.Configuration.AuthOptions.SectionName">
+            <summary>Nome da secao de configuracao.</summary>
+        </member>
+        <member name="P:ApiMyAnimes.Configuration.AuthOptions.UsersFilePath">
+            <summary>Caminho relativo ou absoluto do arquivo local de usuarios.</summary>
+        </member>
         <member name="T:ApiMyAnimes.Controllers.AnimeController">
             <summary>
             Controlador responsável por gerenciar os registros da entidade <see cref="T:LibDtudo.Shared.Models.Anime"/> em banco local.
             Disponibiliza endpoints de criação, leitura, atualização (total e parcial) e exclusão.
             </summary>
             <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
-            <param name="apiJikanClient"></param>
+            <param name="myAnimeListImportClient"></param>
             <param name="animeBuscaLocalService"></param>
             <param name="logger"></param>
         </member>
-        <member name="M:ApiMyAnimes.Controllers.AnimeController.#ctor(ApiMyAnimes.Data.MyAnimesContext,ApiMyAnimes.Services.ApiJikanClient,ApiMyAnimes.Services.AnimeBuscaLocalService,Microsoft.Extensions.Logging.ILogger{ApiMyAnimes.Controllers.AnimeController})">
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.#ctor(ApiMyAnimes.Data.MyAnimesContext,ApiMyAnimes.Services.MyAnimeListImportClient,ApiMyAnimes.Services.AnimeBuscaLocalService,Microsoft.Extensions.Logging.ILogger{ApiMyAnimes.Controllers.AnimeController})">
             <summary>
             Controlador responsável por gerenciar os registros da entidade <see cref="T:LibDtudo.Shared.Models.Anime"/> em banco local.
             Disponibiliza endpoints de criação, leitura, atualização (total e parcial) e exclusão.
             </summary>
             <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
-            <param name="apiJikanClient"></param>
+            <param name="myAnimeListImportClient"></param>
             <param name="animeBuscaLocalService"></param>
             <param name="logger"></param>
         </member>
         <member name="M:ApiMyAnimes.Controllers.AnimeController.AdicionarAnime(LibDtudo.Shared.Dtos.AdicionaAnimeDto,System.Nullable{System.Int32})">
             <summary>
             Adiciona um novo anime na tabela local de animes.
-            Pode criar diretamente via corpo da requisição ou importar da ApiJikan via <c>jikanId</c> na query string.
+            Pode criar diretamente via corpo da requisição ou importar da ApiMyAnimeList via <c>malId</c> na query string.
             O <c>MalId</c> é utilizado como chave primária e deve ser único.
             </summary>
             <param name="adicionaAnimeDto">Dados necessários para criação direta no banco local.</param>
-            <param name="jikanId">ID opcional para importar dados da ApiJikan e persistir localmente.</param>
+            <param name="malId">ID opcional para importar dados da ApiMyAnimeList e persistir localmente.</param>
             <returns>
             Retorna <c>201 Created</c> quando criado com sucesso,
             <c>400 BadRequest</c> para entrada inválida,
-            <c>404 NotFound</c> quando o anime não existe na ApiJikan,
+            <c>404 NotFound</c> quando o anime não existe na ApiMyAnimeList,
             <c>409 Conflict</c> quando já existe anime com o mesmo <c>MalId</c>,
-            ou <c>502 BadGateway</c> quando a ApiJikan está indisponível.
+            ou <c>502 BadGateway</c> quando a ApiMyAnimeList está indisponível.
             </returns>
         </member>
         <member name="M:ApiMyAnimes.Controllers.AnimeController.ObterAnimes(System.Int32,System.Int32)">
@@ -105,6 +114,21 @@
             <c>400 BadRequest</c> para ID inválido,
             ou <c>404 NotFound</c> quando o anime não existe.
             </returns>
+        </member>
+        <member name="T:ApiMyAnimes.Controllers.AuthController">
+            <summary>Endpoints de autenticacao local para Dtudo2026.</summary>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AuthController.#ctor(ApiMyAnimes.Services.LocalAuthService)">
+            <summary>Endpoints de autenticacao local para Dtudo2026.</summary>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AuthController.Register(LibDtudo.Shared.Dtos.Auth.RegisterUserRequest,System.Threading.CancellationToken)">
+            <summary>Cadastra um usuario local com senha hasheada.</summary>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AuthController.Login(LibDtudo.Shared.Dtos.Auth.LoginRequest,System.Threading.CancellationToken)">
+            <summary>Realiza login local.</summary>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AuthController.Me(System.String,System.Threading.CancellationToken)">
+            <summary>Obtem usuario por ID sem dados sensiveis.</summary>
         </member>
         <member name="T:ApiMyAnimes.Controllers.MyAnimeController">
             <summary>
@@ -205,7 +229,7 @@
         </member>
         <member name="P:ApiMyAnimes.Data.MyAnimesContext.Animes">
             <summary>
-            Representa a tabela de animes importados da ApiJikan no banco de dados.
+            Representa a tabela de animes importados da ApiMyAnimeList no banco de dados.
             </summary>
         </member>
         <member name="M:ApiMyAnimes.Data.MyAnimesContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
@@ -264,17 +288,32 @@
             Normaliza textos para comparacoes de busca tolerantes a acentos, pontuacao e espacos.
             </summary>
         </member>
-        <member name="T:ApiMyAnimes.Services.ApiJikanClient">
+        <member name="T:ApiMyAnimes.Services.LocalAuthService">
+            <summary>Servico local de autenticacao com hash de senha e armazenamento em JSON.</summary>
+        </member>
+        <member name="M:ApiMyAnimes.Services.LocalAuthService.#ctor(Microsoft.Extensions.Options.IOptions{ApiMyAnimes.Configuration.AuthOptions},Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary>Servico local de autenticacao com hash de senha e armazenamento em JSON.</summary>
+        </member>
+        <member name="M:ApiMyAnimes.Services.LocalAuthService.RegisterAsync(LibDtudo.Shared.Dtos.Auth.RegisterUserRequest,System.Threading.CancellationToken)">
+            <summary>Cadastra um novo usuario local.</summary>
+        </member>
+        <member name="M:ApiMyAnimes.Services.LocalAuthService.LoginAsync(LibDtudo.Shared.Dtos.Auth.LoginRequest,System.Threading.CancellationToken)">
+            <summary>Realiza login de usuario local.</summary>
+        </member>
+        <member name="M:ApiMyAnimes.Services.LocalAuthService.GetUserAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Obtem um usuario pelo ID.</summary>
+        </member>
+        <member name="T:ApiMyAnimes.Services.MyAnimeListImportClient">
             <summary>
-            Cliente para interagir com a API local compatível com o contrato Jikan.
+            Cliente para interagir com a API local compatível com o contrato MyAnimeList.
             </summary>
         </member>
-        <member name="M:ApiMyAnimes.Services.ApiJikanClient.#ctor(System.Net.Http.HttpClient)">
+        <member name="M:ApiMyAnimes.Services.MyAnimeListImportClient.#ctor(System.Net.Http.HttpClient)">
             <summary>
-            Cliente para interagir com a API local compatível com o contrato Jikan.
+            Cliente para interagir com a API local compatível com o contrato MyAnimeList.
             </summary>
         </member>
-        <member name="M:ApiMyAnimes.Services.ApiJikanClient.ObterAnimePorIdAsync(System.Int32,System.Threading.CancellationToken)">
+        <member name="M:ApiMyAnimes.Services.MyAnimeListImportClient.ObterAnimePorIdAsync(System.Int32,System.Threading.CancellationToken)">
             <summary>
             Obtém os dados de importação de um anime a partir do seu ID no MyAnimeList.
             </summary>
@@ -285,12 +324,7 @@
         </member>
         <member name="T:ApiMyAnimes.Services.AnimeImportData">
             <summary>
-            Representa os dados de importação de um anime obtidos da API Jikan.
-            </summary>
-        </member>
-        <member name="T:Program">
-            <summary>
-            Auto-generated public partial Program class for top-level statement apps.
+            Representa os dados de importação de um anime obtidos da API MyAnimeList.
             </summary>
         </member>
     </members>

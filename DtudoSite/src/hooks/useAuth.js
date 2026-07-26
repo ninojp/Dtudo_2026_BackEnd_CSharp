@@ -1,76 +1,89 @@
 import { useState, useEffect } from 'react'
 
-const createUser = (name, email, password) => ({
-    id: Date.now().toString(),
-    name,
-    email,
-    password,
-    createdAt: new Date().toISOString()
-})
-//============================
+const API_AUTH_BASE_URL = (
+    import.meta.env.VITE_API_AUTH_BASE_URL
+    || import.meta.env.VITE_API_LOCAL_MYANIMES_BASE_URL
+    || 'https://localhost:63980/'
+).replace(/\/$/, '')
+
+const AUTH_USER_KEY = 'auth_user'
+const AUTH_TOKEN_KEY = 'auth_token'
+
+const requestJson = async (path, payload) => {
+    const response = await fetch(`${API_AUTH_BASE_URL}${path}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+
+    const data = await response.json().catch(() => null)
+    if (!response.ok || !data?.success) {
+        throw new Error(data?.message || 'Falha na autenticacao')
+    }
+
+    return data
+}
+
 export const useAuth = () => {
     const [user, setUser] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
-    //----------------------------------------------
+
     useEffect(() => {
-        const storedUser = localStorage.getItem('auth_user')
+        const storedUser = localStorage.getItem(AUTH_USER_KEY)
         if (storedUser) {
             try {
                 setUser(JSON.parse(storedUser))
             } catch (error) {
-                console.error('Erro ao carregar usuário do localStorage:', error)
-                localStorage.removeItem('auth_user')
+                console.error('Erro ao carregar usuario do localStorage:', error)
+                localStorage.removeItem(AUTH_USER_KEY)
+                localStorage.removeItem(AUTH_TOKEN_KEY)
             }
         }
         setIsLoading(false)
     }, [])
-    //-------------------------------------------
-    const register = (name, email, password) => {
+
+    const persistAuth = (authResponse) => {
+        setUser(authResponse.user)
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authResponse.user))
+        if (authResponse.token) {
+            localStorage.setItem(AUTH_TOKEN_KEY, authResponse.token)
+        }
+    }
+
+    const register = async (name, email, password) => {
         try {
-            const existingUsers = JSON.parse(localStorage.getItem('auth_users') || '[]')
-            const userExists = existingUsers.find(u => u.email === email)
-            if (userExists) {
-                throw new Error('Usuário já existe com este email')
-            }
-            const newUser = createUser(name, email, password)
-            existingUsers.push(newUser)
-            localStorage.setItem('auth_users', JSON.stringify(existingUsers))
-            setUser(newUser)
-            localStorage.setItem('auth_user', JSON.stringify(newUser))
-            return { success: true, user: newUser }
+            const response = await requestJson('/apiLocal/Auth/register', { name, email, password })
+            persistAuth(response)
+            return { success: true, user: response.user }
         } catch (error) {
             return { success: false, error: error.message }
         }
     }
-    //----------------------------------
-    const login = (email, password) => {
+
+    const login = async (email, password) => {
         try {
-            const users = JSON.parse(localStorage.getItem('auth_users') || '[]')
-            const user = users.find(u => u.email === email && u.password === password)
-            if (!user) {
-                throw new Error('Email ou senha incorretos')
-            }
-            setUser(user)
-            localStorage.setItem('auth_user', JSON.stringify(user))
-            return { success: true, user }
+            const response = await requestJson('/apiLocal/Auth/login', { login: email, password })
+            persistAuth(response)
+            return { success: true, user: response.user }
         } catch (error) {
             return { success: false, error: error.message }
         }
     }
-    //-----------------------------
+
     const logout = () => {
         setUser(null)
-        localStorage.removeItem('auth_user')
+        localStorage.removeItem(AUTH_USER_KEY)
+        localStorage.removeItem(AUTH_TOKEN_KEY)
     }
-    //-----------------------------
-    const isAuthenticated = !!user
-    //=============================
+
     return {
         user,
         isLoading,
-        isAuthenticated,
+        isAuthenticated: !!user,
         register,
         login,
         logout
     }
-};
+}

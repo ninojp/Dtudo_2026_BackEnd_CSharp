@@ -33,3 +33,8 @@ C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\refint\ApiMyAni
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\ApiMyAnimeList.pdb
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\ApiMyAnimeList.genruntimeconfig.cache
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\ref\ApiMyAnimeList.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Microsoft.EntityFrameworkCore.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\LibDtudo.Shared.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\LibDtudo.Shared.pdb
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\LibDtudo.Shared.xml

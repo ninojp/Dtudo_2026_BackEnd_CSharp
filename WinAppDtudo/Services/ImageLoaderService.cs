@@ -11,7 +11,7 @@ namespace WinAppDtudo.Services;
 /// </summary>
 public static class ImageLoaderService
 {
-    private const string MyAnimeListAnimeUrl = "http://127.0.0.1:5044/MyAnimeList/";
+    private static string MyAnimeListAnimeUrl => $"{AppConfigurationService.ApiMyAnimeListBaseUrl.TrimEnd('/')}/ApiMyAnimeList/";
     private static readonly HttpClient _client;
     private static readonly SemaphoreSlim _downloadSlots = new(4, 4);
     private static readonly SemaphoreSlim _myAnimeListRequestLock = new(1, 1);
@@ -20,11 +20,7 @@ public static class ImageLoaderService
 
     static ImageLoaderService()
     {
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        };
+        var handler = AppConfigurationService.CreateHttpClientHandler();
         _client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(20) };
         _client.DefaultRequestHeaders.UserAgent.ParseAdd(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");

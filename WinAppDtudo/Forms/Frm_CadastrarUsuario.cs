@@ -4,15 +4,55 @@ namespace WinAppDtudo.Forms;
 
 public partial class Frm_CadastrarUsuario : Form
 {
+    private readonly AuthApiService _authApiService = new();
+
     public Frm_CadastrarUsuario()
     {
         InitializeComponent();
         // Aplicar o tema Dark Mode ao formulário e seus componentes
         ThemeManager.ApplyDarkModeToForm(this);
+        Txb_Senha.UseSystemPasswordChar = true;
+        Btn_Cadastrar.Click += Btn_Cadastrar_Click;
     }
 
     private void Btn_Cancelar_Click(object sender, EventArgs e)
     {
+        Close();
+    }
+
+    private async void Btn_Cadastrar_Click(object? sender, EventArgs e)
+    {
+        var login = Txb_Login.Text.Trim();
+        var senha = Txb_Senha.Text;
+
+        if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(senha))
+        {
+            MessageBox.Show("Informe login e senha.", "Cadastro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        Btn_Cadastrar.Enabled = false;
+        try
+        {
+            var response = await _authApiService.RegisterAsync(login, login, senha);
+            if (response.Success)
+            {
+                MessageBox.Show("Usuario cadastrado com sucesso.", "Cadastro", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Close();
+            }
+            else
+            {
+                MessageBox.Show(response.Message ?? "Nao foi possivel cadastrar o usuario.", "Cadastro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            MessageBox.Show($"Nao foi possivel conectar a ApiMyAnimes em {AppConfigurationService.ApiMyAnimesBaseUrl}.\n\n{ex.Message}", "Erro de conexao", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            Btn_Cadastrar.Enabled = true;
+        }
     }
 
     private void Btn_ImagemPerfil_Click(object sender, EventArgs e)

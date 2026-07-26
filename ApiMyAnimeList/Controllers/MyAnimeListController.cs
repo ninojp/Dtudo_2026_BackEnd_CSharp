@@ -1,4 +1,5 @@
 using System.Net;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 using ApiMyAnimeList.Dtos;
 using ApiMyAnimeList.Mappers;
 using ApiMyAnimeList.Services;
@@ -11,12 +12,16 @@ namespace ApiMyAnimeList.Controllers;
 /// <param name="client">Cliente responsável por se comunicar com a API MyAnimeList.</param>
 /// <param name="logger">Logger para registrar informações e erros.</param>
 [ApiController]
-[Route("MyAnimeList")]
+[Route("ApiMyAnimeList")]
 public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAnimeListController> logger) : ControllerBase
 {
+    [HttpGet("health")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public IActionResult Health() => Ok(new { status = "ok", service = "ApiMyAnimeList" });
+
     [HttpGet("search")]
-    [ProducesResponseType(typeof(CompatibleSearchResponse), StatusCodes.Status200OK)]
-    public async Task<ActionResult<CompatibleSearchResponse>> Search([FromQuery] string? q, [FromQuery] int page = 1, CancellationToken cancellationToken = default)
+    [ProducesResponseType(typeof(AnimeSearchResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AnimeSearchResult>> Search([FromQuery] string? q, [FromQuery] int page = 1, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(q)) return BadRequest(new { message = "O termo de busca é obrigatório." });
         if (page < 1) return BadRequest(new { message = "O número da página deve ser maior que 0." });
@@ -27,8 +32,8 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
     }
 
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(CompatibleDetails), StatusCodes.Status200OK)]
-    public async Task<ActionResult<CompatibleDetails>> Get(int id, CancellationToken cancellationToken = default)
+    [ProducesResponseType(typeof(AnimeDetails), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AnimeDetails>> Get(int id, CancellationToken cancellationToken = default)
     {
         if (id <= 0) return BadRequest(new { message = "ID inválido." });
         try
@@ -42,8 +47,8 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
     }
 
     [HttpGet("{id:int}/relations")]
-    [ProducesResponseType(typeof(List<CompatibleRelationGroup>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CompatibleRelationGroup>>> Relations(int id, CancellationToken cancellationToken = default)
+    [ProducesResponseType(typeof(List<AnimeRelationGroup>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<AnimeRelationGroup>>> Relations(int id, CancellationToken cancellationToken = default)
     {
         if (id <= 0) return BadRequest(new { message = "ID inválido." });
         try

@@ -1,4 +1,5 @@
 using LibDtudo.Shared.Dtos;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 using Microsoft.VisualBasic;
 using System.Globalization;
 using System.Net;
@@ -20,19 +21,16 @@ public partial class FUC_DetalhesAnime : UserControl
     public event EventHandler<int>? MyAnimeExistenteSelecionado;
 
     private readonly MyAnimeListApiService _myAnimeListService = new();
-    private readonly JikanApiService _jikanService = new();
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
     private readonly int _malId;
-    private readonly bool _usarJikan;
     private int _yOffset;
-    private JikanAnimeDetalhes? _animeAtual;
-    private List<JikanRelacaoEntry> _animesRelacionados = [];
+    private AnimeDetails? _animeAtual;
+    private List<AnimeRelationEntry> _animesRelacionados = [];
 
-    public FUC_DetalhesAnime(int malId, bool usarJikan = false)
+    public FUC_DetalhesAnime(int malId)
     {
         InitializeComponent();
         _malId = malId;
-        _usarJikan = usarJikan;
         Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
         Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
         Load += async (s, e) => await CarregarAsync();
@@ -47,16 +45,16 @@ public partial class FUC_DetalhesAnime : UserControl
     private async Task CarregarAsync()
     {
         MostrarCarregando(true);
-        JikanAnimeDetalhes? anime = null;
+        AnimeDetails? anime = null;
         string? erro = null;
         try
-        { anime = _usarJikan
-                ? await _jikanService.BuscarPorIdAsync(_malId)
-                : await _myAnimeListService.BuscarPorIdAsync(_malId); }
+        {
+            anime = await _myAnimeListService.BuscarPorIdAsync(_malId);
+        }
         catch (HttpRequestException ex)
         {
-            var apiNome = _usarJikan ? "ApiJikan" : "ApiMyAnimeList";
-            var apiBase = _usarJikan ? JikanApiService.ApiBase : MyAnimeListApiService.ApiBase;
+            const string apiNome = "ApiMyAnimeList";
+            var apiBase = MyAnimeListApiService.ApiBase;
             erro = $"Não foi possível conectar à {apiNome}.\n\n" +
                    $"Verifique se a {apiNome} está em execução em:\n{apiBase}\n\n" +
                    $"Detalhes: {ex.Message}";
@@ -82,12 +80,10 @@ public partial class FUC_DetalhesAnime : UserControl
 
         _animeAtual = anime;
 
-        List<JikanAnimeRelacaoGroup> relacoes = [];
+        List<AnimeRelationGroup> relacoes = [];
         try
         {
-            relacoes = _usarJikan
-                ? await _jikanService.BuscarRelacoesAsync(_malId)
-                : await _myAnimeListService.BuscarRelacoesAsync(_malId);
+            relacoes = await _myAnimeListService.BuscarRelacoesAsync(_malId);
         }
         catch
         {
@@ -100,7 +96,7 @@ public partial class FUC_DetalhesAnime : UserControl
     /// Popula a interface do usuário com os detalhes do anime fornecido.
     /// </summary>
     /// <param name="anime">Os detalhes do anime a serem exibidos.</param>
-    private void PopularUI(JikanAnimeDetalhes anime, List<JikanAnimeRelacaoGroup> relacoes)
+    private void PopularUI(AnimeDetails anime, List<AnimeRelationGroup> relacoes)
     {
         var anoLancamento = ExtrairAnoLancamentoPeloAired(anime.Aired);
         // Header
@@ -188,7 +184,7 @@ public partial class FUC_DetalhesAnime : UserControl
         Pnl_Info.ResumeLayout(true);
     }
 
-    private void ConfigurarTitulosSecundarios(JikanAnimeDetalhes anime)
+    private void ConfigurarTitulosSecundarios(AnimeDetails anime)
     {
         Lbl_TituloIngles.Text = anime.TitleEnglish ?? string.Empty;
         Lbl_TituloIngles.Visible = !string.IsNullOrWhiteSpace(anime.TitleEnglish);
@@ -201,7 +197,7 @@ public partial class FUC_DetalhesAnime : UserControl
         Pnl_Header.PerformLayout();
     }
 
-    private async Task CarregarCapaAsync(JikanAnimeDetalhes anime)
+    private async Task CarregarCapaAsync(AnimeDetails anime)
     {
         var urls = new[]
         {
@@ -211,9 +207,7 @@ public partial class FUC_DetalhesAnime : UserControl
         }.Where(url => !string.IsNullOrWhiteSpace(url)).Distinct().ToList();
         foreach (var url in urls)
         {
-            var image = _usarJikan
-                ? await ImageLoaderService.DownloadAsync(url)
-                : await ImageLoaderService.DownloadAnimeCoverAsync(url, _malId);
+            var image = await ImageLoaderService.DownloadAnimeCoverAsync(url, _malId);
             if (image is null || Pbx_Capa.IsDisposed)
             {
                 image?.Dispose();
@@ -361,7 +355,7 @@ public partial class FUC_DetalhesAnime : UserControl
     }
     // ===================================================================
 
-    private void AdicionarRelacoes(List<JikanAnimeRelacaoGroup> relacoes)
+    private void AdicionarRelacoes(List<AnimeRelationGroup> relacoes)
     {
         int larguraSecao = Math.Max(Pnl_Info.ClientSize.Width - 12, 370);
 
@@ -734,7 +728,7 @@ public partial class FUC_DetalhesAnime : UserControl
         dialogo.ShowDialog(FindForm());
     }
 
-    private string ObterTituloMyAnime(JikanAnimeDetalhes anime)
+    private string ObterTituloMyAnime(AnimeDetails anime)
     {
         return !string.IsNullOrWhiteSpace(anime.Title)
             ? anime.Title

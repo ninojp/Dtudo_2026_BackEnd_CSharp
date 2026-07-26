@@ -21,8 +21,11 @@ builder.Services.AddHttpClient<MyAnimeListClient>(client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Dtudo-ApiMyAnimeList/1.0");
 });
 
+var dtudoSiteOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? ["http://localhost:5173"];
 builder.Services.AddCors(options => options.AddPolicy("AllowFrontend", policy =>
-    policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod()));
+    policy.WithOrigins(dtudoSiteOrigins).AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
 
@@ -40,3 +43,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;

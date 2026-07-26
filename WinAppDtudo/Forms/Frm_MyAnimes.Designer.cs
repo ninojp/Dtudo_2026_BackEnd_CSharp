@@ -40,7 +40,6 @@ partial class Frm_MyAnimes
         MnI_FecharAbasAEsquerda = new ToolStripMenuItem();
         MnI_FecharAbasADireita = new ToolStripMenuItem();
         MnI_ProcurarAnimePorNome = new ToolStripMenuItem();
-        MnI_ApiJikanBuscarNome = new ToolStripMenuItem();
         MnI_ApiMyAnimeListBuscarNome = new ToolStripMenuItem();
         Mnu_AnalizarEstruturas = new ToolStripMenuItem();
         Tbc_MyAnimes = new TabControl();
@@ -52,7 +51,7 @@ partial class Frm_MyAnimes
         // 
         Mnu_MenuMyAnimes.BackColor = Color.DimGray;
         Mnu_MenuMyAnimes.ImageScalingSize = new Size(32, 32);
-        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_ProcurarAnimePorNome, MnI_ApiJikanBuscarNome, MnI_ApiMyAnimeListBuscarNome, Mnu_AnalizarEstruturas });
+        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_ProcurarAnimePorNome, MnI_ApiMyAnimeListBuscarNome, Mnu_AnalizarEstruturas });
         Mnu_MenuMyAnimes.Location = new Point(0, 0);
         Mnu_MenuMyAnimes.Name = "Mnu_MenuMyAnimes";
         Mnu_MenuMyAnimes.Padding = new Padding(15, 4, 0, 4);
@@ -135,13 +134,6 @@ partial class Frm_MyAnimes
         MnI_ProcurarAnimePorNome.Size = new Size(249, 42);
         MnI_ProcurarAnimePorNome.Text = "DBLocalBuscar";
         MnI_ProcurarAnimePorNome.Click += MnI_ProcurarAnimePorNome_Click;
-        // 
-        // MnI_ApiJikanBuscarNome
-        // 
-        MnI_ApiJikanBuscarNome.Image = Properties.Resources.RosaDosVentos;
-        MnI_ApiJikanBuscarNome.Name = "MnI_ApiJikanBuscarNome";
-        MnI_ApiJikanBuscarNome.Size = new Size(171, 42);
-        MnI_ApiJikanBuscarNome.Text = "ApiJikan";
         // 
         // MnI_ApiMyAnimeListBuscarNome
         // 
@@ -235,6 +227,5 @@ partial class Frm_MyAnimes
     private ToolStripMenuItem MnI_FecharAbasADireita;
     private ToolStripMenuItem MnI_FormMsgBox;
     private ToolStripMenuItem Mnu_AnalizarEstruturas;
-    private ToolStripMenuItem MnI_ApiJikanBuscarNome;
     private ToolStripMenuItem MnI_ApiMyAnimeListBuscarNome;
 }

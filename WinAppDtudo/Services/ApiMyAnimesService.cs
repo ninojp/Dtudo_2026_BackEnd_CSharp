@@ -10,19 +10,15 @@ public class ApiMyAnimesService
     private static readonly HttpClient _httpClient;
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    public const string ApiBase = "https://localhost:63980";
+    public static string ApiBase => AppConfigurationService.ApiMyAnimesBaseUrl;
 
     static ApiMyAnimesService()
     {
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        };
+        var handler = AppConfigurationService.CreateHttpClientHandler();
 
         _httpClient = new HttpClient(handler)
         {
-            BaseAddress = new Uri(ApiBase + "/"),
+            BaseAddress = new Uri(ApiBase.TrimEnd('/') + "/"),
             Timeout = TimeSpan.FromSeconds(120)
         };
     }

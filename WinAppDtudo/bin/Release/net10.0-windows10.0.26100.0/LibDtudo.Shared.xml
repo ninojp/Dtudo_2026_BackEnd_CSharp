@@ -14,9 +14,276 @@
             DTO para atualizar informações de um anime.
             </summary>
         </member>
+        <member name="T:LibDtudo.Shared.Dtos.Auth.RegisterUserRequest">
+            <summary>Requisicao para cadastro de usuario.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.RegisterUserRequest.Name">
+            <summary>Nome de exibicao do usuario.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.RegisterUserRequest.Email">
+            <summary>E-mail utilizado para login.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.RegisterUserRequest.Password">
+            <summary>Senha em texto puro recebida somente na requisicao.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.Auth.LoginRequest">
+            <summary>Requisicao para login.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.LoginRequest.Login">
+            <summary>E-mail ou nome de usuario.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.LoginRequest.Password">
+            <summary>Senha em texto puro recebida somente na requisicao.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.Auth.AuthUserDto">
+            <summary>Usuario autenticado sem dados sensiveis.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthUserDto.Id">
+            <summary>ID do usuario.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthUserDto.Name">
+            <summary>Nome de exibicao.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthUserDto.Email">
+            <summary>E-mail.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.Auth.AuthResponse">
+            <summary>Resposta de autenticacao.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthResponse.Success">
+            <summary>Indica sucesso da operacao.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthResponse.Message">
+            <summary>Mensagem de erro ou status.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthResponse.User">
+            <summary>Usuario autenticado.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthResponse.Token">
+            <summary>Token de sessao local.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchResult">
+            <summary>
+            Resultado paginado de busca de animes na API local ApiMyAnimeList.
+            </summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchResult.Results">
+            <summary>Animes encontrados na pagina atual.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchResult.CurrentPage">
+            <summary>Pagina atual, iniciando em 1.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchResult.TotalPages">
+            <summary>Total estimado de paginas disponiveis.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchResult.HasNextPage">
+            <summary>Indica se existe proxima pagina.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchResult.TotalResults">
+            <summary>Total estimado de resultados.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard">
+            <summary>
+            Resumo de anime retornado na busca por nome.
+            </summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.MalId">
+            <summary>ID do anime no MyAnimeList.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.Url">
+            <summary>URL publica do anime no MyAnimeList.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.Title">
+            <summary>Titulo principal.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.TitleEnglish">
+            <summary>Titulo em ingles, quando disponivel.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.TitleJapanese">
+            <summary>Titulo japones, quando disponivel.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.TitleSynonyms">
+            <summary>Titulos alternativos.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.ImageUrl">
+            <summary>URL da imagem principal.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.Type">
+            <summary>Tipo da obra.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.Episodes">
+            <summary>Quantidade de episodios.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.Status">
+            <summary>Status de exibicao.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.Score">
+            <summary>Pontuacao media.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.Year">
+            <summary>Ano de lancamento.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchCard.Genres">
+            <summary>Generos associados.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails">
+            <summary>
+            Detalhes completos de anime retornado por ID.
+            </summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.MalId">
+            <summary>ID do anime no MyAnimeList.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Url">
+            <summary>URL publica do anime no MyAnimeList.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Images">
+            <summary>Colecao de imagens.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Trailer">
+            <summary>URL de trailer.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.MyAnimeID">
+            <summary>ID local de MyAnime, quando relacionado.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Approved">
+            <summary>Indica se o registro foi aprovado pela fonte externa.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Title">
+            <summary>Titulo principal.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.TitleEnglish">
+            <summary>Titulo em ingles.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.TitleJapanese">
+            <summary>Titulo japones.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.TitleSynonyms">
+            <summary>Titulos alternativos.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Type">
+            <summary>Tipo da obra.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Source">
+            <summary>Fonte/origem da obra.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Episodes">
+            <summary>Quantidade de episodios.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Status">
+            <summary>Status de exibicao.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Airing">
+            <summary>Indica se esta em exibicao.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Aired">
+            <summary>Periodo de exibicao formatado.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Duration">
+            <summary>Duracao formatada.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Rating">
+            <summary>Classificacao indicativa.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Score">
+            <summary>Pontuacao media.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.ScoredBy">
+            <summary>Quantidade de usuarios que pontuaram.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Rank">
+            <summary>Ranking na fonte externa.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Popularity">
+            <summary>Popularidade na fonte externa.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Members">
+            <summary>Quantidade de membros/listas.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Favorites">
+            <summary>Quantidade de favoritos.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Synopsis">
+            <summary>Sinopse.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Background">
+            <summary>Contexto adicional.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Season">
+            <summary>Temporada.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Year">
+            <summary>Ano de lancamento.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Producers">
+            <summary>Produtoras.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Licensors">
+            <summary>Licenciadores.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Studios">
+            <summary>Estudios.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Genres">
+            <summary>Generos.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.ExplicitGenres">
+            <summary>Generos explicitos.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Themes">
+            <summary>Temas.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails.Demographics">
+            <summary>Demografia/publico-alvo.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.MyAnimeList.AnimeImages">
+            <summary>Colecao de imagens do anime.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeImages.Jpg">
+            <summary>Variante JPG.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.MyAnimeList.AnimeImageVariant">
+            <summary>Variante de imagem do anime.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeImageVariant.ImageUrl">
+            <summary>URL padrao.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeImageVariant.SmallImageUrl">
+            <summary>URL pequena.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeImageVariant.LargeImageUrl">
+            <summary>URL grande.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationGroup">
+            <summary>Grupo de relacoes de anime.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationGroup.Relation">
+            <summary>Tipo de relacao.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationGroup.Entry">
+            <summary>Animes relacionados neste grupo.</summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationEntry">
+            <summary>Entrada de um anime relacionado.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationEntry.MalId">
+            <summary>ID do anime no MyAnimeList.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationEntry.Type">
+            <summary>Tipo da entrada.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationEntry.Name">
+            <summary>Nome/titulo da entrada.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationEntry.Url">
+            <summary>URL publica.</summary>
+        </member>
+        <member name="P:LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationEntry.ImageUrl">
+            <summary>URL da imagem.</summary>
+        </member>
         <member name="T:LibDtudo.Shared.Dtos.ObterAnimeDto">
             <summary>
-            DTO para obter informações detalhadas de um anime, incluindo dados do MyAnime e informações adicionais da Jikan API.
+            DTO para obter informações detalhadas de um anime, incluindo dados do MyAnime e informações adicionais da MyAnimeList API.
             </summary>
         </member>
         <member name="T:LibDtudo.Shared.Dtos.ObterMyAnimeDto">
@@ -39,10 +306,24 @@
             Checa o nível de força de uma senha com base em critérios como comprimento, uso de letras maiúsculas e minúsculas, dígitos, símbolos e repetição de caracteres.
             </summary>
         </member>
+        <member name="T:LibDtudo.Shared.Utils.PasswordHasher">
+            <summary>
+            Gera e valida hashes de senha usando PBKDF2.
+            </summary>
+        </member>
+        <member name="M:LibDtudo.Shared.Utils.PasswordHasher.HashPassword(System.String)">
+            <summary>Cria um hash seguro para armazenar a senha.</summary>
+        </member>
+        <member name="M:LibDtudo.Shared.Utils.PasswordHasher.VerifyPassword(System.String,System.String)">
+            <summary>Valida uma senha contra um hash armazenado.</summary>
+        </member>
         <member name="T:LibDtudo.Shared.Utils.ValidaSenhaLogin">
             <summary>
-            Classe responsável por validar a senha do login.
+            Utilitario legado para validar senha a partir de um hash armazenado.
             </summary>
+        </member>
+        <member name="M:LibDtudo.Shared.Utils.ValidaSenhaLogin.ValidarSenhaDoLogin(System.String,System.String)">
+            <summary>Valida a senha informada contra um hash PBKDF2.</summary>
         </member>
     </members>
 </doc>

@@ -14,6 +14,7 @@
     <SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>
     <AssemblyTitle>WinAppDtudo</AssemblyTitle>
     <ApplicationIcon>Resources\YingYang_HD_Ico.ico</ApplicationIcon>
+    <NoWarn>$(NoWarn);0169</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -53,6 +54,9 @@
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

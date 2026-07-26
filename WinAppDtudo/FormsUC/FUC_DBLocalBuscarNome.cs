@@ -1,4 +1,5 @@
 using LibDtudo.Shared.Dtos;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 using WinAppDtudo.Controls;
 using WinAppDtudo.Services;
 
@@ -302,9 +303,9 @@ public class FUC_DBLocalBuscarNome : UserControl
 
     }
 
-    private static JikanAnimeCard MapearParaCard(ObterMyAnimeDto myAnime)
+    private static AnimeSearchCard MapearParaCard(ObterMyAnimeDto myAnime)
     {
-        return new JikanAnimeCard
+        return new AnimeSearchCard
         {
             MalId = myAnime.Id,
             Title = myAnime.Titulo,
@@ -316,9 +317,9 @@ public class FUC_DBLocalBuscarNome : UserControl
         };
     }
 
-    private static JikanAnimeCard MapearParaCard(ObterAnimeDto anime)
+    private static AnimeSearchCard MapearParaCard(ObterAnimeDto anime)
     {
-        return new JikanAnimeCard
+        return new AnimeSearchCard
         {
             MalId = anime.MalId,
             Title = !string.IsNullOrWhiteSpace(anime.Titulo) ? anime.Titulo : anime.Title,

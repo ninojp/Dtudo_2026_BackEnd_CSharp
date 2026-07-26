@@ -1,4 +1,5 @@
 using ApiMyAnimes.Data;
+using ApiMyAnimes.Configuration;
 using ApiMyAnimes.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -16,11 +17,15 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<AnimeBuscaLocalService>();
+builder.Services.AddSingleton<LocalAuthService>();
+builder.Services.AddOptions<AuthOptions>()
+    .Bind(builder.Configuration.GetSection(AuthOptions.SectionName))
+    .Validate(options => !string.IsNullOrWhiteSpace(options.UsersFilePath), "Auth:UsersFilePath nao configurado.");
 
-var apiJikanBaseUrl = builder.Configuration["ApiMyAnimeList:BaseUrl"] ?? "https://localhost:7146/";
-builder.Services.AddHttpClient<ApiJikanClient>(client =>
+var apiMyAnimeListBaseUrl = builder.Configuration["ApiMyAnimeList:BaseUrl"] ?? "https://localhost:7146/";
+builder.Services.AddHttpClient<MyAnimeListImportClient>(client =>
 {
-    client.BaseAddress = new Uri(apiJikanBaseUrl);
+    client.BaseAddress = new Uri(apiMyAnimeListBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
@@ -76,3 +81,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;

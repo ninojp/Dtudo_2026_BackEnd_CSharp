@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 using System.Net.Sockets;
 using System.Text.Json;
 
@@ -15,26 +16,22 @@ public sealed class MyAnimeListApiService
     private static readonly SemaphoreSlim ApiStartupLock = new(1, 1);
     private static bool _apiStartupAttempted;
 
-    public const string ApiBase = "http://127.0.0.1:5044";
+    public static string ApiBase => AppConfigurationService.ApiMyAnimeListBaseUrl;
 
     static MyAnimeListApiService()
     {
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        };
+        var handler = AppConfigurationService.CreateHttpClientHandler();
 
         HttpClient = new HttpClient(handler)
         {
-            BaseAddress = new Uri(ApiBase + "/"),
+            BaseAddress = new Uri(ApiBase.TrimEnd('/') + "/"),
             Timeout = TimeSpan.FromSeconds(120)
         };
     }
 
-    public async Task<JikanBuscaResult> BuscarPorNomeAsync(string query, int page = 1, CancellationToken cancellationToken = default)
+    public async Task<AnimeSearchResult> BuscarPorNomeAsync(string query, int page = 1, CancellationToken cancellationToken = default)
     {
-        var url = $"MyAnimeList/search?q={Uri.EscapeDataString(query)}&page={page}";
+        var url = $"ApiMyAnimeList/search?q={Uri.EscapeDataString(query)}&page={page}";
         HttpResponseMessage response;
         try
         {
@@ -51,15 +48,15 @@ public sealed class MyAnimeListApiService
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            return JsonSerializer.Deserialize<JikanBuscaResult>(json, JsonOptions) ?? new JikanBuscaResult();
+            return JsonSerializer.Deserialize<AnimeSearchResult>(json, JsonOptions) ?? new AnimeSearchResult();
         }
     }
 
-    public Task<JikanAnimeDetalhes?> BuscarPorIdAsync(int malId, CancellationToken cancellationToken = default)
-        => GetAsync<JikanAnimeDetalhes>($"MyAnimeList/{malId}", cancellationToken);
+    public Task<AnimeDetails?> BuscarPorIdAsync(int malId, CancellationToken cancellationToken = default)
+        => GetAsync<AnimeDetails>($"ApiMyAnimeList/{malId}", cancellationToken);
 
-    public Task<List<JikanAnimeRelacaoGroup>> BuscarRelacoesAsync(int malId, CancellationToken cancellationToken = default)
-        => GetAsync<List<JikanAnimeRelacaoGroup>>($"MyAnimeList/{malId}/relations", cancellationToken);
+    public async Task<List<AnimeRelationGroup>> BuscarRelacoesAsync(int malId, CancellationToken cancellationToken = default)
+        => await GetAsync<List<AnimeRelationGroup>>($"ApiMyAnimeList/{malId}/relations", cancellationToken) ?? [];
 
     private static async Task<T?> GetAsync<T>(string url, CancellationToken cancellationToken)
     {
@@ -104,10 +101,10 @@ public sealed class MyAnimeListApiService
             Process.Start(new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $"run --project \"{projectPath}\" --no-launch-profile --urls {ApiBase}",
+                Arguments = $"run --project \"{projectPath}\" --no-launch-profile --urls {AppConfigurationService.ApiMyAnimeListAutoStartUrl}",
                 WorkingDirectory = solutionRoot!.FullName,
-                UseShellExecute = true,
-                CreateNoWindow = false
+                UseShellExecute = false,
+                CreateNoWindow = true
             });
 
             for (var attempt = 0; attempt < 30; attempt++)
@@ -117,7 +114,7 @@ public sealed class MyAnimeListApiService
 
                 try
                 {
-                    using var healthResponse = await HttpClient.GetAsync("MyAnimeList/search?q=test&page=1", cancellationToken);
+                    using var healthResponse = await HttpClient.GetAsync("ApiMyAnimeList/health", cancellationToken);
                     if ((int)healthResponse.StatusCode < 500) return;
                 }
                 catch (HttpRequestException) { }

@@ -1,4 +1,5 @@
 using WinAppDtudo.Services;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 
 namespace WinAppDtudo.Controls;
 
@@ -23,7 +24,7 @@ public partial class UC_MiniAnimeCard : UserControl
     // ===================================================================
 
     /// <summary>Preenche o mini card com os dados do anime relacionado e inicia o carregamento da imagem.</summary>
-    public void CarregarDados(JikanRelacaoEntry entry)
+    public void CarregarDados(AnimeRelationEntry entry)
     {
         _malId = entry.MalId;
         Lbl_MalId.Text = $"ID: {entry.MalId}";

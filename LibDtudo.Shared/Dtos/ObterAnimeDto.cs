@@ -1,6 +1,6 @@
 namespace LibDtudo.Shared.Dtos;
 /// <summary>
-/// DTO para obter informações detalhadas de um anime, incluindo dados do MyAnime e informações adicionais da Jikan API.
+/// DTO para obter informações detalhadas de um anime, incluindo dados do MyAnime e informações adicionais da MyAnimeList API.
 /// </summary>
 public class ObterAnimeDto
 {

@@ -7,13 +7,22 @@
   "servers": [
     {
       "url": "https://localhost:7146"
-    },
-    {
-      "url": "http://localhost:5044"
     }
   ],
   "paths": {
-    "/MyAnimeList/search": {
+    "/ApiMyAnimeList/health": {
+      "get": {
+        "tags": [
+          "MyAnimeList"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ApiMyAnimeList/search": {
       "get": {
         "tags": [
           "MyAnimeList"
@@ -46,17 +55,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/CompatibleSearchResponse"
+                  "$ref": "#/components/schemas/AnimeSearchResult"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CompatibleSearchResponse"
+                  "$ref": "#/components/schemas/AnimeSearchResult"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CompatibleSearchResponse"
+                  "$ref": "#/components/schemas/AnimeSearchResult"
                 }
               }
             }
@@ -64,7 +73,7 @@
         }
       }
     },
-    "/MyAnimeList/{id}": {
+    "/ApiMyAnimeList/{id}": {
       "get": {
         "tags": [
           "MyAnimeList"
@@ -87,17 +96,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/CompatibleDetails"
+                  "$ref": "#/components/schemas/AnimeDetails"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CompatibleDetails"
+                  "$ref": "#/components/schemas/AnimeDetails"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CompatibleDetails"
+                  "$ref": "#/components/schemas/AnimeDetails"
                 }
               }
             }
@@ -105,7 +114,7 @@
         }
       }
     },
-    "/MyAnimeList/{id}/relations": {
+    "/ApiMyAnimeList/{id}/relations": {
       "get": {
         "tags": [
           "MyAnimeList"
@@ -130,7 +139,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CompatibleRelationGroup"
+                    "$ref": "#/components/schemas/AnimeRelationGroup"
                   }
                 }
               },
@@ -138,7 +147,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CompatibleRelationGroup"
+                    "$ref": "#/components/schemas/AnimeRelationGroup"
                   }
                 }
               },
@@ -146,7 +155,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CompatibleRelationGroup"
+                    "$ref": "#/components/schemas/AnimeRelationGroup"
                   }
                 }
               }
@@ -158,7 +167,7 @@
   },
   "components": {
     "schemas": {
-      "CompatibleDetails": {
+      "AnimeDetails": {
         "type": "object",
         "properties": {
           "malId": {
@@ -167,13 +176,15 @@
               "integer",
               "string"
             ],
+            "description": "ID do anime no MyAnimeList.",
             "format": "int32"
           },
           "url": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "URL publica do anime no MyAnimeList."
           },
           "images": {
             "oneOf": [
@@ -181,7 +192,8 @@
                 "type": "null"
               },
               {
-                "$ref": "#/components/schemas/CompatibleImages"
+                "description": "Colecao de imagens.",
+                "$ref": "#/components/schemas/AnimeImages"
               }
             ]
           },
@@ -189,7 +201,8 @@
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "URL de trailer."
           },
           "myAnimeID": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -197,46 +210,54 @@
               "integer",
               "string"
             ],
+            "description": "ID local de MyAnime, quando relacionado.",
             "format": "int32"
           },
           "approved": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Indica se o registro foi aprovado pela fonte externa."
           },
           "title": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Titulo principal."
           },
           "titleEnglish": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Titulo em ingles."
           },
           "titleJapanese": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Titulo japones."
           },
           "titleSynonyms": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Titulos alternativos."
           },
           "type": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Tipo da obra."
           },
           "source": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Fonte/origem da obra."
           },
           "episodes": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -245,34 +266,40 @@
               "integer",
               "string"
             ],
+            "description": "Quantidade de episodios.",
             "format": "int32"
           },
           "status": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Status de exibicao."
           },
           "airing": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Indica se esta em exibicao."
           },
           "aired": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Periodo de exibicao formatado."
           },
           "duration": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Duracao formatada."
           },
           "rating": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Classificacao indicativa."
           },
           "score": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
@@ -281,6 +308,7 @@
               "number",
               "string"
             ],
+            "description": "Pontuacao media.",
             "format": "double"
           },
           "scoredBy": {
@@ -290,6 +318,7 @@
               "integer",
               "string"
             ],
+            "description": "Quantidade de usuarios que pontuaram.",
             "format": "int32"
           },
           "rank": {
@@ -299,6 +328,7 @@
               "integer",
               "string"
             ],
+            "description": "Ranking na fonte externa.",
             "format": "int32"
           },
           "popularity": {
@@ -308,6 +338,7 @@
               "integer",
               "string"
             ],
+            "description": "Popularidade na fonte externa.",
             "format": "int32"
           },
           "members": {
@@ -317,6 +348,7 @@
               "integer",
               "string"
             ],
+            "description": "Quantidade de membros/listas.",
             "format": "int32"
           },
           "favorites": {
@@ -326,25 +358,29 @@
               "integer",
               "string"
             ],
+            "description": "Quantidade de favoritos.",
             "format": "int32"
           },
           "synopsis": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Sinopse."
           },
           "background": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Contexto adicional."
           },
           "season": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Temporada."
           },
           "year": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -353,53 +389,62 @@
               "integer",
               "string"
             ],
+            "description": "Ano de lancamento.",
             "format": "int32"
           },
           "producers": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Produtoras."
           },
           "licensors": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Licenciadores."
           },
           "studios": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Estudios."
           },
           "genres": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Generos."
           },
           "explicitGenres": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Generos explicitos."
           },
           "themes": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Temas."
           },
           "demographics": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Demografia/publico-alvo."
           }
-        }
+        },
+        "description": "Detalhes completos de anime retornado por ID."
       },
-      "CompatibleImages": {
+      "AnimeImages": {
         "type": "object",
         "properties": {
           "jpg": {
@@ -408,36 +453,42 @@
                 "type": "null"
               },
               {
-                "$ref": "#/components/schemas/CompatibleImageVariant"
+                "description": "Variante JPG.",
+                "$ref": "#/components/schemas/AnimeImageVariant"
               }
             ]
           }
-        }
+        },
+        "description": "Colecao de imagens do anime."
       },
-      "CompatibleImageVariant": {
+      "AnimeImageVariant": {
         "type": "object",
         "properties": {
           "imageUrl": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "URL padrao."
           },
           "smallImageUrl": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "URL pequena."
           },
           "largeImageUrl": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "URL grande."
           }
-        }
+        },
+        "description": "Variante de imagem do anime."
       },
-      "CompatibleRelationEntry": {
+      "AnimeRelationEntry": {
         "type": "object",
         "properties": {
           "malId": {
@@ -446,52 +497,61 @@
               "integer",
               "string"
             ],
+            "description": "ID do anime no MyAnimeList.",
             "format": "int32"
           },
           "type": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Tipo da entrada."
           },
           "name": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Nome/titulo da entrada."
           },
           "url": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "URL publica."
           },
           "imageUrl": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "URL da imagem."
           }
-        }
+        },
+        "description": "Entrada de um anime relacionado."
       },
-      "CompatibleRelationGroup": {
+      "AnimeRelationGroup": {
         "type": "object",
         "properties": {
           "relation": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Tipo de relacao."
           },
           "entry": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CompatibleRelationEntry"
-            }
+              "$ref": "#/components/schemas/AnimeRelationEntry"
+            },
+            "description": "Animes relacionados neste grupo."
           }
-        }
+        },
+        "description": "Grupo de relacoes de anime."
       },
-      "CompatibleSearchItem": {
+      "AnimeSearchCard": {
         "type": "object",
         "properties": {
           "malId": {
@@ -500,49 +560,57 @@
               "integer",
               "string"
             ],
+            "description": "ID do anime no MyAnimeList.",
             "format": "int32"
           },
           "url": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "URL publica do anime no MyAnimeList."
           },
           "title": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Titulo principal."
           },
           "titleEnglish": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Titulo em ingles, quando disponivel."
           },
           "titleJapanese": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Titulo japones, quando disponivel."
           },
           "titleSynonyms": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Titulos alternativos."
           },
           "imageUrl": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "URL da imagem principal."
           },
           "type": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Tipo da obra."
           },
           "episodes": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -551,13 +619,15 @@
               "integer",
               "string"
             ],
+            "description": "Quantidade de episodios.",
             "format": "int32"
           },
           "status": {
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Status de exibicao."
           },
           "score": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
@@ -566,6 +636,7 @@
               "number",
               "string"
             ],
+            "description": "Pontuacao media.",
             "format": "double"
           },
           "year": {
@@ -575,24 +646,28 @@
               "integer",
               "string"
             ],
+            "description": "Ano de lancamento.",
             "format": "int32"
           },
           "genres": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Generos associados."
           }
-        }
+        },
+        "description": "Resumo de anime retornado na busca por nome."
       },
-      "CompatibleSearchResponse": {
+      "AnimeSearchResult": {
         "type": "object",
         "properties": {
           "results": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CompatibleSearchItem"
-            }
+              "$ref": "#/components/schemas/AnimeSearchCard"
+            },
+            "description": "Animes encontrados na pagina atual."
           },
           "currentPage": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -600,6 +675,7 @@
               "integer",
               "string"
             ],
+            "description": "Pagina atual, iniciando em 1.",
             "format": "int32"
           },
           "totalPages": {
@@ -608,10 +684,12 @@
               "integer",
               "string"
             ],
+            "description": "Total estimado de paginas disponiveis.",
             "format": "int32"
           },
           "hasNextPage": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Indica se existe proxima pagina."
           },
           "totalResults": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -619,9 +697,11 @@
               "integer",
               "string"
             ],
+            "description": "Total estimado de resultados.",
             "format": "int32"
           }
-        }
+        },
+        "description": "Resultado paginado de busca de animes na API local ApiMyAnimeList."
       }
     }
   },

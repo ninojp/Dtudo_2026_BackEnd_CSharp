@@ -15,33 +15,33 @@ namespace ApiMyAnimes.Controllers;
 /// Disponibiliza endpoints de criação, leitura, atualização (total e parcial) e exclusão.
 /// </summary>
 /// <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
-/// <param name="apiJikanClient"></param>
+/// <param name="myAnimeListImportClient"></param>
 /// <param name="animeBuscaLocalService"></param>
 /// <param name="logger"></param>
 [ApiController]
 [Route("apiLocal/[controller]")]
 public class AnimeController(
     MyAnimesContext context,
-    ApiJikanClient apiJikanClient,
+    MyAnimeListImportClient myAnimeListImportClient,
     AnimeBuscaLocalService animeBuscaLocalService,
     ILogger<AnimeController> logger) : ControllerBase
 {
-    private readonly ApiJikanClient _apiJikanClient = apiJikanClient;
+    private readonly MyAnimeListImportClient _myAnimeListImportClient = myAnimeListImportClient;
     private readonly AnimeBuscaLocalService _animeBuscaLocalService = animeBuscaLocalService;
     private readonly ILogger<AnimeController> _logger = logger;
     /// <summary>
     /// Adiciona um novo anime na tabela local de animes.
-    /// Pode criar diretamente via corpo da requisição ou importar da ApiJikan via <c>jikanId</c> na query string.
+    /// Pode criar diretamente via corpo da requisição ou importar da ApiMyAnimeList via <c>malId</c> na query string.
     /// O <c>MalId</c> é utilizado como chave primária e deve ser único.
     /// </summary>
     /// <param name="adicionaAnimeDto">Dados necessários para criação direta no banco local.</param>
-    /// <param name="jikanId">ID opcional para importar dados da ApiJikan e persistir localmente.</param>
+    /// <param name="malId">ID opcional para importar dados da ApiMyAnimeList e persistir localmente.</param>
     /// <returns>
     /// Retorna <c>201 Created</c> quando criado com sucesso,
     /// <c>400 BadRequest</c> para entrada inválida,
-    /// <c>404 NotFound</c> quando o anime não existe na ApiJikan,
+    /// <c>404 NotFound</c> quando o anime não existe na ApiMyAnimeList,
     /// <c>409 Conflict</c> quando já existe anime com o mesmo <c>MalId</c>,
-    /// ou <c>502 BadGateway</c> quando a ApiJikan está indisponível.
+    /// ou <c>502 BadGateway</c> quando a ApiMyAnimeList está indisponível.
     /// </returns>
     [HttpPost]
     [ProducesResponseType(typeof(ObterAnimeDto), StatusCodes.Status201Created)]
@@ -49,31 +49,31 @@ public class AnimeController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
-    public async Task<IActionResult> AdicionarAnime([FromBody] AdicionaAnimeDto? adicionaAnimeDto, [FromQuery] int? jikanId = null)
+    public async Task<IActionResult> AdicionarAnime([FromBody] AdicionaAnimeDto? adicionaAnimeDto, [FromQuery] int? malId = null)
     {
-        if (jikanId.HasValue)
+        if (malId.HasValue)
         {
-            if (jikanId.Value <= 0) return BadRequest("jikanId deve ser um número positivo.");
+            if (malId.Value <= 0) return BadRequest("malId deve ser um número positivo.");
 
-            var animeExistentePorImportacao = context.Animes.FirstOrDefault(a => a.MalId == jikanId.Value);
-            if (animeExistentePorImportacao is not null) return Conflict($"Anime com MalId {jikanId.Value} já existe.");
+            var animeExistentePorImportacao = context.Animes.FirstOrDefault(a => a.MalId == malId.Value);
+            if (animeExistentePorImportacao is not null) return Conflict($"Anime com MalId {malId.Value} já existe.");
 
             AnimeImportData? animeImportado;
             try
             {
-                animeImportado = await _apiJikanClient.ObterAnimePorIdAsync(jikanId.Value, HttpContext.RequestAborted);
+                animeImportado = await _myAnimeListImportClient.ObterAnimePorIdAsync(malId.Value, HttpContext.RequestAborted);
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                return NotFound($"Anime com MalId {jikanId.Value} não encontrado na ApiJikan.");
+                return NotFound($"Anime com MalId {malId.Value} não encontrado na ApiMyAnimeList.");
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Falha ao consultar ApiJikan para o MalId {MalId}", jikanId.Value);
-                return StatusCode(StatusCodes.Status502BadGateway, "Falha ao consultar ApiJikan.");
+                _logger.LogError(ex, "Falha ao consultar ApiMyAnimeList para o MalId {MalId}", malId.Value);
+                return StatusCode(StatusCodes.Status502BadGateway, "Falha ao consultar ApiMyAnimeList.");
             }
 
-            if (animeImportado is null) return NotFound($"Anime com MalId {jikanId.Value} não encontrado na ApiJikan.");
+            if (animeImportado is null) return NotFound($"Anime com MalId {malId.Value} não encontrado na ApiMyAnimeList.");
 
             var animeImportacao = new Anime
             {

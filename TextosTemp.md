@@ -1,7 +1,7 @@
-# Abaixo vou descrever minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "Dtudo2026" e seus projetos internos relacionados
-
 PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA.
 EU CRIEI TODOS OS PROJETOS, ME PERGUNTE SE PRECISAR DE ALGUMA INFORMAÇÃO SOBRE ALGUM PROJETO.
+
+Abaixo vou descrever minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "Dtudo2026" e seus projetos internos relacionados
 
 Após as descrições, vou detalhar o que quero que seja feito.
 
@@ -12,7 +12,7 @@ O projeto ApiNode (deve ser ignorado) está sendo gradativamente sendo substitu�
 Projeto LibDtudo.Shared - Biblioteca para compartilhar Dtos, Modelos, Utils... entre os projetos dentro da solução Dtudo2026.
 
 Projeto ApiMyAnimes - Api Local MyAnimes (CRUD completo, documentada com Swagger) - https://localhost:63980
-Esta é uma Api Local que manipula Meu Banco de dados, Relacional (SQL Server) que contém minhas coleções, MyAnimes e seus Animes.  
+Esta é uma Api Local que manipula Meu Banco de dados, Relacional (SQL Server) que contém minhas coleções, MyAnimes e seus Animes relacionados.  
 (/apiLocal/MyAnime) MyAnime (tabela_db) representa as coleções nomeadas MyAnime por titulo e uma lista de IDs de animes relacionados.
 (/apiLocal/Anime) Anime (tabela_db) contém informações detalhadas sobre cada anime.
 
@@ -27,8 +27,15 @@ Busca os animes relacionados a um anime específico pelo ID do MyAnimeList. Util
 
 Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação de dados (Lê e grava no DB_Local e em disco local, pastas e arquivos).
 
+Agora quero que entenda que havia um projeto chamado API externa antiga, que foi descontinuado e removido e está sendo substituído pelo projeto ApiMyAnimeList.
+Ainda existem muitas referências (códigos, arquivos de configuração, comentários, nomes legados da API externa antiga) ao projeto API externa antiga, em WinAppDtudo, LibDtudo.Shared, ApiMyAnimes, ApiMyAnimeList, e DtudoSite. Quero que você me ajude a localizar e substituir todas essas referências ao projeto API externa antiga, para que tudo fique consistente com o novo projeto ApiMyAnimeList.
+Aproveite que tera que ler a sulução quase toda, para localizar e substituir todas as Falhas, Erros, inconsistências, problemas de nomenclatura, problemas de arquitetura, problemas de modularização, problemas de performance, problemas de segurança, problemas de usabilidade, problemas de acessibilidade, problemas de responsividade, problemas de compatibilidade, problemas de manutenção, problemas de documentação, problemas de testes, problemas de integração, problemas de deploy, problemas de versionamento, problemas de licenciamento, problemas legais e quaisquer outros problemas que você encontrar. E crie uma lista em arquivo.md, detalhada de tudo que você encontrou, com sugestões de melhorias, correções e implementações necessárias.
+
+
+
+
 -------------------------------------------------------------------------------------------------------------------------------------
-Projeto ApiJikan
+Projeto API externa antiga
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
 
@@ -77,6 +84,8 @@ Estou recebendo este aviso (Este projeto está definido para abrir o Designer Wi
 <ApplicationHighDpiMode>SystemAware</ApplicationHighDpiMode>
 <ApplicationDefaultFont>Microsoft Sans Serif, 8.25pt</ApplicationDefaultFont>
 
+
+
 ```
 Dragon Ball/                        (usaremos este nome da pasta como myAnime.titulo)
 |
@@ -85,54 +94,3 @@ Dragon Ball/                        (usaremos este nome da pasta como myAnime.ti
 ├── 📁 1996 Dragon Ball Z - Filme/
 │   ├── 54322.jpg 
 ```
-```
-WinAppDtudo/
-│
-├── 📁 Services/
-│   ├── DarkModeColors.cs          ⭐ Paleta de cores do tema
-│   ├── ThemeManager.cs            ⭐ Gerenciador centralizado
-│   ├── ImageLoaderService.cs      (existente - sem mudanças)
-│   ├── JikanApiService.cs         (existente - sem mudanças)
-│   └── JikanModels.cs             (existente - sem mudanças)
-│
-├── 📁 Helpers/
-│   └── FormHelpers.cs             ⭐ Classes base para formulários
-│
-├── 📁 Forms/
-│   ├── Frm_WinAppDtudo.cs         ✏️ MODIFICADO - Tema aplicado
-│   ├── Frm_Login.cs               ✏️ MODIFICADO - Exemplo
-│   ├── Frm_CadastrarUsuario.cs    (próximo a migrar)
-│   ├── Frm_MyAnimes.cs            (próximo a migrar)
-│   └── ... (resto dos formulários)
-│
-├── 📁 FormsUC/
-│   ├── FUC_BuscarPorID.cs         (próximo a migrar)
-│   ├── FUC_DetalhesAnime.cs       (próximo a migrar)
-│   └── ... (rest dos UserControls)
-│
-├── 📁 Controls/
-│   ├── UC_AnimeCard.cs            (próximo a migrar)
-│   └── UC_MiniAnimeCard.cs        (próximo a migrar)
-│
-├── 📄 Program.cs                  ✏️ MODIFICADO - Inicializa tema
-│
-├── 📖 DARK_MODE_GUIDE.md          ⭐ Documentação completa
-├── 📖 SETUP_DARK_MODE_RESUMO.md   ⭐ Resumo rápido
-└── ... (pasta de projeto)
-```
-#### Forms principais
-- [ ] `Frm_CadastrarUsuario.cs`
-- [ ] `Frm_FormTest.cs`
-- [ ] `Frm_HelloWorld.cs`
-- [ ] `Frm_MyAnimes.cs`
-- [ ] `Frm_MyMusicX.cs`
-- [ ] `Frm_Questao.cs`
-
-#### UserControls
-- [ ] `FUC_BuscarPorID.cs`
-- [ ] `FUC_BuscarPorNome.cs`
-- [ ] `FUC_CadastrarUsuario.cs`
-- [ ] `FUC_DetalhesAnime.cs`
-- [ ] `FUC_Mascaras.cs`
-- [ ] `UC_AnimeCard.cs`
-- [ ] `UC_MiniAnimeCard.cs`

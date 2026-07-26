@@ -21,7 +21,7 @@ public class MyAnimesContext: DbContext
     public DbSet<MyAnime> MyAnimes { get; set; }
 
     /// <summary>
-    /// Representa a tabela de animes importados da ApiJikan no banco de dados.
+    /// Representa a tabela de animes importados da ApiMyAnimeList no banco de dados.
     /// </summary>
     public DbSet<Anime> Animes { get; set; }
 

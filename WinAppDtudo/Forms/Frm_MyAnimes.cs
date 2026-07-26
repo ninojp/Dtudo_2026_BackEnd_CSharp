@@ -14,12 +14,10 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     private AnaliseEstruturas? _ultimaAnaliseEstruturas;
     public int _tabIndexMascaras = 0;
     public int _tabIndexMyAnimesPorNome = 0;
-    public int _tabIndexApiJikanPorNome = 0;
     public int _tabIndexApiMyAnimeListPorNome = 0;
     public Frm_MyAnimes()
     {
         InitializeComponent();
-        MnI_ApiJikanBuscarNome.Click += MnI_ApiJikanBuscarNome_Click;
         MnI_ApiMyAnimeListBuscarNome.Click += MnI_ApiMyAnimeListBuscarNome_Click;
         Tbc_MyAnimes.Selected += Tbc_MyAnimes_Selected;
         // Aplicar o tema Dark Mode ao formulário e seus componentes
@@ -29,35 +27,6 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         AddControlButtonsToMenuStrip(Mnu_MenuMyAnimes);
     }
 
-    private void MnI_ApiMyAnimeListBuscarNome_Click(object sender, EventArgs e)
-    {
-        _tabIndexApiMyAnimeListPorNome++;
-        try
-        {
-            var ucBuscaApiMyAnimeList = new FUC_ApiMyAnimeListBuscarNome
-            {
-                Dock = DockStyle.Fill
-            };
-            ucBuscaApiMyAnimeList.AnimeMyAnimeListSelecionado += AbrirDetalhesAnimeMyAnimeList;
-            TabPage tabPage = new()
-            {
-                Text = $"{_tabIndexApiMyAnimeListPorNome} MAL",
-                Name = $"ID_{_tabIndexApiMyAnimeListPorNome}",
-                ImageIndex = 1,
-            };
-            tabPage.Controls.Add(ucBuscaApiMyAnimeList);
-            Tbc_MyAnimes.TabPages.Add(tabPage);
-            Tbc_MyAnimes.SelectedTab = tabPage;
-        }
-        catch (Exception ex)
-        {
-            _tabIndexApiMyAnimeListPorNome = Math.Max(0, _tabIndexApiMyAnimeListPorNome - 1);
-            MessageBox.Show($"Erro ao abrir a aba ApiMyAnimeList:\n{ex.Message}",
-                "Erro",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
-        }
-    }
     //=============================================================================
     private void MnI_ProcurarAnimePorNome_Click(object sender, EventArgs e)
     {
@@ -92,33 +61,33 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         }
     }
 
-    private void MnI_ApiJikanBuscarNome_Click(object sender, EventArgs e)
+    private void MnI_ApiMyAnimeListBuscarNome_Click(object? sender, EventArgs e)
     {
-        _tabIndexApiJikanPorNome++;
+        _tabIndexApiMyAnimeListPorNome++;
         try
         {
-            var ucBuscaApiJikan = new FUC_ApiJikanBuscarNome
+            var ucBuscaApiMyAnimeList = new FUC_ApiMyAnimeListBuscarNome
             {
                 Dock = DockStyle.Fill
             };
 
-            ucBuscaApiJikan.AnimeJikanSelecionado += AbrirDetalhesAnimeJikan;
+            ucBuscaApiMyAnimeList.AnimeMyAnimeListSelecionado += AbrirDetalhesAnimeMyAnimeList;
 
             TabPage tabPage = new()
             {
-                Text = $"{_tabIndexApiJikanPorNome} ApiJikan",
-                Name = $"ApiJikan_{_tabIndexApiJikanPorNome}",
+                Text = $"{_tabIndexApiMyAnimeListPorNome} ApiMyAnimeList",
+                Name = $"ApiMyAnimeList_{_tabIndexApiMyAnimeListPorNome}",
                 ImageIndex = 1,
             };
 
-            tabPage.Controls.Add(ucBuscaApiJikan);
+            tabPage.Controls.Add(ucBuscaApiMyAnimeList);
             Tbc_MyAnimes.TabPages.Add(tabPage);
             Tbc_MyAnimes.SelectedTab = tabPage;
         }
         catch (Exception ex)
         {
-            _tabIndexApiJikanPorNome = Math.Max(0, _tabIndexApiJikanPorNome - 1);
-            MessageBox.Show($"Erro ao abrir a aba ApiJikan:\n{ex.Message}",
+            _tabIndexApiMyAnimeListPorNome = Math.Max(0, _tabIndexApiMyAnimeListPorNome - 1);
+            MessageBox.Show($"Erro ao abrir a aba ApiMyAnimeList:\n{ex.Message}",
                 "Erro",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -357,15 +326,11 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
 
     //=============================================================================
     private void AbrirDetalhesAnimeMyAnimeList(object? sender, int malId)
-        => AbrirDetalhesAnime(malId, usarJikan: false);
+        => AbrirDetalhesAnime(malId);
 
-    private void AbrirDetalhesAnimeJikan(object? sender, int malId)
-        => AbrirDetalhesAnime(malId, usarJikan: true);
-
-    private void AbrirDetalhesAnime(int malId, bool usarJikan)
+    private void AbrirDetalhesAnime(int malId)
     {
-        var origem = usarJikan ? "Jikan" : "MyAnimeList";
-        var tabName = $"{origem} {malId}";
+        var tabName = $"MyAnimeList {malId}";
         var tabExistente = Tbc_MyAnimes.TabPages
             .Cast<TabPage>().FirstOrDefault(tp => tp.Name == tabName);
         if (tabExistente != null)
@@ -374,11 +339,11 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             return;
         }
 
-        var ucDetalhes = new FUC_DetalhesAnime(malId, usarJikan)
+        var ucDetalhes = new FUC_DetalhesAnime(malId)
         {
             Dock = DockStyle.Fill
         };
-        ucDetalhes.CardClicado += usarJikan ? AbrirDetalhesAnimeJikan : AbrirDetalhesAnimeMyAnimeList;
+        ucDetalhes.CardClicado += AbrirDetalhesAnimeMyAnimeList;
         ucDetalhes.MyAnimeExistenteSelecionado += AbrirDetalhesMyAnime;
         ucDetalhes.MyAnimeAtualizado += (_, myAnimeId) =>
         {

@@ -5,7 +5,8 @@ Treat this repository as one full-stack workspace, not as separate apps.
 ## Workspace boundary
 
 - Repository root is the source of truth.
-- Visual Studio may open `LibDtudo.Shared.slnx`, but `DtudoSite/`, `ApiNode/`, `ApiMyAnimes/`, `ApiJikan/`, `WinAppDtudo/` are all part of the same product.
+- Visual Studio may open `LibDtudo.Shared.slnx`, but `DtudoSite/`, `ApiMyAnimes/`, `ApiMyAnimeList/`, `LibDtudo.Shared/`, and `WinAppDtudo/` are all part of the same product.
+- `ApiNode/` is legacy and should be ignored unless a task explicitly asks for one of its remaining utilities.
 - Backend targets .NET 10.
 
 ## Main areas
@@ -19,12 +20,12 @@ Treat this repository as one full-stack workspace, not as separate apps.
 - Shared state: `DtudoSite/src/context_api/`
 - Feature areas: `MyAnimes`, `Animes`, `Animex`, `MyMusicX`, `NinoTI`, `auth`
 
-### Node utilities
+### Legacy Node utilities
 
 - Path: `ApiNode/`
 - Local JSON server data: `ApiNode/db/animacoes.json`
 - Music proxy: `ApiNode/mymusicx/discogsProxy.js`
-- Helper scripts are part of the development workflow and may support frontend features directly.
+- These scripts are being replaced by `ApiMyAnimes` and `ApiMyAnimeList`; inspect them only when the current request clearly depends on legacy data/proxy behavior.
 
 
 ## Working rules
@@ -33,7 +34,7 @@ Treat this repository as one full-stack workspace, not as separate apps.
 - Do not assume a request belongs to only one stack.
 - If a route or page changes, inspect frontend router and owning providers.
 - If an endpoint or payload changes, inspect backend controller/service/model and frontend consumers.
-- If data or proxy behavior changes, inspect `ApiNode/` before assuming the C# API owns it.
+- Treat `ApiMyAnimes` and `ApiMyAnimeList` as the preferred API owners for anime data.
 - Keep changes minimal and local unless the feature clearly spans layers.
 
 ## Useful commands

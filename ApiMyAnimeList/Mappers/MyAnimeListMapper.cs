@@ -1,15 +1,16 @@
 using ApiMyAnimeList.Dtos;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 
 namespace ApiMyAnimeList.Mappers;
 
 public static class MyAnimeListMapper
 {
-    public static CompatibleSearchResponse MapSearch(MalPagedResponse<MalAnimeNode> source, int page, int limit)
+    public static AnimeSearchResult MapSearch(MalPagedResponse<MalAnimeNode> source, int page, int limit)
     {
         var results = source.Data.Where(x => x.Node is not null).Select(x =>
         {
             var anime = x.Node!;
-            return new CompatibleSearchItem
+            return new AnimeSearchCard
             {
                 MalId = anime.Id,
                 Url = Url(anime.Id),
@@ -28,7 +29,7 @@ public static class MyAnimeListMapper
         }).ToList();
 
         var hasNext = !string.IsNullOrWhiteSpace(source.Paging?.Next);
-        return new CompatibleSearchResponse
+        return new AnimeSearchResult
         {
             Results = results,
             CurrentPage = page,
@@ -38,11 +39,11 @@ public static class MyAnimeListMapper
         };
     }
 
-    public static CompatibleDetails MapDetails(MalAnimeNode anime) => new()
+    public static AnimeDetails MapDetails(MalAnimeNode anime) => new()
     {
         MalId = anime.Id,
         Url = Url(anime.Id),
-        Images = new CompatibleImages { Jpg = new CompatibleImageVariant { ImageUrl = anime.MainPicture?.Medium, SmallImageUrl = anime.MainPicture?.Medium, LargeImageUrl = anime.MainPicture?.Large } },
+        Images = new AnimeImages { Jpg = new AnimeImageVariant { ImageUrl = anime.MainPicture?.Medium, SmallImageUrl = anime.MainPicture?.Medium, LargeImageUrl = anime.MainPicture?.Large } },
         Approved = true,
         Title = anime.Title,
         TitleEnglish = anime.AlternativeTitles?.English,
@@ -69,13 +70,13 @@ public static class MyAnimeListMapper
         Genres = Names(anime.Genres)
     };
 
-    public static List<CompatibleRelationGroup> MapRelations(MalAnimeNode anime) => anime.RelatedAnime
+    public static List<AnimeRelationGroup> MapRelations(MalAnimeNode anime) => anime.RelatedAnime
         .Where(x => x.Node is not null && !string.IsNullOrWhiteSpace(x.RelationType))
         .GroupBy(x => x.RelationType!, StringComparer.OrdinalIgnoreCase)
-        .Select(x => new CompatibleRelationGroup
+        .Select(x => new AnimeRelationGroup
         {
             Relation = x.Key,
-            Entry = x.Select(item => item.Node!).Select(item => new CompatibleRelationEntry
+            Entry = x.Select(item => item.Node!).Select(item => new AnimeRelationEntry
             {
                 MalId = item.Id,
                 Type = "anime",

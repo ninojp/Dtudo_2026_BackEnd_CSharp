@@ -1,4 +1,5 @@
 using LibDtudo.Shared.Dtos;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 using System.Net;
 
 namespace WinAppDtudo.Services;
@@ -136,7 +137,7 @@ public class ImportadorAnimesMyAnimeService
         }
     }
 
-    private async Task<JikanAnimeDetalhes?> BuscarAnimeComRetryAsync(
+    private async Task<AnimeDetails?> BuscarAnimeComRetryAsync(
         string tituloMyAnime,
         int malId,
         List<string> errosDetalhados,

@@ -1,4 +1,5 @@
 using System.Globalization;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 using System.Text.RegularExpressions;
 using LibDtudo.Shared.Dtos;
 
@@ -6,7 +7,7 @@ namespace WinAppDtudo.Services;
 
 public static class ConversorAnimeDtoService
 {
-    public static AdicionaAnimeDto CriarAdicionaAnimeDto(JikanAnimeDetalhes anime, int myAnimeId)
+    public static AdicionaAnimeDto CriarAdicionaAnimeDto(AnimeDetails anime, int myAnimeId)
     {
         var episodiosInformados = anime.Episodes is > 0 ? anime.Episodes : null;
         var episodios = episodiosInformados ?? 1;
@@ -64,7 +65,7 @@ public static class ConversorAnimeDtoService
         };
     }
 
-    private static int? DeterminarAnoLancamento(JikanAnimeDetalhes anime)
+    private static int? DeterminarAnoLancamento(AnimeDetails anime)
     {
         if (anime.Year.HasValue)
             return anime.Year.Value;

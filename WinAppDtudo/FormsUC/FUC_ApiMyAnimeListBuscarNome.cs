@@ -1,4 +1,5 @@
 using System.Net;
+using LibDtudo.Shared.Dtos.MyAnimeList;
 using System.Text.RegularExpressions;
 using WinAppDtudo.Controls;
 using WinAppDtudo.Services;
@@ -229,7 +230,7 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
         }
     }
 
-    private static JikanAnimeCard MapearParaCard(JikanAnimeDetalhes anime)
+    private static AnimeSearchCard MapearParaCard(AnimeDetails anime)
         => new()
         {
             MalId = anime.MalId,
