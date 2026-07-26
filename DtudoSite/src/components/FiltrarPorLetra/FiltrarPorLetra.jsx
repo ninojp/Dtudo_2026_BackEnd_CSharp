@@ -1,7 +1,9 @@
 import styles from './FiltrarPorLetra.module.css';
 
-export default function FiltrarPorLetra({ letraSelecionada, setLetraSelecionada }) {
+export default function FiltrarPorLetra({ letraSelecionada, setLetraSelecionada, exibirNumericos = false }) {
     const letras = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
+    const opcoes = exibirNumericos ? ['#', ...letras] : letras;
+
     return (
         <div className={styles.divFiltrarLetra}>
             <select className={styles.selectLetra}
@@ -9,7 +11,7 @@ export default function FiltrarPorLetra({ letraSelecionada, setLetraSelecionada 
                 onChange={(e) => setLetraSelecionada(e.target.value)}
             >
                 <option value="">Letra</option>
-                {letras.map(letra => (
+                {opcoes.map(letra => (
                     <option key={letra} value={letra}>
                         {letra}
                     </option>

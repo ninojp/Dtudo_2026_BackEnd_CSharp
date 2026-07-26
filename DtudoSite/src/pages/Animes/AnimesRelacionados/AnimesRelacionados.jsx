@@ -12,8 +12,11 @@ import {
     obterColecoesComAnime,
     obterIdAnime,
     obterTituloAnime,
+    idsDaColecao,
 } from '../../../utils/animeContentUtils';
 import styles from './AnimesRelacionados.module.css';
+
+const formatarTotalAnimesColecao = (total) => `${total} ${total === 1 ? 'Anime' : 'Animes'}`;
 
 export default function AnimesRelacionados() {
     const { malId } = useParams();
@@ -65,12 +68,10 @@ export default function AnimesRelacionados() {
     const colecoesComAnime = useMemo(() => obterColecoesComAnime(colecoes, malIdNumerico), [colecoes, malIdNumerico]);
 
     const animesRelacionados = useMemo(() => obterAnimesRelacionados({
-        animeAtual,
         colecoesComAnime,
         incluirAdultos: isAuthenticated,
         listObjsDetalhesAnimes,
-        malId: malIdNumerico,
-    }), [animeAtual, colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes, malIdNumerico]);
+    }), [colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes]);
 
     if (animesCarregando || isLoadingColecoes) {
         return <main className={styles.mainRelacionados}>Loading...</main>;
@@ -99,8 +100,16 @@ export default function AnimesRelacionados() {
 
                 {colecoesComAnime.length > 0 && (
                     <section className={styles.sectionColecoes}>
-                        <h3>Colecoes</h3>
-                        <p>{colecoesComAnime.map((colecao) => colecao.titulo).join(', ')}</p>
+                        {colecoesComAnime.map((colecao) => {
+                            const totalAnimes = idsDaColecao(colecao).length;
+
+                            return (
+                                <div key={colecao.id ?? colecao.titulo} className={styles.divColecao}>
+                                    <p><strong>Coleção MyAnime:</strong> {colecao.titulo}</p>
+                                    <p>Esta coleção tem {formatarTotalAnimesColecao(totalAnimes)}.</p>
+                                </div>
+                            );
+                        })}
                     </section>
                 )}
 

@@ -11,15 +11,17 @@
             </summary>
             <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
             <param name="apiJikanClient"></param>
+            <param name="animeBuscaLocalService"></param>
             <param name="logger"></param>
         </member>
-        <member name="M:ApiMyAnimes.Controllers.AnimeController.#ctor(ApiMyAnimes.Data.MyAnimesContext,ApiMyAnimes.Services.ApiJikanClient,Microsoft.Extensions.Logging.ILogger{ApiMyAnimes.Controllers.AnimeController})">
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.#ctor(ApiMyAnimes.Data.MyAnimesContext,ApiMyAnimes.Services.ApiJikanClient,ApiMyAnimes.Services.AnimeBuscaLocalService,Microsoft.Extensions.Logging.ILogger{ApiMyAnimes.Controllers.AnimeController})">
             <summary>
             Controlador responsável por gerenciar os registros da entidade <see cref="T:LibDtudo.Shared.Models.Anime"/> em banco local.
             Disponibiliza endpoints de criação, leitura, atualização (total e parcial) e exclusão.
             </summary>
             <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
             <param name="apiJikanClient"></param>
+            <param name="animeBuscaLocalService"></param>
             <param name="logger"></param>
         </member>
         <member name="M:ApiMyAnimes.Controllers.AnimeController.AdicionarAnime(LibDtudo.Shared.Dtos.AdicionaAnimeDto,System.Nullable{System.Int32})">
@@ -48,6 +50,14 @@
             Retorna <c>200 OK</c> com a lista paginada,
             ou <c>400 BadRequest</c> quando parâmetros de paginação são inválidos.
             </returns>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.BuscarAnimes(System.String,System.Int32)">
+            <summary>
+            Busca animes localmente priorizando colecoes MyAnime e, se nenhuma colecao for encontrada,
+            procurando nos titulos e titulos alternativos dos animes individuais.
+            </summary>
+            <param name="termo">Texto pesquisado pelo usuario.</param>
+            <param name="take">Quantidade maxima de animes retornados.</param>
         </member>
         <member name="M:ApiMyAnimes.Controllers.AnimeController.ObterAnimePorId(System.Int32)">
             <summary>
@@ -227,6 +237,32 @@
         </member>
         <member name="M:ApiMyAnimes.Migrations.CampoMyAnimeIdAdicionado.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
+        </member>
+        <member name="T:ApiMyAnimes.Services.AnimeBuscaLocalService">
+            <summary>
+            Executa a busca local de animes com prioridade para colecoes MyAnime.
+            </summary>
+            <param name="context">Contexto do banco local.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Services.AnimeBuscaLocalService.#ctor(ApiMyAnimes.Data.MyAnimesContext)">
+            <summary>
+            Executa a busca local de animes com prioridade para colecoes MyAnime.
+            </summary>
+            <param name="context">Contexto do banco local.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Services.AnimeBuscaLocalService.BuscarAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Busca animes pelo termo informado.
+            </summary>
+            <param name="termo">Termo digitado pelo usuario.</param>
+            <param name="take">Quantidade maxima de resultados.</param>
+            <param name="cancellationToken">Token de cancelamento da requisicao.</param>
+            <returns>Lista de animes encontrados.</returns>
+        </member>
+        <member name="T:ApiMyAnimes.Services.AnimeSearchTextNormalizer">
+            <summary>
+            Normaliza textos para comparacoes de busca tolerantes a acentos, pontuacao e espacos.
+            </summary>
         </member>
         <member name="T:ApiMyAnimes.Services.ApiJikanClient">
             <summary>

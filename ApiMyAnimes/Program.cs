@@ -15,6 +15,7 @@ builder.Services.AddDbContext<MyAnimesContext>(opts => opts.UseSqlServer(localDb
 builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.AddMemoryCache();
+builder.Services.AddScoped<AnimeBuscaLocalService>();
 
 var apiJikanBaseUrl = builder.Configuration["ApiMyAnimeList:BaseUrl"] ?? "https://localhost:7146/";
 builder.Services.AddHttpClient<ApiJikanClient>(client =>

@@ -32,6 +32,19 @@ export async function buscarAnimePorMalId(malId, signal) {
     return response.data;
 }
 
+export async function buscarAnimesDaApiLocalPorTermo(termo, signal) {
+    const response = await axiosHttpApiLocalMyAnimes().get('/apiLocal/Anime/buscar', {
+        params: { termo, take: TAMANHO_PAGINA_API_LOCAL },
+        signal,
+    });
+
+    if (!Array.isArray(response.data)) {
+        throw new TypeError('A ApiMyAnimes retornou uma resposta de busca invalida.');
+    }
+
+    return response.data;
+}
+
 export async function buscarTodasColecoesMyAnimeDaApiLocal(signal) {
     const cliente = axiosHttpApiLocalMyAnimes();
     let skip = 0;

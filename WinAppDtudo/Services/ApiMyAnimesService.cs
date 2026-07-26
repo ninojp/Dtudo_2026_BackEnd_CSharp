@@ -39,7 +39,17 @@ public class ApiMyAnimesService
                 Results = []
             };
 
-        var termo = query.Trim();
+        var termo = AnimeSearchTextNormalizer.Normalize(query);
+        if (termo.IsEmpty)
+            return new ApiAnimesBuscaResult
+            {
+                CurrentPage = 1,
+                TotalPages = 1,
+                HasNextPage = false,
+                TotalResults = 0,
+                Results = []
+            };
+
         var todos = new List<ObterAnimeDto>();
         var skip = 0;
         const int take = 200;
@@ -59,21 +69,16 @@ public class ApiMyAnimesService
         }
 
         var filtrados = todos
-            .Where(a =>
+            .Select(a => new
             {
-                var titulos = new[]
-                {
-                    a.Titulo,
-                    a.Title,
-                    a.TitleEnglish,
-                    a.TitleJapanese
-                }.Concat(a.TitleSynonyms ?? []);
-
-                return titulos.Any(t => !string.IsNullOrWhiteSpace(t)
-                    && t.Contains(termo, StringComparison.OrdinalIgnoreCase));
+                Anime = a,
+                Score = CalcularScoreAnime(a, termo)
             })
-            .OrderBy(a => a.Titulo)
-            .ThenBy(a => a.MalId)
+            .Where(resultado => resultado.Score > 0)
+            .OrderByDescending(resultado => resultado.Score)
+            .ThenBy(resultado => resultado.Anime.Titulo)
+            .ThenBy(resultado => resultado.Anime.MalId)
+            .Select(resultado => resultado.Anime)
             .ToList();
 
         var totalResultados = filtrados.Count;
@@ -106,7 +111,17 @@ public class ApiMyAnimesService
                 Results = []
             };
 
-        var termo = query.Trim();
+        var termo = AnimeSearchTextNormalizer.Normalize(query);
+        if (termo.IsEmpty)
+            return new ApiMyColecoesBuscaResult
+            {
+                CurrentPage = 1,
+                TotalPages = 1,
+                HasNextPage = false,
+                TotalResults = 0,
+                Results = []
+            };
+
         var todos = new List<ObterMyAnimeDto>();
         var skip = 0;
         const int take = 200;
@@ -126,8 +141,7 @@ public class ApiMyAnimesService
         }
 
         var filtrados = todos
-            .Where(m => !string.IsNullOrWhiteSpace(m.Titulo)
-                && m.Titulo.Contains(termo, StringComparison.OrdinalIgnoreCase))
+            .Where(m => AnimeSearchTextNormalizer.Normalize(m.Titulo).Matches(termo))
             .OrderBy(m => m.Titulo)
             .ThenBy(m => m.Id)
             .ToList();
@@ -270,6 +284,40 @@ public class ApiMyAnimesService
             .OrderBy(a => a.Year ?? int.MaxValue)
             .ThenBy(a => a.Titulo)
             .ToList();
+    }
+
+    private static int CalcularScoreAnime(ObterAnimeDto anime, AnimeSearchText termo)
+    {
+        var melhorScore = 0;
+
+        foreach (var campo in ObterCamposBuscaAnime(anime))
+        {
+            var textoNormalizado = AnimeSearchTextNormalizer.Normalize(campo.Texto);
+            if (!textoNormalizado.Matches(termo)) continue;
+
+            var score = campo.Peso;
+            if (textoNormalizado.Value == termo.Value) score += 50;
+            if (textoNormalizado.Value.StartsWith(termo.Value, StringComparison.Ordinal)) score += 25;
+            if (textoNormalizado.CompactValue == termo.CompactValue) score += 20;
+
+            melhorScore = Math.Max(melhorScore, score);
+        }
+
+        return melhorScore;
+    }
+
+    private static IEnumerable<(string? Texto, int Peso)> ObterCamposBuscaAnime(ObterAnimeDto anime)
+    {
+        yield return (anime.Titulo, 100);
+        yield return (anime.Title, 95);
+        yield return (anime.TitleEnglish, 90);
+        yield return (anime.TitleJapanese, 90);
+
+        foreach (var sinonimo in anime.TitleSynonyms ?? [])
+            yield return (sinonimo, 80);
+
+        foreach (var subTitulo in anime.SubTitulos ?? [])
+            yield return (subTitulo, 70);
     }
 
     private static StringContent SerializarJson<T>(T dto)

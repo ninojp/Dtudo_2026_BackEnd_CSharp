@@ -16,15 +16,18 @@ namespace ApiMyAnimes.Controllers;
 /// </summary>
 /// <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
 /// <param name="apiJikanClient"></param>
+/// <param name="animeBuscaLocalService"></param>
 /// <param name="logger"></param>
 [ApiController]
 [Route("apiLocal/[controller]")]
 public class AnimeController(
     MyAnimesContext context,
     ApiJikanClient apiJikanClient,
+    AnimeBuscaLocalService animeBuscaLocalService,
     ILogger<AnimeController> logger) : ControllerBase
 {
     private readonly ApiJikanClient _apiJikanClient = apiJikanClient;
+    private readonly AnimeBuscaLocalService _animeBuscaLocalService = animeBuscaLocalService;
     private readonly ILogger<AnimeController> _logger = logger;
     /// <summary>
     /// Adiciona um novo anime na tabela local de animes.
@@ -218,6 +221,25 @@ public class AnimeController(
             .ToList();
 
         return Ok(animesDto);
+    }
+
+    //==============================================
+    /// <summary>
+    /// Busca animes localmente priorizando colecoes MyAnime e, se nenhuma colecao for encontrada,
+    /// procurando nos titulos e titulos alternativos dos animes individuais.
+    /// </summary>
+    /// <param name="termo">Texto pesquisado pelo usuario.</param>
+    /// <param name="take">Quantidade maxima de animes retornados.</param>
+    [HttpGet("buscar")]
+    [ProducesResponseType(typeof(List<ObterAnimeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<List<ObterAnimeDto>>> BuscarAnimes([FromQuery] string? termo, [FromQuery] int take = 100)
+    {
+        if (string.IsNullOrWhiteSpace(termo)) return BadRequest("Informe um termo de busca.");
+        if (take <= 0) return BadRequest("O parametro take deve ser positivo.");
+
+        var animesEncontrados = await _animeBuscaLocalService.BuscarAsync(termo, take, HttpContext.RequestAborted);
+        return Ok(animesEncontrados.Select(ParaObterAnimeDto).ToList());
     }
     //==============================================
     /// <summary>

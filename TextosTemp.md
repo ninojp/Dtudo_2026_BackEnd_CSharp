@@ -1,14 +1,13 @@
-Abaixo vou descrever minha SOLUÇÃO (conjunto de projetos) chamada "Dtudo2026" e seus projetos internos relacionados. 
+# Abaixo vou descrever minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "Dtudo2026" e seus projetos internos relacionados
 
 PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA.
 EU CRIEI TODOS OS PROJETOS, ME PERGUNTE SE PRECISAR DE ALGUMA INFORMAÇÃO SOBRE ALGUM PROJETO.
 
 Após as descrições, vou detalhar o que quero que seja feito.
-Caso você, I.A, não entenda algum termo ou conceito, por favor, me pergunte antes de prosseguir.
 
-Front-End: DtudoSite, WinAppDtudo e Back-End: ApiMyAnimes, ApiJikan, LibDtudo.Shared.
+Aplicação Desktop: WinAppDtudo, Front-End: DtudoSite e Back-End: ApiMyAnimes, ApiMyAnimeList, LibDtudo.Shared.
 
-O projeto ApiNode (deve ser ignorado) está sendo gradativamente sendo substituído pelos projetos ApiMyAnimes e ApiJikan.
+O projeto ApiNode (deve ser ignorado) está sendo gradativamente sendo substituído pelos projetos ApiMyAnimes e ApiMyAnimeList.
 
 Projeto LibDtudo.Shared - Biblioteca para compartilhar Dtos, Modelos, Utils... entre os projetos dentro da solução Dtudo2026.
 
@@ -17,50 +16,49 @@ Esta é uma Api Local que manipula Meu Banco de dados, Relacional (SQL Server) q
 (/apiLocal/MyAnime) MyAnime (tabela_db) representa as coleções nomeadas MyAnime por titulo e uma lista de IDs de animes relacionados.
 (/apiLocal/Anime) Anime (tabela_db) contém informações detalhadas sobre cada anime.
 
-Projeto ApiJikan - Api Jikan Consulta Externa (documentada com Swagger) - https://localhost:63982
-Esta é uma Api de consulta à API externa Jikan (MyAnimeList). Fornece endpoints para buscar (por nome ou ID) informações detalhadas sobre animes e seus relacionamentos.
-GET/ApiJikan/search  
-End-Point da minha Api Local que faz uma busca na Api externa Jikan, por nome do anime.
-/ApiJikan/{id}  
+Projeto ApiMyAnimeList - Api local ApiMyAnimeList - https://localhost:7146
+Esta é uma Api de consulta à API externa, Oficial MyAnimeList. Fornece endpoints para buscar (por nome ou ID) informações detalhadas sobre animes e seus relacionamentos.
+GET/ApiMyAnimeList/search  
+End-Point da minha Api Local que faz uma busca na Api externa ApiMyAnimeList, por nome do anime.
+/ApiMyAnimeList/{id}  
 Busca um anime específico por ID do MyAnimeList.
-/ApiJikan/{id}/relations
-Busca os animes relacionados a um anime específico pelo ID do MyAnimeList. Utiliza o endpoint dedicado /anime/{id}/relations da Jikan e retorna as imagens hidratadas de cada entrada.
+/ApiMyAnimeList/{id}/relations
+Busca os animes relacionados a um anime específico pelo ID do MyAnimeList. Utiliza o endpoint dedicado /anime/{id}/relations da ApiMyAnimeList e retorna as imagens hidratadas de cada entrada.
 
 Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação de dados (Lê e grava no DB_Local e em disco local, pastas e arquivos).
 
 -------------------------------------------------------------------------------------------------------------------------------------
-
-O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiJikan (DEVE SER TOTALMENTE IGNORADO POIS NÃO ESTÁ MAIS EM USO)  
+Projeto ApiJikan
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
 
-Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite, na rota: http://localhost:5173/animes, temos uma página que exibe uma lista de animes (Cards), os dados agora estão vindo da NOVA API: Projeto \Dtudo2026\ApiMyAnimes - Api Banco de dados local MyAnimes.
-Endpoint: http://localhost:3666/mymusicx, NÃO DEVE SER MODIFICADO OU REMOVIDO, nem suas páginas ou componentes.
-Agora quero remover todos os dados, códigos, componentes e páginas (MyAnimes e AnimeX) e toda sua relação com a antiga fonte de dados, api json-server e seus endpoints: http://localhost:3666/myanimes, http://localhost:3666/animex, http://localhost:3666/animesDetalhes.
 
-Minha intenção agora é ficar apenas com a nova API (ApiMyAnimes) e com as páginas Animes, AnimesDetalhes e AnimesRelacionados, que devem ser mantidas e adaptadas para consumir a nova API (ApiMyAnimes).  
-Quero uma implementação completa e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
+Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo, em \Forms_UC\FUC_DBLocalBuscarNome.cs
 
+
+Quero uma implementação, modularizada, sem arquivos únicos muito extensos, COMPLETA e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
 
 
 
-PROBLEMAS:
-Aqui está o site da documentação official da api MyAnimeList:  https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters  
+
+
 
 ===================================================================================================
 
+Documentação official da api MyAnimeList:  https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters  
+
 09/07/2026 NUMEROS DEPOIS DE POPULAR O DB LOCAL
 SQL Server, new query:
+
 ```SQL
 SELECT COUNT(*) AS Total
 FROM Animes;
 ```
+
 1064 MyAnimes(coleções) Adicionados
 3815 Animes Adicionados
 564 AmineXs Adicionados
 4379 Total Adicionado
-
-
 
 
 

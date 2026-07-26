@@ -1,5 +1,5 @@
 import styles from './CardsAnimesList.module.css';
-import { useState, useMemo, useCallback, useContext } from 'react';
+import { useState, useMemo, useCallback, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import CampoBuscar from '../../CampoBuscar/CampoBuscar';
 import PaginationButtons from '../../PaginationButtons/PaginationButtons';
@@ -11,6 +11,7 @@ import FiltrarPorLetra from '../../FiltrarPorLetra/FiltrarPorLetra';
 import FiltrarPorAno from '../../FiltrarPorAno/FiltrarPorAno';
 import CardAnime from '../CardAnime/CardAnime';
 import { ehAnimeAdulto, obterAnoAnime, obterGenerosAnime, obterIdAnime, obterTituloAnime } from '../../../utils/animeContentUtils';
+import { buscarAnimesDaApiLocalPorTermo } from '../../../services/apiMyAnimes';
 
 export default function CardsAnimesList() {
     const { listObjsDetalhesAnimes, isLoading, error, recarregarAnimes } = useContext(AnimesContext);
@@ -21,45 +22,90 @@ export default function CardsAnimesList() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(48);
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState(null);
     const [mostrarAdultos, setMostrarAdultos] = useState(false);
+
+    useEffect(() => {
+        const termo = searchTerm.trim();
+
+        if (!termo) {
+            setSearchResults([]);
+            setSearchError(null);
+            setIsSearching(false);
+            return undefined;
+        }
+
+        const controller = new AbortController();
+        let ativo = true;
+
+        async function buscarAnimesPorTermo() {
+            setIsSearching(true);
+            setSearchError(null);
+
+            try {
+                const resultados = await buscarAnimesDaApiLocalPorTermo(termo, controller.signal);
+                if (ativo) setSearchResults(resultados);
+            } catch (erro) {
+                if (erro.code === 'ERR_CANCELED' || !ativo) return;
+
+                console.error('Erro ao buscar animes por termo na ApiMyAnimes:', erro);
+                setSearchResults([]);
+                setSearchError('Nao foi possivel buscar animes por esse termo. Tente novamente.');
+            } finally {
+                if (ativo) setIsSearching(false);
+            }
+        }
+
+        buscarAnimesPorTermo();
+
+        return () => {
+            ativo = false;
+            controller.abort();
+        };
+    }, [searchTerm]);
+
+    const animesBase = searchTerm ? searchResults : listObjsDetalhesAnimes;
 
     const animesPermitidos = useMemo(() => {
         if (isAuthenticated && mostrarAdultos) {
-            return listObjsDetalhesAnimes.filter(ehAnimeAdulto);
+            return animesBase.filter(ehAnimeAdulto);
         }
 
-        return listObjsDetalhesAnimes.filter((anime) => !ehAnimeAdulto(anime));
-    }, [isAuthenticated, listObjsDetalhesAnimes, mostrarAdultos]);
+        return animesBase.filter((anime) => !ehAnimeAdulto(anime));
+    }, [animesBase, isAuthenticated, mostrarAdultos]);
 
     const filteredItems = useMemo(() => {
         let animesList = animesPermitidos;
-        if (searchTerm) {
-            animesList = animesList.filter(item =>
-                obterTituloAnime(item).toLocaleLowerCase('pt-BR').includes(searchTerm.toLocaleLowerCase('pt-BR'))
-            );
-        }
         if (generoSelecionado) {
             animesList = animesList.filter(anime =>
                 obterGenerosAnime(anime).some((genero) => genero === generoSelecionado)
             );
         }
         if (letraSelecionada) {
-            animesList = animesList.filter(anime =>
-                obterTituloAnime(anime).toLocaleUpperCase('pt-BR').startsWith(letraSelecionada)
-            );
+            animesList = animesList.filter((anime) => {
+                const titulo = obterTituloAnime(anime).trim();
+                if (letraSelecionada === '#') {
+                    return /^[0-9.]/.test(titulo);
+                }
+
+                return titulo.toLocaleUpperCase('pt-BR').startsWith(letraSelecionada);
+            });
         }
         if (anoSelecionado) {
             animesList = animesList.filter((anime) => String(obterAnoAnime(anime)) === anoSelecionado);
         }
-        if (searchTerm || generoSelecionado || letraSelecionada || anoSelecionado || mostrarAdultos) {
-            animesList = [...animesList].sort((a, b) =>
-                obterTituloAnime(a).localeCompare(obterTituloAnime(b), 'pt-BR', {
-                    sensitivity: 'base'
-                })
-            );
-        }
-        return animesList;
-    }, [animesPermitidos, searchTerm, generoSelecionado, letraSelecionada, anoSelecionado, mostrarAdultos]);
+
+        if (searchTerm) return [...animesList];
+
+        return [...animesList].sort((a, b) =>
+            obterTituloAnime(a).localeCompare(obterTituloAnime(b), 'pt-BR', {
+                numeric: true,
+                sensitivity: 'base'
+            })
+        );
+    }, [animesPermitidos, searchTerm, generoSelecionado, letraSelecionada, anoSelecionado]);
 
     const totalPages = Math.max(1, Math.ceil(filteredItems.length / limit));
     const paginatedItems = useMemo(() => {
@@ -100,7 +146,7 @@ export default function CardsAnimesList() {
             <div className={styles.divPaginacaoEFiltro}>
                 <div className={styles.divContainerFiltros}>
                     <h4>Filtrar por: </h4>
-                    <FiltrarPorLetra letraSelecionada={letraSelecionada} setLetraSelecionada={atualizarFiltro(setLetraSelecionada)} />
+                    <FiltrarPorLetra letraSelecionada={letraSelecionada} setLetraSelecionada={atualizarFiltro(setLetraSelecionada)} exibirNumericos />
                     <FiltrarPorGenero generoSelecionado={generoSelecionado} setGeneroSelecionado={atualizarFiltro(setGeneroSelecionado)} animes={animesPermitidos} />
                     <FiltrarPorAno anoSelecionado={anoSelecionado} setAnoSelecionado={atualizarFiltro(setAnoSelecionado)} animes={animesPermitidos} />
                     {isAuthenticated && (
@@ -126,6 +172,8 @@ export default function CardsAnimesList() {
                         <strong className={styles.strongTotalAnimes}>{filteredItems.length}</strong> Animes encontrados
                     </span>
                 )}
+                {isSearching && <span className={styles.spanTotalAnimes}>Buscando...</span>}
+                {searchError && <span className={styles.spanTotalAnimes} role='alert'>{searchError}</span>}
             </div>
             <div className={styles.divContainerListaCardsAnimes}>
                 {paginatedItems?.map((animePg) => (

@@ -1,4 +1,30 @@
 const normalizarValor = (valor) => String(valor || '').trim().toLocaleLowerCase('pt-BR');
+const mesesEmIngles = {
+    jan: 0,
+    january: 0,
+    feb: 1,
+    february: 1,
+    mar: 2,
+    march: 2,
+    apr: 3,
+    april: 3,
+    may: 4,
+    jun: 5,
+    june: 5,
+    jul: 6,
+    july: 6,
+    aug: 7,
+    august: 7,
+    sep: 8,
+    sept: 8,
+    september: 8,
+    oct: 9,
+    october: 9,
+    nov: 10,
+    november: 10,
+    dec: 11,
+    december: 11,
+};
 
 export function obterValoresAnime(valores) {
     if (!Array.isArray(valores)) return [];
@@ -10,6 +36,28 @@ export function obterValoresAnime(valores) {
 
 export function obterTituloAnime(anime) {
     return anime?.title || anime?.titulo || anime?.nome || 'Anime sem titulo';
+}
+
+export function obterTituloAlternativoAnime(anime) {
+    const sinonimos = [
+        ...obterValoresAnime(anime?.titleSynonyms || anime?.title_synonyms),
+        ...obterValoresAnime(anime?.alternativeTitles?.synonyms || anime?.alternative_titles?.synonyms),
+        ...obterValoresAnime(anime?.synonyms),
+        ...obterValoresAnime(anime?.subTitulos || anime?.sub_titulos),
+    ];
+    const titulos = [
+        anime?.titleEnglish,
+        anime?.title_english,
+        anime?.alternativeTitles?.english,
+        anime?.alternative_titles?.english,
+        ...sinonimos,
+        anime?.titleJapanese,
+        anime?.title_japanese,
+        anime?.alternativeTitles?.japanese,
+        anime?.alternative_titles?.japanese,
+    ];
+
+    return titulos.find((titulo) => typeof titulo === 'string' && titulo.trim())?.trim() || null;
 }
 
 export function obterIdAnime(anime) {
@@ -24,6 +72,35 @@ export function obterAnoAnime(anime) {
     return anoNoPeriodo?.[0] || null;
 }
 
+export function obterTimestampLancamentoAnime(anime) {
+    const dataInicial = anime?.aired?.prop?.from;
+    if (dataInicial?.year) {
+        return Date.UTC(dataInicial.year, (dataInicial.month || 1) - 1, dataInicial.day || 1);
+    }
+
+    const dataIso = anime?.aired?.from || anime?.from;
+    const timestampIso = Date.parse(dataIso);
+    if (Number.isFinite(timestampIso)) return timestampIso;
+
+    const aired = String(anime?.aired || '');
+    const dataIsoNoTexto = aired.match(/\b(19|20)\d{2}-\d{2}-\d{2}\b/)?.[0];
+    const timestampIsoNoTexto = Date.parse(dataIsoNoTexto);
+    if (Number.isFinite(timestampIsoNoTexto)) return timestampIsoNoTexto;
+
+    const dataComMes = aired.match(/\b([A-Za-z]+)\.?\s+(\d{1,2})?,?\s*((?:19|20)\d{2})\b/);
+    if (dataComMes) {
+        const mes = mesesEmIngles[dataComMes[1].toLocaleLowerCase('en-US')];
+        const dia = Number(dataComMes[2]) || 1;
+        const ano = Number(dataComMes[3]);
+        if (mes !== undefined) return Date.UTC(ano, mes, dia);
+    }
+
+    const ano = Number(obterAnoAnime(anime));
+    if (Number.isInteger(ano)) return Date.UTC(ano, 0, 1);
+
+    return Number.MAX_SAFE_INTEGER;
+}
+
 export function obterGenerosAnime(anime) {
     return [
         ...obterValoresAnime(anime?.genres),
@@ -31,6 +108,23 @@ export function obterGenerosAnime(anime) {
         ...obterValoresAnime(anime?.themes),
         ...obterValoresAnime(anime?.demographics),
     ];
+}
+
+export function obterTipoAnime(anime) {
+    const tipo = anime?.type || anime?.mediaType || anime?.media_type;
+    return typeof tipo === 'string' && tipo.trim() ? tipo.trim().toLocaleUpperCase('pt-BR') : null;
+}
+
+export function obterScoreAnime(anime) {
+    const score = anime?.score ?? anime?.mean;
+    const scoreNumerico = Number(score);
+
+    if (!Number.isFinite(scoreNumerico)) return null;
+
+    return scoreNumerico.toLocaleString('pt-BR', {
+        minimumFractionDigits: scoreNumerico % 1 === 0 ? 0 : 1,
+        maximumFractionDigits: 2,
+    });
 }
 
 export function obterImagemAnime(anime) {
@@ -60,32 +154,25 @@ export function obterColecoesComAnime(colecoes, malId) {
 }
 
 export function obterAnimesRelacionados({
-    animeAtual,
     colecoesComAnime,
     incluirAdultos,
     listObjsDetalhesAnimes,
-    malId,
 }) {
-    const malIdNumerico = Number(malId);
     const idsRelacionados = new Set(
         colecoesComAnime.flatMap(idsDaColecao)
             .map(Number)
-            .filter((id) => id !== malIdNumerico)
     );
 
     let relacionados = listObjsDetalhesAnimes.filter((anime) => idsRelacionados.has(Number(obterIdAnime(anime))));
-
-    if (relacionados.length === 0 && animeAtual) {
-        const generosAtual = new Set(obterGenerosAnime(animeAtual));
-        relacionados = listObjsDetalhesAnimes
-            .filter((anime) => Number(obterIdAnime(anime)) !== malIdNumerico)
-            .filter((anime) => obterGenerosAnime(anime).some((genero) => generosAtual.has(genero)))
-            .slice(0, 24);
-    }
 
     if (!incluirAdultos) {
         relacionados = relacionados.filter((anime) => !ehAnimeAdulto(anime));
     }
 
-    return relacionados;
+    return relacionados.toSorted((animeA, animeB) => {
+        const diferencaData = obterTimestampLancamentoAnime(animeA) - obterTimestampLancamentoAnime(animeB);
+        if (diferencaData !== 0) return diferencaData;
+
+        return obterTituloAnime(animeA).localeCompare(obterTituloAnime(animeB), 'pt-BR');
+    });
 }

@@ -42,12 +42,10 @@ export default function AnimesDetalhes() {
 
     const colecoesComAnime = useMemo(() => obterColecoesComAnime(colecoes, malIdNumerico), [colecoes, malIdNumerico]);
     const animesRelacionados = useMemo(() => obterAnimesRelacionados({
-        animeAtual: anime,
         colecoesComAnime,
         incluirAdultos: isAuthenticated,
         listObjsDetalhesAnimes,
-        malId: malIdNumerico,
-    }), [anime, colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes, malIdNumerico]);
+    }), [colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes]);
 
     useEffect(() => {
         if (!Number.isInteger(malIdNumerico) || malIdNumerico <= 0) {
