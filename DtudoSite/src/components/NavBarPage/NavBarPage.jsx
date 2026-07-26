@@ -18,15 +18,9 @@ export default function NavBarPage() {
                     </div>
                 </Link>
                 <ul className={styles.ulMenuLinksContanier}>
-                    <Link to='myanimes'>
-                        <li className={styles.liMenuLink}> MyAnimes </li>
-                    </Link>
                     <Link to='animes'>
                         <li className={styles.liMenuLink}> Animes </li>
                     </Link>
-                    {isAuthenticated && <Link to='animex'>
-                        <li className={styles.liMenuLink}> Animex </li>
-                    </Link>}
                     <Link to='ninoti'>
                         <li className={styles.liMenuLink}> NinoT.I </li>
                     </Link>

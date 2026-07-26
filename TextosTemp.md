@@ -29,23 +29,17 @@ Busca os animes relacionados a um anime específico pelo ID do MyAnimeList. Util
 Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação de dados (Lê e grava no DB_Local e em disco local, pastas e arquivos).
 
 -------------------------------------------------------------------------------------------------------------------------------------
-Proximo passo:
-DBLocalBuscar - É meu banco de dados, controlado pela ApiMyAnimes.
-ApiMyAnimeList - Api Atual que fornece os dados e detalhes dos animes buscados por nome.
-
-
 
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiJikan (DEVE SER TOTALMENTE IGNORADO POIS NÃO ESTÁ MAIS EM USO)  
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
 
-Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite, na rota: http://localhost:5173/animes, temos uma página que exibe uma lista de animes (Cards) atualmente os dados dos animes estão vindo da api json-server: http://localhost:3666/animesDetalhes.  
-Agora quero os dados dos animes venham da minha NOVA API: Projeto ApiMyAnimes - Api DB Local MyAnimes (CRUD completo, documentada com Swagger) - https://localhost:63980/apiLocal/. Quero que analize como os dados (já paginados) estão vindo da nova API e faça TODAS as alterações necessárias no front-end para que os dados dos animes venham da nova API, substituindo TOTALMENTE a antiga fonte de dados.  
-Esta nova API retorna conteudo adulto (hentai), então vamos precisar de um filtro, Se a pessoa estiver logada (usar o metodo de login atual mesmo), devemos implementar (mostrar) na página um botão (pode ficar ao lado do filtro por Ano) "Hentai +18", que ao ser clicado, deve exibir SOMEMENTE os animes com conteúdo adulto (hentai). Caso a pessoa não esteja logada, o botão não deve aparecer e os animes com conteúdo adulto não devem ser exibidos.  
+Agora neste meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite, na rota: http://localhost:5173/animes, temos uma página que exibe uma lista de animes (Cards), os dados agora estão vindo da NOVA API: Projeto \Dtudo2026\ApiMyAnimes - Api Banco de dados local MyAnimes.
+Endpoint: http://localhost:3666/mymusicx, NÃO DEVE SER MODIFICADO OU REMOVIDO, nem suas páginas ou componentes.
+Agora quero remover todos os dados, códigos, componentes e páginas (MyAnimes e AnimeX) e toda sua relação com a antiga fonte de dados, api json-server e seus endpoints: http://localhost:3666/myanimes, http://localhost:3666/animex, http://localhost:3666/animesDetalhes.
 
+Minha intenção agora é ficar apenas com a nova API (ApiMyAnimes) e com as páginas Animes, AnimesDetalhes e AnimesRelacionados, que devem ser mantidas e adaptadas para consumir a nova API (ApiMyAnimes).  
 Quero uma implementação completa e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
-
-
 
 
 

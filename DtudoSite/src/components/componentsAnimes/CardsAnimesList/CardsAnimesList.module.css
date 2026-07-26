@@ -1,0 +1,49 @@
+.mainCardsAnimesList {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.divPaginacaoEFiltro {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 4rem 0rem 4rem;
+}
+
+.divContainerFiltros {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btnConteudoAdulto {
+    background-color: #7a0019;
+    color: #ffffff;
+    border: 0.1px solid #c93552;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btnConteudoAdulto[aria-pressed='true'] {
+    background-color: #c93552;
+}
+
+.divContainerListaCardsAnimes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    row-gap: 3rem;
+    padding: 1rem;
+}
+
+.spanTotalAnimes,
+.strongTotalAnimes {
+    color: #ffffff;
+}

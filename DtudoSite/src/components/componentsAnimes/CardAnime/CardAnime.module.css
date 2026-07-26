@@ -1,0 +1,80 @@
+.animesCardArticle {
+    position: relative;
+    width: 200px;
+    height: 365px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 0.8px solid #0d4386;
+    border-radius: 8px;
+    cursor: pointer;
+    gap: 0.3rem;
+}
+
+.divContainerTitulo {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem 0 0.1rem 0;
+}
+
+.h3Titulo {
+    width: 23ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: monospace;
+    text-align: center;
+    color: var(--hTituloColor);
+}
+
+.figureImagemAnimacao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.imgAnimacao {
+    width: 180px;
+    height: 270px;
+    object-fit: cover;
+}
+
+.imagemIndisponivel {
+    width: 180px;
+    height: 270px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #041832;
+    color: #ffffff;
+    font-family: monospace;
+    text-align: center;
+}
+
+.divContainerData {
+    width: 23ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.spanTextoData {
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: monospace;
+    color: var(--hTituloColor);
+    padding: 0 0.3rem;
+}
+
+.pTextoData {
+    font-size: 0.6rem;
+    font-weight: 500;
+    font-family: monospace;
+    color: var(--hTituloColor);
+    padding: 0 0.3rem;
+}

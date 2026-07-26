@@ -1,30 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { axiosHttpApiLocalMyAnimes } from "../../api_conect/conectApiLocal";
+import { buscarTodosAnimesDaApiLocal } from "../../services/apiMyAnimes";
 import AnimesDetalhesObjsListContext from "./AnimesDetalhesObjsListContext";
-
-const TAMANHO_PAGINA_API_LOCAL = 500;
-
-async function buscarTodosAnimesDaApiLocal(signal) {
-    const cliente = axiosHttpApiLocalMyAnimes();
-    let skip = 0;
-    let todosOsAnimes = [];
-
-    while (true) {
-        const response = await cliente.get('/apiLocal/Anime', {
-            params: { skip, take: TAMANHO_PAGINA_API_LOCAL },
-            signal,
-        });
-        if (!Array.isArray(response.data)) {
-            throw new TypeError('A ApiMyAnimes retornou uma resposta de lista invalida.');
-        }
-
-        const paginaAtual = response.data;
-        todosOsAnimes = todosOsAnimes.concat(paginaAtual);
-        if (paginaAtual.length < TAMANHO_PAGINA_API_LOCAL) break;
-        skip += TAMANHO_PAGINA_API_LOCAL;
-    }
-    return todosOsAnimes;
-}
 
 export default function AnimesDetalhesObjsListProvider({ children }) {
     const [listObjsDetalhesAnimes, setListObjsDetalhesAnimes] = useState([]);

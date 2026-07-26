@@ -16,7 +16,7 @@
     },
     "include": [
         "src/**/*"
-, "../ApiNode/myanimes/conectApiJikam.js"    ],
+    ],
     "exclude": [
         "node_modules",
         "dist",
