@@ -854,6 +854,18 @@
         }
       }
     },
+    "/apiLocal/Health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/apiLocal/MyAnime": {
       "post": {
         "tags": [
@@ -2170,6 +2182,9 @@
     },
     {
       "name": "Auth"
+    },
+    {
+      "name": "Health"
     },
     {
       "name": "MyAnime"

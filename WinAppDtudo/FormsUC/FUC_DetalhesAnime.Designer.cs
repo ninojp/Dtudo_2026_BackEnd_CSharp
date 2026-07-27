@@ -40,7 +40,7 @@ partial class FUC_DetalhesAnime
         Btn_SalvarComoMyAnime = new Button();
         Pnl_Stats = new Panel();
         Lbl_Ano = new Label();
-        Lbl_ScoreStat = new Label();
+        Lbl_Generos = new Label();
         Lbl_Episodios = new Label();
         Lbl_Duracao = new Label();
         Pbx_Capa = new PictureBox();
@@ -56,8 +56,6 @@ partial class FUC_DetalhesAnime
         // 
         // Pnl_Header
         // 
-        Pnl_Header.AutoSize = true;
-        Pnl_Header.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         Pnl_Header.BackColor = Color.FromArgb(25, 30, 80);
         Pnl_Header.Controls.Add(Lbl_TituloAnime);
         Pnl_Header.Controls.Add(Lbl_TituloIngles);
@@ -68,19 +66,18 @@ partial class FUC_DetalhesAnime
         Pnl_Header.Margin = new Padding(4, 3, 4, 3);
         Pnl_Header.Name = "Pnl_Header";
         Pnl_Header.Padding = new Padding(50, 6, 13, 4);
-        Pnl_Header.Size = new Size(1920, 175);
+        Pnl_Header.Size = new Size(1920, 150);
         Pnl_Header.TabIndex = 2;
         // 
         // Lbl_TituloAnime
         // 
         Lbl_TituloAnime.AutoEllipsis = true;
-        Lbl_TituloAnime.Dock = DockStyle.Top;
-        Lbl_TituloAnime.Font = new Font("Segoe UI Black", 16F, FontStyle.Bold);
+        Lbl_TituloAnime.Font = new Font("Segoe UI Black", 17F, FontStyle.Bold);
         Lbl_TituloAnime.ForeColor = Color.White;
-        Lbl_TituloAnime.Location = new Point(50, 121);
+        Lbl_TituloAnime.Location = new Point(50, 6);
         Lbl_TituloAnime.Margin = new Padding(40, 0, 40, 0);
         Lbl_TituloAnime.Name = "Lbl_TituloAnime";
-        Lbl_TituloAnime.Size = new Size(1857, 50);
+        Lbl_TituloAnime.Size = new Size(900, 50);
         Lbl_TituloAnime.TabIndex = 0;
         Lbl_TituloAnime.Text = "—";
         Lbl_TituloAnime.TextAlign = ContentAlignment.MiddleLeft;
@@ -88,14 +85,13 @@ partial class FUC_DetalhesAnime
         // Lbl_TituloIngles
         // 
         Lbl_TituloIngles.AutoEllipsis = true;
-        Lbl_TituloIngles.AutoSize = true;
-        Lbl_TituloIngles.Dock = DockStyle.Top;
-        Lbl_TituloIngles.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+        Lbl_TituloIngles.AutoSize = false;
+        Lbl_TituloIngles.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
         Lbl_TituloIngles.ForeColor = Color.Gold;
-        Lbl_TituloIngles.Location = new Point(50, 80);
+        Lbl_TituloIngles.Location = new Point(50, 6);
         Lbl_TituloIngles.MaximumSize = new Size(1800, 0);
         Lbl_TituloIngles.Name = "Lbl_TituloIngles";
-        Lbl_TituloIngles.Size = new Size(0, 41);
+        Lbl_TituloIngles.Size = new Size(900, 50);
         Lbl_TituloIngles.TabIndex = 2;
         Lbl_TituloIngles.TextAlign = ContentAlignment.MiddleLeft;
         Lbl_TituloIngles.Visible = false;
@@ -103,14 +99,14 @@ partial class FUC_DetalhesAnime
         // Lbl_Sinonimo
         // 
         Lbl_Sinonimo.AutoEllipsis = true;
-        Lbl_Sinonimo.AutoSize = true;
-        Lbl_Sinonimo.Dock = DockStyle.Top;
-        Lbl_Sinonimo.Font = new Font("Segoe UI", 10F);
+        Lbl_Sinonimo.AutoSize = false;
+        Lbl_Sinonimo.Font = new Font("Segoe UI", 12F);
         Lbl_Sinonimo.ForeColor = Color.LightGray;
-        Lbl_Sinonimo.Location = new Point(50, 43);
+        Lbl_Sinonimo.Location = new Point(50, 6);
         Lbl_Sinonimo.MaximumSize = new Size(1800, 0);
         Lbl_Sinonimo.Name = "Lbl_Sinonimo";
-        Lbl_Sinonimo.Size = new Size(0, 37);
+        Lbl_Sinonimo.Location = new Point(50, 60);
+        Lbl_Sinonimo.Size = new Size(900, 50);
         Lbl_Sinonimo.TabIndex = 1;
         Lbl_Sinonimo.TextAlign = ContentAlignment.MiddleLeft;
         Lbl_Sinonimo.Visible = false;
@@ -118,14 +114,14 @@ partial class FUC_DetalhesAnime
         // Lbl_TituloJapones
         // 
         Lbl_TituloJapones.AutoEllipsis = true;
-        Lbl_TituloJapones.AutoSize = true;
-        Lbl_TituloJapones.Dock = DockStyle.Top;
-        Lbl_TituloJapones.Font = new Font("Segoe UI", 10F);
+        Lbl_TituloJapones.AutoSize = false;
+        Lbl_TituloJapones.Font = new Font("Segoe UI", 11F);
         Lbl_TituloJapones.ForeColor = Color.LightSteelBlue;
         Lbl_TituloJapones.Location = new Point(50, 6);
         Lbl_TituloJapones.MaximumSize = new Size(1800, 0);
         Lbl_TituloJapones.Name = "Lbl_TituloJapones";
-        Lbl_TituloJapones.Size = new Size(0, 37);
+        Lbl_TituloJapones.Location = new Point(970, 60);
+        Lbl_TituloJapones.Size = new Size(900, 50);
         Lbl_TituloJapones.TabIndex = 0;
         Lbl_TituloJapones.TextAlign = ContentAlignment.MiddleLeft;
         Lbl_TituloJapones.Visible = false;
@@ -192,11 +188,11 @@ partial class FUC_DetalhesAnime
         // 
         Pnl_Acoes.Controls.Add(Btn_SalvarComoAnime);
         Pnl_Acoes.Controls.Add(Btn_SalvarComoMyAnime);
-        Pnl_Acoes.Location = new Point(90, 820);
+        Pnl_Acoes.Location = new Point(90, 810);
         Pnl_Acoes.Margin = new Padding(40, 30, 40, 30);
         Pnl_Acoes.Name = "Pnl_Acoes";
         Pnl_Acoes.Padding = new Padding(13, 6, 13, 6);
-        Pnl_Acoes.Size = new Size(350, 240);
+        Pnl_Acoes.Size = new Size(400, 200);
         Pnl_Acoes.TabIndex = 2;
         // 
         // Btn_SalvarComoAnime
@@ -209,9 +205,9 @@ partial class FUC_DetalhesAnime
         Btn_SalvarComoAnime.Location = new Point(13, 66);
         Btn_SalvarComoAnime.Margin = new Padding(4, 3, 4, 3);
         Btn_SalvarComoAnime.Name = "Btn_SalvarComoAnime";
-        Btn_SalvarComoAnime.Size = new Size(324, 60);
+        Btn_SalvarComoAnime.Size = new Size(350, 60);
         Btn_SalvarComoAnime.TabIndex = 1;
-        Btn_SalvarComoAnime.Text = "SALVAR COMO ANIME";
+        Btn_SalvarComoAnime.Text = "Salvar Anime";
         Btn_SalvarComoAnime.UseVisualStyleBackColor = false;
         // 
         // Btn_SalvarComoMyAnime
@@ -224,9 +220,9 @@ partial class FUC_DetalhesAnime
         Btn_SalvarComoMyAnime.Location = new Point(13, 6);
         Btn_SalvarComoMyAnime.Margin = new Padding(4, 3, 4, 3);
         Btn_SalvarComoMyAnime.Name = "Btn_SalvarComoMyAnime";
-        Btn_SalvarComoMyAnime.Size = new Size(324, 60);
+        Btn_SalvarComoMyAnime.Size = new Size(350, 60);
         Btn_SalvarComoMyAnime.TabIndex = 0;
-        Btn_SalvarComoMyAnime.Text = "SALVAR COMO MYANIME";
+        Btn_SalvarComoMyAnime.Text = "Salvar Como MyAnime";
         Btn_SalvarComoMyAnime.UseVisualStyleBackColor = false;
         // 
         // Pnl_Stats
@@ -234,11 +230,11 @@ partial class FUC_DetalhesAnime
         Pnl_Stats.AutoSize = true;
         Pnl_Stats.Controls.Add(Lbl_Ano);
         Pnl_Stats.Controls.Add(Lbl_TipoStatus);
-        Pnl_Stats.Controls.Add(Lbl_ScoreStat);
+        Pnl_Stats.Controls.Add(Lbl_Generos);
         Pnl_Stats.Controls.Add(Lbl_Episodios);
         Pnl_Stats.Controls.Add(Lbl_Duracao);
         Pnl_Stats.Dock = DockStyle.Fill;
-        Pnl_Stats.Location = new Point(0, 576);
+        Pnl_Stats.Location = new Point(0, 570);
         Pnl_Stats.Margin = new Padding(4, 3, 4, 3);
         Pnl_Stats.Name = "Pnl_Stats";
         Pnl_Stats.Padding = new Padding(13, 10, 8, 4);
@@ -249,27 +245,27 @@ partial class FUC_DetalhesAnime
         // 
         Lbl_Ano.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
         Lbl_Ano.ForeColor = Color.Gold;
-        Lbl_Ano.Location = new Point(70, 20);
+        Lbl_Ano.Location = new Point(70, 10);
         Lbl_Ano.Margin = new Padding(4, 0, 4, 0);
         Lbl_Ano.Name = "Lbl_Ano";
         Lbl_Ano.Size = new Size(500, 40);
         Lbl_Ano.TabIndex = 0;
         // 
-        // Lbl_ScoreStat
+        // Lbl_Generos
         // 
-        Lbl_ScoreStat.Font = new Font("Segoe UI", 11F);
-        Lbl_ScoreStat.ForeColor = Color.DarkOrange;
-        Lbl_ScoreStat.Location = new Point(70, 65);
-        Lbl_ScoreStat.Margin = new Padding(4, 0, 4, 0);
-        Lbl_ScoreStat.Name = "Lbl_ScoreStat";
-        Lbl_ScoreStat.Size = new Size(500, 40);
-        Lbl_ScoreStat.TabIndex = 1;
+        Lbl_Generos.Font = new Font("Segoe UI", 9.5F);
+        Lbl_Generos.ForeColor = Color.DarkOrange;
+        Lbl_Generos.Location = new Point(70, 65);
+        Lbl_Generos.Margin = new Padding(4, 0, 4, 0);
+        Lbl_Generos.Name = "Lbl_Generos";
+        Lbl_Generos.Size = new Size(500, 40);
+        Lbl_Generos.TabIndex = 1;
         // 
         // Lbl_Episodios
         // 
         Lbl_Episodios.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
         Lbl_Episodios.ForeColor = Color.FromArgb(35, 40, 90);
-        Lbl_Episodios.Location = new Point(70, 85);
+        Lbl_Episodios.Location = new Point(70, 75);
         Lbl_Episodios.Margin = new Padding(4, 0, 4, 0);
         Lbl_Episodios.Name = "Lbl_Episodios";
         Lbl_Episodios.Size = new Size(500, 50);
@@ -279,7 +275,7 @@ partial class FUC_DetalhesAnime
         // 
         Lbl_Duracao.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
         Lbl_Duracao.ForeColor = Color.FromArgb(35, 40, 90);
-        Lbl_Duracao.Location = new Point(70, 130);
+        Lbl_Duracao.Location = new Point(70, 120);
         Lbl_Duracao.Margin = new Padding(4, 0, 4, 0);
         Lbl_Duracao.Name = "Lbl_Duracao";
         Lbl_Duracao.Size = new Size(328, 50);
@@ -352,7 +348,7 @@ partial class FUC_DetalhesAnime
     private PictureBox Pbx_Capa;
     private Panel Pnl_Stats;
     private Label Lbl_Ano;
-    private Label Lbl_ScoreStat;
+    private Label Lbl_Generos;
     private Label Lbl_Rank;
     private Label Lbl_Popularidade;
     private Label Lbl_Episodios;

@@ -1,27 +1,23 @@
-# HTML CSS JavaScript React + Vite
+# Projeto Solo, Dtudo: Animes, Musicas, Material sobre T.I
 
-Finalmente após anos de estudo e dedicação contínua. Agora vou começar a colocar em prática um projeto que já teve varias caras e dessa vez está ficando do jeito que quero e tenho capacidade de executar.
-
-Depois eu crio uma descrição descente...
-
-/api_backend
-/public
-/src
-/index.html - NavBarLinks - Page      -  Page
-inicia com -> MyAnimes    -> myanimes -> myanimes-detalhes
-myanimes    - AnimeX      -> animex   -> animex-detalhes
-myanimes    - NinoJP      - Page
-myanimes    - MyMusicX    - Page
-
-## Desenvolvimento Local
+## Desenvolvimento Local - C#, SQL, HTML, CSS, JavaScript, React + Vite
 
 Stack atual:
 
-- `ApiMyAnimes`: `https://localhost:63980`
-- `ApiMyAnimeList`: `https://localhost:7146`
+- `DtudoSite`: `C:\2026MeusProjetos\Dtudo2026\DtudoSite`
 - `DtudoSite`: `http://localhost:5173`
 
-Comando principal:
+- `WinAppDtudo`: `C:\2026MeusProjetos\Dtudo2026\WinAppDtudo`
+
+- `ApiMyAnimes`: `C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes`
+- `ApiMyAnimes`: `https://localhost:63980`
+
+- `ApiMyAnimeList`: `C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList`
+- `ApiMyAnimeList`: `https://localhost:7146`
+
+- `LibDtudo.Shared`: `C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared`
+
+Comando principal, para iniciar a solução localmente:
 
 ```powershell
 npm run serv
@@ -69,3 +65,7 @@ O WinApp le `WinAppDtudo/appsettings.json` e tambem aceita variaveis:
 - `GET /apiLocal/Auth/me/{id}`
 
 Usuarios locais ficam em `ApiMyAnimes/App_Data/*.json`, ignorado pelo Git. Senhas sao armazenadas com PBKDF2.
+
+
+Finalmente após anos de estudo e dedicação contínua. Agora vou começar a colocar em prática um projeto que já teve varias caras e dessa vez está ficando do jeito que quero e tenho capacidade de executar.  
+Depois eu crio uma descrição descente...

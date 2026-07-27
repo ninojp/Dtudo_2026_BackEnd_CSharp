@@ -431,6 +431,22 @@
     ]
   },
   {
+    "ContainingType": "ApiMyAnimes.Controllers.HealthController",
+    "Method": "Get",
+    "RelativePath": "apiLocal/Health",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "ApiMyAnimes.Controllers.MyAnimeController",
     "Method": "AdicionarMyAnime",
     "RelativePath": "apiLocal/MyAnime",

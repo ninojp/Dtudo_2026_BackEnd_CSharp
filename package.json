@@ -6,7 +6,7 @@
   "scripts": {
     "legacy:start": "json-server --watch ./ApiNode/db/animacoes.json --port 3666",
     "legacy:proxy": "node ./ApiNode/mymusicx/discogsProxy.js",
-    "dev": "vite --config DtudoSite/vite.config.js",
+    "dev": "vite --config ./DtudoSite/vite.config.js",
     "api:myanimes:run": "dotnet run --project ApiMyAnimes/ApiMyAnimes.csproj --launch-profile ApiMyAnimes",
     "api:myanimelist:run": "dotnet run --project ApiMyAnimeList/ApiMyAnimeList.csproj --launch-profile https",
     "api:myanimes": "node scripts/run-if-down.js https://localhost:63980/apiLocal/Health -- npm run api:myanimes:run",
@@ -14,9 +14,9 @@
     "serv": "concurrently \"npm run api:myanimes\" \"npm run api:myanimelist\" \"npm run dev\"",
     "legacy:serv": "concurrently \"npm run legacy:start\" \"npm run legacy:proxy\" \"npm run dev\"",
     "discografia": "node ./ApiNode/DiscografiaPastas.js",
-    "build": "vite build --config DtudoSite/vite.config.js",
+    "build": "vite build --config ./DtudoSite/vite.config.js",
     "lint": "eslint .",
-    "preview": "vite preview --config DtudoSite/vite.config.js"
+    "preview": "vite preview --config ./DtudoSite/vite.config.js"
   },
   "dependencies": {
     "axios": "^1.13.2",

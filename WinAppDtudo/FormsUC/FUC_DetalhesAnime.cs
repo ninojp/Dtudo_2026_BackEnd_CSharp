@@ -33,6 +33,7 @@ public partial class FUC_DetalhesAnime : UserControl
         _malId = malId;
         Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
         Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
+        Pnl_Header.Resize += (s, e) => OrganizarTitulosDoCabecalho();
         Load += async (s, e) => await CarregarAsync();
         // Melhora renderização do UserControl
         DoubleBuffered = true;
@@ -118,22 +119,24 @@ public partial class FUC_DetalhesAnime : UserControl
         var generos = anime.Genres?
             .Where(g => !string.IsNullOrWhiteSpace(g))
             .ToList() ?? [];
-        Lbl_ScoreStat.Text = generos.Count > 0
+        Lbl_Generos.Text = generos.Count > 0
             ? $"🎭 {string.Join(" • ", generos)}"
             : string.Empty;
-        Lbl_ScoreStat.Visible = generos.Count > 0;
-        int larguraGenero = Math.Max(200, Pnl_Stats.ClientSize.Width - Lbl_ScoreStat.Left - 20);
-        Lbl_ScoreStat.Width = larguraGenero;
-        Lbl_ScoreStat.Height = generos.Count > 0
+        Lbl_Generos.Visible = generos.Count > 0;
+        int larguraGenero = Math.Max(200, Pnl_Stats.ClientSize.Width - Lbl_Generos.Left - 20);
+        Lbl_Generos.Width = larguraGenero;
+        Lbl_Generos.Height = generos.Count > 0
             ? Math.Max(35, TextRenderer.MeasureText(
-                Lbl_ScoreStat.Text,
-                Lbl_ScoreStat.Font,
+                Lbl_Generos.Text,
+                Lbl_Generos.Font,
                 new Size(larguraGenero, int.MaxValue),
                 TextFormatFlags.WordBreak).Height + 4)
             : 0;
-        int proximaLinha = Lbl_ScoreStat.Bottom + 5;
+        int proximaLinha = Lbl_Ano.Bottom + 5;
         Lbl_Episodios.Location = new Point(Lbl_Episodios.Left, proximaLinha);
         Lbl_Duracao.Location = new Point(Lbl_Duracao.Left, Lbl_Episodios.Bottom);
+        // Altere o segundo valor abaixo para ajustar a posição vertical do campo de gêneros.
+        Lbl_Generos.Location = new Point(Lbl_Generos.Left, Lbl_Duracao.Bottom - 5);
         Lbl_Episodios.Text = anime.Episodes is > 0 ? $"📺 {anime.Episodes} ep." : string.Empty;
         Lbl_Duracao.Text = !string.IsNullOrWhiteSpace(anime.Duration) ? $"⏱ {anime.Duration}" : string.Empty;
 
@@ -177,7 +180,7 @@ public partial class FUC_DetalhesAnime : UserControl
 
         AdicionarSeparador(larguraValor);
         //AdicionarRelacoes(relacoes);
-        AdicionarTextoLongo("Sinopse", anime.Synopsis, larguraValor);
+        AdicionarTextoLongo("Sinopse", anime.Synopsis, larguraValor, exibirTitulo: false);
         AdicionarTextoLongo("Contexto / Fundo", anime.Background, larguraValor);
 
         Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
@@ -186,15 +189,41 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private void ConfigurarTitulosSecundarios(AnimeDetails anime)
     {
+        Lbl_TituloAnime.Text = anime.Title ?? $"Anime #{anime.MalId}";
+
         Lbl_TituloIngles.Text = anime.TitleEnglish ?? string.Empty;
-        Lbl_TituloIngles.Visible = !string.IsNullOrWhiteSpace(anime.TitleEnglish);
-
-        Lbl_Sinonimo.Text = anime.TitleSynonyms?.FirstOrDefault(s => !string.IsNullOrWhiteSpace(s)) ?? string.Empty;
-        Lbl_Sinonimo.Visible = !string.IsNullOrWhiteSpace(Lbl_Sinonimo.Text);
-
+        Lbl_Sinonimo.Text = string.Join("  •  ", (anime.TitleSynonyms ?? [])
+            .Where(titulo => !string.IsNullOrWhiteSpace(titulo))
+            .Distinct(StringComparer.OrdinalIgnoreCase));
         Lbl_TituloJapones.Text = anime.TitleJapanese ?? string.Empty;
-        Lbl_TituloJapones.Visible = !string.IsNullOrWhiteSpace(anime.TitleJapanese);
-        Pnl_Header.PerformLayout();
+
+        Lbl_TituloIngles.Visible = !string.IsNullOrWhiteSpace(Lbl_TituloIngles.Text);
+        Lbl_Sinonimo.Visible = !string.IsNullOrWhiteSpace(Lbl_Sinonimo.Text);
+        Lbl_TituloJapones.Visible = !string.IsNullOrWhiteSpace(Lbl_TituloJapones.Text);
+        OrganizarTitulosDoCabecalho();
+    }
+
+    private void OrganizarTitulosDoCabecalho()
+    {
+        int larguraUtil = Math.Max(1, Pnl_Header.ClientSize.Width -
+            Pnl_Header.Padding.Left - Pnl_Header.Padding.Right);
+        int larguraColuna = Math.Max(1, (larguraUtil - 20) / 2);
+        int xEsquerda = Pnl_Header.Padding.Left;
+        int xDireita = xEsquerda + larguraColuna + 20;
+        int alturaLinha = 50;
+        int yPrimeiraLinha = Pnl_Header.Padding.Top;
+        int ySegundaLinha = yPrimeiraLinha + alturaLinha + 4;
+
+        Lbl_TituloAnime.Location = new Point(xEsquerda, yPrimeiraLinha);
+        Lbl_TituloAnime.Size = new Size(larguraColuna, alturaLinha);
+        Lbl_TituloIngles.Location = new Point(xDireita, yPrimeiraLinha);
+        Lbl_TituloIngles.Size = new Size(larguraColuna, alturaLinha);
+        Lbl_Sinonimo.Location = new Point(xEsquerda, ySegundaLinha);
+        Lbl_Sinonimo.Size = new Size(larguraColuna, alturaLinha);
+        Lbl_TituloJapones.Location = new Point(xDireita, ySegundaLinha);
+        Lbl_TituloJapones.Size = new Size(larguraColuna, alturaLinha);
+
+        Pnl_Header.Height = ySegundaLinha + alturaLinha + Pnl_Header.Padding.Bottom;
     }
 
     private async Task CarregarCapaAsync(AnimeDetails anime)
@@ -302,41 +331,43 @@ public partial class FUC_DetalhesAnime : UserControl
         _yOffset += alturaValor + 6;
     }
 
-    private void AdicionarTextoLongo(string campo, string? texto, int larguraValor)
+    private void AdicionarTextoLongo(string campo, string? texto, int larguraValor, bool exibirTitulo = true)
     {
         if (string.IsNullOrWhiteSpace(texto)) return;
         _yOffset += 12;
         int topoSecao = _yOffset;
-        var lblCampo = new Label
+        int topoTexto = topoSecao;
+        if (exibirTitulo)
         {
-            AutoSize = false,
-            Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-            ForeColor = Color.Gold,
-            Location = new Point(4, topoSecao),
-            Size = new Size(148 + larguraValor, 32),
-            Text = campo + ":",
-            TextAlign = ContentAlignment.MiddleLeft
-        };
-        int topoTexto = topoSecao + lblCampo.Height + 10;
+            var lblCampo = new Label
+            {
+                AutoSize = false,
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                ForeColor = Color.Gold,
+                Location = new Point(4, topoSecao),
+                Size = new Size(148 + larguraValor, 32),
+                Text = campo + ":",
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            Pnl_Info.Controls.Add(lblCampo);
+            topoTexto = lblCampo.Bottom + 28;
+        }
 
         int larguraTexto = Math.Max(148 + larguraValor - 12, 450);
-        var lblTexto = new TextBox
+        int alturaTexto = Math.Max(60, TextRenderer.MeasureText(
+            texto, new Font("Segoe UI", 9.5F), new Size(larguraTexto - 24, int.MaxValue),
+            TextFormatFlags.WordBreak).Height + 28);
+        var lblTexto = new Label
         {
-            Multiline = true,
-            ReadOnly = true,
-            BorderStyle = BorderStyle.FixedSingle,
+            AutoSize = false,
             Font = new Font("Segoe UI", 9.5F),
             ForeColor = Color.FromArgb(255, 115, 0),
             BackColor = Pnl_Info.BackColor,
             Location = new Point(8, topoTexto),
-            Size = new Size(larguraTexto, Math.Max(60, TextRenderer.MeasureText(
-                texto, new Font("Segoe UI", 9.5F), new Size(larguraTexto - 8, int.MaxValue),
-                TextFormatFlags.WordBreak).Height + 12)),
+            Size = new Size(larguraTexto, alturaTexto),
             Text = texto,
-            //ScrollBars = ScrollBars.Vertical,
-            TabStop = true
+            TextAlign = ContentAlignment.TopCenter
         };
-        Pnl_Info.Controls.Add(lblCampo);
         Pnl_Info.Controls.Add(lblTexto);
         _yOffset = lblTexto.Bottom + 18;
         AdicionarSeparador(larguraValor);

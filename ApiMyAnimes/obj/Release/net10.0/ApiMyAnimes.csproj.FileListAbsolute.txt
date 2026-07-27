@@ -169,3 +169,4 @@ C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\obj\Release\net10.0\ref\ApiMyAnimes.dl
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\LibDtudo.Shared.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\LibDtudo.Shared.pdb
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\LibDtudo.Shared.xml
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\App_Data\auth-users.Development.json
