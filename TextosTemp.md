@@ -32,8 +32,6 @@ O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList (DEVE SER IGNORADO, no c
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
 
 Agora no meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\FormsUC\FUC_DetalhesAnime.cs.
-Estamos exibindo os titulos e subtitulos do anime um abaixo do outro, Agora quero que seja exibido o titulo e subtitulo lado a lado em seguência. Agora os generos devem ser a ultima linha.
-Onde Aparece o texto Sinopse: o texto com a sinopse está em cima do texto Sinopse: e não abaixo, quero que seja exibido abaixo do texto Sinopse:
 
 Quero uma implementação, modularizada, sem arquivos únicos muito extensos, COMPLETA e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
 

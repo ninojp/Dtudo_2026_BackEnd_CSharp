@@ -57,9 +57,10 @@ public class ImportadorAnimesMyAnimeService
                 continue;
             }
 
+            var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(detalhes, myAnimeId);
+
             try
             {
-                var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(detalhes, myAnimeId);
                 await _apiMyAnimesService.AdicionarAnimeAsync(dtoAnime);
                 resultado.AnimesSalvos++;
             }

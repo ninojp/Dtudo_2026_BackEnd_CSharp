@@ -66,18 +66,18 @@ partial class FUC_DetalhesAnime
         Pnl_Header.Margin = new Padding(4, 3, 4, 3);
         Pnl_Header.Name = "Pnl_Header";
         Pnl_Header.Padding = new Padding(50, 6, 13, 4);
-        Pnl_Header.Size = new Size(1920, 150);
+        Pnl_Header.Size = new Size(1920, 200);
         Pnl_Header.TabIndex = 2;
         // 
         // Lbl_TituloAnime
         // 
         Lbl_TituloAnime.AutoEllipsis = true;
-        Lbl_TituloAnime.Font = new Font("Segoe UI Black", 17F, FontStyle.Bold);
+        Lbl_TituloAnime.Font = new Font("Segoe UI Black", 16F, FontStyle.Bold);
         Lbl_TituloAnime.ForeColor = Color.White;
-        Lbl_TituloAnime.Location = new Point(50, 6);
+        Lbl_TituloAnime.Location = new Point(50, 10);
         Lbl_TituloAnime.Margin = new Padding(40, 0, 40, 0);
         Lbl_TituloAnime.Name = "Lbl_TituloAnime";
-        Lbl_TituloAnime.Size = new Size(900, 50);
+        Lbl_TituloAnime.Size = new Size(950, 60);
         Lbl_TituloAnime.TabIndex = 0;
         Lbl_TituloAnime.Text = "—";
         Lbl_TituloAnime.TextAlign = ContentAlignment.MiddleLeft;
@@ -86,12 +86,12 @@ partial class FUC_DetalhesAnime
         // 
         Lbl_TituloIngles.AutoEllipsis = true;
         Lbl_TituloIngles.AutoSize = false;
-        Lbl_TituloIngles.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+        Lbl_TituloIngles.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
         Lbl_TituloIngles.ForeColor = Color.Gold;
-        Lbl_TituloIngles.Location = new Point(50, 6);
+        Lbl_TituloIngles.Location = new Point(50, 10);
         Lbl_TituloIngles.MaximumSize = new Size(1800, 0);
         Lbl_TituloIngles.Name = "Lbl_TituloIngles";
-        Lbl_TituloIngles.Size = new Size(900, 50);
+        Lbl_TituloIngles.Size = new Size(950, 50);
         Lbl_TituloIngles.TabIndex = 2;
         Lbl_TituloIngles.TextAlign = ContentAlignment.MiddleLeft;
         Lbl_TituloIngles.Visible = false;
@@ -106,7 +106,7 @@ partial class FUC_DetalhesAnime
         Lbl_Sinonimo.MaximumSize = new Size(1800, 0);
         Lbl_Sinonimo.Name = "Lbl_Sinonimo";
         Lbl_Sinonimo.Location = new Point(50, 60);
-        Lbl_Sinonimo.Size = new Size(900, 50);
+        Lbl_Sinonimo.Size = new Size(950, 60);
         Lbl_Sinonimo.TabIndex = 1;
         Lbl_Sinonimo.TextAlign = ContentAlignment.MiddleLeft;
         Lbl_Sinonimo.Visible = false;
@@ -121,7 +121,7 @@ partial class FUC_DetalhesAnime
         Lbl_TituloJapones.MaximumSize = new Size(1800, 0);
         Lbl_TituloJapones.Name = "Lbl_TituloJapones";
         Lbl_TituloJapones.Location = new Point(970, 60);
-        Lbl_TituloJapones.Size = new Size(900, 50);
+        Lbl_TituloJapones.Size = new Size(950, 50);
         Lbl_TituloJapones.TabIndex = 0;
         Lbl_TituloJapones.TextAlign = ContentAlignment.MiddleLeft;
         Lbl_TituloJapones.Visible = false;
@@ -152,7 +152,7 @@ partial class FUC_DetalhesAnime
         Pnl_Conteudo.Controls.Add(Pnl_Info);
         Pnl_Conteudo.Controls.Add(Pnl_Esquerda);
         Pnl_Conteudo.Dock = DockStyle.Fill;
-        Pnl_Conteudo.Location = new Point(0, 175);
+        Pnl_Conteudo.Location = new Point(0, 200);
         Pnl_Conteudo.Margin = new Padding(4, 3, 4, 3);
         Pnl_Conteudo.Name = "Pnl_Conteudo";
         Pnl_Conteudo.Size = new Size(1920, 905);
@@ -164,7 +164,7 @@ partial class FUC_DetalhesAnime
         Pnl_Info.AutoScroll = true;
         Pnl_Info.BackColor = Color.Silver;
         Pnl_Info.Dock = DockStyle.Fill;
-        Pnl_Info.Location = new Point(550, 0);
+        Pnl_Info.Location = new Point(600, 250);
         Pnl_Info.Margin = new Padding(4, 3, 4, 3);
         Pnl_Info.Name = "Pnl_Info";
         Pnl_Info.Padding = new Padding(5, 4, 5, 4);

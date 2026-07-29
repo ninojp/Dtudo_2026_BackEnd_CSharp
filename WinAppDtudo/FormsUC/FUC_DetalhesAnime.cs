@@ -24,6 +24,10 @@ public partial class FUC_DetalhesAnime : UserControl
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
     private readonly int _malId;
     private int _yOffset;
+    private int _colunaDetalhe;
+    private int _alturaLinhaDetalhe;
+    private Label? _ultimoCampoDetalhe;
+    private TextBox? _ultimoValorDetalhe;
     private AnimeDetails? _animeAtual;
     private List<AnimeRelationEntry> _animesRelacionados = [];
 
@@ -144,8 +148,13 @@ public partial class FUC_DetalhesAnime : UserControl
         Pnl_Info.SuspendLayout();
         Pnl_Info.Controls.Clear();
         _yOffset = 10;
+        _colunaDetalhe = 0;
+        _alturaLinhaDetalhe = 0;
+        _ultimoCampoDetalhe = null;
+        _ultimoValorDetalhe = null;
 
-        int larguraValor = Math.Max(Pnl_Info.ClientSize.Width - 265, 600);
+        int larguraColuna = Math.Max((Pnl_Info.ClientSize.Width - 20) / 2, 350);
+        int larguraValor = Math.Max(larguraColuna - 160, 180);
         
         AdicionarRelacoes(relacoes);
 
@@ -281,17 +290,19 @@ public partial class FUC_DetalhesAnime : UserControl
             34,
             TextRenderer.MeasureText(
                 valor,
-                new Font("Segoe UI", 9F, isLink ? FontStyle.Underline : FontStyle.Regular),
+                new Font("Segoe UI", 10F, isLink ? FontStyle.Underline : FontStyle.Regular),
                 new Size(larguraValor, int.MaxValue),
                 TextFormatFlags.WordBreak).Height + 4);
 
+        int larguraColuna = larguraValor + 160;
+        int xColuna = 4 + (_colunaDetalhe * larguraColuna);
         var lblCampo = new Label
         {
             AutoSize = false,
-            Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
             ForeColor = Color.Gold,
-            Location = new Point(4, _yOffset + 2),
-            Size = new Size(260, alturaValor),
+            Location = new Point(xColuna, _yOffset + 2),
+            Size = new Size(150, alturaValor),
             Text = campo + ":",
             TextAlign = ContentAlignment.MiddleRight
         };
@@ -299,10 +310,10 @@ public partial class FUC_DetalhesAnime : UserControl
         var lblValor = new TextBox
         {
             AutoSize = false,
-            Font = new Font("Segoe UI", 9.5F,
+            Font = new Font("Segoe UI", 10F,
                 isLink ? FontStyle.Underline : FontStyle.Regular),
             ForeColor = corValor,
-            Location = new Point(260, _yOffset + 2),
+            Location = new Point(xColuna + 154, _yOffset + 2),
             Size = new Size(larguraValor, alturaValor),
             Text = valor,
             TextAlign = HorizontalAlignment.Left,
@@ -328,12 +339,44 @@ public partial class FUC_DetalhesAnime : UserControl
         }
         Pnl_Info.Controls.Add(lblCampo);
         Pnl_Info.Controls.Add(lblValor);
-        _yOffset += alturaValor + 6;
+
+        if (_colunaDetalhe == 0)
+        {
+            _ultimoCampoDetalhe = lblCampo;
+            _ultimoValorDetalhe = lblValor;
+            _alturaLinhaDetalhe = alturaValor;
+            _colunaDetalhe = 1;
+        }
+        else
+        {
+            _alturaLinhaDetalhe = Math.Max(_alturaLinhaDetalhe, alturaValor);
+            _ultimoCampoDetalhe!.Height = _alturaLinhaDetalhe;
+            _ultimoValorDetalhe!.Height = _alturaLinhaDetalhe;
+            lblCampo.Height = _alturaLinhaDetalhe;
+            lblValor.Height = _alturaLinhaDetalhe;
+            _yOffset += _alturaLinhaDetalhe + 12;
+            _colunaDetalhe = 0;
+            _alturaLinhaDetalhe = 0;
+            _ultimoCampoDetalhe = null;
+            _ultimoValorDetalhe = null;
+        }
+    }
+
+    private void FinalizarLinhaDetalhes()
+    {
+        if (_colunaDetalhe == 0) return;
+
+        _yOffset += _alturaLinhaDetalhe + 12;
+        _colunaDetalhe = 0;
+        _alturaLinhaDetalhe = 0;
+        _ultimoCampoDetalhe = null;
+        _ultimoValorDetalhe = null;
     }
 
     private void AdicionarTextoLongo(string campo, string? texto, int larguraValor, bool exibirTitulo = true)
     {
         if (string.IsNullOrWhiteSpace(texto)) return;
+        FinalizarLinhaDetalhes();
         _yOffset += 12;
         int topoSecao = _yOffset;
         int topoTexto = topoSecao;
@@ -345,7 +388,7 @@ public partial class FUC_DetalhesAnime : UserControl
                 Font = new Font("Segoe UI", 12F, FontStyle.Bold),
                 ForeColor = Color.Gold,
                 Location = new Point(4, topoSecao),
-                Size = new Size(148 + larguraValor, 32),
+                Size = new Size(2 * larguraValor + 148, 32),
                 Text = campo + ":",
                 TextAlign = ContentAlignment.MiddleLeft
             };
@@ -353,7 +396,7 @@ public partial class FUC_DetalhesAnime : UserControl
             topoTexto = lblCampo.Bottom + 28;
         }
 
-        int larguraTexto = Math.Max(148 + larguraValor - 12, 450);
+        int larguraTexto = Math.Max(2 * larguraValor + 148, 450);
         int alturaTexto = Math.Max(60, TextRenderer.MeasureText(
             texto, new Font("Segoe UI", 9.5F), new Size(larguraTexto - 24, int.MaxValue),
             TextFormatFlags.WordBreak).Height + 28);
@@ -375,11 +418,12 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private void AdicionarSeparador(int larguraValor)
     {
+        FinalizarLinhaDetalhes();
         var sep = new Panel
         {
             BackColor = Color.LightSteelBlue,
             Location = new Point(20, _yOffset),
-            Size = new Size(148 + larguraValor, 1)
+            Size = new Size(2 * larguraValor + 148, 1)
         };
         Pnl_Info.Controls.Add(sep);
         _yOffset += 10;
@@ -393,12 +437,12 @@ public partial class FUC_DetalhesAnime : UserControl
         var lblTituloSecao = new Label
         {
             AutoSize = false,
-            Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+            Font = new Font("Segoe UI", 15F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Location = new Point(4, _yOffset),
-            Size = new Size(larguraSecao, 60),
+            Size = new Size(larguraSecao, 100),
             Text = "🔗 Animes Relacionados:",
-            TextAlign = ContentAlignment.TopCenter
+            TextAlign = ContentAlignment.MiddleCenter
         };
         Pnl_Info.Controls.Add(lblTituloSecao);
         _yOffset += lblTituloSecao.Height + 8;
@@ -415,30 +459,32 @@ public partial class FUC_DetalhesAnime : UserControl
             var lblSemRel = new Label
             {
                 AutoSize = false,
-                Font = new Font("Segoe UI", 12F, FontStyle.Italic),
+                Font = new Font("Segoe UI", 13F, FontStyle.Italic),
                 ForeColor = Color.Gold,
-                Location = new Point(800, _yOffset),
-                Size = new Size(900, 60),
-                Text = "Nenhum anime relacionado ao atual foi encontrado."
+                Location = new Point(4, _yOffset),
+                Size = new Size(larguraSecao, 100),
+                Text = "Nenhum anime relacionado ao atual foi encontrado.",
+                TextAlign = ContentAlignment.MiddleCenter
             };
             Pnl_Info.SuspendLayout();
             Pnl_Info.Controls.Add(lblSemRel);
-            _yOffset += 26;
+            _yOffset += lblSemRel.Height + 24;
             Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
             Pnl_Info.ResumeLayout(true);
             return;
         }
 
         int larguraContainer = Math.Max(Pnl_Info.ClientSize.Width - 16, 370);
-        int larguraCards = Math.Max(larguraContainer - 8, 220);
+        int larguraFlp = Math.Max(larguraContainer - 18, 220);
 
         var pnlRelacoes = new Panel
         {
             Location = new Point(4, _yOffset),
-            Size = new Size(larguraContainer, 370),
+            Size = new Size(larguraContainer, 390),
             Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
             BackColor = DarkModeColors.BackgroundSecondaryColor,
-            //AutoScroll = true,
+            AutoScroll = true,
+            Padding = new Padding(8),
             BorderStyle = BorderStyle.FixedSingle
         };
 
@@ -448,10 +494,11 @@ public partial class FUC_DetalhesAnime : UserControl
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             WrapContents = true,
             FlowDirection = FlowDirection.LeftToRight,
-            Location = new Point(4, 4),
-            MinimumSize = new Size(larguraCards, 0),
-            MaximumSize = new Size(larguraCards, 0),
+            Width = larguraFlp,
+            MinimumSize = new Size(larguraFlp, 0),
+            MaximumSize = new Size(larguraFlp, 0),
             Padding = new Padding(4),
+            Margin = new Padding(0),
             BackColor = DarkModeColors.BackgroundSecondaryColor
         };
 
@@ -467,8 +514,8 @@ public partial class FUC_DetalhesAnime : UserControl
         pnlRelacoes.Controls.Add(flp);
         Pnl_Info.Controls.Add(pnlRelacoes);
         flp.CreateControl();
-        int alturaEstimada = flp.GetPreferredSize(new Size(larguraCards, int.MaxValue)).Height;
-        int alturaContainer = Math.Max(360, Math.Min(1200, alturaEstimada + 12));
+        int alturaEstimada = flp.GetPreferredSize(new Size(larguraFlp, 0)).Height;
+        int alturaContainer = Math.Clamp(alturaEstimada + pnlRelacoes.Padding.Vertical + 2, 390, 1200);
         pnlRelacoes.Height = alturaContainer;
         _yOffset += alturaContainer + 12;
         Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
