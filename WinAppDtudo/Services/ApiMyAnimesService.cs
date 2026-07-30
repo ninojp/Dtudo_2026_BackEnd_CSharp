@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using LibDtudo.Shared.Dtos;
+using LibDtudo.Shared.Search;
 using System.Net;
 
 namespace WinAppDtudo.Services;

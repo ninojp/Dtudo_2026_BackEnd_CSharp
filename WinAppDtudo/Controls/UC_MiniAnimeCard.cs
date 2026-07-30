@@ -1,4 +1,5 @@
 using WinAppDtudo.Services;
+using LibDtudo.Shared.Dtos;
 using LibDtudo.Shared.Dtos.MyAnimeList;
 
 namespace WinAppDtudo.Controls;
@@ -21,6 +22,19 @@ public partial class UC_MiniAnimeCard : UserControl
         ThemeManager.ApplyDarkModeToUserControl(this);
     }
 
+    public void CarregarDadosLocal(ObterAnimeDto anime)
+    {
+        _malId = anime.MalId;
+        Lbl_MalId.Text = $"DB #{anime.MalId}";
+        Lbl_Nome.Text = !string.IsNullOrWhiteSpace(anime.Titulo)
+            ? anime.Titulo
+            : anime.Title ?? $"#{anime.MalId}";
+
+        Pbx_Capa.Image?.Dispose();
+        Pbx_Capa.Image = null;
+        _ = CarregarImagemLocalAsync(anime.ImagensUrlMal?.FirstOrDefault());
+    }
+
     // ===================================================================
 
     /// <summary>Preenche o mini card com os dados do anime relacionado e inicia o carregamento da imagem.</summary>
@@ -35,6 +49,34 @@ public partial class UC_MiniAnimeCard : UserControl
         Pbx_Capa.Image = null;
         if (entry.MalId > 0)
             _ = CarregarImagemAsync(entry.ImageUrl, entry.MalId);
+    }
+
+    private async Task CarregarImagemLocalAsync(string? url)
+    {
+        var imagem = await ImageLoaderService.DownloadAsync(url);
+        if (imagem is null || Pbx_Capa.IsDisposed)
+        {
+            imagem?.Dispose();
+            return;
+        }
+
+        void AplicarImagem()
+        {
+            if (Pbx_Capa.IsDisposed)
+            {
+                imagem.Dispose();
+                return;
+            }
+
+            var anterior = Pbx_Capa.Image;
+            Pbx_Capa.Image = imagem;
+            anterior?.Dispose();
+        }
+
+        if (Pbx_Capa.InvokeRequired)
+            Pbx_Capa.BeginInvoke(AplicarImagem);
+        else
+            AplicarImagem();
     }
 
     // ===================================================================

@@ -1,5 +1,6 @@
 using ApiMyAnimes.Data;
 using LibDtudo.Shared.Models;
+using LibDtudo.Shared.Search;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiMyAnimes.Services;

@@ -30,7 +30,6 @@ partial class FUC_DetalhesAnime
         Lbl_TituloIngles = new Label();
         Lbl_Sinonimo = new Label();
         Lbl_TituloJapones = new Label();
-        Lbl_TipoStatus = new Label();
         Lbl_Carregando = new Label();
         Pnl_Conteudo = new Panel();
         Pnl_Info = new Panel();
@@ -38,11 +37,12 @@ partial class FUC_DetalhesAnime
         Pnl_Acoes = new Panel();
         Btn_SalvarComoAnime = new Button();
         Btn_SalvarComoMyAnime = new Button();
+        Btn_ExibirMyAnime = new Button();
         Pnl_Stats = new Panel();
-        Lbl_Ano = new Label();
+        Lbl_EstatisticasRapidas = new Label();
         Lbl_Generos = new Label();
         Lbl_Episodios = new Label();
-        Lbl_Duracao = new Label();
+        Lbl_TempoPorEpisodio = new Label();
         Pbx_Capa = new PictureBox();
         Lbl_Rank = new Label();
         Lbl_Popularidade = new Label();
@@ -125,13 +125,6 @@ partial class FUC_DetalhesAnime
         Lbl_TituloJapones.TabIndex = 0;
         Lbl_TituloJapones.TextAlign = ContentAlignment.MiddleLeft;
         Lbl_TituloJapones.Visible = false;
-        // 
-        // Lbl_TipoStatus
-        // 
-        Lbl_TipoStatus.Location = new Point(0, 0);
-        Lbl_TipoStatus.Name = "Lbl_TipoStatus";
-        Lbl_TipoStatus.Size = new Size(100, 33);
-        Lbl_TipoStatus.TabIndex = 1;
         // 
         // Lbl_Carregando
         // 
@@ -228,11 +221,11 @@ partial class FUC_DetalhesAnime
         // Pnl_Stats
         // 
         Pnl_Stats.AutoSize = true;
-        Pnl_Stats.Controls.Add(Lbl_Ano);
-        Pnl_Stats.Controls.Add(Lbl_TipoStatus);
+        Pnl_Stats.Controls.Add(Lbl_EstatisticasRapidas);
         Pnl_Stats.Controls.Add(Lbl_Generos);
+        Pnl_Stats.Controls.Add(Btn_ExibirMyAnime);
         Pnl_Stats.Controls.Add(Lbl_Episodios);
-        Pnl_Stats.Controls.Add(Lbl_Duracao);
+        Pnl_Stats.Controls.Add(Lbl_TempoPorEpisodio);
         Pnl_Stats.Dock = DockStyle.Fill;
         Pnl_Stats.Location = new Point(0, 570);
         Pnl_Stats.Margin = new Padding(4, 3, 4, 3);
@@ -241,15 +234,16 @@ partial class FUC_DetalhesAnime
         Pnl_Stats.Size = new Size(550, 329);
         Pnl_Stats.TabIndex = 0;
         // 
-        // Lbl_Ano
+        // Lbl_EstatisticasRapidas
         // 
-        Lbl_Ano.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-        Lbl_Ano.ForeColor = Color.Gold;
-        Lbl_Ano.Location = new Point(70, 10);
-        Lbl_Ano.Margin = new Padding(4, 0, 4, 0);
-        Lbl_Ano.Name = "Lbl_Ano";
-        Lbl_Ano.Size = new Size(500, 40);
-        Lbl_Ano.TabIndex = 0;
+        Lbl_EstatisticasRapidas.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        Lbl_EstatisticasRapidas.ForeColor = Color.Gold;
+        Lbl_EstatisticasRapidas.Location = new Point(70, 10);
+        Lbl_EstatisticasRapidas.Margin = new Padding(4, 0, 4, 0);
+        Lbl_EstatisticasRapidas.Name = "Lbl_EstatisticasRapidas";
+        Lbl_EstatisticasRapidas.Size = new Size(500, 40);
+        Lbl_EstatisticasRapidas.TabIndex = 0;
+        Lbl_EstatisticasRapidas.TextAlign = ContentAlignment.MiddleCenter;
         // 
         // Lbl_Generos
         // 
@@ -261,6 +255,20 @@ partial class FUC_DetalhesAnime
         Lbl_Generos.Size = new Size(500, 40);
         Lbl_Generos.TabIndex = 1;
         // 
+        // Btn_ExibirMyAnime
+        // 
+        Btn_ExibirMyAnime.BackColor = Color.FromArgb(35, 40, 90);
+        Btn_ExibirMyAnime.FlatStyle = FlatStyle.Flat;
+        Btn_ExibirMyAnime.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        Btn_ExibirMyAnime.ForeColor = Color.Gold;
+        Btn_ExibirMyAnime.Location = new Point(70, 115);
+        Btn_ExibirMyAnime.Name = "Btn_ExibirMyAnime";
+        Btn_ExibirMyAnime.Size = new Size(500, 45);
+        Btn_ExibirMyAnime.TabIndex = 6;
+        Btn_ExibirMyAnime.Text = "Exibir MyAnime";
+        Btn_ExibirMyAnime.UseVisualStyleBackColor = false;
+        Btn_ExibirMyAnime.Visible = false;
+        // 
         // Lbl_Episodios
         // 
         Lbl_Episodios.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
@@ -271,15 +279,16 @@ partial class FUC_DetalhesAnime
         Lbl_Episodios.Size = new Size(500, 50);
         Lbl_Episodios.TabIndex = 4;
         // 
-        // Lbl_Duracao
+        // Lbl_TempoPorEpisodio
         // 
-        Lbl_Duracao.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-        Lbl_Duracao.ForeColor = Color.FromArgb(35, 40, 90);
-        Lbl_Duracao.Location = new Point(70, 120);
-        Lbl_Duracao.Margin = new Padding(4, 0, 4, 0);
-        Lbl_Duracao.Name = "Lbl_Duracao";
-        Lbl_Duracao.Size = new Size(328, 50);
-        Lbl_Duracao.TabIndex = 5;
+        Lbl_TempoPorEpisodio.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        Lbl_TempoPorEpisodio.ForeColor = Color.FromArgb(35, 40, 90);
+        Lbl_TempoPorEpisodio.Location = new Point(70, 120);
+        Lbl_TempoPorEpisodio.Margin = new Padding(4, 0, 4, 0);
+        Lbl_TempoPorEpisodio.Name = "Lbl_TempoPorEpisodio";
+        Lbl_TempoPorEpisodio.Size = new Size(328, 50);
+        Lbl_TempoPorEpisodio.TabIndex = 5;
+        Lbl_TempoPorEpisodio.TextAlign = ContentAlignment.MiddleCenter;
         // 
         // Pbx_Capa
         // 
@@ -338,20 +347,20 @@ partial class FUC_DetalhesAnime
     private Label Lbl_TituloIngles;
     private Label Lbl_Sinonimo;
     private Label Lbl_TituloJapones;
-    private Label Lbl_TipoStatus;
     private Label Lbl_Carregando;
     private Panel Pnl_Conteudo;
     private Panel Pnl_Esquerda;
     private Panel Pnl_Acoes;
     private Button Btn_SalvarComoAnime;
     private Button Btn_SalvarComoMyAnime;
+    private Button Btn_ExibirMyAnime;
     private PictureBox Pbx_Capa;
     private Panel Pnl_Stats;
-    private Label Lbl_Ano;
+    private Label Lbl_EstatisticasRapidas;
     private Label Lbl_Generos;
     private Label Lbl_Rank;
     private Label Lbl_Popularidade;
     private Label Lbl_Episodios;
-    private Label Lbl_Duracao;
+    private Label Lbl_TempoPorEpisodio;
     private Panel Pnl_Info;
 }

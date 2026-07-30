@@ -10,8 +10,8 @@ using WinAppDtudo.Services;
 namespace WinAppDtudo.FormsUC;
 
 /// <summary>
-/// UserControl que exibe todos os detalhes disponíveis de um anime buscado por ID via ApiMyAnimeList.
-/// Carrega os dados assincronamente ao ser exibido pela primeira vez.
+/// UserControl que exibe todos os detalhes disponíveis de um anime.
+/// O modo externo consulta a ApiMyAnimeList; o modo local consulta apenas o DB_Local.
 /// </summary>
 public partial class FUC_DetalhesAnime : UserControl
 {
@@ -19,10 +19,12 @@ public partial class FUC_DetalhesAnime : UserControl
     public event EventHandler<int>? CardClicado;
     public event EventHandler<int>? MyAnimeAtualizado;
     public event EventHandler<int>? MyAnimeExistenteSelecionado;
+    public event EventHandler<int>? MyAnimeSolicitado;
 
     private readonly MyAnimeListApiService _myAnimeListService = new();
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
     private readonly int _malId;
+    private readonly bool _consultaLocal;
     private int _yOffset;
     private int _colunaDetalhe;
     private int _alturaLinhaDetalhe;
@@ -32,11 +34,29 @@ public partial class FUC_DetalhesAnime : UserControl
     private List<AnimeRelationEntry> _animesRelacionados = [];
 
     public FUC_DetalhesAnime(int malId)
+        : this(malId, consultaLocal: false)
+    {
+    }
+
+    public FUC_DetalhesAnime(int malId, bool consultaLocal)
     {
         InitializeComponent();
         _malId = malId;
+        _consultaLocal = consultaLocal;
         Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
         Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
+        Btn_ExibirMyAnime.Click += (_, _) =>
+        {
+            if (_animeAtual?.MyAnimeID > 0)
+                MyAnimeSolicitado?.Invoke(this, _animeAtual.MyAnimeID);
+        };
+        if (_consultaLocal)
+        {
+            Btn_SalvarComoMyAnime.Visible = false;
+            Btn_SalvarComoAnime.Visible = false;
+            Pnl_Acoes.Visible = false;
+            Btn_ExibirMyAnime.Visible = true;
+        }
         Pnl_Header.Resize += (s, e) => OrganizarTitulosDoCabecalho();
         Load += async (s, e) => await CarregarAsync();
         // Melhora renderização do UserControl
@@ -45,7 +65,7 @@ public partial class FUC_DetalhesAnime : UserControl
     }
     // ===================================================================
     /// <summary>
-    /// Carrega os detalhes do anime via ApiMyAnimeList e popula a interface do usuário.
+    /// Carrega os detalhes da fonte selecionada e popula a interface do usuário.
     /// </summary>
     private async Task CarregarAsync()
     {
@@ -54,12 +74,20 @@ public partial class FUC_DetalhesAnime : UserControl
         string? erro = null;
         try
         {
-            anime = await _myAnimeListService.BuscarPorIdAsync(_malId);
+            if (_consultaLocal)
+            {
+                var animeLocal = await _apiMyAnimesService.ObterAnimePorMalIdAsync(_malId);
+                anime = animeLocal is null ? null : AnimeDetailsMapper.FromLocal(animeLocal);
+            }
+            else
+            {
+                anime = await _myAnimeListService.BuscarPorIdAsync(_malId);
+            }
         }
         catch (HttpRequestException ex)
         {
-            const string apiNome = "ApiMyAnimeList";
-            var apiBase = MyAnimeListApiService.ApiBase;
+            var apiNome = _consultaLocal ? "DB_Local" : "ApiMyAnimeList";
+            var apiBase = _consultaLocal ? ApiMyAnimesService.ApiBase : MyAnimeListApiService.ApiBase;
             erro = $"Não foi possível conectar à {apiNome}.\n\n" +
                    $"Verifique se a {apiNome} está em execução em:\n{apiBase}\n\n" +
                    $"Detalhes: {ex.Message}";
@@ -86,22 +114,40 @@ public partial class FUC_DetalhesAnime : UserControl
         _animeAtual = anime;
 
         List<AnimeRelationGroup> relacoes = [];
-        try
+        List<ObterAnimeDto> relacoesMyAnime = [];
+        if (!_consultaLocal)
         {
-            relacoes = await _myAnimeListService.BuscarRelacoesAsync(_malId);
+            try
+            {
+                relacoes = await _myAnimeListService.BuscarRelacoesAsync(_malId);
+            }
+            catch
+            {
+            }
         }
-        catch
+        else if (anime.MyAnimeID > 0)
         {
+            try
+            {
+                relacoesMyAnime = await _apiMyAnimesService.ObterAnimesPorMyAnimeIdAsync(anime.MyAnimeID);
+            }
+            catch
+            {
+            }
         }
 
-        PopularUI(anime, relacoes);
+        PopularUI(anime, relacoes, !_consultaLocal, relacoesMyAnime);
     }
     // ===================================================================
     /// <summary>
     /// Popula a interface do usuário com os detalhes do anime fornecido.
     /// </summary>
     /// <param name="anime">Os detalhes do anime a serem exibidos.</param>
-    private void PopularUI(AnimeDetails anime, List<AnimeRelationGroup> relacoes)
+    private void PopularUI(
+        AnimeDetails anime,
+        List<AnimeRelationGroup> relacoes,
+        bool exibirRelacoes,
+        IReadOnlyList<ObterAnimeDto> relacoesMyAnime)
     {
         var anoLancamento = ExtrairAnoLancamentoPeloAired(anime.Aired);
         // Header
@@ -119,7 +165,7 @@ public partial class FUC_DetalhesAnime : UserControl
             estatisticas.Add($"🎬{anime.Type}");
         if (anime.Score.HasValue)
             estatisticas.Add($"⭐{anime.Score:0.00}");
-        Lbl_Ano.Text = string.Join("  ", estatisticas);
+        Lbl_EstatisticasRapidas.Text = string.Join("  ", estatisticas);
         var generos = anime.Genres?
             .Where(g => !string.IsNullOrWhiteSpace(g))
             .ToList() ?? [];
@@ -127,22 +173,40 @@ public partial class FUC_DetalhesAnime : UserControl
             ? $"🎭 {string.Join(" • ", generos)}"
             : string.Empty;
         Lbl_Generos.Visible = generos.Count > 0;
-        int larguraGenero = Math.Max(200, Pnl_Stats.ClientSize.Width - Lbl_Generos.Left - 20);
-        Lbl_Generos.Width = larguraGenero;
+        int larguraDisponivel = Math.Max(200, Pnl_Stats.ClientSize.Width - Pnl_Stats.Padding.Horizontal - 20);
+        int esquerda = Math.Max(Pnl_Stats.Padding.Left, (Pnl_Stats.ClientSize.Width - larguraDisponivel) / 2);
+        Lbl_EstatisticasRapidas.Location = new Point(esquerda, Pnl_Stats.Padding.Top);
+        Lbl_EstatisticasRapidas.Width = larguraDisponivel;
+        Lbl_EstatisticasRapidas.TextAlign = ContentAlignment.MiddleCenter;
+        Lbl_Generos.Width = larguraDisponivel;
         Lbl_Generos.Height = generos.Count > 0
             ? Math.Max(35, TextRenderer.MeasureText(
                 Lbl_Generos.Text,
                 Lbl_Generos.Font,
-                new Size(larguraGenero, int.MaxValue),
+                new Size(larguraDisponivel, int.MaxValue),
                 TextFormatFlags.WordBreak).Height + 4)
             : 0;
-        int proximaLinha = Lbl_Ano.Bottom + 5;
-        Lbl_Episodios.Location = new Point(Lbl_Episodios.Left, proximaLinha);
-        Lbl_Duracao.Location = new Point(Lbl_Duracao.Left, Lbl_Episodios.Bottom);
-        // Altere o segundo valor abaixo para ajustar a posição vertical do campo de gêneros.
-        Lbl_Generos.Location = new Point(Lbl_Generos.Left, Lbl_Duracao.Bottom - 5);
+        Lbl_Generos.Location = new Point(esquerda, 0);
+        Lbl_Episodios.Width = larguraDisponivel;
+        Lbl_Episodios.TextAlign = ContentAlignment.MiddleCenter;
+        Lbl_TempoPorEpisodio.Width = larguraDisponivel;
+        Lbl_TempoPorEpisodio.TextAlign = ContentAlignment.MiddleCenter;
+        Lbl_Generos.TextAlign = ContentAlignment.MiddleCenter;
         Lbl_Episodios.Text = anime.Episodes is > 0 ? $"📺 {anime.Episodes} ep." : string.Empty;
-        Lbl_Duracao.Text = !string.IsNullOrWhiteSpace(anime.Duration) ? $"⏱ {anime.Duration}" : string.Empty;
+        Lbl_TempoPorEpisodio.Text = !string.IsNullOrWhiteSpace(anime.Duration) ? $"⏱ {anime.Duration}" : string.Empty;
+        const int espacamentoVertical = 5;
+        int proximaLinha = Lbl_EstatisticasRapidas.Bottom + espacamentoVertical;
+        Lbl_Episodios.Location = new Point(esquerda, proximaLinha);
+        proximaLinha = Lbl_Episodios.Bottom + espacamentoVertical;
+        Lbl_TempoPorEpisodio.Location = new Point(esquerda, proximaLinha);
+        proximaLinha = Lbl_TempoPorEpisodio.Bottom + espacamentoVertical;
+        Lbl_Generos.Location = new Point(esquerda, proximaLinha);
+        Btn_ExibirMyAnime.Visible = _consultaLocal && anime.MyAnimeID > 0;
+        const int larguraBotaoMyAnime = 300;
+        int larguraBotao = Math.Min(larguraBotaoMyAnime, larguraDisponivel);
+        int esquerdaBotao = (Pnl_Stats.ClientSize.Width - larguraBotao) / 2;
+        Btn_ExibirMyAnime.Location = new Point(esquerdaBotao, Lbl_Generos.Visible ? Lbl_Generos.Bottom + 30 : Lbl_TempoPorEpisodio.Bottom + 30);
+        Btn_ExibirMyAnime.Width = larguraBotao;
 
         // Painel direito: detalhes dinâmicos
         Pnl_Info.SuspendLayout();
@@ -156,9 +220,14 @@ public partial class FUC_DetalhesAnime : UserControl
         int larguraColuna = Math.Max((Pnl_Info.ClientSize.Width - 20) / 2, 350);
         int larguraValor = Math.Max(larguraColuna - 160, 180);
         
-        AdicionarRelacoes(relacoes);
+        if (_consultaLocal)
+            AdicionarRelacoesMyAnime(relacoesMyAnime);
+        else if (exibirRelacoes)
+            AdicionarRelacoes(relacoes);
 
         AdicionarDetalhe("Mal ID", anime.MalId.ToString(), larguraValor);
+        if (_consultaLocal && anime.MyAnimeID > 0)
+            AdicionarDetalhe("MyAnime ID", anime.MyAnimeID.ToString(), larguraValor);
         AdicionarDetalhe("Fonte", anime.Source, larguraValor);
         AdicionarDetalhe("Classificação", anime.Rating, larguraValor);
         AdicionarDetalhe("Exibição", anime.Aired, larguraValor);
@@ -245,7 +314,9 @@ public partial class FUC_DetalhesAnime : UserControl
         }.Where(url => !string.IsNullOrWhiteSpace(url)).Distinct().ToList();
         foreach (var url in urls)
         {
-            var image = await ImageLoaderService.DownloadAnimeCoverAsync(url, _malId);
+            var image = _consultaLocal
+                ? await ImageLoaderService.DownloadAsync(url)
+                : await ImageLoaderService.DownloadAnimeCoverAsync(url, _malId);
             if (image is null || Pbx_Capa.IsDisposed)
             {
                 image?.Dispose();
@@ -520,6 +591,82 @@ public partial class FUC_DetalhesAnime : UserControl
         _yOffset += alturaContainer + 12;
         Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
         Pnl_Info.ResumeLayout(true);
+    }
+
+    private void AdicionarRelacoesMyAnime(IReadOnlyList<ObterAnimeDto> animes)
+    {
+        int larguraSecao = Math.Max(Pnl_Info.ClientSize.Width - 12, 370);
+        var lblTituloSecao = new Label
+        {
+            AutoSize = false,
+            Font = new Font("Segoe UI", 15F, FontStyle.Bold),
+            ForeColor = Color.Gold,
+            Location = new Point(4, _yOffset),
+            Size = new Size(larguraSecao, 100),
+            Text = "🔗 Animes relacionados no MyAnime:",
+            TextAlign = ContentAlignment.MiddleCenter
+        };
+        Pnl_Info.Controls.Add(lblTituloSecao);
+        _yOffset += lblTituloSecao.Height + 8;
+
+        var animesValidos = animes.Where(anime => anime.MalId > 0).ToList();
+        if (animesValidos.Count == 0)
+        {
+            var lblSemRelacoes = new Label
+            {
+                AutoSize = false,
+                Font = new Font("Segoe UI", 13F, FontStyle.Italic),
+                ForeColor = Color.Gold,
+                Location = new Point(4, _yOffset),
+                Size = new Size(larguraSecao, 100),
+                Text = "Nenhum anime do MyAnime foi encontrado no DB_Local.",
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            Pnl_Info.Controls.Add(lblSemRelacoes);
+            _yOffset += lblSemRelacoes.Height + 24;
+            return;
+        }
+
+        int larguraContainer = Math.Max(Pnl_Info.ClientSize.Width - 16, 370);
+        int larguraFlp = Math.Max(larguraContainer - 18, 220);
+        var pnlRelacoes = new Panel
+        {
+            Location = new Point(4, _yOffset),
+            Size = new Size(larguraContainer, 390),
+            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+            BackColor = DarkModeColors.BackgroundSecondaryColor,
+            AutoScroll = true,
+            Padding = new Padding(8),
+            BorderStyle = BorderStyle.FixedSingle
+        };
+        var flp = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            WrapContents = true,
+            FlowDirection = FlowDirection.LeftToRight,
+            Width = larguraFlp,
+            MinimumSize = new Size(larguraFlp, 0),
+            MaximumSize = new Size(larguraFlp, 0),
+            Padding = new Padding(4),
+            Margin = new Padding(0),
+            BackColor = DarkModeColors.BackgroundSecondaryColor
+        };
+
+        foreach (var anime in animesValidos)
+        {
+            var card = new UC_MiniAnimeCard();
+            card.CarregarDadosLocal(anime);
+            card.CardClicado += (_, malId) => CardClicado?.Invoke(this, malId);
+            flp.Controls.Add(card);
+        }
+
+        pnlRelacoes.Controls.Add(flp);
+        Pnl_Info.Controls.Add(pnlRelacoes);
+        flp.CreateControl();
+        int alturaEstimada = flp.GetPreferredSize(new Size(larguraFlp, 0)).Height;
+        pnlRelacoes.Height = Math.Clamp(alturaEstimada + pnlRelacoes.Padding.Vertical + 2, 390, 1200);
+        _yOffset += pnlRelacoes.Height + 12;
     }
 
     private async void Btn_SalvarComoMyAnime_Click(object? sender, EventArgs e)

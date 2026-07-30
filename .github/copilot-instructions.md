@@ -11,6 +11,8 @@
 - Preferir sempre modularização e reaproveitamento de código, evitando duplicação de layout e lógica.
 - Tratar `ApiMyAnimeList` como substituta do fluxo antigo de consulta externa de animes; nao criar novos fluxos para API externa antiga.
 - Validar todos os fluxos de imagens na aplicação, pois a correção anterior foi insuficiente e ainda faltam muitas imagens em diversos pontos.
+- Na busca de animes do DB_Local, preservar o padrão existente de normalização de caracteres especiais e a prioridade de busca: título principal, depois título em inglês e demais títulos alternativos conforme o mecanismo atual.
+- No DB_Local, MyAnime é uma coleção interna da tabela MyAnimes: cada anime possui MyAnimeId e todos os animes com o mesmo MyAnimeId pertencem ao conjunto relacionado. Esse relacionamento interno é diferente e independente das relações oficiais da ApiMyAnimeList; no detalhe local, relações e navegação devem usar MyAnimeId/DB_Local, nunca as relações externas da ApiMyAnimeList.
 
 ## User Interaction Guidelines
 
@@ -22,3 +24,4 @@
 ## Anime Detail Display Guidelines
 
 - No controle de detalhes de anime, exibir os títulos alternativos na ordem: título principal, título em inglês, sinônimos e título japonês; usar uma fonte um pouco maior para o título e alinhar os títulos secundários à linha superior da imagem de capa.
+- Manter os três itens de estatísticas (ano, tipo e score) centralizados na mesma linha, seguidos verticalmente por episódios, duração, gêneros e pelo botão Exibir MyAnime; o layout deve ser dinâmico porque apenas gêneros têm altura variável.

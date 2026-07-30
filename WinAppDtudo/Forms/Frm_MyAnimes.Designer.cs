@@ -39,7 +39,7 @@ partial class Frm_MyAnimes
         MnI_FecharTodasAbas = new ToolStripMenuItem();
         MnI_FecharAbasAEsquerda = new ToolStripMenuItem();
         MnI_FecharAbasADireita = new ToolStripMenuItem();
-        MnI_ProcurarAnimePorNome = new ToolStripMenuItem();
+        MnI_DBLocalBuscarAnime = new ToolStripMenuItem();
         MnI_ApiMyAnimeListBuscarNome = new ToolStripMenuItem();
         Mnu_AnalizarEstruturas = new ToolStripMenuItem();
         Tbc_MyAnimes = new TabControl();
@@ -51,7 +51,7 @@ partial class Frm_MyAnimes
         // 
         Mnu_MenuMyAnimes.BackColor = Color.DimGray;
         Mnu_MenuMyAnimes.ImageScalingSize = new Size(32, 32);
-        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_ProcurarAnimePorNome, MnI_ApiMyAnimeListBuscarNome, Mnu_AnalizarEstruturas });
+        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_DBLocalBuscarAnime, MnI_ApiMyAnimeListBuscarNome, Mnu_AnalizarEstruturas });
         Mnu_MenuMyAnimes.Location = new Point(0, 0);
         Mnu_MenuMyAnimes.Name = "Mnu_MenuMyAnimes";
         Mnu_MenuMyAnimes.Padding = new Padding(15, 4, 0, 4);
@@ -127,13 +127,15 @@ partial class Frm_MyAnimes
         MnI_FecharAbasADireita.Text = "Fechar Abas à Direita";
         MnI_FecharAbasADireita.Click += MnI_FecharAbasADireita_Click;
         // 
-        // MnI_ProcurarAnimePorNome
+        // MnI_DBLocalBuscarAnime
         // 
-        MnI_ProcurarAnimePorNome.Image = Properties.Resources.pngwing_com;
-        MnI_ProcurarAnimePorNome.Name = "MnI_ProcurarAnimePorNome";
-        MnI_ProcurarAnimePorNome.Size = new Size(249, 42);
-        MnI_ProcurarAnimePorNome.Text = "DBLocalBuscar";
-        MnI_ProcurarAnimePorNome.Click += MnI_ProcurarAnimePorNome_Click;
+        MnI_DBLocalBuscarAnime.Image = Properties.Resources.pngwing_com;
+        MnI_DBLocalBuscarAnime.Name = "MnI_DBLocalBuscarAnime";
+        MnI_DBLocalBuscarAnime.Size = new Size(249, 42);
+        MnI_DBLocalBuscarAnime.Text = "DBLocal Animes";
+        // 
+        // MnI_ApiMyAnimeListBuscarNome
+        // 
         // 
         // MnI_ApiMyAnimeListBuscarNome
         // 
@@ -157,10 +159,10 @@ partial class Frm_MyAnimes
         Tbc_MyAnimes.Appearance = TabAppearance.Buttons;
         Tbc_MyAnimes.Dock = DockStyle.Fill;
         Tbc_MyAnimes.DrawMode = TabDrawMode.OwnerDrawFixed;
-        Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 9.3F, FontStyle.Regular, GraphicsUnit.Point, 0);
         Tbc_MyAnimes.ImageList = Iml_ImagensList;
         Tbc_MyAnimes.ImeMode = ImeMode.On;
-        Tbc_MyAnimes.ItemSize = new Size(200, 60);
+        Tbc_MyAnimes.ItemSize = new Size(200, 50);
         Tbc_MyAnimes.Location = new Point(0, 50);
         Tbc_MyAnimes.Margin = new Padding(1, 1, 1, 1);
         Tbc_MyAnimes.Name = "Tbc_MyAnimes";
@@ -214,7 +216,7 @@ partial class Frm_MyAnimes
     #endregion
 
     private MenuStrip Mnu_MenuMyAnimes;
-    private ToolStripMenuItem MnI_ProcurarAnimePorNome;
+    private ToolStripMenuItem MnI_DBLocalBuscarAnime;
     private TabControl Tbc_MyAnimes;
     private ImageList Iml_ImagensList;
     private ToolStripMenuItem Mnu_MenuAbas;

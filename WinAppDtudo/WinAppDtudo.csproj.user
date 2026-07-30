@@ -22,7 +22,7 @@
     <Compile Update="FormsUC\FUC_CadastrarUsuario.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="FormsUC\FUC_DBLocalBuscarNome.cs">
+    <Compile Update="FormsUC\FUC_DBLocalBuscarAnime.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="FormsUC\FUC_DetalhesAnime.cs">

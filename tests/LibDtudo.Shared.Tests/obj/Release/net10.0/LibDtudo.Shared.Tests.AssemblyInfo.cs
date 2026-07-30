@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LibDtudo.Shared.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+823d2acaa933b70bec38db57cdc1cb76267b917b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1f8e7423af1b9c2891526cfb3df3b6a513c2f0ae")]
 [assembly: System.Reflection.AssemblyProductAttribute("LibDtudo.Shared.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LibDtudo.Shared.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

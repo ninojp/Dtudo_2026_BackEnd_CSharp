@@ -301,6 +301,18 @@
             Representa uma coleção de animes, onde o título é nome do anime principal. E uma lista de IDs de animes (MalId) RELACIONADOS ao título principal.
             </summary>
         </member>
+        <member name="M:LibDtudo.Shared.Search.AnimeSearchText.Matches(LibDtudo.Shared.Search.AnimeSearchText)">
+            <summary>
+            Verifica correspondência exata, por trecho ou com pequenos erros de digitação.
+            A tolerância é limitada por palavra para evitar resultados irrelevantes.
+            </summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Search.AnimeSearchTextNormalizer">
+            <summary>
+            Normaliza textos de títulos para comparações consistentes, sem diferenciar
+            maiúsculas, acentos, entidades HTML, pontuação ou espaços repetidos.
+            </summary>
+        </member>
         <member name="T:LibDtudo.Shared.Utils.ChecaForcaSenha">
             <summary>
             Checa o nível de força de uma senha com base em critérios como comprimento, uso de letras maiúsculas e minúsculas, dígitos, símbolos e repetição de caracteres.

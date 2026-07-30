@@ -7,18 +7,18 @@ namespace WinAppDtudo;
 
 public partial class Frm_MyAnimes : CustomFormNoBorder
 {
-    private const int CloseButtonSize = 34;
+    private const int CloseButtonSize = 24;
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
     private readonly AnalizadorDeEstruturas _analizadorDeEstruturas = new();
     private readonly ImportadorAnimesMyAnimeService _importadorAnimesMyAnimeService = new();
     private AnaliseEstruturas? _ultimaAnaliseEstruturas;
     public int _tabIndexMascaras = 0;
-    public int _tabIndexMyAnimesPorNome = 0;
     public int _tabIndexApiMyAnimeListPorNome = 0;
     public Frm_MyAnimes()
     {
         InitializeComponent();
         MnI_ApiMyAnimeListBuscarNome.Click += MnI_ApiMyAnimeListBuscarNome_Click;
+        MnI_DBLocalBuscarAnime.Click += MnI_DBLocalBuscarAnime_Click;
         Tbc_MyAnimes.Selected += Tbc_MyAnimes_Selected;
         // Aplicar o tema Dark Mode ao formulário e seus componentes
         ThemeManager.ApplyDarkModeToForm(this);
@@ -27,38 +27,23 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         AddControlButtonsToMenuStrip(Mnu_MenuMyAnimes);
     }
 
-    //=============================================================================
-    private void MnI_ProcurarAnimePorNome_Click(object sender, EventArgs e)
+    private void MnI_DBLocalBuscarAnime_Click(object? sender, EventArgs e)
     {
-        _tabIndexMyAnimesPorNome++;
-        try
+        var ucBuscaLocal = new FUC_DBLocalBuscarAnime
         {
-            var ucBuscaLocal = new FUC_DBLocalBuscarNome
-            {
-                Dock = DockStyle.Fill
-            };
+            Dock = DockStyle.Fill
+        };
+        ucBuscaLocal.AnimeLocalSelecionado += AbrirDetalhesAnimeLocal;
 
-            ucBuscaLocal.MyAnimeSelecionado += AbrirDetalhesMyAnime;
-
-            TabPage tabPage = new()
-            {
-                Text = $"{_tabIndexMyAnimesPorNome} DBLocal",
-                Name = $"DBLocal_{_tabIndexMyAnimesPorNome}",
-                ImageIndex = 2,
-            };
-
-            tabPage.Controls.Add(ucBuscaLocal);
-            Tbc_MyAnimes.TabPages.Add(tabPage);
-            Tbc_MyAnimes.SelectedTab = tabPage;
-        }
-        catch (Exception ex)
+        var tabPage = new TabPage
         {
-            _tabIndexMyAnimesPorNome = Math.Max(0, _tabIndexMyAnimesPorNome - 1);
-            MessageBox.Show($"Erro ao abrir a aba DBLocalBuscar:\n{ex.Message}",
-                "Erro",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
-        }
+            Text = "DBLocal Animes",
+            Name = "DBLocal_Animes",
+            ImageIndex = 2
+        };
+        tabPage.Controls.Add(ucBuscaLocal);
+        Tbc_MyAnimes.TabPages.Add(tabPage);
+        Tbc_MyAnimes.SelectedTab = tabPage;
     }
 
     private void MnI_ApiMyAnimeListBuscarNome_Click(object? sender, EventArgs e)
@@ -219,9 +204,9 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         int espacamentoDireita = closeRect.Width + 6;
         Rectangle textRect = new(
             tabRect.X + 10,
-            tabRect.Y + 4,
+            tabRect.Y + 2,
             Math.Max(10, tabRect.Width - espacamentoDireita - 6),
-            tabRect.Height - 8);
+            tabRect.Height - 4);
 
         TextRenderer.DrawText(
             e.Graphics,
@@ -230,15 +215,22 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             textRect,
             texto,
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
-        using (Font closeFont = new("Segoe UI", 10F, FontStyle.Bold))
+        using (Pen closePen = new(texto, 2F))
         {
-            TextRenderer.DrawText(
-                e.Graphics,
-                "x",
-                closeFont,
-                closeRect,
-                texto,
-                TextFormatFlags.Top | TextFormatFlags.Right);
+            int margemX = 6;
+            int margemY = 6;
+            e.Graphics.DrawLine(
+                closePen,
+                closeRect.Left + margemX,
+                closeRect.Top + margemY,
+                closeRect.Right - margemX - 1,
+                closeRect.Bottom - margemY - 1);
+            e.Graphics.DrawLine(
+                closePen,
+                closeRect.Right - margemX - 1,
+                closeRect.Top + margemY,
+                closeRect.Left + margemX,
+                closeRect.Bottom - margemY - 1);
         }
         using Pen borderPen = new(DarkModeColors.BorderColor);
         e.Graphics.DrawRectangle(borderPen, tabRect);
@@ -258,8 +250,8 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     {
         Rectangle tabRect = Tbc_MyAnimes.GetTabRect(tabIndex);
         return new Rectangle(
-            tabRect.Right - CloseButtonSize - 16,
-            tabRect.Top + (tabRect.Height - CloseButtonSize) / 2,
+            tabRect.Right - CloseButtonSize - 5,
+            tabRect.Top + 5,
             CloseButtonSize,
             CloseButtonSize);
     }
@@ -328,9 +320,16 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     private void AbrirDetalhesAnimeMyAnimeList(object? sender, int malId)
         => AbrirDetalhesAnime(malId);
 
+    private void AbrirDetalhesAnimeLocal(object? sender, int malId)
+        => AbrirDetalhesAnime(malId, consultaLocal: true);
+
     private void AbrirDetalhesAnime(int malId)
+        => AbrirDetalhesAnime(malId, consultaLocal: false);
+
+    private void AbrirDetalhesAnime(int malId, bool consultaLocal)
     {
-        var tabName = $"MyAnimeList {malId}";
+        var prefixo = consultaLocal ? "DB" : "MyAnimeList";
+        var tabName = $"{prefixo} {malId}";
         var tabExistente = Tbc_MyAnimes.TabPages
             .Cast<TabPage>().FirstOrDefault(tp => tp.Name == tabName);
         if (tabExistente != null)
@@ -339,11 +338,15 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             return;
         }
 
-        var ucDetalhes = new FUC_DetalhesAnime(malId)
+        var ucDetalhes = new FUC_DetalhesAnime(malId, consultaLocal)
         {
             Dock = DockStyle.Fill
         };
-        ucDetalhes.CardClicado += AbrirDetalhesAnimeMyAnimeList;
+        ucDetalhes.CardClicado += consultaLocal
+            ? AbrirDetalhesAnimeLocal
+            : AbrirDetalhesAnimeMyAnimeList;
+        if (consultaLocal)
+            ucDetalhes.MyAnimeSolicitado += AbrirDetalhesMyAnime;
         ucDetalhes.MyAnimeExistenteSelecionado += AbrirDetalhesMyAnime;
         ucDetalhes.MyAnimeAtualizado += (_, myAnimeId) =>
         {
@@ -352,9 +355,9 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         };
         var tabPage = new TabPage
         {
-            Text = $" #{malId}",
+            Text = consultaLocal ? $"DB #{malId}" : $" #{malId}",
             Name = tabName,
-            ImageIndex = 1,
+            ImageIndex = consultaLocal ? 2 : 1,
         };
         tabPage.Controls.Add(ucDetalhes);
         Tbc_MyAnimes.TabPages.Add(tabPage);

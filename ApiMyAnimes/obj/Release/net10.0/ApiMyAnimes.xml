@@ -283,11 +283,6 @@
             <param name="cancellationToken">Token de cancelamento da requisicao.</param>
             <returns>Lista de animes encontrados.</returns>
         </member>
-        <member name="T:ApiMyAnimes.Services.AnimeSearchTextNormalizer">
-            <summary>
-            Normaliza textos para comparacoes de busca tolerantes a acentos, pontuacao e espacos.
-            </summary>
-        </member>
         <member name="T:ApiMyAnimes.Services.LocalAuthService">
             <summary>Servico local de autenticacao com hash de senha e armazenamento em JSON.</summary>
         </member>
