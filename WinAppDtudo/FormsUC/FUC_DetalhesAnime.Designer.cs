@@ -1,3 +1,5 @@
+using WinAppDtudo.Controls;
+
 namespace WinAppDtudo.FormsUC;
 
 partial class FUC_DetalhesAnime
@@ -26,10 +28,10 @@ partial class FUC_DetalhesAnime
     private void InitializeComponent()
     {
         Pnl_Header = new Panel();
-        Lbl_TituloAnime = new Label();
-        Lbl_TituloIngles = new Label();
-        Lbl_Sinonimo = new Label();
-        Lbl_TituloJapones = new Label();
+        Lbl_TituloAnime = new SelectableTextLabel();
+        Lbl_TituloIngles = new SelectableTextLabel();
+        Lbl_Sinonimo = new SelectableTextLabel();
+        Lbl_TituloJapones = new SelectableTextLabel();
         Lbl_Carregando = new Label();
         Pnl_Conteudo = new Panel();
         Pnl_Info = new Panel();
@@ -72,12 +74,12 @@ partial class FUC_DetalhesAnime
         // Lbl_TituloAnime
         // 
         Lbl_TituloAnime.AutoEllipsis = true;
-        Lbl_TituloAnime.Font = new Font("Segoe UI Black", 16F, FontStyle.Bold);
+        Lbl_TituloAnime.Font = new Font("Segoe UI Black", 15F, FontStyle.Bold);
         Lbl_TituloAnime.ForeColor = Color.White;
         Lbl_TituloAnime.Location = new Point(50, 10);
         Lbl_TituloAnime.Margin = new Padding(40, 0, 40, 0);
         Lbl_TituloAnime.Name = "Lbl_TituloAnime";
-        Lbl_TituloAnime.Size = new Size(950, 60);
+        Lbl_TituloAnime.Size = new Size(970, 50);
         Lbl_TituloAnime.TabIndex = 0;
         Lbl_TituloAnime.Text = "—";
         Lbl_TituloAnime.TextAlign = ContentAlignment.MiddleLeft;
@@ -91,7 +93,7 @@ partial class FUC_DetalhesAnime
         Lbl_TituloIngles.Location = new Point(50, 10);
         Lbl_TituloIngles.MaximumSize = new Size(1800, 0);
         Lbl_TituloIngles.Name = "Lbl_TituloIngles";
-        Lbl_TituloIngles.Size = new Size(950, 50);
+        Lbl_TituloIngles.Size = new Size(930, 50);
         Lbl_TituloIngles.TabIndex = 2;
         Lbl_TituloIngles.TextAlign = ContentAlignment.MiddleLeft;
         Lbl_TituloIngles.Visible = false;
@@ -343,10 +345,10 @@ partial class FUC_DetalhesAnime
     #endregion
 
     private Panel Pnl_Header;
-    private Label Lbl_TituloAnime;
-    private Label Lbl_TituloIngles;
-    private Label Lbl_Sinonimo;
-    private Label Lbl_TituloJapones;
+    private SelectableTextLabel Lbl_TituloAnime;
+    private SelectableTextLabel Lbl_TituloIngles;
+    private SelectableTextLabel Lbl_Sinonimo;
+    private SelectableTextLabel Lbl_TituloJapones;
     private Label Lbl_Carregando;
     private Panel Pnl_Conteudo;
     private Panel Pnl_Esquerda;

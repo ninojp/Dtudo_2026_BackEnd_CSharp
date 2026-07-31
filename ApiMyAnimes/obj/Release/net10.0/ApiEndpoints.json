@@ -317,6 +317,46 @@
     ]
   },
   {
+    "ContainingType": "ApiMyAnimes.Controllers.AnimeController",
+    "Method": "BuscarConflitoTitulo",
+    "RelativePath": "apiLocal/Anime/conflito-titulo",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "adicionaAnimeDto",
+        "Type": "LibDtudo.Shared.Dtos.AdicionaAnimeDto",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LibDtudo.Shared.Dtos.ConflitoTituloAnimeDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 204
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      }
+    ]
+  },
+  {
     "ContainingType": "ApiMyAnimes.Controllers.AuthController",
     "Method": "Login",
     "RelativePath": "apiLocal/Auth/login",

@@ -57,8 +57,12 @@ public partial class FUC_DetalhesAnime : UserControl
             Pnl_Acoes.Visible = false;
             Btn_ExibirMyAnime.Visible = true;
         }
-        Pnl_Header.Resize += (s, e) => OrganizarTitulosDoCabecalho();
-        Load += async (s, e) => await CarregarAsync();
+        Pnl_Header.Resize += (_, _) => OrganizarTitulosDoCabecalho();
+        Load += async (_, _) =>
+        {
+            OrganizarTitulosDoCabecalho();
+            await CarregarAsync();
+        };
         // Melhora renderização do UserControl
         DoubleBuffered = true;
         ThemeManager.ApplyDarkModeToUserControl(this);
@@ -283,8 +287,11 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private void OrganizarTitulosDoCabecalho()
     {
-        int larguraUtil = Math.Max(1, Pnl_Header.ClientSize.Width -
-            Pnl_Header.Padding.Left - Pnl_Header.Padding.Right);
+        if (Pnl_Header.ClientSize.Width <= Pnl_Header.Padding.Horizontal)
+            return;
+
+        int larguraUtil = Pnl_Header.ClientSize.Width -
+            Pnl_Header.Padding.Left - Pnl_Header.Padding.Right;
         int larguraColuna = Math.Max(1, (larguraUtil - 20) / 2);
         int xEsquerda = Pnl_Header.Padding.Left;
         int xDireita = xEsquerda + larguraColuna + 20;
@@ -691,6 +698,14 @@ public partial class FUC_DetalhesAnime : UserControl
                 return;
             }
 
+            var conflitoTitulo = await _apiMyAnimesService.BuscarConflitoDeTituloAsync(
+                ConversorAnimeDtoService.CriarAdicionaAnimeDto(_animeAtual, 0));
+            if (conflitoTitulo is not null)
+            {
+                MostrarConflitoTituloAnime(conflitoTitulo);
+                return;
+            }
+
             var dto = new AdicionaMyAnimeDto
             {
                 Titulo = tituloMyAnime,
@@ -782,6 +797,13 @@ public partial class FUC_DetalhesAnime : UserControl
             }
 
             var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(_animeAtual, myAnimeId);
+            var conflitoTitulo = await _apiMyAnimesService.BuscarConflitoDeTituloAsync(dtoAnime);
+            if (conflitoTitulo is not null)
+            {
+                MostrarConflitoTituloAnime(conflitoTitulo);
+                return;
+            }
+
             var animeExistente = await _apiMyAnimesService.ObterAnimePorMalIdAsync(_animeAtual.MalId);
             if (animeExistente is not null)
             {
@@ -951,6 +973,16 @@ public partial class FUC_DetalhesAnime : UserControl
         dialogo.AcceptButton = ok;
 
         dialogo.ShowDialog(FindForm());
+    }
+
+    private void MostrarConflitoTituloAnime(ConflitoTituloAnimeDto conflito)
+    {
+        MessageBox.Show(
+            $"O anime '{conflito.Titulo}' (MalId {conflito.MalId}) já está cadastrado no banco de dados local " +
+            $"com o título '{conflito.TituloEmConflito}'.\n\nO anime atual não foi salvo para evitar duplicidade de títulos.",
+            "Anime já cadastrado",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Warning);
     }
 
     private string ObterTituloMyAnime(AnimeDetails anime)

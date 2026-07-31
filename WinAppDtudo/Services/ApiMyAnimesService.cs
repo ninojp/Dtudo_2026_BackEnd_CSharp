@@ -229,6 +229,20 @@ public class ApiMyAnimesService
         response.EnsureSuccessStatusCode();
     }
 
+    public async Task<ConflitoTituloAnimeDto?> BuscarConflitoDeTituloAsync(AdicionaAnimeDto dto)
+    {
+        var content = SerializarJson(dto);
+        using var response = await _httpClient.PostAsync("apiLocal/Anime/conflito-titulo", content);
+
+        if (response.StatusCode == HttpStatusCode.NoContent)
+            return null;
+
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<ConflitoTituloAnimeDto>(json, _jsonOptions);
+    }
+
     public async Task AtualizarAnimeAsync(int malId, AdicionaAnimeDto dto)
     {
         var content = SerializarJson(dto);

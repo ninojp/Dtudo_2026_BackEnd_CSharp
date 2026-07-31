@@ -17,6 +17,7 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<AnimeBuscaLocalService>();
+builder.Services.AddScoped<AnimeTitleConflictService>();
 builder.Services.AddSingleton<LocalAuthService>();
 builder.Services.AddOptions<AuthOptions>()
     .Bind(builder.Configuration.GetSection(AuthOptions.SectionName))

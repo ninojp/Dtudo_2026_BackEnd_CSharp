@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiMyAnimes")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1f8e7423af1b9c2891526cfb3df3b6a513c2f0ae")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6b872851c0e2f84e046d8f5d41c485df07cf132d")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiMyAnimes")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiMyAnimes")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -7,6 +7,9 @@
     <ActiveDebugProfile>WinAppControlStore</ActiveDebugProfile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="Controls\SelectableTextLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="Controls\UC_AnimeCard.cs">
       <SubType>UserControl</SubType>
     </Compile>

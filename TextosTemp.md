@@ -31,13 +31,16 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
 
-Agora no meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-
-
-
-
+Agora no meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\  
+Na aba "Animes Detalhes" do WinAppDtudo, onde exibimos os detalhes de um anime selecionado (resultado de uma busca externa, ApiMyAnimeList), Agora quero poder selecionar (para copiar) o texto de qualquer um dos titulos exibidos do anime atual.
+No botão "Salvar Como MyAnime", ao clicar antes de salvar, já é feito uma busca para ver se já existe algum MyAnime com o mesmo titulo, Agora quero que verifique se já não existe um ANIME (tabela animes) com o mesmo titulo também, e se existir, exibir uma mensagem de aviso ao usuário, informando o titulo e id do anime, e que já existe um anime com o mesmo titulo do MyAnime que está tentando salvar no banco de dados local.
+O botão "Salvar Anime" também deve fazer a mesma verificação (BUSCA COMPLETA), para evitar duplicidade de titulos na tabela Animes.
+Eu já pedi para a IA implementar uma busca completa, Na ABA especializada em Busca de animes - DB_Local, analize esta busca para ver se ela está (REALMENTE COMPLETA, PROFISSIONAL, ROBUSTA, QUE COMTEMPLE TODOS OS CASOS POSSÍVEIS) e tente reutiliza-la.
+No Projeto, C:\2026MeusProjetos\Dtudo2026\DtudoSite\, na página onde exibimos todos os animes cadastrados no banco de dados local, TAMBÉM TEMOS um campo de busca, que se possível pode utilizar dessa busca completa (C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared).
 
 Quero uma implementação, modularizada, sem arquivos únicos muito extensos, COMPLETA e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
+
+ef - a tale of melodies.
 
 ===================================================================================================
 

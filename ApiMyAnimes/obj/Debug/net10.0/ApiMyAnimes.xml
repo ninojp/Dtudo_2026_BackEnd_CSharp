@@ -21,9 +21,10 @@
             <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
             <param name="myAnimeListImportClient"></param>
             <param name="animeBuscaLocalService"></param>
+            <param name="animeTitleConflictService"></param>
             <param name="logger"></param>
         </member>
-        <member name="M:ApiMyAnimes.Controllers.AnimeController.#ctor(ApiMyAnimes.Data.MyAnimesContext,ApiMyAnimes.Services.MyAnimeListImportClient,ApiMyAnimes.Services.AnimeBuscaLocalService,Microsoft.Extensions.Logging.ILogger{ApiMyAnimes.Controllers.AnimeController})">
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.#ctor(ApiMyAnimes.Data.MyAnimesContext,ApiMyAnimes.Services.MyAnimeListImportClient,ApiMyAnimes.Services.AnimeBuscaLocalService,ApiMyAnimes.Services.AnimeTitleConflictService,Microsoft.Extensions.Logging.ILogger{ApiMyAnimes.Controllers.AnimeController})">
             <summary>
             Controlador responsável por gerenciar os registros da entidade <see cref="T:LibDtudo.Shared.Models.Anime"/> em banco local.
             Disponibiliza endpoints de criação, leitura, atualização (total e parcial) e exclusão.
@@ -31,6 +32,7 @@
             <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
             <param name="myAnimeListImportClient"></param>
             <param name="animeBuscaLocalService"></param>
+            <param name="animeTitleConflictService"></param>
             <param name="logger"></param>
         </member>
         <member name="M:ApiMyAnimes.Controllers.AnimeController.AdicionarAnime(LibDtudo.Shared.Dtos.AdicionaAnimeDto,System.Nullable{System.Int32})">
@@ -67,6 +69,12 @@
             </summary>
             <param name="termo">Texto pesquisado pelo usuario.</param>
             <param name="take">Quantidade maxima de animes retornados.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.BuscarConflitoTitulo(LibDtudo.Shared.Dtos.AdicionaAnimeDto)">
+            <summary>
+            Verifica se algum título do anime informado já está cadastrado em outro anime local.
+            A comparação é exata após normalização de acentos, entidades HTML, pontuação e espaços.
+            </summary>
         </member>
         <member name="M:ApiMyAnimes.Controllers.AnimeController.ObterAnimePorId(System.Int32)">
             <summary>
@@ -283,9 +291,14 @@
             <param name="cancellationToken">Token de cancelamento da requisicao.</param>
             <returns>Lista de animes encontrados.</returns>
         </member>
-        <member name="T:ApiMyAnimes.Services.AnimeSearchTextNormalizer">
+        <member name="T:ApiMyAnimes.Services.AnimeTitleConflictService">
             <summary>
-            Normaliza textos para comparacoes de busca tolerantes a acentos, pontuacao e espacos.
+            Localiza títulos equivalentes entre um anime candidato e os registros locais.
+            </summary>
+        </member>
+        <member name="M:ApiMyAnimes.Services.AnimeTitleConflictService.#ctor(ApiMyAnimes.Data.MyAnimesContext)">
+            <summary>
+            Localiza títulos equivalentes entre um anime candidato e os registros locais.
             </summary>
         </member>
         <member name="T:ApiMyAnimes.Services.LocalAuthService">

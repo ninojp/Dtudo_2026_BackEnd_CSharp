@@ -62,6 +62,11 @@
         <member name="P:LibDtudo.Shared.Dtos.Auth.AuthResponse.Token">
             <summary>Token de sessao local.</summary>
         </member>
+        <member name="T:LibDtudo.Shared.Dtos.ConflitoTituloAnimeDto">
+            <summary>
+            Identifica um anime local que possui um título equivalente ao anime consultado.
+            </summary>
+        </member>
         <member name="T:LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchResult">
             <summary>
             Resultado paginado de busca de animes na API local ApiMyAnimeList.
@@ -299,6 +304,24 @@
         <member name="T:LibDtudo.Shared.Models.MyAnime">
             <summary>
             Representa uma coleção de animes, onde o título é nome do anime principal. E uma lista de IDs de animes (MalId) RELACIONADOS ao título principal.
+            </summary>
+        </member>
+        <member name="M:LibDtudo.Shared.Search.AnimeSearchText.Matches(LibDtudo.Shared.Search.AnimeSearchText)">
+            <summary>
+            Verifica correspondência exata, por trecho ou com pequenos erros de digitação.
+            A tolerância é limitada por palavra para evitar resultados irrelevantes.
+            </summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Search.AnimeSearchTextNormalizer">
+            <summary>
+            Normaliza textos de títulos para comparações consistentes, sem diferenciar
+            maiúsculas, acentos, entidades HTML, pontuação ou espaços repetidos.
+            </summary>
+        </member>
+        <member name="T:LibDtudo.Shared.Search.AnimeTitleEquivalence">
+            <summary>
+            Compara títulos para impedir cadastros duplicados, exigindo equivalência
+            exata após a normalização compartilhada da busca local.
             </summary>
         </member>
         <member name="T:LibDtudo.Shared.Utils.ChecaForcaSenha">

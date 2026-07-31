@@ -17,6 +17,7 @@ namespace ApiMyAnimes.Controllers;
 /// <param name="context">Contexto do banco de dados utilizado para operações CRUD da tabela Animes.</param>
 /// <param name="myAnimeListImportClient"></param>
 /// <param name="animeBuscaLocalService"></param>
+/// <param name="animeTitleConflictService"></param>
 /// <param name="logger"></param>
 [ApiController]
 [Route("apiLocal/[controller]")]
@@ -24,10 +25,12 @@ public class AnimeController(
     MyAnimesContext context,
     MyAnimeListImportClient myAnimeListImportClient,
     AnimeBuscaLocalService animeBuscaLocalService,
+    AnimeTitleConflictService animeTitleConflictService,
     ILogger<AnimeController> logger) : ControllerBase
 {
     private readonly MyAnimeListImportClient _myAnimeListImportClient = myAnimeListImportClient;
     private readonly AnimeBuscaLocalService _animeBuscaLocalService = animeBuscaLocalService;
+    private readonly AnimeTitleConflictService _animeTitleConflictService = animeTitleConflictService;
     private readonly ILogger<AnimeController> _logger = logger;
     /// <summary>
     /// Adiciona um novo anime na tabela local de animes.
@@ -117,6 +120,12 @@ public class AnimeController(
                 Demographics = animeImportado.Demographics
             };
 
+            var conflitoImportacao = await _animeTitleConflictService.BuscarAsync(
+                animeImportacao,
+                HttpContext.RequestAborted);
+            if (conflitoImportacao is not null)
+                return Conflict(conflitoImportacao);
+
             context.Animes.Add(animeImportacao);
             context.SaveChanges();
 
@@ -169,6 +178,10 @@ public class AnimeController(
             Themes = adicionaAnimeDto.Themes,
             Demographics = adicionaAnimeDto.Demographics
         };
+        var conflito = await _animeTitleConflictService.BuscarAsync(anime, HttpContext.RequestAborted);
+        if (conflito is not null)
+            return Conflict(conflito);
+
         context.Animes.Add(anime);
         context.SaveChanges();
         return CreatedAtAction(nameof(ObterAnimePorId), new { id = anime.MalId }, ParaObterAnimeDto(anime));
@@ -240,6 +253,36 @@ public class AnimeController(
 
         var animesEncontrados = await _animeBuscaLocalService.BuscarAsync(termo, take, HttpContext.RequestAborted);
         return Ok(animesEncontrados.Select(ParaObterAnimeDto).ToList());
+    }
+    //==============================================
+    /// <summary>
+    /// Verifica se algum título do anime informado já está cadastrado em outro anime local.
+    /// A comparação é exata após normalização de acentos, entidades HTML, pontuação e espaços.
+    /// </summary>
+    [HttpPost("conflito-titulo")]
+    [ProducesResponseType(typeof(ConflitoTituloAnimeDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> BuscarConflitoTitulo([FromBody] AdicionaAnimeDto? adicionaAnimeDto)
+    {
+        if (adicionaAnimeDto is null) return BadRequest("Corpo da requisição inválido.");
+
+        var animeCandidato = new Anime
+        {
+            MalId = adicionaAnimeDto.MalId,
+            Titulo = adicionaAnimeDto.Titulo,
+            Title = adicionaAnimeDto.Title,
+            TitleEnglish = adicionaAnimeDto.TitleEnglish,
+            TitleJapanese = adicionaAnimeDto.TitleJapanese,
+            TitleSynonyms = adicionaAnimeDto.TitleSynonyms,
+            SubTitulos = adicionaAnimeDto.SubTitulos
+        };
+        var conflito = await _animeTitleConflictService.BuscarAsync(
+            animeCandidato,
+            HttpContext.RequestAborted,
+            animeCandidato.MalId);
+
+        return conflito is null ? NoContent() : Ok(conflito);
     }
     //==============================================
     /// <summary>

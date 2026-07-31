@@ -27,14 +27,21 @@ public sealed class AnimeBuscaLocalService(MyAnimesContext context)
 
         var takeSeguro = Math.Clamp(take, 1, MaxTake);
         var colecoesEncontradas = await BuscarColecoesAsync(termoNormalizado, cancellationToken);
+        var animesEncontrados = new List<Anime>();
 
         if (colecoesEncontradas.Count > 0)
         {
             var animesDasColecoes = await BuscarAnimesDasColecoesAsync(colecoesEncontradas, takeSeguro, cancellationToken);
-            if (animesDasColecoes.Count > 0) return animesDasColecoes;
+            animesEncontrados.AddRange(animesDasColecoes);
         }
 
-        return await BuscarAnimesPorTitulosAsync(termoNormalizado, takeSeguro, cancellationToken);
+        var animesPorTitulo = await BuscarAnimesPorTitulosAsync(termoNormalizado, takeSeguro, cancellationToken);
+        animesEncontrados.AddRange(animesPorTitulo);
+
+        return animesEncontrados
+            .DistinctBy(anime => anime.MalId)
+            .Take(takeSeguro)
+            .ToList();
     }
 
     private async Task<List<MyAnime>> BuscarColecoesAsync(
