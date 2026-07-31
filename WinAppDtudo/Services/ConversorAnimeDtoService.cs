@@ -65,6 +65,97 @@ public static class ConversorAnimeDtoService
         };
     }
 
+    public static AtualizaAnimeDto CriarAtualizaAnimeDto(AnimeDetails anime, int myAnimeId)
+    {
+        var adicionaAnimeDto = CriarAdicionaAnimeDto(anime, myAnimeId);
+        return new AtualizaAnimeDto
+        {
+            Titulo = adicionaAnimeDto.Titulo,
+            Episodios = adicionaAnimeDto.Episodios,
+            MyAnimeID = adicionaAnimeDto.MyAnimeID,
+            MalUrl = adicionaAnimeDto.MalUrl,
+            ImagensUrlMal = [.. adicionaAnimeDto.ImagensUrlMal],
+            SubTitulos = [.. adicionaAnimeDto.SubTitulos],
+            Trailer = adicionaAnimeDto.Trailer,
+            Approved = adicionaAnimeDto.Approved,
+            Title = adicionaAnimeDto.Title,
+            TitleEnglish = adicionaAnimeDto.TitleEnglish,
+            TitleJapanese = adicionaAnimeDto.TitleJapanese,
+            TitleSynonyms = [.. adicionaAnimeDto.TitleSynonyms],
+            Type = adicionaAnimeDto.Type,
+            Source = adicionaAnimeDto.Source,
+            Episodes = adicionaAnimeDto.Episodes,
+            Status = adicionaAnimeDto.Status,
+            Airing = adicionaAnimeDto.Airing,
+            Aired = adicionaAnimeDto.Aired,
+            Duration = adicionaAnimeDto.Duration,
+            Rating = adicionaAnimeDto.Rating,
+            Score = adicionaAnimeDto.Score,
+            ScoredBy = adicionaAnimeDto.ScoredBy,
+            Rank = adicionaAnimeDto.Rank,
+            Popularity = adicionaAnimeDto.Popularity,
+            Members = adicionaAnimeDto.Members,
+            Favorites = adicionaAnimeDto.Favorites,
+            Synopsis = adicionaAnimeDto.Synopsis,
+            Background = adicionaAnimeDto.Background,
+            Season = adicionaAnimeDto.Season,
+            Year = adicionaAnimeDto.Year,
+            Producers = [.. adicionaAnimeDto.Producers],
+            Licensors = [.. adicionaAnimeDto.Licensors],
+            Studios = [.. adicionaAnimeDto.Studios],
+            Genres = [.. adicionaAnimeDto.Genres],
+            ExplicitGenres = [.. adicionaAnimeDto.ExplicitGenres],
+            Themes = [.. adicionaAnimeDto.Themes],
+            Demographics = [.. adicionaAnimeDto.Demographics]
+        };
+    }
+
+    public static AtualizaAnimeDto CriarAtualizaAnimeDto(ObterAnimeDto anime)
+    {
+        ArgumentNullException.ThrowIfNull(anime);
+
+        return new AtualizaAnimeDto
+        {
+            Titulo = anime.Titulo,
+            Episodios = anime.Episodios,
+            MyAnimeID = anime.MyAnimeID,
+            MalUrl = anime.MalUrl,
+            ImagensUrlMal = [.. anime.ImagensUrlMal],
+            SubTitulos = [.. anime.SubTitulos],
+            Trailer = anime.Trailer,
+            Approved = anime.Approved,
+            Title = anime.Title,
+            TitleEnglish = anime.TitleEnglish,
+            TitleJapanese = anime.TitleJapanese,
+            TitleSynonyms = [.. anime.TitleSynonyms],
+            Type = anime.Type,
+            Source = anime.Source,
+            Episodes = anime.Episodes,
+            Status = anime.Status,
+            Airing = anime.Airing,
+            Aired = anime.Aired,
+            Duration = anime.Duration,
+            Rating = anime.Rating,
+            Score = anime.Score,
+            ScoredBy = anime.ScoredBy,
+            Rank = anime.Rank,
+            Popularity = anime.Popularity,
+            Members = anime.Members,
+            Favorites = anime.Favorites,
+            Synopsis = anime.Synopsis,
+            Background = anime.Background,
+            Season = anime.Season,
+            Year = anime.Year,
+            Producers = [.. anime.Producers],
+            Licensors = [.. anime.Licensors],
+            Studios = [.. anime.Studios],
+            Genres = [.. anime.Genres],
+            ExplicitGenres = [.. anime.ExplicitGenres],
+            Themes = [.. anime.Themes],
+            Demographics = [.. anime.Demographics]
+        };
+    }
+
     private static int? DeterminarAnoLancamento(AnimeDetails anime)
     {
         if (anime.Year.HasValue)

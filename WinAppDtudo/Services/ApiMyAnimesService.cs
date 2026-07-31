@@ -243,7 +243,7 @@ public class ApiMyAnimesService
         return JsonSerializer.Deserialize<ConflitoTituloAnimeDto>(json, _jsonOptions);
     }
 
-    public async Task AtualizarAnimeAsync(int malId, AdicionaAnimeDto dto)
+    public async Task AtualizarAnimeAsync(int malId, AtualizaAnimeDto dto)
     {
         var content = SerializarJson(dto);
         using var response = await _httpClient.PutAsync($"apiLocal/Anime/{malId}", content);

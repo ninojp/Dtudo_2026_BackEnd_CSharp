@@ -13,6 +13,7 @@
 - Validar todos os fluxos de imagens na aplicação, pois a correção anterior foi insuficiente e ainda faltam muitas imagens em diversos pontos.
 - Na busca de animes do DB_Local, preservar o padrão existente de normalização de caracteres especiais e a prioridade de busca: título principal, depois título em inglês e demais títulos alternativos conforme o mecanismo atual.
 - No DB_Local, MyAnime é uma coleção interna da tabela MyAnimes: cada anime possui MyAnimeId e todos os animes com o mesmo MyAnimeId pertencem ao conjunto relacionado. Esse relacionamento interno é diferente e independente das relações oficiais da ApiMyAnimeList; no detalhe local, relações e navegação devem usar MyAnimeId/DB_Local, nunca as relações externas da ApiMyAnimeList.
+- O `WinAppDtudo` está todo em Dark Mode. Não aplicar fundos claros, painéis claros ou layout light em telas WinForms; reutilizar `ThemeManager`, `DarkModeColors` e os padrões visuais escuros existentes.
 
 ## User Interaction Guidelines
 

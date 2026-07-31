@@ -20,6 +20,7 @@ public partial class FUC_DetalhesAnime : UserControl
     public event EventHandler<int>? MyAnimeAtualizado;
     public event EventHandler<int>? MyAnimeExistenteSelecionado;
     public event EventHandler<int>? MyAnimeSolicitado;
+    public event EventHandler<int>? EditarAnimeSolicitado;
 
     private readonly MyAnimeListApiService _myAnimeListService = new();
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
@@ -50,12 +51,19 @@ public partial class FUC_DetalhesAnime : UserControl
             if (_animeAtual?.MyAnimeID > 0)
                 MyAnimeSolicitado?.Invoke(this, _animeAtual.MyAnimeID);
         };
+        Btn_EditarAnime.Click += (_, _) =>
+        {
+            var malId = _animeAtual?.MalId ?? _malId;
+            if (malId > 0)
+                EditarAnimeSolicitado?.Invoke(this, malId);
+        };
         if (_consultaLocal)
         {
             Btn_SalvarComoMyAnime.Visible = false;
             Btn_SalvarComoAnime.Visible = false;
             Pnl_Acoes.Visible = false;
             Btn_ExibirMyAnime.Visible = true;
+            Btn_EditarAnime.Visible = true;
         }
         Pnl_Header.Resize += (_, _) => OrganizarTitulosDoCabecalho();
         Load += async (_, _) =>
@@ -211,6 +219,9 @@ public partial class FUC_DetalhesAnime : UserControl
         int esquerdaBotao = (Pnl_Stats.ClientSize.Width - larguraBotao) / 2;
         Btn_ExibirMyAnime.Location = new Point(esquerdaBotao, Lbl_Generos.Visible ? Lbl_Generos.Bottom + 30 : Lbl_TempoPorEpisodio.Bottom + 30);
         Btn_ExibirMyAnime.Width = larguraBotao;
+        Btn_EditarAnime.Location = new Point(esquerdaBotao, Btn_ExibirMyAnime.Bottom + 12);
+        Btn_EditarAnime.Width = larguraBotao;
+        Btn_EditarAnime.Visible = _consultaLocal;
 
         // Painel direito: detalhes dinâmicos
         Pnl_Info.SuspendLayout();
@@ -698,14 +709,6 @@ public partial class FUC_DetalhesAnime : UserControl
                 return;
             }
 
-            var conflitoTitulo = await _apiMyAnimesService.BuscarConflitoDeTituloAsync(
-                ConversorAnimeDtoService.CriarAdicionaAnimeDto(_animeAtual, 0));
-            if (conflitoTitulo is not null)
-            {
-                MostrarConflitoTituloAnime(conflitoTitulo);
-                return;
-            }
-
             var dto = new AdicionaMyAnimeDto
             {
                 Titulo = tituloMyAnime,
@@ -797,20 +800,14 @@ public partial class FUC_DetalhesAnime : UserControl
             }
 
             var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(_animeAtual, myAnimeId);
-            var conflitoTitulo = await _apiMyAnimesService.BuscarConflitoDeTituloAsync(dtoAnime);
-            if (conflitoTitulo is not null)
-            {
-                MostrarConflitoTituloAnime(conflitoTitulo);
-                return;
-            }
-
             var animeExistente = await _apiMyAnimesService.ObterAnimePorMalIdAsync(_animeAtual.MalId);
             if (animeExistente is not null)
             {
                 if (!ConfirmarSubstituicaoAnime())
                     return;
 
-                await _apiMyAnimesService.AtualizarAnimeAsync(_animeAtual.MalId, dtoAnime);
+                var atualizaAnime = ConversorAnimeDtoService.CriarAtualizaAnimeDto(_animeAtual, myAnimeId);
+                await _apiMyAnimesService.AtualizarAnimeAsync(_animeAtual.MalId, atualizaAnime);
             }
             else
             {

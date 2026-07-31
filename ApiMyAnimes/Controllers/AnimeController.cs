@@ -120,12 +120,6 @@ public class AnimeController(
                 Demographics = animeImportado.Demographics
             };
 
-            var conflitoImportacao = await _animeTitleConflictService.BuscarAsync(
-                animeImportacao,
-                HttpContext.RequestAborted);
-            if (conflitoImportacao is not null)
-                return Conflict(conflitoImportacao);
-
             context.Animes.Add(animeImportacao);
             context.SaveChanges();
 
@@ -178,10 +172,6 @@ public class AnimeController(
             Themes = adicionaAnimeDto.Themes,
             Demographics = adicionaAnimeDto.Demographics
         };
-        var conflito = await _animeTitleConflictService.BuscarAsync(anime, HttpContext.RequestAborted);
-        if (conflito is not null)
-            return Conflict(conflito);
-
         context.Animes.Add(anime);
         context.SaveChanges();
         return CreatedAtAction(nameof(ObterAnimePorId), new { id = anime.MalId }, ParaObterAnimeDto(anime));

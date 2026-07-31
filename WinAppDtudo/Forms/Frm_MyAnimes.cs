@@ -347,6 +347,8 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             : AbrirDetalhesAnimeMyAnimeList;
         if (consultaLocal)
             ucDetalhes.MyAnimeSolicitado += AbrirDetalhesMyAnime;
+        if (consultaLocal)
+            ucDetalhes.EditarAnimeSolicitado += AbrirEditarAnimeLocal;
         ucDetalhes.MyAnimeExistenteSelecionado += AbrirDetalhesMyAnime;
         ucDetalhes.MyAnimeAtualizado += (_, myAnimeId) =>
         {
@@ -360,6 +362,39 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             ImageIndex = consultaLocal ? 2 : 1,
         };
         tabPage.Controls.Add(ucDetalhes);
+        Tbc_MyAnimes.TabPages.Add(tabPage);
+        Tbc_MyAnimes.SelectedTab = tabPage;
+    }
+
+    private void AbrirEditarAnimeLocal(object? sender, int malId)
+    {
+        var tabName = $"EditarAnime_{malId}";
+        var tabExistente = Tbc_MyAnimes.TabPages
+            .Cast<TabPage>().FirstOrDefault(tp => tp.Name == tabName);
+        if (tabExistente != null)
+        {
+            Tbc_MyAnimes.SelectedTab = tabExistente;
+            return;
+        }
+
+        var ucEditar = new FUC_EditarAnime(malId)
+        {
+            Dock = DockStyle.Fill
+        };
+        ucEditar.AnimeSalvo += (_, args) =>
+        {
+            if (args.MyAnimeId > 0)
+                _ = AtualizarAbaMyAnimeAsync(args.MyAnimeId);
+        };
+
+        var tabPage = new TabPage
+        {
+            Text = $"Editar #{malId}",
+            Name = tabName,
+            ImageIndex = 2
+        };
+
+        tabPage.Controls.Add(ucEditar);
         Tbc_MyAnimes.TabPages.Add(tabPage);
         Tbc_MyAnimes.SelectedTab = tabPage;
     }

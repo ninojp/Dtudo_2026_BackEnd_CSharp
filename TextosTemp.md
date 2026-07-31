@@ -28,17 +28,21 @@ Busca os animes relacionados a um anime específico pelo ID do MyAnimeList. Util
 Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação de dados (Lê e grava no DB_Local e em disco local, pastas e arquivos).
 
 -------------------------------------------------------------------------------------------------------------------------------------
-O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList (DEVE SER IGNORADO, no contexto atual da pergunta)
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
 
 Agora no meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\  
-Na aba "Animes Detalhes" do WinAppDtudo, onde exibimos os detalhes de um anime selecionado (resultado de uma busca externa, ApiMyAnimeList), Agora quero poder selecionar (para copiar) o texto de qualquer um dos titulos exibidos do anime atual.
-No botão "Salvar Como MyAnime", ao clicar antes de salvar, já é feito uma busca para ver se já existe algum MyAnime com o mesmo titulo, Agora quero que verifique se já não existe um ANIME (tabela animes) com o mesmo titulo também, e se existir, exibir uma mensagem de aviso ao usuário, informando o titulo e id do anime, e que já existe um anime com o mesmo titulo do MyAnime que está tentando salvar no banco de dados local.
-O botão "Salvar Anime" também deve fazer a mesma verificação (BUSCA COMPLETA), para evitar duplicidade de titulos na tabela Animes.
-Eu já pedi para a IA implementar uma busca completa, Na ABA especializada em Busca de animes - DB_Local, analize esta busca para ver se ela está (REALMENTE COMPLETA, PROFISSIONAL, ROBUSTA, QUE COMTEMPLE TODOS OS CASOS POSSÍVEIS) e tente reutiliza-la.
-No Projeto, C:\2026MeusProjetos\Dtudo2026\DtudoSite\, na página onde exibimos todos os animes cadastrados no banco de dados local, TAMBÉM TEMOS um campo de busca, que se possível pode utilizar dessa busca completa (C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared).
+Na aba "Anime Detalhes", onde exibimos os detalhes de um anime selecionado (resultado de uma busca na api, ApiMyAnimeList).
+Quando clicamos no botão "Salvar Como MyAnime", antes de salvar o anime é feito uma verificação (busca completa) de conflito de título (verifica se já existe um anime com o mesmo título, title, titleEnglish, titleJapanese ou titleSynonyms) no banco de dados local (ApiMyAnimes).
+Isso esta causando problemas. Agora que que a verificação SEJA APENAS NA TABELA MyAnime.titulo (coleções) e não mais na tabela Animes e precisa ser uma busca exata, ou seja o titulo tem que ser quase igual ou igual ao termo pesquisado, sem considerar case sensitive.
+O botão "Salvar Anime" também precisa ser alterado, a verificação deve ser APENAS NA TABELA ANIMES.MAL_ID, ou seja, se já existe um anime com o mesmo MAL_ID no banco de dados local (ApiMyAnimes). VERIFICAÇÃO APENAS POR ID E NADA MAIS.
 
-Quero uma implementação, modularizada, sem arquivos únicos muito extensos, COMPLETA e ROBUSTA, com todos os detalhes necessários. Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
+
+ "Editar Anime", que ao ser clicado, abrirá uma nova aba, "Editar Anime", que exibirá TODOS os campos do anime selecionado, permitindo que o usuário edite qualquer campo e salve as alterações no banco de dados local (ApiMyAnimes, CRUD com todos endpoints).  
+O Layout (visual) pode ser igual ao da aba "Animes Detalhes", mas com campos editáveis (TextBox, ComboBox, etc.) e um botão "Salvar Alterações" que enviará os dados para a ApiMyAnimes para atualizar o registro no banco de dados.  
+Os animes relacionados já estão no MyAnime (Animes.MyAnimeId), então não é necessário exibir esses animes relacionamentos nesta aba, apenas o id em um campo de texto editavel como os demais itens.
+
+Quero uma implementação, modularizada, sem arquivos únicos muito extensos, REALMENTE COMPLETA, PROFISSIONAL, ROBUSTA, QUE COMTEMPLE TODOS OS CASOS POSSÍVEIS, com todos os detalhes necessários.  
+Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
 
 ef - a tale of melodies.
 

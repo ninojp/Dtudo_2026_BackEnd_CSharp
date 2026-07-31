@@ -40,6 +40,7 @@ partial class FUC_DetalhesAnime
         Btn_SalvarComoAnime = new Button();
         Btn_SalvarComoMyAnime = new Button();
         Btn_ExibirMyAnime = new Button();
+        Btn_EditarAnime = new Button();
         Pnl_Stats = new Panel();
         Lbl_EstatisticasRapidas = new Label();
         Lbl_Generos = new Label();
@@ -226,6 +227,7 @@ partial class FUC_DetalhesAnime
         Pnl_Stats.Controls.Add(Lbl_EstatisticasRapidas);
         Pnl_Stats.Controls.Add(Lbl_Generos);
         Pnl_Stats.Controls.Add(Btn_ExibirMyAnime);
+        Pnl_Stats.Controls.Add(Btn_EditarAnime);
         Pnl_Stats.Controls.Add(Lbl_Episodios);
         Pnl_Stats.Controls.Add(Lbl_TempoPorEpisodio);
         Pnl_Stats.Dock = DockStyle.Fill;
@@ -270,6 +272,20 @@ partial class FUC_DetalhesAnime
         Btn_ExibirMyAnime.Text = "Exibir MyAnime";
         Btn_ExibirMyAnime.UseVisualStyleBackColor = false;
         Btn_ExibirMyAnime.Visible = false;
+        // 
+        // Btn_EditarAnime
+        // 
+        Btn_EditarAnime.BackColor = Color.FromArgb(35, 40, 90);
+        Btn_EditarAnime.FlatStyle = FlatStyle.Flat;
+        Btn_EditarAnime.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        Btn_EditarAnime.ForeColor = Color.Gold;
+        Btn_EditarAnime.Location = new Point(70, 166);
+        Btn_EditarAnime.Name = "Btn_EditarAnime";
+        Btn_EditarAnime.Size = new Size(500, 45);
+        Btn_EditarAnime.TabIndex = 7;
+        Btn_EditarAnime.Text = "Editar Anime";
+        Btn_EditarAnime.UseVisualStyleBackColor = false;
+        Btn_EditarAnime.Visible = false;
         // 
         // Lbl_Episodios
         // 
@@ -356,6 +372,7 @@ partial class FUC_DetalhesAnime
     private Button Btn_SalvarComoAnime;
     private Button Btn_SalvarComoMyAnime;
     private Button Btn_ExibirMyAnime;
+    private Button Btn_EditarAnime;
     private PictureBox Pbx_Capa;
     private Panel Pnl_Stats;
     private Label Lbl_EstatisticasRapidas;

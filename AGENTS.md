@@ -36,6 +36,7 @@ Treat this repository as one full-stack workspace, not as separate apps.
 - If an endpoint or payload changes, inspect backend controller/service/model and frontend consumers.
 - Treat `ApiMyAnimes` and `ApiMyAnimeList` as the preferred API owners for anime data.
 - Keep changes minimal and local unless the feature clearly spans layers.
+- `WinAppDtudo` is fully Dark Mode. Do not introduce light backgrounds or light-themed panels in WinForms screens; reuse `ThemeManager`, `DarkModeColors`, and the existing dark visual patterns.
 
 ## Useful commands
 

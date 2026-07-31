@@ -31,6 +31,9 @@
     <Compile Update="FormsUC\FUC_DetalhesAnime.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="FormsUC\FUC_EditarAnime.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="FormsUC\FUC_Mascaras.cs">
       <SubType>UserControl</SubType>
     </Compile>
