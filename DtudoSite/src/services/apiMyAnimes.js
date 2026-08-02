@@ -1,6 +1,7 @@
 import { axiosHttpApiLocalMyAnimes } from "../api_conect/conectApiLocal";
 
 const TAMANHO_PAGINA_API_LOCAL = 500;
+const MAX_RESULTADOS_BUSCA_LOCAL = 100;
 
 export async function buscarTodosAnimesDaApiLocal(signal) {
     const cliente = axiosHttpApiLocalMyAnimes();
@@ -34,7 +35,7 @@ export async function buscarAnimePorMalId(malId, signal) {
 
 export async function buscarAnimesDaApiLocalPorTermo(termo, signal) {
     const response = await axiosHttpApiLocalMyAnimes().get('/apiLocal/Anime/buscar', {
-        params: { termo, take: TAMANHO_PAGINA_API_LOCAL },
+        params: { termo, take: MAX_RESULTADOS_BUSCA_LOCAL },
         signal,
     });
 

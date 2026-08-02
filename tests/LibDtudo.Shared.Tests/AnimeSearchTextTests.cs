@@ -31,6 +31,28 @@ public class AnimeSearchTextTests
         Assert.False(title.Matches(query));
     }
 
+    [Theory]
+    [InlineData("A Kite")]
+    [InlineData("A-Channel")]
+    [InlineData("A.I.C.O. Incarnation")]
+    [InlineData("A-Channel: +A-Channel")]
+    public void DoesNotMatchUnrelatedTitleContainingSingleLetterToken(string title)
+    {
+        var candidate = AnimeSearchTextNormalizer.Normalize(title);
+        var query = AnimeSearchTextNormalizer.Normalize("Sleazy Family");
+
+        Assert.False(candidate.Matches(query));
+    }
+
+    [Fact]
+    public void FindsExactMultiWordTitle()
+    {
+        var title = AnimeSearchTextNormalizer.Normalize("Sleazy Family");
+        var query = AnimeSearchTextNormalizer.Normalize("Sleazy Family");
+
+        Assert.True(title.Matches(query));
+    }
+
     [Fact]
     public void EmptySearchDoesNotMatch()
     {

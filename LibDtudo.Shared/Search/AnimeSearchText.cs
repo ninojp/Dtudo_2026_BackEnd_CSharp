@@ -29,8 +29,7 @@ public sealed record AnimeSearchText(string Value, string CompactValue, IReadOnl
     private static bool TokenMatches(string candidateToken, string queryToken)
     {
         if (candidateToken.Equals(queryToken, StringComparison.Ordinal)
-            || candidateToken.Contains(queryToken, StringComparison.Ordinal)
-            || queryToken.Contains(candidateToken, StringComparison.Ordinal))
+            || candidateToken.Contains(queryToken, StringComparison.Ordinal))
         {
             return true;
         }

@@ -11,7 +11,7 @@ namespace ApiMyAnimes.Services;
 /// <param name="context">Contexto do banco local.</param>
 public sealed class AnimeBuscaLocalService(MyAnimesContext context)
 {
-    private const int MaxTake = 500;
+    private const int MaxTake = 100;
 
     /// <summary>
     /// Busca animes pelo termo informado.
@@ -26,17 +26,20 @@ public sealed class AnimeBuscaLocalService(MyAnimesContext context)
         if (termoNormalizado.IsEmpty) return [];
 
         var takeSeguro = Math.Clamp(take, 1, MaxTake);
-        var colecoesEncontradas = await BuscarColecoesAsync(termoNormalizado, cancellationToken);
-        var animesEncontrados = new List<Anime>();
+        var animesEncontrados = await BuscarAnimesPorTitulosAsync(
+            termoNormalizado,
+            takeSeguro,
+            cancellationToken);
 
+        if (animesEncontrados.Count >= takeSeguro)
+            return animesEncontrados;
+
+        var colecoesEncontradas = await BuscarColecoesAsync(termoNormalizado, cancellationToken);
         if (colecoesEncontradas.Count > 0)
         {
             var animesDasColecoes = await BuscarAnimesDasColecoesAsync(colecoesEncontradas, takeSeguro, cancellationToken);
             animesEncontrados.AddRange(animesDasColecoes);
         }
-
-        var animesPorTitulo = await BuscarAnimesPorTitulosAsync(termoNormalizado, takeSeguro, cancellationToken);
-        animesEncontrados.AddRange(animesPorTitulo);
 
         return animesEncontrados
             .DistinctBy(anime => anime.MalId)

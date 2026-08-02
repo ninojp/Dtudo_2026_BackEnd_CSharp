@@ -8,6 +8,7 @@ namespace WinAppDtudo.Services;
 
 public class ApiMyAnimesService
 {
+    private const int MaxResultadosBusca = 100;
     private static readonly HttpClient _httpClient;
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
@@ -36,56 +37,21 @@ public class ApiMyAnimesService
                 Results = []
             };
 
-        var termo = AnimeSearchTextNormalizer.Normalize(query);
-        if (termo.IsEmpty)
-            return new ApiAnimesBuscaResult
-            {
-                CurrentPage = 1,
-                TotalPages = 1,
-                HasNextPage = false,
-                TotalResults = 0,
-                Results = []
-            };
+        var termoEscapado = Uri.EscapeDataString(query.Trim());
+        using var response = await _httpClient.GetAsync(
+            $"apiLocal/Anime/buscar?termo={termoEscapado}&take={MaxResultadosBusca}");
+        response.EnsureSuccessStatusCode();
 
-        var todos = new List<ObterAnimeDto>();
-        var skip = 0;
-        const int take = 200;
-
-        while (true)
-        {
-            var paginaAnimes = await ObterAnimesAsync(skip, take);
-            if (paginaAnimes.Count == 0)
-                break;
-
-            todos.AddRange(paginaAnimes);
-
-            if (paginaAnimes.Count < take)
-                break;
-
-            skip += take;
-        }
-
-        var filtrados = todos
-            .Select(a => new
-            {
-                Anime = a,
-                Score = CalcularScoreAnime(a, termo)
-            })
-            .Where(resultado => resultado.Score > 0)
-            .OrderByDescending(resultado => resultado.Score)
-            .ThenBy(resultado => resultado.Anime.Titulo)
-            .ThenBy(resultado => resultado.Anime.MalId)
-            .Select(resultado => resultado.Anime)
-            .ToList();
-
-        var totalResultados = filtrados.Count;
+        var json = await response.Content.ReadAsStringAsync();
+        var resultados = JsonSerializer.Deserialize<List<ObterAnimeDto>>(json, _jsonOptions) ?? [];
+        var totalResultados = Math.Min(resultados.Count, MaxResultadosBusca);
         var tamanhoPagina = Math.Max(1, pageSize);
         var totalPaginas = Math.Max(1, (int)Math.Ceiling(totalResultados / (double)tamanhoPagina));
         var paginaAtual = Math.Min(Math.Max(1, page), totalPaginas);
 
         return new ApiAnimesBuscaResult
         {
-            Results = filtrados
+            Results = resultados
                 .Skip((paginaAtual - 1) * tamanhoPagina)
                 .Take(tamanhoPagina)
                 .ToList(),
@@ -295,40 +261,6 @@ public class ApiMyAnimesService
             .OrderBy(a => a.Year ?? int.MaxValue)
             .ThenBy(a => a.Titulo)
             .ToList();
-    }
-
-    private static int CalcularScoreAnime(ObterAnimeDto anime, AnimeSearchText termo)
-    {
-        var melhorScore = 0;
-
-        foreach (var campo in ObterCamposBuscaAnime(anime))
-        {
-            var textoNormalizado = AnimeSearchTextNormalizer.Normalize(campo.Texto);
-            if (!textoNormalizado.Matches(termo)) continue;
-
-            var score = campo.Peso;
-            if (textoNormalizado.Value == termo.Value) score += 50;
-            if (textoNormalizado.Value.StartsWith(termo.Value, StringComparison.Ordinal)) score += 25;
-            if (textoNormalizado.CompactValue == termo.CompactValue) score += 20;
-
-            melhorScore = Math.Max(melhorScore, score);
-        }
-
-        return melhorScore;
-    }
-
-    private static IEnumerable<(string? Texto, int Peso)> ObterCamposBuscaAnime(ObterAnimeDto anime)
-    {
-        yield return (anime.Titulo, 100);
-        yield return (anime.Title, 95);
-        yield return (anime.TitleEnglish, 90);
-        yield return (anime.TitleJapanese, 90);
-
-        foreach (var sinonimo in anime.TitleSynonyms ?? [])
-            yield return (sinonimo, 80);
-
-        foreach (var subTitulo in anime.SubTitulos ?? [])
-            yield return (subTitulo, 70);
     }
 
     private static StringContent SerializarJson<T>(T dto)
