@@ -111,6 +111,7 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public IActionResult AtualizarMyAnime(int id, [FromBody] AtualizaMyAnimeDto atualizaMyAnimeDto)
     {
@@ -118,8 +119,20 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
         if (atualizaMyAnimeDto is null) return BadRequest("Corpo da requisição inválido.");
         var myAnime = context.MyAnimes.FirstOrDefault(a => a.Id == id);
         if (myAnime is null) return NotFound($"Coleção com ID {id} não encontrada.");
-        myAnime.Titulo = atualizaMyAnimeDto.Titulo;
-        myAnime.AnimesMalId = atualizaMyAnimeDto.AnimesMalId;
+        var tituloNormalizado = atualizaMyAnimeDto.Titulo?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(tituloNormalizado))
+            return BadRequest("O titulo e obrigatorio.");
+
+        var myAnimeComMesmoTitulo = context.MyAnimes.FirstOrDefault(a =>
+            a.Id != id && a.Titulo.Trim().ToLower() == tituloNormalizado.ToLower());
+        if (myAnimeComMesmoTitulo is not null)
+            return Conflict($"MyAnime '{tituloNormalizado}' ja existe.");
+
+        myAnime.Titulo = tituloNormalizado;
+        myAnime.AnimesMalId = atualizaMyAnimeDto.AnimesMalId
+            .Distinct()
+            .Where(malId => malId > 0)
+            .ToList();
         context.SaveChanges();
         Console.WriteLine($"Coleção atualizada: {myAnime.Titulo}");
         return NoContent();
@@ -138,6 +151,7 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     [HttpPatch("{id:int}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public IActionResult AtualizarMyAnimeParcial(int id, [FromBody] JsonPatchDocument<AtualizaMyAnimeDto> myAnimeToAtualiza)
     {
@@ -152,8 +166,20 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
         };
         myAnimeToAtualiza.ApplyTo(myAnimeParaAtualizar, ModelState);
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        myAnime.Titulo = myAnimeParaAtualizar.Titulo;
-        myAnime.AnimesMalId = myAnimeParaAtualizar.AnimesMalId;
+        var tituloNormalizado = myAnimeParaAtualizar.Titulo?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(tituloNormalizado))
+            return BadRequest("O titulo e obrigatorio.");
+
+        var myAnimeComMesmoTitulo = context.MyAnimes.FirstOrDefault(a =>
+            a.Id != id && a.Titulo.Trim().ToLower() == tituloNormalizado.ToLower());
+        if (myAnimeComMesmoTitulo is not null)
+            return Conflict($"MyAnime '{tituloNormalizado}' ja existe.");
+
+        myAnime.Titulo = tituloNormalizado;
+        myAnime.AnimesMalId = myAnimeParaAtualizar.AnimesMalId
+            .Distinct()
+            .Where(malId => malId > 0)
+            .ToList();
         context.SaveChanges();
         Console.WriteLine($"Coleção MyAnime atualizada: {myAnime.Titulo}");
         return NoContent();

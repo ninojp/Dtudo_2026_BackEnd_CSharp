@@ -213,6 +213,16 @@ namespace WinAppDtudo.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap MyAnimeList_Logo {
+            get {
+                object obj = ResourceManager.GetObject("MyAnimeList_Logo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap NotaMusica {
             get {
                 object obj = ResourceManager.GetObject("NotaMusica", resourceCulture);

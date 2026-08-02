@@ -1,7 +1,6 @@
 using LibDtudo.Shared.Dtos;
 using LibDtudo.Shared.Dtos.MyAnimeList;
 using WinAppDtudo.Controls;
-using WinAppDtudo.Forms;
 using WinAppDtudo.Services;
 
 namespace WinAppDtudo.FormsUC;
@@ -9,11 +8,11 @@ namespace WinAppDtudo.FormsUC;
 public class FUC_MyAnimeDetalhes : UserControl
 {
     public event EventHandler<int>? CardClicado;
+    public event EventHandler<int>? EditarMyAnimeSolicitado;
 
     private readonly int _myAnimeId;
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
     private readonly CriadorDeEstruturas _criadorDeEstruturas = new();
-    private readonly ImportadorAnimesMyAnimeService _importadorAnimesMyAnimeService = new();
 
     private readonly Label _lblTitulo;
     private readonly Label _lblResumo;
@@ -21,7 +20,7 @@ public class FUC_MyAnimeDetalhes : UserControl
     private readonly TextBox _txtMyAnimeId;
     private readonly Label _lblStatus;
     private readonly Button _btnSalvarEstrutura;
-    private readonly Button _btnSalvarAnimesNoBanco;
+    private readonly Button _btnEditarMyAnime;
     private readonly FlowLayoutPanel _flpCards;
 
     private ObterMyAnimeDto? _myAnimeAtual;
@@ -69,35 +68,43 @@ public class FUC_MyAnimeDetalhes : UserControl
 
         _lblMyAnimeId = new Label
         {
-            AutoSize = true,
+            AutoSize = false,
             ForeColor = Color.Gold,
-            Text = "ID do MyAnime:",
-            Location = new Point(1200, 90)
+            BackColor = Color.Black,
+            Text = "MyAnime ID:",
+            Location = new Point(1280, 76),
+            Size = new Size(160, 22),
+            TextAlign = ContentAlignment.MiddleLeft,
+            Cursor = Cursors.Hand
         };
 
         _txtMyAnimeId = new TextBox
         {
             ReadOnly = true,
-            Width = 120,
-            Location = new Point(1415, 90),
+            Width = 160,
+            Height = 26,
+            Location = new Point(1280, 102),
             Text = _myAnimeId.ToString(),
-            BorderStyle = BorderStyle.FixedSingle
+            BorderStyle = BorderStyle.FixedSingle,
+            BackColor = DarkModeColors.BackgroundSecondaryColor,
+            ForeColor = DarkModeColors.TextColor,
+            Cursor = Cursors.Hand
         };
 
         _btnSalvarEstrutura = new Button
         {
             Text = "💾 Salvar Estrutura em Disco",
-            Width = 450,
+            Width = 300,
             Height = 50,
             Location = new Point(700, 80)
         };
 
-        _btnSalvarAnimesNoBanco = new Button
+        _btnEditarMyAnime = new Button
         {
-            Text = "🗃️ Salvar todos os Animes no DB",
-            Width = 450,
+            Text = "Editar MyAnime",
+            Width = 250,
             Height = 50,
-            Location = new Point(1600, 80)
+            Location = new Point(1015, 80)
         };
 
         pnlTopo.Controls.Add(_lblTitulo);
@@ -105,7 +112,7 @@ public class FUC_MyAnimeDetalhes : UserControl
         pnlTopo.Controls.Add(_lblMyAnimeId);
         pnlTopo.Controls.Add(_txtMyAnimeId);
         pnlTopo.Controls.Add(_btnSalvarEstrutura);
-        pnlTopo.Controls.Add(_btnSalvarAnimesNoBanco);
+        pnlTopo.Controls.Add(_btnEditarMyAnime);
 
         _flpCards = new FlowLayoutPanel
         {
@@ -132,7 +139,9 @@ public class FUC_MyAnimeDetalhes : UserControl
 
         Load += async (_, _) => await CarregarDadosAsync();
         _btnSalvarEstrutura.Click += BtnSalvarEstrutura_Click;
-        _btnSalvarAnimesNoBanco.Click += BtnSalvarAnimesNoBanco_Click;
+        _btnEditarMyAnime.Click += (_, _) => EditarMyAnimeSolicitado?.Invoke(this, _myAnimeId);
+        _lblMyAnimeId.Click += (_, _) => CopiarMyAnimeId();
+        _txtMyAnimeId.Click += (_, _) => CopiarMyAnimeId();
 
         DoubleBuffered = true;
         ThemeManager.ApplyDarkModeToUserControl(this);
@@ -144,7 +153,8 @@ public class FUC_MyAnimeDetalhes : UserControl
         {
             _lblStatus.Text = "⏳ Carregando detalhes do MyAnime...";
             _btnSalvarEstrutura.Enabled = false;
-            _btnSalvarAnimesNoBanco.Enabled = false;
+            _btnEditarMyAnime.Enabled = false;
+            _txtMyAnimeId.Text = _myAnimeId.ToString();
 
             _myAnimeAtual = await _apiMyAnimesService.ObterMyAnimePorIdAsync(_myAnimeId);
             if (_myAnimeAtual is null)
@@ -155,9 +165,8 @@ public class FUC_MyAnimeDetalhes : UserControl
                 return;
             }
 
-            _animesAtuais = await _apiMyAnimesService.ObterAnimesPorMyAnimeIdAsync(_myAnimeId);
-
-            if (_animesAtuais.Count == 0 && _myAnimeAtual.AnimesMalId.Count > 0)
+            _animesAtuais = [];
+            if (_myAnimeAtual.AnimesMalId.Count > 0)
             {
                 foreach (var malId in _myAnimeAtual.AnimesMalId.Distinct())
                 {
@@ -165,6 +174,10 @@ public class FUC_MyAnimeDetalhes : UserControl
                     if (anime is not null)
                         _animesAtuais.Add(anime);
                 }
+            }
+            else
+            {
+                _animesAtuais = await _apiMyAnimesService.ObterAnimesPorMyAnimeIdAsync(_myAnimeId);
             }
 
             _animesAtuais = _animesAtuais
@@ -176,7 +189,7 @@ public class FUC_MyAnimeDetalhes : UserControl
 
             _lblTitulo.Text = _myAnimeAtual.Titulo;
             _lblResumo.Text = $"Animes relacionados: {_animesAtuais.Count}";
-            _txtMyAnimeId.Text = _myAnimeId.ToString();
+            _txtMyAnimeId.Text = _myAnimeAtual.Id.ToString();
 
             PopularCards();
 
@@ -185,7 +198,7 @@ public class FUC_MyAnimeDetalhes : UserControl
                 : "✅ Coleção carregada.";
 
             _btnSalvarEstrutura.Enabled = _animesAtuais.Count > 0;
-            _btnSalvarAnimesNoBanco.Enabled = _myAnimeAtual.AnimesMalId.Count > 0;
+            _btnEditarMyAnime.Enabled = true;
         }
         catch (HttpRequestException ex)
         {
@@ -205,6 +218,29 @@ public class FUC_MyAnimeDetalhes : UserControl
     }
 
     public Task AtualizarAsync() => CarregarDadosAsync();
+
+    private void CopiarMyAnimeId()
+    {
+        var texto = _txtMyAnimeId.Text.Trim();
+        if (string.IsNullOrWhiteSpace(texto))
+        {
+            _lblStatus.Text = "Nenhum MyAnime ID disponivel para copiar.";
+            return;
+        }
+
+        try
+        {
+            Clipboard.SetText(texto);
+            _txtMyAnimeId.SelectAll();
+            _lblStatus.Text = $"MyAnime ID {texto} copiado para a area de transferencia.";
+        }
+        catch (Exception ex)
+        {
+            _lblStatus.Text = "Nao foi possivel copiar o MyAnime ID.";
+            MessageBox.Show($"Falha ao copiar para a area de transferencia:\n\n{ex.Message}",
+                "Clipboard indisponivel", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+    }
 
     private void PopularCards()
     {
@@ -302,75 +338,4 @@ public class FUC_MyAnimeDetalhes : UserControl
         }
     }
 
-    private async void BtnSalvarAnimesNoBanco_Click(object? sender, EventArgs e)
-    {
-        if (_myAnimeAtual is null)
-        {
-            MessageBox.Show("Carregue a coleção antes de salvar os animes.", "Aviso",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            return;
-        }
-
-        var malIds = _myAnimeAtual.AnimesMalId.Distinct().ToList();
-        if (malIds.Count == 0)
-        {
-            MessageBox.Show("Esta coleção não possui MalIds para importar.", "Aviso",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            return;
-        }
-
-        _btnSalvarAnimesNoBanco.Enabled = false;
-        _lblStatus.Text = "⏳ Salvando animes da coleção no banco local...";
-
-        using var frmProgresso = new Frm_ProgressoOperacao("Salvando animes da coleção");
-        frmProgresso.Atualizar(0, "Iniciando importação...");
-        frmProgresso.Show(this);
-        frmProgresso.BringToFront();
-
-        try
-        {
-            var progresso = new Progress<ProgressoImportacaoAnimes>(p => frmProgresso.Atualizar(p.Percentual, p.Mensagem));
-
-            var resultado = await _importadorAnimesMyAnimeService.ImportarAsync(
-                _myAnimeId,
-                _myAnimeAtual.Titulo,
-                malIds,
-                progresso);
-
-            frmProgresso.Atualizar(100, "Importação concluída.");
-            frmProgresso.Close();
-
-            string? caminhoLog = null;
-            if (resultado.ErrosDetalhados.Count > 0)
-                caminhoLog = ImportadorAnimesMyAnimeService.SalvarLogErros("importacao-manual-myanime", resultado.ErrosDetalhados);
-
-            var mensagem =
-                $"Importação concluída para '{_myAnimeAtual.Titulo}'.\n\n" +
-                $"Animes salvos: {resultado.AnimesSalvos}\n" +
-                $"Animes salvos em modo degradação: {resultado.AnimesSalvosModoDegradacao}\n" +
-                $"Animes ignorados: {resultado.AnimesIgnorados}\n" +
-                $"Animes com falha: {resultado.AnimesComFalha}";
-
-            if (!string.IsNullOrWhiteSpace(caminhoLog))
-                mensagem += $"\n\nLog de erros salvo em:\n{caminhoLog}";
-
-            MessageBox.Show(
-                mensagem,
-                "Salvar animes da coleção",
-                MessageBoxButtons.OK,
-                resultado.ErrosDetalhados.Count == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
-
-            await CarregarDadosAsync();
-        }
-        catch (Exception ex)
-        {
-            _lblStatus.Text = "❌ Erro ao salvar animes da coleção.";
-            MessageBox.Show($"Falha ao salvar animes no banco local:\n\n{ex.Message}",
-                "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-        finally
-        {
-            _btnSalvarAnimesNoBanco.Enabled = _myAnimeAtual?.AnimesMalId.Count > 0;
-        }
-    }
 }

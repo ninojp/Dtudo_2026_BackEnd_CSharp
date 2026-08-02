@@ -65,7 +65,7 @@ public class FUC_DBLocalBuscarAnime : UserControl
             Width = 1000,
             // Altere aqui a altura fixa do TextBox.
             Height = 60,
-            
+
         };
 
         _btnBuscar = new Button
@@ -267,6 +267,9 @@ public class FUC_DBLocalBuscarAnime : UserControl
         // 
         // FUC_DBLocalBuscarAnime
         // 
+        BackColor = SystemColors.Desktop;
+        Font = new Font("Microsoft Sans Serif", 10.125F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        ForeColor = Color.Gold;
         Name = "FUC_DBLocalBuscarAnime";
         Size = new Size(848, 640);
         ResumeLayout(false);

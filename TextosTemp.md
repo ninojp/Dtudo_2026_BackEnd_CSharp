@@ -31,15 +31,9 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
 
 Agora no meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\  
-Na aba "Anime Detalhes", onde exibimos os detalhes de um anime selecionado (resultado de uma busca na api, ApiMyAnimeList).
-Quando clicamos no botão "Salvar Como MyAnime", antes de salvar o anime é feito uma verificação (busca completa) de conflito de título (verifica se já existe um anime com o mesmo título, title, titleEnglish, titleJapanese ou titleSynonyms) no banco de dados local (ApiMyAnimes).
-Isso esta causando problemas. Agora que que a verificação SEJA APENAS NA TABELA MyAnime.titulo (coleções) e não mais na tabela Animes e precisa ser uma busca exata, ou seja o titulo tem que ser quase igual ou igual ao termo pesquisado, sem considerar case sensitive.
-O botão "Salvar Anime" também precisa ser alterado, a verificação deve ser APENAS NA TABELA ANIMES.MAL_ID, ou seja, se já existe um anime com o mesmo MAL_ID no banco de dados local (ApiMyAnimes). VERIFICAÇÃO APENAS POR ID E NADA MAIS.
+Na aba MyAnime detalhes, ao lado botão "Editar MyAnime", está sendo exibido (erroneamente) os ids dos animes relacionados, REMOVA isso. No lugar coloque o MyAnime ID, do MyAnime atual (que deve ser copiado para a área de transferência com um clique).
 
-
- "Editar Anime", que ao ser clicado, abrirá uma nova aba, "Editar Anime", que exibirá TODOS os campos do anime selecionado, permitindo que o usuário edite qualquer campo e salve as alterações no banco de dados local (ApiMyAnimes, CRUD com todos endpoints).  
-O Layout (visual) pode ser igual ao da aba "Animes Detalhes", mas com campos editáveis (TextBox, ComboBox, etc.) e um botão "Salvar Alterações" que enviará os dados para a ApiMyAnimes para atualizar o registro no banco de dados.  
-Os animes relacionados já estão no MyAnime (Animes.MyAnimeId), então não é necessário exibir esses animes relacionamentos nesta aba, apenas o id em um campo de texto editavel como os demais itens.
+O fundo de TODAS as abas atualmente sempre fica com um fundo claro (inclusive onde exibe os titulos das abas), agora quero que seja preto absoluto.
 
 Quero uma implementação, modularizada, sem arquivos únicos muito extensos, REALMENTE COMPLETA, PROFISSIONAL, ROBUSTA, QUE COMTEMPLE TODOS OS CASOS POSSÍVEIS, com todos os detalhes necessários.  
 Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.

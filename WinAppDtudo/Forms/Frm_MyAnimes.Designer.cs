@@ -49,37 +49,39 @@ partial class Frm_MyAnimes
         // 
         // Mnu_MenuMyAnimes
         // 
-        Mnu_MenuMyAnimes.BackColor = Color.DimGray;
+        Mnu_MenuMyAnimes.BackColor = Color.Black;
         Mnu_MenuMyAnimes.ImageScalingSize = new Size(32, 32);
         Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_DBLocalBuscarAnime, MnI_ApiMyAnimeListBuscarNome, Mnu_AnalizarEstruturas });
         Mnu_MenuMyAnimes.Location = new Point(0, 0);
         Mnu_MenuMyAnimes.Name = "Mnu_MenuMyAnimes";
-        Mnu_MenuMyAnimes.Padding = new Padding(15, 4, 0, 4);
-        Mnu_MenuMyAnimes.Size = new Size(2160, 50);
+        Mnu_MenuMyAnimes.Padding = new Padding(7, 2, 0, 2);
+        Mnu_MenuMyAnimes.RenderMode = ToolStripRenderMode.Professional;
+        Mnu_MenuMyAnimes.Size = new Size(997, 40);
         Mnu_MenuMyAnimes.TabIndex = 0;
         Mnu_MenuMyAnimes.Text = "menuMyAnimes";
         // 
         // Mnu_MenuAbas
         // 
         Mnu_MenuAbas.DropDownItems.AddRange(new ToolStripItem[] { MnI_AbrirAbas, MnI_FecharAbas });
-        Mnu_MenuAbas.Image = Properties.Resources.MaskVendettaReal;
+        Mnu_MenuAbas.Font = new Font("Segoe UI Black", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        Mnu_MenuAbas.Image = Properties.Resources.YingYang_HD;
         Mnu_MenuAbas.Name = "Mnu_MenuAbas";
-        Mnu_MenuAbas.Size = new Size(129, 42);
-        Mnu_MenuAbas.Text = "Abas";
+        Mnu_MenuAbas.Size = new Size(117, 36);
+        Mnu_MenuAbas.Text = "Arquivo";
         // 
         // MnI_AbrirAbas
         // 
         MnI_AbrirAbas.DropDownItems.AddRange(new ToolStripItem[] { MnI_AbaMascaras, MnI_FormMsgBox });
         MnI_AbrirAbas.Image = Properties.Resources.MaskVendettaReal;
         MnI_AbrirAbas.Name = "MnI_AbrirAbas";
-        MnI_AbrirAbas.Size = new Size(303, 46);
+        MnI_AbrirAbas.Size = new Size(175, 26);
         MnI_AbrirAbas.Text = "Abrir Abas";
         // 
         // MnI_AbaMascaras
         // 
         MnI_AbaMascaras.Image = Properties.Resources.MaskV;
         MnI_AbaMascaras.Name = "MnI_AbaMascaras";
-        MnI_AbaMascaras.Size = new Size(315, 46);
+        MnI_AbaMascaras.Size = new Size(186, 26);
         MnI_AbaMascaras.Text = "AbaMascaras";
         MnI_AbaMascaras.Click += MnI_AbaMascaras_Click;
         // 
@@ -87,7 +89,7 @@ partial class Frm_MyAnimes
         // 
         MnI_FormMsgBox.Image = Properties.Resources.InterrogacaoBrasil;
         MnI_FormMsgBox.Name = "MnI_FormMsgBox";
-        MnI_FormMsgBox.Size = new Size(315, 46);
+        MnI_FormMsgBox.Size = new Size(186, 26);
         MnI_FormMsgBox.Text = "FormMsgBox";
         MnI_FormMsgBox.Click += MnI_FormMsgBox_Click;
         // 
@@ -96,59 +98,59 @@ partial class Frm_MyAnimes
         MnI_FecharAbas.DropDownItems.AddRange(new ToolStripItem[] { MnI_FecharAbaAtual, MnI_FecharTodasAbas, MnI_FecharAbasAEsquerda, MnI_FecharAbasADireita });
         MnI_FecharAbas.Image = Properties.Resources.SlaveMoney;
         MnI_FecharAbas.Name = "MnI_FecharAbas";
-        MnI_FecharAbas.Size = new Size(303, 46);
+        MnI_FecharAbas.Size = new Size(175, 26);
         MnI_FecharAbas.Text = "Fechar Abas";
         // 
         // MnI_FecharAbaAtual
         // 
         MnI_FecharAbaAtual.Name = "MnI_FecharAbaAtual";
-        MnI_FecharAbaAtual.Size = new Size(446, 46);
+        MnI_FecharAbaAtual.Size = new Size(264, 26);
         MnI_FecharAbaAtual.Text = "Fechar Aba Atual";
         MnI_FecharAbaAtual.Click += MnI_FecharAbaAtual_Click;
         // 
         // MnI_FecharTodasAbas
         // 
         MnI_FecharTodasAbas.Name = "MnI_FecharTodasAbas";
-        MnI_FecharTodasAbas.Size = new Size(446, 46);
+        MnI_FecharTodasAbas.Size = new Size(264, 26);
         MnI_FecharTodasAbas.Text = "Fechar Todas Abas";
         MnI_FecharTodasAbas.Click += MnI_FecharTodasAbas_Click;
         // 
         // MnI_FecharAbasAEsquerda
         // 
         MnI_FecharAbasAEsquerda.Name = "MnI_FecharAbasAEsquerda";
-        MnI_FecharAbasAEsquerda.Size = new Size(446, 46);
+        MnI_FecharAbasAEsquerda.Size = new Size(264, 26);
         MnI_FecharAbasAEsquerda.Text = "Fechar Abas à Esquerda";
         MnI_FecharAbasAEsquerda.Click += MnI_FecharAbasAEsquerda_Click;
         // 
         // MnI_FecharAbasADireita
         // 
         MnI_FecharAbasADireita.Name = "MnI_FecharAbasADireita";
-        MnI_FecharAbasADireita.Size = new Size(446, 46);
+        MnI_FecharAbasADireita.Size = new Size(264, 26);
         MnI_FecharAbasADireita.Text = "Fechar Abas à Direita";
         MnI_FecharAbasADireita.Click += MnI_FecharAbasADireita_Click;
         // 
         // MnI_DBLocalBuscarAnime
         // 
-        MnI_DBLocalBuscarAnime.Image = Properties.Resources.pngwing_com;
+        MnI_DBLocalBuscarAnime.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        MnI_DBLocalBuscarAnime.Image = Properties.Resources.Vvendetta;
         MnI_DBLocalBuscarAnime.Name = "MnI_DBLocalBuscarAnime";
-        MnI_DBLocalBuscarAnime.Size = new Size(249, 42);
-        MnI_DBLocalBuscarAnime.Text = "DBLocal Animes";
+        MnI_DBLocalBuscarAnime.Size = new Size(120, 36);
+        MnI_DBLocalBuscarAnime.Text = "DB Local";
         // 
         // MnI_ApiMyAnimeListBuscarNome
         // 
-        // 
-        // MnI_ApiMyAnimeListBuscarNome
-        // 
-        MnI_ApiMyAnimeListBuscarNome.Image = Properties.Resources.RosaDosVentos;
+        MnI_ApiMyAnimeListBuscarNome.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        MnI_ApiMyAnimeListBuscarNome.Image = Properties.Resources.MyAnimeList_Logo;
         MnI_ApiMyAnimeListBuscarNome.Name = "MnI_ApiMyAnimeListBuscarNome";
-        MnI_ApiMyAnimeListBuscarNome.Size = new Size(270, 42);
+        MnI_ApiMyAnimeListBuscarNome.Size = new Size(180, 36);
         MnI_ApiMyAnimeListBuscarNome.Text = "ApiMyAnimeList";
         // 
         // Mnu_AnalizarEstruturas
         // 
-        Mnu_AnalizarEstruturas.Image = Properties.Resources.pngwing3;
+        Mnu_AnalizarEstruturas.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        Mnu_AnalizarEstruturas.Image = Properties.Resources.MaskVendettaReal;
         Mnu_AnalizarEstruturas.Name = "Mnu_AnalizarEstruturas";
-        Mnu_AnalizarEstruturas.Size = new Size(244, 42);
+        Mnu_AnalizarEstruturas.Size = new Size(165, 36);
         Mnu_AnalizarEstruturas.Text = "AnalizarPastas";
         Mnu_AnalizarEstruturas.Click += Mnu_AnalizarEstruturas_Click;
         // 
@@ -156,19 +158,18 @@ partial class Frm_MyAnimes
         // 
         Tbc_MyAnimes.AccessibleName = "Controle de Abas";
         Tbc_MyAnimes.AllowDrop = true;
-        Tbc_MyAnimes.Appearance = TabAppearance.Buttons;
         Tbc_MyAnimes.Dock = DockStyle.Fill;
         Tbc_MyAnimes.DrawMode = TabDrawMode.OwnerDrawFixed;
         Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 9.3F, FontStyle.Regular, GraphicsUnit.Point, 0);
         Tbc_MyAnimes.ImageList = Iml_ImagensList;
         Tbc_MyAnimes.ImeMode = ImeMode.On;
         Tbc_MyAnimes.ItemSize = new Size(200, 50);
-        Tbc_MyAnimes.Location = new Point(0, 50);
-        Tbc_MyAnimes.Margin = new Padding(1, 1, 1, 1);
+        Tbc_MyAnimes.Location = new Point(0, 40);
+        Tbc_MyAnimes.Margin = new Padding(0);
         Tbc_MyAnimes.Name = "Tbc_MyAnimes";
         Tbc_MyAnimes.Padding = new Point(10, 6);
         Tbc_MyAnimes.SelectedIndex = 0;
-        Tbc_MyAnimes.Size = new Size(2160, 1295);
+        Tbc_MyAnimes.Size = new Size(997, 632);
         Tbc_MyAnimes.SizeMode = TabSizeMode.Fixed;
         Tbc_MyAnimes.TabIndex = 1;
         Tbc_MyAnimes.DrawItem += Tbc_MyAnimes_DrawItem;
@@ -187,14 +188,14 @@ partial class Frm_MyAnimes
         // Frm_MyAnimes
         // 
         AllowDrop = true;
-        AutoScaleDimensions = new SizeF(13F, 26F);
+        AutoScaleDimensions = new SizeF(6F, 13F);
         AutoScaleMode = AutoScaleMode.Font;
         AutoScroll = true;
         AutoSize = true;
         BackColor = SystemColors.Desktop;
         BackgroundImage = Properties.Resources.AnimesElas;
         BackgroundImageLayout = ImageLayout.Stretch;
-        ClientSize = new Size(2160, 1345);
+        ClientSize = new Size(997, 672);
         Controls.Add(Tbc_MyAnimes);
         Controls.Add(Mnu_MenuMyAnimes);
         DoubleBuffered = true;
@@ -202,7 +203,7 @@ partial class Frm_MyAnimes
         FormBorderStyle = FormBorderStyle.None;
         Icon = (Icon)resources.GetObject("$this.Icon");
         MainMenuStrip = Mnu_MenuMyAnimes;
-        Margin = new Padding(4, 3, 4, 3);
+        Margin = new Padding(2);
         Name = "Frm_MyAnimes";
         StartPosition = FormStartPosition.CenterScreen;
         Text = "MyAnimes - Abas";

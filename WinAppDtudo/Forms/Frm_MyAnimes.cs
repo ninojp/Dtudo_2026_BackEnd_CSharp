@@ -399,6 +399,35 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         Tbc_MyAnimes.SelectedTab = tabPage;
     }
 
+    private void AbrirEditarMyAnime(object? sender, int myAnimeId)
+    {
+        var tabName = $"EditarMyAnime_{myAnimeId}";
+        var tabExistente = Tbc_MyAnimes.TabPages
+            .Cast<TabPage>().FirstOrDefault(tp => tp.Name == tabName);
+        if (tabExistente != null)
+        {
+            Tbc_MyAnimes.SelectedTab = tabExistente;
+            return;
+        }
+
+        var ucEditar = new FUC_EditarMyAnime(myAnimeId)
+        {
+            Dock = DockStyle.Fill
+        };
+        ucEditar.MyAnimeSalvo += (_, args) => _ = AtualizarAbaMyAnimeAsync(args.MyAnimeId);
+
+        var tabPage = new TabPage
+        {
+            Text = $"Editar My #{myAnimeId}",
+            Name = tabName,
+            ImageIndex = 2
+        };
+
+        tabPage.Controls.Add(ucEditar);
+        Tbc_MyAnimes.TabPages.Add(tabPage);
+        Tbc_MyAnimes.SelectedTab = tabPage;
+    }
+
     private async Task AtualizarAbaMyAnimeAsync(int myAnimeId)
     {
         var tabName = $"MyAnime_{myAnimeId}";
@@ -422,7 +451,8 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Dock = DockStyle.Fill
         };
-        ucDetalhes.CardClicado += AbrirDetalhesAnimeMyAnimeList;
+        ucDetalhes.CardClicado += AbrirDetalhesAnimeLocal;
+        ucDetalhes.EditarMyAnimeSolicitado += AbrirEditarMyAnime;
 
         var tabPage = new TabPage
         {
