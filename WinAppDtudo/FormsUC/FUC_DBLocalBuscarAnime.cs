@@ -25,15 +25,20 @@ public class FUC_DBLocalBuscarAnime : UserControl
 
     public FUC_DBLocalBuscarAnime()
     {
-        var pnlMain = new Panel
+        var pnlMain = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
             BackColor = Color.Black
         };
+        pnlMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 230F));
+        pnlMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        pnlMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 80F));
 
         var pnlTopo = new Panel
         {
-            Dock = DockStyle.Top,
+            Dock = DockStyle.Fill,
             BackColor = Color.Black,
             // Altere aqui a altura fixa do header. Os cards começam logo abaixo dele.
             Height = 230
@@ -101,24 +106,27 @@ public class FUC_DBLocalBuscarAnime : UserControl
 
         var pnlPaginacao = new Panel
         {
-            Dock = DockStyle.Bottom,
+            Dock = DockStyle.Fill,
             BackColor = Color.Black
         };
 
         _btnAnterior = new Button
         {
             Text = "◄ Anterior",
-            Width = 130,
-            Height = 34,
-            Location = new Point(12, 8),
+            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            Width = 260,
+            Height = 48,
+            Location = new Point(12, 10),
             Enabled = false
         };
 
         _btnProxima = new Button
         {
             Text = "Próxima ►",
-            Width = 130,
-            Height = 34,
+            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            Width = 260,
+            Height = 48,
+            Location = new Point(12, 10),
             Anchor = AnchorStyles.Top | AnchorStyles.Right,
             Enabled = false
         };
@@ -132,13 +140,14 @@ public class FUC_DBLocalBuscarAnime : UserControl
             ForeColor = Color.Gold
         };
 
-        pnlPaginacao.Controls.Add(_lblPagina);
         pnlPaginacao.Controls.Add(_btnAnterior);
         pnlPaginacao.Controls.Add(_btnProxima);
+        pnlPaginacao.Controls.Add(_lblPagina);
+        _lblPagina.SendToBack();
 
-        pnlMain.Controls.Add(_flpCards);
-        pnlMain.Controls.Add(pnlPaginacao);
-        pnlMain.Controls.Add(pnlTopo);
+        pnlMain.Controls.Add(pnlTopo, 0, 0);
+        pnlMain.Controls.Add(_flpCards, 0, 1);
+        pnlMain.Controls.Add(pnlPaginacao, 0, 2);
 
         Controls.Add(pnlMain);
 
@@ -166,7 +175,7 @@ public class FUC_DBLocalBuscarAnime : UserControl
         var termo = _txbBusca.Text.Trim();
         if (string.IsNullOrWhiteSpace(termo))
         {
-            MessageBox.Show("Digite o nome para buscar na ApiMyAnimes.", "Aviso",
+            WinAppDtudo.Services.DarkMessageBox.Show("Digite o nome para buscar na ApiMyAnimes.", "Aviso",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
             _txbBusca.Focus();
             return;
@@ -227,7 +236,7 @@ public class FUC_DBLocalBuscarAnime : UserControl
         {
             _lblStatus.Text = "❌ Erro de conexão com ApiMyAnimes.";
             _lblPagina.Text = "—";
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 $"Não foi possível conectar à ApiMyAnimes em:\n{ApiMyAnimesService.ApiBase}\n\nDetalhes: {ex.Message}",
                 "Erro de Conexão",
                 MessageBoxButtons.OK,
@@ -237,7 +246,7 @@ public class FUC_DBLocalBuscarAnime : UserControl
         {
             _lblStatus.Text = "❌ Erro ao buscar na ApiMyAnimes.";
             _lblPagina.Text = "—";
-            MessageBox.Show($"Erro ao buscar animes locais:\n\n{ex.Message}", "Erro",
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao buscar animes locais:\n\n{ex.Message}", "Erro",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally

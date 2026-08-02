@@ -6,6 +6,7 @@ namespace WinAppDtudo.Controls;
 public sealed class SelectableTextLabel : Label
 {
     private readonly ToolStripMenuItem _copiarMenuItem;
+    private const TextFormatFlags TextFlags = TextFormatFlags.NoPadding | TextFormatFlags.WordBreak;
     private int _selectionAnchor;
     private int _selectionStart;
     private int _selectionLength;
@@ -73,13 +74,12 @@ public sealed class SelectableTextLabel : Label
 
         var texto = Text ?? string.Empty;
         var areaTexto = ObterAreaTexto(texto);
-        var flags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine;
         var estadoGrafico = e.Graphics.Save();
         e.Graphics.SetClip(ClientRectangle);
 
         if (_selectionLength == 0)
         {
-            TextRenderer.DrawText(e.Graphics, texto, Font, areaTexto, ForeColor, flags | TextFormatFlags.EndEllipsis);
+            TextRenderer.DrawText(e.Graphics, texto, Font, areaTexto, ForeColor, TextFlags);
         }
         else
         {
@@ -90,16 +90,16 @@ public sealed class SelectableTextLabel : Label
             var larguraSelecionada = MedirTexto(selecionado);
             var areaSelecionada = new Rectangle(areaTexto.X + larguraAntes, areaTexto.Y, larguraSelecionada, areaTexto.Height);
 
-            TextRenderer.DrawText(e.Graphics, antes, Font, areaTexto, ForeColor, flags);
+            TextRenderer.DrawText(e.Graphics, antes, Font, areaTexto, ForeColor, TextFlags);
             e.Graphics.FillRectangle(SystemBrushes.Highlight, areaSelecionada);
-            TextRenderer.DrawText(e.Graphics, selecionado, Font, areaSelecionada, SystemColors.HighlightText, flags);
+            TextRenderer.DrawText(e.Graphics, selecionado, Font, areaSelecionada, SystemColors.HighlightText, TextFlags);
             TextRenderer.DrawText(
                 e.Graphics,
                 depois,
                 Font,
                 new Rectangle(areaSelecionada.Right, areaTexto.Y, Math.Max(0, areaTexto.Right - areaSelecionada.Right), areaTexto.Height),
                 ForeColor,
-                flags);
+                TextFlags);
         }
 
         e.Graphics.Restore(estadoGrafico);
@@ -143,7 +143,11 @@ public sealed class SelectableTextLabel : Label
 
     private Rectangle ObterAreaTexto(string texto)
     {
-        var alturaTexto = TextRenderer.MeasureText(texto, Font, Size.Empty, TextFormatFlags.NoPadding).Height;
+        var alturaTexto = TextRenderer.MeasureText(
+            texto,
+            Font,
+            new Size(Math.Max(1, ClientSize.Width), int.MaxValue),
+            TextFlags).Height;
         var y = TextAlign is ContentAlignment.MiddleLeft or ContentAlignment.MiddleCenter or ContentAlignment.MiddleRight
             ? Math.Max(0, (ClientSize.Height - alturaTexto) / 2)
             : 0;

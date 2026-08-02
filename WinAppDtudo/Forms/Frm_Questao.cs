@@ -12,6 +12,9 @@ public partial class Frm_Questao : Form
         Pic_PictureBox.Image = imagemTemp;
         Lbl_TextoDaCaixa.Text = mensagem;
         ThemeManager.ApplyDarkModeToForm(this);
+        Scale(new SizeF(2F, 2F));
+        Font = new Font(Font.FontFamily, Font.Size * 1.4F, Font.Style);
+        StartPosition = FormStartPosition.CenterParent;
     }
 
     private void Btn_Continue_Click(object sender, EventArgs e)

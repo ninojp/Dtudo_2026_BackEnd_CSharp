@@ -135,6 +135,6 @@ public partial class UC_MiniAnimeCard : UserControl
     {
         base.OnPaint(e);
         ControlPaint.DrawBorder(e.Graphics, ClientRectangle,
-            Color.FromArgb(180, 200, 230), ButtonBorderStyle.Solid);
+            DarkModeColors.ActiveBorderColor, ButtonBorderStyle.Solid);
     }
 }

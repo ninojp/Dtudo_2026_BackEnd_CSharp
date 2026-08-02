@@ -292,7 +292,7 @@ public sealed class FUC_EditarAnime : UserControl
             if (anime is null)
             {
                 _lblStatus.Text = $"Anime com MalId {_malId} nao encontrado no DB_Local.";
-                MessageBox.Show(_lblStatus.Text, "Anime nao encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                WinAppDtudo.Services.DarkMessageBox.Show(_lblStatus.Text, "Anime nao encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -306,7 +306,7 @@ public sealed class FUC_EditarAnime : UserControl
         catch (HttpRequestException ex)
         {
             _lblStatus.Text = "Erro de conexao com ApiMyAnimes.";
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 $"Nao foi possivel conectar a ApiMyAnimes em:\n{ApiMyAnimesService.ApiBase}\n\nDetalhes: {ex.Message}",
                 "Erro de Conexao",
                 MessageBoxButtons.OK,
@@ -315,7 +315,7 @@ public sealed class FUC_EditarAnime : UserControl
         catch (Exception ex)
         {
             _lblStatus.Text = "Erro ao carregar anime.";
-            MessageBox.Show($"Erro ao carregar anime local:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao carregar anime local:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
@@ -375,7 +375,7 @@ public sealed class FUC_EditarAnime : UserControl
     {
         if (_animeAtual is null)
         {
-            MessageBox.Show("Carregue o anime antes de salvar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            WinAppDtudo.Services.DarkMessageBox.Show("Carregue o anime antes de salvar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -428,7 +428,7 @@ public sealed class FUC_EditarAnime : UserControl
 
         if (errors.Count > 0)
         {
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 string.Join(Environment.NewLine, errors.Distinct()),
                 "Revise os campos",
                 MessageBoxButtons.OK,
@@ -442,7 +442,7 @@ public sealed class FUC_EditarAnime : UserControl
             await _apiMyAnimesService.AtualizarAnimeAsync(_animeAtual.MalId, dto);
             _lblStatus.Text = $"Alteracoes salvas em {DateTime.Now:HH:mm:ss}.";
 
-            MessageBox.Show("Anime atualizado com sucesso no DB_Local.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            WinAppDtudo.Services.DarkMessageBox.Show("Anime atualizado com sucesso no DB_Local.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             var salvo = await _apiMyAnimesService.ObterAnimePorMalIdAsync(_animeAtual.MalId);
             _animeAtual = salvo ?? _animeAtual;
@@ -455,11 +455,11 @@ public sealed class FUC_EditarAnime : UserControl
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
-            MessageBox.Show($"Anime com MalId {_animeAtual.MalId} nao encontrado para atualizacao.", "Nao encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Anime com MalId {_animeAtual.MalId} nao encontrado para atualizacao.", "Nao encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
         catch (HttpRequestException ex)
         {
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 $"Falha ao salvar na ApiMyAnimes em:\n{ApiMyAnimesService.ApiBase}\n\nDetalhes: {ex.Message}",
                 "Erro de Conexao",
                 MessageBoxButtons.OK,
@@ -467,7 +467,7 @@ public sealed class FUC_EditarAnime : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erro ao salvar anime:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao salvar anime:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {

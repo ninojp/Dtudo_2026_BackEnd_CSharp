@@ -70,20 +70,20 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
                     MnI_MyMusicX.Enabled = true;
                     MnI_NinoTI.Enabled = true;
                     MnI_Desconectar.Enabled = true;
-                    MessageBox.Show($"Login realizado com sucesso! Bem-vindo, {authResponse.User.Name}.", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    WinAppDtudo.Services.DarkMessageBox.Show($"Login realizado com sucesso! Bem-vindo, {authResponse.User.Name}.", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    MessageBox.Show(authResponse.Message ?? "Usuario ou senha invalida.", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    WinAppDtudo.Services.DarkMessageBox.Show(authResponse.Message ?? "Usuario ou senha invalida.", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (HttpRequestException ex)
             {
-                MessageBox.Show($"Nao foi possivel conectar a ApiMyAnimes em {AppConfigurationService.ApiMyAnimesBaseUrl}.\n\n{ex.Message}", "Erro de conexao", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                WinAppDtudo.Services.DarkMessageBox.Show($"Nao foi possivel conectar a ApiMyAnimes em {AppConfigurationService.ApiMyAnimesBaseUrl}.\n\n{ex.Message}", "Erro de conexao", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         else if (resultado == DialogResult.Cancel)
-        { MessageBox.Show($"Login cancelado."); }
+        { WinAppDtudo.Services.DarkMessageBox.Show($"Login cancelado."); }
     }
     //Menu Desconectar - Desconectar o usuário atual.
     private void MnI_Desconectar_Click(object sender, EventArgs e)
@@ -100,10 +100,10 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             //Fecha todos os formulários abertos, exceto o THIS.Frm_WinAppControlStore.
             foreach (Form form in Application.OpenForms.Cast<Form>().ToList())
             { if (form != this) form.Close(); }
-            MessageBox.Show("Você foi Desconectado!");
+            WinAppDtudo.Services.DarkMessageBox.Show("Você foi Desconectado!");
         }
         else if (resultado == DialogResult.Cancel)
-        { MessageBox.Show($"Desconexão cancelada."); }
+        { WinAppDtudo.Services.DarkMessageBox.Show($"Desconexão cancelada."); }
     }
     //Menu Sair - Fechar a aplicação Toda.
     private void MnI_Sair_Click(object sender, EventArgs e)
@@ -117,7 +117,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         if (e.Button == MouseButtons.Right)
         {
             //string message = $"MouseDown, na posição ({e.X}, {e.Y}) com o botão {e.Button}";
-            //MessageBox.Show(message);
+            //WinAppDtudo.Services.DarkMessageBox.Show(message);
             ContextMenuStrip contextMenu = new();
             ToolStripMenuItem menuFlutuanteItem1 = CriaMenuFlutuanteItem("Opção 1", "CaveraMetal");
             ToolStripMenuItem menuFlutuanteItem2 = CriaMenuFlutuanteItem("Opção 2", "CaveraMetal");
@@ -140,15 +140,15 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     }
     void MenuFlutuanteItem1_Click(object? sender, EventArgs e)
     {
-        MessageBox.Show("Opção 1 selecionada");
+        WinAppDtudo.Services.DarkMessageBox.Show("Opção 1 selecionada");
     }
     void MenuFlutuanteItem2_Click(object? sender, EventArgs e)
     {
-        MessageBox.Show("Opção 2 selecionada");
+        WinAppDtudo.Services.DarkMessageBox.Show("Opção 2 selecionada");
     }
     void MenuFlutuanteItem3_Click(object? sender, EventArgs e)
     {
-        MessageBox.Show("Opção 3 selecionada");
+        WinAppDtudo.Services.DarkMessageBox.Show("Opção 3 selecionada");
     }
     //=================================================================
     //Botão - Devera abrir o site Dtudo...

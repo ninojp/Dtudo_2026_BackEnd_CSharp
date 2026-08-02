@@ -1,51 +1,64 @@
 namespace WinAppDtudo.Services;
 
 /// <summary>
-/// Define a paleta de cores para o tema Dark Mode, seguindo o padrão do Windows 11.
+/// Paleta oficial do tema escuro do WinAppDtudo.
 /// </summary>
 public static class DarkModeColors
 {
-    // Cores principais do tema Dark
-    /// <summary>Cor de fundo principal dos formulários e painéis</summary>
-    public static Color BackgroundColor { get; } = Color.FromArgb(32, 32, 32);
+    /// <summary>Fundo absoluto da aplicacao.</summary>
+    public static Color BackgroundColor { get; } = Color.Black;
 
-    /// <summary>Cor de fundo secundária para controles e panels</summary>
-    public static Color BackgroundSecondaryColor { get; } = Color.FromArgb(45, 45, 45);
+    /// <summary>Superficie baixa, usada em areas internas e paginas.</summary>
+    public static Color SurfaceColor { get; } = Color.FromArgb(4, 4, 5);
 
-    /// <summary>Cor do texto principal</summary>
-    //(era, 229, 229, 229) agora gold, RGB:(255, 215, 0)
-    public static Color TextColor { get; } = Color.FromArgb(255, 215, 0);
+    /// <summary>Superficie secundaria para paineis, menus e controles.</summary>
+    public static Color BackgroundSecondaryColor { get; } = Color.FromArgb(10, 10, 12);
 
-    /// <summary>Cor do texto secundário ou desabilitado</summary>
-    // (era, (155, 155, 155)) agora goldenrod, RGB:(218, 165, 32)
-    public static Color TextSecondaryColor { get; } = Color.FromArgb(218, 165, 32);
+    /// <summary>Superficie elevada para controles ativos e cabecalhos.</summary>
+    public static Color ElevatedColor { get; } = Color.FromArgb(18, 18, 22);
 
-    /// <summary>Cor de borda dos controles</summary>
-    // (era, (70, 70, 70)) agora agora goldenrod, RGB:(218, 165, 32)
-    public static Color BorderColor { get; } = Color.FromArgb(218, 165, 32);
+    /// <summary>Fundo da aba ativa, incluindo cabecalho e area de conteudo.</summary>
+    public static Color ActiveTabBackgroundColor { get; } = Color.FromArgb(28, 28, 34);
 
-    /// <summary>Cor de destaque/hover</summary>
-    //(era, (0, 120, 215)) atualizado para evitar transparência em botões
+    /// <summary>Texto principal.</summary>
+    public static Color TextColor { get; } = Color.Gold;
+
+    /// <summary>Texto de abas inativas.</summary>
+    public static Color InactiveTabTextColor { get; } = Color.FromArgb(155, 155, 155);
+
+    /// <summary>Texto secundario.</summary>
+    public static Color TextSecondaryColor { get; } = Color.Goldenrod;
+
+    /// <summary>Texto e icones desabilitados.</summary>
+    public static Color DisabledTextColor { get; } = Color.FromArgb(120, 86, 10);
+
+    /// <summary>Borda padrao.</summary>
+    public static Color BorderColor { get; } = Color.FromArgb(74, 55, 8);
+
+    /// <summary>Borda mais forte para selecao e foco.</summary>
+    public static Color ActiveBorderColor { get; } = Color.FromArgb(218, 165, 32);
+
+    /// <summary>Destaque principal para botoes e elementos acionaveis.</summary>
     public static Color AccentColor { get; } = Color.FromArgb(35, 40, 90);
 
-    /// <summary>Cor de fundo para itens selecionados</summary>
-    // (era, (0, 120, 215)) agora transparente, RGB:(0, 0, 0, 0)
-    // (era, (0, 120, 215)) agora Orange1, RGB:(255, 165, 0)
+    /// <summary>Destaque ao passar o mouse.</summary>
+    public static Color HoverColor { get; } = Color.FromArgb(30, 30, 36);
+
+    /// <summary>Fundo de selecao.</summary>
     public static Color SelectionColor { get; } = Color.FromArgb(255, 165, 0);
 
-    /// <summary>Cor para elementos desabilitados</summary>
-    // (era, (80, 80, 80)) agora DarkGoldenrod, RGB:(184, 134, 11)
-    public static Color DisabledColor { get; } = Color.FromArgb(184, 134, 11);
+    /// <summary>Fundo para controles desabilitados.</summary>
+    public static Color DisabledColor { get; } = Color.FromArgb(28, 24, 15);
 
-    /// <summary>Cor de sucesso (verde)</summary>
+    /// <summary>Cor de sucesso.</summary>
     public static Color SuccessColor { get; } = Color.FromArgb(16, 176, 112);
 
-    /// <summary>Cor de erro (vermelho)</summary>
+    /// <summary>Cor de erro.</summary>
     public static Color ErrorColor { get; } = Color.FromArgb(240, 76, 76);
 
-    /// <summary>Cor de aviso (laranja)</summary>
+    /// <summary>Cor de aviso.</summary>
     public static Color WarningColor { get; } = Color.FromArgb(255, 159, 64);
 
-    /// <summary>Cor de informação (azul)</summary>
+    /// <summary>Cor de informacao.</summary>
     public static Color InfoColor { get; } = Color.FromArgb(0, 150, 200);
 }

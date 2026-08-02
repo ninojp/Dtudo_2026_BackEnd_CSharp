@@ -59,7 +59,7 @@ partial class FUC_DetalhesAnime
         // 
         // Pnl_Header
         // 
-        Pnl_Header.BackColor = Color.FromArgb(25, 30, 80);
+        Pnl_Header.BackColor = WinAppDtudo.Services.DarkModeColors.ActiveTabBackgroundColor;
         Pnl_Header.Controls.Add(Lbl_TituloAnime);
         Pnl_Header.Controls.Add(Lbl_TituloIngles);
         Pnl_Header.Controls.Add(Lbl_Sinonimo);
@@ -74,7 +74,8 @@ partial class FUC_DetalhesAnime
         // 
         // Lbl_TituloAnime
         // 
-        Lbl_TituloAnime.AutoEllipsis = true;
+        Lbl_TituloAnime.AutoEllipsis = false;
+        Lbl_TituloAnime.BackColor = WinAppDtudo.Services.DarkModeColors.ActiveTabBackgroundColor;
         Lbl_TituloAnime.Font = new Font("Segoe UI Black", 15F, FontStyle.Bold);
         Lbl_TituloAnime.ForeColor = Color.White;
         Lbl_TituloAnime.Location = new Point(50, 10);
@@ -87,8 +88,9 @@ partial class FUC_DetalhesAnime
         // 
         // Lbl_TituloIngles
         // 
-        Lbl_TituloIngles.AutoEllipsis = true;
+        Lbl_TituloIngles.AutoEllipsis = false;
         Lbl_TituloIngles.AutoSize = false;
+        Lbl_TituloIngles.BackColor = WinAppDtudo.Services.DarkModeColors.ActiveTabBackgroundColor;
         Lbl_TituloIngles.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
         Lbl_TituloIngles.ForeColor = Color.Gold;
         Lbl_TituloIngles.Location = new Point(50, 10);
@@ -101,8 +103,9 @@ partial class FUC_DetalhesAnime
         // 
         // Lbl_Sinonimo
         // 
-        Lbl_Sinonimo.AutoEllipsis = true;
+        Lbl_Sinonimo.AutoEllipsis = false;
         Lbl_Sinonimo.AutoSize = false;
+        Lbl_Sinonimo.BackColor = WinAppDtudo.Services.DarkModeColors.ActiveTabBackgroundColor;
         Lbl_Sinonimo.Font = new Font("Segoe UI", 12F);
         Lbl_Sinonimo.ForeColor = Color.LightGray;
         Lbl_Sinonimo.Location = new Point(50, 6);
@@ -116,8 +119,9 @@ partial class FUC_DetalhesAnime
         // 
         // Lbl_TituloJapones
         // 
-        Lbl_TituloJapones.AutoEllipsis = true;
+        Lbl_TituloJapones.AutoEllipsis = false;
         Lbl_TituloJapones.AutoSize = false;
+        Lbl_TituloJapones.BackColor = WinAppDtudo.Services.DarkModeColors.ActiveTabBackgroundColor;
         Lbl_TituloJapones.Font = new Font("Segoe UI", 11F);
         Lbl_TituloJapones.ForeColor = Color.LightSteelBlue;
         Lbl_TituloJapones.Location = new Point(50, 6);
@@ -158,7 +162,7 @@ partial class FUC_DetalhesAnime
         // Pnl_Info
         // 
         Pnl_Info.AutoScroll = true;
-        Pnl_Info.BackColor = Color.Silver;
+        Pnl_Info.BackColor = WinAppDtudo.Services.DarkModeColors.ActiveTabBackgroundColor;
         Pnl_Info.Dock = DockStyle.Fill;
         Pnl_Info.Location = new Point(600, 250);
         Pnl_Info.Margin = new Padding(4, 3, 4, 3);

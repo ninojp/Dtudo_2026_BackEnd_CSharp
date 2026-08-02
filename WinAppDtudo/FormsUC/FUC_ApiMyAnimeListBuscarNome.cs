@@ -148,7 +148,7 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
         {
             if (!int.TryParse(texto, out var malId) || malId is < 1 or > 100000)
             {
-                MessageBox.Show("Informe um ID de anime entre 1 e 100000.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                WinAppDtudo.Services.DarkMessageBox.Show("Informe um ID de anime entre 1 e 100000.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 _txbBusca.Focus();
                 return;
             }
@@ -161,7 +161,7 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
         var termo = texto.Trim();
         if (string.IsNullOrWhiteSpace(termo))
         {
-            MessageBox.Show("Digite o nome para buscar na ApiMyAnimeList.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            WinAppDtudo.Services.DarkMessageBox.Show("Digite o nome para buscar na ApiMyAnimeList.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             _txbBusca.Focus();
             return;
         }
@@ -209,19 +209,19 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
         {
             _lblStatus.Text = "⚠️ ApiMyAnimeList retornou 504 (Gateway Timeout).";
             _lblPagina.Text = "—";
-            MessageBox.Show("A ApiMyAnimeList demorou para responder (504).\nTente novamente em instantes.", "ApiMyAnimeList indisponível", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            WinAppDtudo.Services.DarkMessageBox.Show("A ApiMyAnimeList demorou para responder (504).\nTente novamente em instantes.", "ApiMyAnimeList indisponível", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
         catch (HttpRequestException ex)
         {
             _lblStatus.Text = "❌ Erro de conexão com ApiMyAnimeList.";
             _lblPagina.Text = "—";
-            MessageBox.Show($"Não foi possível conectar à ApiMyAnimeList em:\n{MyAnimeListApiService.ApiBase}\n\nDetalhes: {ex.Message}", "Erro de Conexão", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Não foi possível conectar à ApiMyAnimeList em:\n{MyAnimeListApiService.ApiBase}\n\nDetalhes: {ex.Message}", "Erro de Conexão", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         catch (Exception ex)
         {
             _lblStatus.Text = "❌ Erro ao buscar na ApiMyAnimeList.";
             _lblPagina.Text = "—";
-            MessageBox.Show($"Erro ao buscar o anime na ApiMyAnimeList:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao buscar o anime na ApiMyAnimeList:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
@@ -292,19 +292,19 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
         {
             _lblStatus.Text = "⚠️ ApiMyAnimeList retornou 504 (Gateway Timeout).";
             _lblPagina.Text = "—";
-            MessageBox.Show("A ApiMyAnimeList demorou para responder (504).\nTente novamente em instantes.", "ApiMyAnimeList indisponível", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            WinAppDtudo.Services.DarkMessageBox.Show("A ApiMyAnimeList demorou para responder (504).\nTente novamente em instantes.", "ApiMyAnimeList indisponível", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
         catch (HttpRequestException ex)
         {
             _lblStatus.Text = "❌ Erro de conexão com ApiMyAnimeList.";
             _lblPagina.Text = "—";
-            MessageBox.Show($"Não foi possível conectar à ApiMyAnimeList em:\n{MyAnimeListApiService.ApiBase}\n\nDetalhes: {ex.Message}", "Erro de Conexão", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Não foi possível conectar à ApiMyAnimeList em:\n{MyAnimeListApiService.ApiBase}\n\nDetalhes: {ex.Message}", "Erro de Conexão", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         catch (Exception ex)
         {
             _lblStatus.Text = "❌ Erro ao buscar na ApiMyAnimeList.";
             _lblPagina.Text = "—";
-            MessageBox.Show($"Erro ao buscar animes na ApiMyAnimeList:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao buscar animes na ApiMyAnimeList:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {

@@ -30,13 +30,13 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 -------------------------------------------------------------------------------------------------------------------------------------
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
 
-Agora no meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\  
-Na aba MyAnime detalhes, ao lado botão "Editar MyAnime", está sendo exibido (erroneamente) os ids dos animes relacionados, REMOVA isso. No lugar coloque o MyAnime ID, do MyAnime atual (que deve ser copiado para a área de transferência com um clique).
-
-O fundo de TODAS as abas atualmente sempre fica com um fundo claro (inclusive onde exibe os titulos das abas), agora quero que seja preto absoluto.
-
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\  
+Na aba DBLocal, após fazermos uma busca na base local, os resultados são exibidos em Cards, mas ESTOU TOTALMENTE INSATISFEITO com os resultados das buscas. Retorna muita COISA, mais de 500 resultados quase sempre (deve retornar no MAXIMO 100 resultados). Tem certos animes que estão sempre retornando em qualquer pesquisa (por exemplo, A Kite, A-Channel, A.I.C.O.,A-Channel: +A-Channel...)
+E agora descobri, MAIS UM ERRO GRAVE (não encontrou o anime "Sleazy Family", que já está cadastrado).
+JÁ É A TERCEIRA VEZ QUE PEÇO PARA CONSERTAR ERROS DE BUSCA, E AINDA NÃO FOI RESOLVIDO. VOU PEDIR NOVAMENTE:
 Quero uma implementação, modularizada, sem arquivos únicos muito extensos, REALMENTE COMPLETA, PROFISSIONAL, ROBUSTA, QUE COMTEMPLE TODOS OS CASOS POSSÍVEIS, com todos os detalhes necessários.  
 Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
+No meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite\ também existe uma aba de busca, que faz a mesma busca que a aba DBLocal do WinAppDtudo, mas com resultados diferentes (menos resultados).
 
 ef - a tale of melodies.
 

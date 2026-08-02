@@ -134,7 +134,7 @@ public sealed class FUC_EditarMyAnime : UserControl
                 _lblStatus.Text = $"MyAnime ID {_myAnimeId} nao encontrado no DB_Local.";
                 _lblResumo.Text = "Registro indisponivel.";
                 _pnlEditor.Controls.Clear();
-                MessageBox.Show(_lblStatus.Text, "MyAnime nao encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                WinAppDtudo.Services.DarkMessageBox.Show(_lblStatus.Text, "MyAnime nao encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -148,7 +148,7 @@ public sealed class FUC_EditarMyAnime : UserControl
         catch (HttpRequestException ex)
         {
             _lblStatus.Text = "Erro de conexao com ApiMyAnimes.";
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 $"Nao foi possivel conectar a ApiMyAnimes em:\n{ApiMyAnimesService.ApiBase}\n\nDetalhes: {ex.Message}",
                 "Erro de Conexao",
                 MessageBoxButtons.OK,
@@ -157,7 +157,7 @@ public sealed class FUC_EditarMyAnime : UserControl
         catch (Exception ex)
         {
             _lblStatus.Text = "Erro ao carregar MyAnime.";
-            MessageBox.Show($"Erro ao carregar MyAnime local:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao carregar MyAnime local:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
@@ -169,14 +169,14 @@ public sealed class FUC_EditarMyAnime : UserControl
     {
         if (_myAnimeAtual is null)
         {
-            MessageBox.Show("Carregue o MyAnime antes de salvar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            WinAppDtudo.Services.DarkMessageBox.Show("Carregue o MyAnime antes de salvar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         var errors = new List<string>();
         if (!_fields.TryCreateDto(errors, out var dto, out var parseResult))
         {
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 string.Join(Environment.NewLine, errors.Distinct()),
                 "Revise os campos",
                 MessageBoxButtons.OK,
@@ -186,7 +186,7 @@ public sealed class FUC_EditarMyAnime : UserControl
 
         if (parseResult.DuplicateMalIds.Count > 0)
         {
-            var confirmacao = MessageBox.Show(
+            var confirmacao = WinAppDtudo.Services.DarkMessageBox.Show(
                 $"Foram encontrados {parseResult.DuplicateMalIds.Count} MalIds duplicados. Eles serao removidos ao salvar.\n\nDeseja continuar?",
                 "MalIds duplicados",
                 MessageBoxButtons.YesNo,
@@ -213,16 +213,16 @@ public sealed class FUC_EditarMyAnime : UserControl
             SetDirty(false);
             _lblStatus.Text = $"Alteracoes salvas em {DateTime.Now:HH:mm:ss}.";
 
-            MessageBox.Show("MyAnime atualizado com sucesso no DB_Local.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            WinAppDtudo.Services.DarkMessageBox.Show("MyAnime atualizado com sucesso no DB_Local.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             MyAnimeSalvo?.Invoke(this, new MyAnimeEditSavedEventArgs(_myAnimeAtual.Id, _myAnimeAtual.Titulo));
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
-            MessageBox.Show($"MyAnime ID {_myAnimeAtual.Id} nao encontrado para atualizacao.", "Nao encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            WinAppDtudo.Services.DarkMessageBox.Show($"MyAnime ID {_myAnimeAtual.Id} nao encontrado para atualizacao.", "Nao encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
         {
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 $"Ja existe outro MyAnime com o titulo '{dto.Titulo}'. Escolha um titulo diferente.",
                 "Titulo ja cadastrado",
                 MessageBoxButtons.OK,
@@ -230,7 +230,7 @@ public sealed class FUC_EditarMyAnime : UserControl
         }
         catch (HttpRequestException ex)
         {
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 $"Falha ao salvar na ApiMyAnimes em:\n{ApiMyAnimesService.ApiBase}\n\nDetalhes: {ex.Message}",
                 "Erro de Conexao",
                 MessageBoxButtons.OK,
@@ -238,7 +238,7 @@ public sealed class FUC_EditarMyAnime : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erro ao salvar MyAnime:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao salvar MyAnime:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
@@ -279,7 +279,7 @@ public sealed class FUC_EditarMyAnime : UserControl
 
     private bool ConfirmarPerdaAlteracoes()
     {
-        var resposta = MessageBox.Show(
+        var resposta = WinAppDtudo.Services.DarkMessageBox.Show(
             "Existem alteracoes nao salvas. Recarregar descartara essas alteracoes.\n\nDeseja recarregar mesmo assim?",
             "Descartar alteracoes",
             MessageBoxButtons.YesNo,

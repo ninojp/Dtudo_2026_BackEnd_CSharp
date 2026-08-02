@@ -1,3 +1,5 @@
+using WinAppDtudo.Services;
+
 namespace WinAppDtudo.Forms;
 
 public class Frm_ProgressoOperacao : Form
@@ -15,14 +17,14 @@ public class Frm_ProgressoOperacao : Form
         MinimizeBox = false;
         ShowInTaskbar = false;
         TopMost = true;
-        ClientSize = new Size(700, 170);
+        ClientSize = new Size(1400, 340);
 
         _lblPercentual = new Label
         {
             Dock = DockStyle.Top,
-            Height = 34,
-            Padding = new Padding(12, 10, 12, 0),
-            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            Height = 68,
+            Padding = new Padding(24, 20, 24, 0),
+            Font = new Font("Segoe UI", 16F, FontStyle.Bold),
             TextAlign = ContentAlignment.MiddleLeft,
             Text = "0%"
         };
@@ -30,9 +32,10 @@ public class Frm_ProgressoOperacao : Form
         _lblDetalhes = new Label
         {
             Dock = DockStyle.Top,
-            Height = 58,
-            Padding = new Padding(12, 4, 12, 0),
+            Height = 116,
+            Padding = new Padding(24, 8, 24, 0),
             AutoEllipsis = true,
+            Font = new Font("Segoe UI", 14F),
             TextAlign = ContentAlignment.TopLeft,
             Text = "Iniciando..."
         };
@@ -40,8 +43,8 @@ public class Frm_ProgressoOperacao : Form
         _progressBar = new ProgressBar
         {
             Dock = DockStyle.Top,
-            Height = 28,
-            Margin = new Padding(12),
+            Height = 56,
+            Margin = new Padding(24),
             Minimum = 0,
             Maximum = 100,
             Value = 0,
@@ -51,13 +54,18 @@ public class Frm_ProgressoOperacao : Form
         var pnl = new Panel
         {
             Dock = DockStyle.Fill,
-            Padding = new Padding(12, 0, 12, 12)
+            Padding = new Padding(24, 0, 24, 24)
         };
 
         pnl.Controls.Add(_progressBar);
         Controls.Add(pnl);
         Controls.Add(_lblDetalhes);
         Controls.Add(_lblPercentual);
+        ThemeManager.ApplyDarkModeToForm(this);
+        BackColor = DarkModeColors.ActiveTabBackgroundColor;
+        pnl.BackColor = DarkModeColors.ActiveTabBackgroundColor;
+        _lblPercentual.BackColor = DarkModeColors.ActiveTabBackgroundColor;
+        _lblDetalhes.BackColor = DarkModeColors.ActiveTabBackgroundColor;
     }
 
     public void Atualizar(int percentual, string mensagem)

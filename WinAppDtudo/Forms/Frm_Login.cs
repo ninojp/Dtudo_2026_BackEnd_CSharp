@@ -24,6 +24,9 @@ public partial class Frm_Login : Form
         Lbl_SenhaLabel.Text = "Senha do Usuário:";
         Btn_Login.Text = "Login";
         Btn_Cancelar.Text = "Cancelar";
+        Scale(new SizeF(1.7F, 1.7F));
+        Font = new Font(Font.FontFamily, Font.Size * 1.35F, Font.Style);
+        StartPosition = FormStartPosition.CenterParent;
     }
 
     private void Btn_Login_Click(object sender, EventArgs e)

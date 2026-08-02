@@ -87,6 +87,7 @@ partial class UC_MiniAnimeCard
         Controls.Add(Lbl_Nome);
         //Controls.Add(Lbl_Tipo);
         Cursor = Cursors.Hand;
+        Margin = new Padding(15);
         Name = "UC_MiniAnimeCard";
         Size = new Size(200, 350);
         ((System.ComponentModel.ISupportInitialize)Pbx_Capa).EndInit();

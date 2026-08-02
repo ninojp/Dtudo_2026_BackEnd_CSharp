@@ -20,6 +20,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         MnI_ApiMyAnimeListBuscarNome.Click += MnI_ApiMyAnimeListBuscarNome_Click;
         MnI_DBLocalBuscarAnime.Click += MnI_DBLocalBuscarAnime_Click;
         Tbc_MyAnimes.Selected += Tbc_MyAnimes_Selected;
+        Tbc_MyAnimes.ShowCloseButtons = true;
         // Aplicar o tema Dark Mode ao formulário e seus componentes
         ThemeManager.ApplyDarkModeToForm(this);
         // Inicializa o formulário customizado sem barra de título
@@ -39,7 +40,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = "DBLocal Animes",
             Name = "DBLocal_Animes",
-            ImageIndex = 2
+            ImageIndex = ObterIndiceIconeAba(MnI_DBLocalBuscarAnime)
         };
         tabPage.Controls.Add(ucBuscaLocal);
         Tbc_MyAnimes.TabPages.Add(tabPage);
@@ -60,9 +61,9 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
 
             TabPage tabPage = new()
             {
-                Text = $"{_tabIndexApiMyAnimeListPorNome} ApiMyAnimeList",
+                Text = "ApiMyAnimeList",
                 Name = $"ApiMyAnimeList_{_tabIndexApiMyAnimeListPorNome}",
-                ImageIndex = 1,
+                ImageIndex = ObterIndiceIconeAba(MnI_ApiMyAnimeListBuscarNome),
             };
 
             tabPage.Controls.Add(ucBuscaApiMyAnimeList);
@@ -72,7 +73,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         catch (Exception ex)
         {
             _tabIndexApiMyAnimeListPorNome = Math.Max(0, _tabIndexApiMyAnimeListPorNome - 1);
-            MessageBox.Show($"Erro ao abrir a aba ApiMyAnimeList:\n{ex.Message}",
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao abrir a aba ApiMyAnimeList:\n{ex.Message}",
                 "Erro",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -90,7 +91,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = $"{_tabIndexMascaras} Máscaras",
             Name = $"{_tabIndexMascaras} Mascaras",
-            ImageIndex = 3,
+            ImageIndex = ObterIndiceIconeAba(MnI_AbaMascaras),
         };
         tabPage.Controls.Add(ucMascaras);
         Tbc_MyAnimes.TabPages.Add(tabPage);
@@ -143,11 +144,11 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         frmQuestao.ShowDialog();
         if (frmQuestao.DialogResult == DialogResult.Yes)
         {
-            MessageBox.Show("Você clicou em Continuar!");
+            WinAppDtudo.Services.DarkMessageBox.Show("Você clicou em Continuar!");
         }
         if (frmQuestao.DialogResult == DialogResult.Cancel)
         {
-            MessageBox.Show("Você clicou em Parar!");
+            WinAppDtudo.Services.DarkMessageBox.Show("Você clicou em Parar!");
         }
     }
     //=============================================================================
@@ -178,6 +179,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             contextMenu.Items.Add(menuFlutuanteItem2);
             contextMenu.Items.Add(menuFlutuanteItem3);
             contextMenu.Items.Add(menuFlutuanteItem4);
+            ThemeManager.ApplyDarkModeToContextMenuStrip(contextMenu);
             contextMenu.Show(this, new Point(e.X, e.Y));
             menuFlutuanteItem1.Click += new EventHandler(MenuFlutuanteItem1_Click);
             menuFlutuanteItem2.Click += new EventHandler(MenuFlutuanteItem2_Click);
@@ -248,12 +250,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
 
     private Rectangle GetCloseButtonBounds(int tabIndex)
     {
-        Rectangle tabRect = Tbc_MyAnimes.GetTabRect(tabIndex);
-        return new Rectangle(
-            tabRect.Right - CloseButtonSize - 5,
-            tabRect.Top + 5,
-            CloseButtonSize,
-            CloseButtonSize);
+        return Tbc_MyAnimes.GetCloseButtonBounds(tabIndex);
     }
 
     private static ToolStripMenuItem CriaMenuFlutuanteItem(string textMenuItem, string imageName)
@@ -263,6 +260,23 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         { menuFlutuanteItem.Image = imgMenuItem; }
         return menuFlutuanteItem;
     }
+
+    private int ObterIndiceIconeAba(ToolStripMenuItem menuItem)
+    {
+        if (menuItem.Image is null)
+            return -1;
+
+        var key = string.IsNullOrWhiteSpace(menuItem.Name)
+            ? $"TabIcon_{menuItem.Text}"
+            : menuItem.Name;
+        var existingIndex = Iml_ImagensList.Images.IndexOfKey(key);
+        if (existingIndex >= 0)
+            return existingIndex;
+
+        Iml_ImagensList.Images.Add(key, new Bitmap(menuItem.Image));
+        return Iml_ImagensList.Images.IndexOfKey(key);
+    }
+
     void MenuFlutuanteItem1_Click(object? sender, EventArgs e)
     {
         if (Tbc_MyAnimes.SelectedTab != null)
@@ -359,7 +373,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = consultaLocal ? $"DB #{malId}" : $" #{malId}",
             Name = tabName,
-            ImageIndex = consultaLocal ? 2 : 1,
+            ImageIndex = ObterIndiceIconeAba(consultaLocal ? MnI_DBLocalBuscarAnime : MnI_ApiMyAnimeListBuscarNome),
         };
         tabPage.Controls.Add(ucDetalhes);
         Tbc_MyAnimes.TabPages.Add(tabPage);
@@ -391,7 +405,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = $"Editar #{malId}",
             Name = tabName,
-            ImageIndex = 2
+            ImageIndex = ObterIndiceIconeAba(MnI_DBLocalBuscarAnime)
         };
 
         tabPage.Controls.Add(ucEditar);
@@ -420,7 +434,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = $"Editar My #{myAnimeId}",
             Name = tabName,
-            ImageIndex = 2
+            ImageIndex = ObterIndiceIconeAba(MnI_DBLocalBuscarAnime)
         };
 
         tabPage.Controls.Add(ucEditar);
@@ -458,7 +472,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = $"My #{myAnimeId}",
             Name = tabName,
-            ImageIndex = 1
+            ImageIndex = ObterIndiceIconeAba(MnI_DBLocalBuscarAnime)
         };
 
         tabPage.Controls.Add(ucDetalhes);
@@ -518,7 +532,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
                 frmProgresso.Dispose();
                 frmProgresso = null;
 
-                MessageBox.Show(
+                WinAppDtudo.Services.DarkMessageBox.Show(
                     analise.CriarResumo(),
                     "Análise concluída",
                     MessageBoxButtons.OK,
@@ -540,7 +554,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
                 $"Falhas no cadastro de MyAnime: {resultadoCadastroMyAnime.Falhas}\n\n" +
                 "Deseja continuar e salvar agora os animes da coleção no banco local?";
 
-            var desejaImportarAnimes = MessageBox.Show(
+            var desejaImportarAnimes = WinAppDtudo.Services.DarkMessageBox.Show(
                 resumoMyAnime,
                 "Cadastro de MyAnime concluído",
                 MessageBoxButtons.YesNo,
@@ -552,7 +566,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             if (myAnimesCriados.Count > 0)
             {
                 var ultimoMyAnimeCriado = myAnimesCriados.Last();
-                var abrirDetalhes = MessageBox.Show(
+                var abrirDetalhes = WinAppDtudo.Services.DarkMessageBox.Show(
                     $"Processamento finalizado.\n\nDeseja abrir MyAnimeDetalhes da coleção recém criada: '{ultimoMyAnimeCriado.Titulo}' (ID {ultimoMyAnimeCriado.Id})?",
                     "Abrir detalhes",
                     MessageBoxButtons.YesNo,
@@ -564,7 +578,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 $"Erro ao analisar as estruturas:\n{ex.Message}",
                 "Erro",
                 MessageBoxButtons.OK,
@@ -696,7 +710,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
                 mensagem += $"\n\nLog salvo em:\n{caminhoLog}";
         }
 
-        MessageBox.Show(
+        WinAppDtudo.Services.DarkMessageBox.Show(
             mensagem,
             "Importação MyAnime",
             MessageBoxButtons.OK,

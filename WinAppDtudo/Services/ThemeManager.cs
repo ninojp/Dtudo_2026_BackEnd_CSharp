@@ -1,280 +1,191 @@
-using Microsoft.Win32;
 using WinAppDtudo.Controls;
 
 namespace WinAppDtudo.Services;
 
 /// <summary>
-/// Gerenciador centralizado de temas (Dark Mode / Light Mode).
-/// Detecta automaticamente as preferências do Windows 11 e aplica o tema aos formulários.
+/// Aplica o tema escuro global do WinAppDtudo em formularios, controles e itens criados em runtime.
 /// </summary>
 public static class ThemeManager
 {
-    private static bool _isDarkModeEnabled = false;
+    private static readonly DarkToolStripRenderer ToolStripRenderer = new();
+    private static bool _isDarkModeEnabled = true;
 
-    /// <summary>
-    /// Inicializa o gerenciador de temas e detecta as preferências do Windows 11.
-    /// Deve ser chamado uma única vez no Program.cs durante a inicialização do aplicativo.
-    /// </summary>
     public static void Initialize()
     {
-        _isDarkModeEnabled = IsWindowsDarkModeEnabled();
+        _isDarkModeEnabled = true;
+        ToolStripManager.Renderer = ToolStripRenderer;
     }
 
-    /// <summary>
-    /// Obtém o status atual do Dark Mode.
-    /// </summary>
     public static bool IsDarkModeEnabled => _isDarkModeEnabled;
 
-    /// <summary>
-    /// Detecta se o Windows 11 está configurado para o tema Dark Mode.
-    /// </summary>
-    private static bool IsWindowsDarkModeEnabled()
-    {
-        try
-        {
-            using (RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-            {
-                if (key != null)
-                {
-                    object? value = key.GetValue("AppsUseLightTheme");
-                    if (value != null && int.TryParse(value.ToString(), out int result))
-                    {
-                        // AppsUseLightTheme = 0 significa Dark Mode
-                        // AppsUseLightTheme = 1 significa Light Mode
-                        return result == 0;
-                    }
-                }
-            }
-        }
-        catch
-        {
-            // Em caso de erro ao ler o registro, retorna true (assume Dark Mode como padrão)
-            return true;
-        }
-
-        return true; // Dark Mode como padrão
-    }
-
-    /// <summary>
-    /// Aplica o tema Dark Mode a um formulário e todos os seus componentes filhos.
-    /// </summary>
-    /// <param name="form">O formulário a receber o tema.</param>
     public static void ApplyDarkModeToForm(Form form)
     {
         if (!_isDarkModeEnabled)
             return;
 
-        // Aplicar ao formulário
+        WindowsDarkMode.ApplyTo(form);
         form.BackColor = DarkModeColors.BackgroundColor;
         form.ForeColor = DarkModeColors.TextColor;
+        form.TransparencyKey = Color.Empty;
 
-        // Aplicar recursivamente a todos os controles filhos
+        HookDynamicChildren(form);
         ApplyDarkModeToControls(form.Controls);
     }
 
-    /// <summary>
-    /// Aplica o tema Dark Mode a uma coleção de controles e seus filhos recursivamente.
-    /// </summary>
-    private static void ApplyDarkModeToControls(Control.ControlCollection controls)
-    {
-        foreach (Control control in controls)
-        {
-            ApplyDarkModeToControl(control);
-
-            // Recursivamente aplica aos controles filhos
-            if (control.HasChildren)
-            {
-                ApplyDarkModeToControls(control.Controls);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Aplica o tema Dark Mode a um controle específico baseado em seu tipo.
-    /// </summary>
-    private static void ApplyDarkModeToControl(Control control)
-    {
-        // MenuStrip
-        if (control is MenuStrip menuStrip)
-        {
-            menuStrip.BackColor = DarkModeColors.BackgroundSecondaryColor;
-            menuStrip.ForeColor = DarkModeColors.TextColor;
-            return;
-        }
-
-        // ToolStrip
-        if (control is ToolStrip toolStrip)
-        {
-            toolStrip.BackColor = DarkModeColors.BackgroundSecondaryColor;
-            toolStrip.ForeColor = DarkModeColors.TextColor;
-            return;
-        }
-
-        // StatusStrip
-        if (control is StatusStrip statusStrip)
-        {
-            statusStrip.BackColor = DarkModeColors.BackgroundSecondaryColor;
-            statusStrip.ForeColor = DarkModeColors.TextColor;
-            return;
-        }
-
-        // Panel / GroupBox
-        if (control is Panel or GroupBox)
-        {
-            control.BackColor = DarkModeColors.BackgroundSecondaryColor;
-            control.ForeColor = DarkModeColors.TextColor;
-            return;
-        }
-
-        // TextBox / RichTextBox
-        if (control is TextBox textBox)
-        {
-            textBox.BackColor = DarkModeColors.BackgroundColor;
-            textBox.ForeColor = DarkModeColors.TextColor;
-            textBox.BorderStyle = BorderStyle.FixedSingle;
-            return;
-        }
-
-        if (control is RichTextBox richTextBox)
-        {
-            richTextBox.BackColor = DarkModeColors.BackgroundColor;
-            richTextBox.ForeColor = DarkModeColors.TextColor;
-            richTextBox.BorderStyle = BorderStyle.FixedSingle;
-            return;
-        }
-
-        // ComboBox
-        if (control is ComboBox comboBox)
-        {
-            comboBox.BackColor = DarkModeColors.BackgroundColor;
-            comboBox.ForeColor = DarkModeColors.TextColor;
-            return;
-        }
-
-        // CheckBox / RadioButton
-        if (control is CheckBox or RadioButton)
-        {
-            control.BackColor = DarkModeColors.BackgroundSecondaryColor;
-            control.ForeColor = DarkModeColors.TextColor;
-            return;
-        }
-
-        // Button
-        if (control is Button button)
-        {
-            button.BackColor = DarkModeColors.AccentColor;
-            button.ForeColor = Color.White;
-            button.FlatStyle = FlatStyle.Flat;
-            button.FlatAppearance.BorderColor = DarkModeColors.BorderColor;
-            button.FlatAppearance.MouseOverBackColor = DarkModeColors.SelectionColor;
-            button.FlatAppearance.MouseDownBackColor = DarkModeColors.SelectionColor;
-            if (button.Font.Size < 9.5F)
-            {
-                button.Font = new Font(button.Font.FontFamily, 9.5F, FontStyle.Bold);
-            }
-            return;
-        }
-
-        // Label
-        if (control is Label)
-        {
-            control.BackColor = DarkModeColors.BackgroundSecondaryColor;
-            control.ForeColor = DarkModeColors.TextColor;
-            return;
-        }
-
-        // ListBox
-        if (control is ListBox listBox)
-        {
-            listBox.BackColor = DarkModeColors.BackgroundColor;
-            listBox.ForeColor = DarkModeColors.TextColor;
-            return;
-        }
-
-        // DataGridView
-        if (control is DataGridView dataGridView)
-        {
-            ApplyDarkModeToDataGridView(dataGridView);
-            return;
-        }
-
-        // TabControl
-        if (control is TabControl tabControl)
-        {
-            tabControl.BackColor = DarkModeColors.BackgroundSecondaryColor;
-            tabControl.ForeColor = DarkModeColors.TextColor;
-            foreach (TabPage tabPage in tabControl.TabPages)
-            {
-                tabPage.BackColor = DarkModeColors.BackgroundColor;
-                tabPage.ForeColor = DarkModeColors.TextColor;
-            }
-            return;
-        }
-
-        // Para controles genéricos
-        control.BackColor = DarkModeColors.BackgroundSecondaryColor;
-        control.ForeColor = DarkModeColors.TextColor;
-    }
-
-    /// <summary>
-    /// Aplica o tema Dark Mode específico para DataGridView.
-    /// </summary>
-    private static void ApplyDarkModeToDataGridView(DataGridView dgv)
-    {
-        dgv.BackgroundColor = DarkModeColors.BackgroundColor;
-        dgv.ForeColor = DarkModeColors.TextColor;
-        dgv.GridColor = DarkModeColors.BorderColor;
-        dgv.DefaultCellStyle.BackColor = DarkModeColors.BackgroundColor;
-        dgv.DefaultCellStyle.ForeColor = DarkModeColors.TextColor;
-        dgv.DefaultCellStyle.SelectionBackColor = DarkModeColors.SelectionColor;
-        dgv.DefaultCellStyle.SelectionForeColor = Color.White;
-        dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
-
-        // Cabeçalho das colunas
-        dgv.ColumnHeadersDefaultCellStyle.BackColor = DarkModeColors.BackgroundSecondaryColor;
-        dgv.ColumnHeadersDefaultCellStyle.ForeColor = DarkModeColors.TextColor;
-        dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = DarkModeColors.SelectionColor;
-
-        // Cabeçalho das linhas
-        dgv.RowHeadersDefaultCellStyle.BackColor = DarkModeColors.BackgroundSecondaryColor;
-        dgv.RowHeadersDefaultCellStyle.ForeColor = DarkModeColors.TextColor;
-        dgv.RowHeadersDefaultCellStyle.SelectionBackColor = DarkModeColors.SelectionColor;
-
-        dgv.EnableHeadersVisualStyles = false;
-    }
-
-    /// <summary>
-    /// Aplica o tema Dark Mode a um UserControl específico.
-    /// </summary>
-    /// <param name="userControl">O UserControl a receber o tema.</param>
     public static void ApplyDarkModeToUserControl(UserControl userControl)
     {
         if (!_isDarkModeEnabled)
             return;
 
-        userControl.BackColor = DarkModeColors.BackgroundSecondaryColor;
+        WindowsDarkMode.ApplyTo(userControl);
+        userControl.BackColor = DarkModeColors.BackgroundColor;
         userControl.ForeColor = DarkModeColors.TextColor;
-
-        if (userControl.HasChildren)
-        {
-            ApplyDarkModeToControls(userControl.Controls);
-        }
+        HookDynamicChildren(userControl);
+        ApplyDarkModeToControls(userControl.Controls);
     }
 
-    /// <summary>
-    /// Obtém a cor apropriada para o tema atual.
-    /// </summary>
-    /// <param name="colorType">Tipo de cor desejada.</param>
+    public static void ApplyDarkModeToControl(Control control)
+    {
+        if (!_isDarkModeEnabled || control.IsDisposed)
+            return;
+
+        WindowsDarkMode.ApplyTo(control);
+        HookDynamicChildren(control);
+
+        switch (control)
+        {
+            case MenuStrip menuStrip:
+                ApplyDarkModeToToolStrip(menuStrip);
+                return;
+
+            case ContextMenuStrip contextMenuStrip:
+                ApplyDarkModeToContextMenuStrip(contextMenuStrip);
+                return;
+
+            case StatusStrip statusStrip:
+                ApplyDarkModeToToolStrip(statusStrip);
+                return;
+
+            case ToolStrip toolStrip:
+                ApplyDarkModeToToolStrip(toolStrip);
+                return;
+
+            case DarkTabControl darkTabControl:
+                ApplyDarkModeToTabControl(darkTabControl);
+                return;
+
+            case TabControl tabControl:
+                ApplyDarkModeToTabControl(tabControl);
+                return;
+
+            case TabPage tabPage:
+                ApplyDarkModeToTabPage(tabPage);
+                return;
+
+            case DataGridView dataGridView:
+                ApplyDarkModeToDataGridView(dataGridView);
+                return;
+
+            case TextBox textBox:
+                ApplyTextBox(textBox);
+                return;
+
+            case RichTextBox richTextBox:
+                ApplyRichTextBox(richTextBox);
+                return;
+
+            case ComboBox comboBox:
+                ApplyComboBox(comboBox);
+                return;
+
+            case Button button:
+                ApplyButton(button);
+                return;
+
+            case LinkLabel linkLabel:
+                ApplyLinkLabel(linkLabel);
+                return;
+
+            case Label label:
+                ApplyLabel(label);
+                return;
+
+            case ListBox listBox:
+                listBox.BackColor = DarkModeColors.BackgroundColor;
+                listBox.ForeColor = DarkModeColors.TextColor;
+                listBox.BorderStyle = BorderStyle.FixedSingle;
+                return;
+
+            case ListView listView:
+                listView.BackColor = DarkModeColors.BackgroundColor;
+                listView.ForeColor = DarkModeColors.TextColor;
+                listView.BorderStyle = BorderStyle.FixedSingle;
+                return;
+
+            case TreeView treeView:
+                treeView.BackColor = DarkModeColors.BackgroundColor;
+                treeView.ForeColor = DarkModeColors.TextColor;
+                treeView.LineColor = DarkModeColors.BorderColor;
+                return;
+
+            case PictureBox pictureBox:
+                ApplyPictureBox(pictureBox);
+                return;
+
+            case CheckBox or RadioButton:
+                control.BackColor = Color.Transparent;
+                control.ForeColor = DarkModeColors.TextColor;
+                return;
+
+            case Panel or FlowLayoutPanel or TableLayoutPanel:
+                control.BackColor = DarkModeColors.BackgroundColor;
+                control.ForeColor = DarkModeColors.TextColor;
+                return;
+
+            case GroupBox:
+                control.BackColor = DarkModeColors.BackgroundColor;
+                control.ForeColor = DarkModeColors.TextColor;
+                return;
+        }
+
+        control.BackColor = DarkModeColors.BackgroundColor;
+        control.ForeColor = DarkModeColors.TextColor;
+    }
+
+    public static void ApplyDarkModeToTabPage(TabPage tabPage)
+    {
+        tabPage.UseVisualStyleBackColor = false;
+        tabPage.BackColor = DarkModeColors.ActiveTabBackgroundColor;
+        tabPage.ForeColor = DarkModeColors.TextColor;
+        HookDynamicChildren(tabPage);
+        ApplyDarkModeToControls(tabPage.Controls);
+        ApplyActiveTabSurfaceToContent(tabPage);
+    }
+
+    public static void ApplyDarkModeToContextMenuStrip(ContextMenuStrip contextMenuStrip)
+    {
+        contextMenuStrip.Renderer = ToolStripRenderer;
+        contextMenuStrip.BackColor = DarkModeColors.BackgroundSecondaryColor;
+        contextMenuStrip.ForeColor = DarkModeColors.TextColor;
+        ApplyDarkModeToToolStripItems(contextMenuStrip.Items);
+    }
+
     public static Color GetThemeColor(ThemeColorType colorType)
     {
         return colorType switch
         {
             ThemeColorType.Background => DarkModeColors.BackgroundColor,
+            ThemeColorType.Surface => DarkModeColors.SurfaceColor,
             ThemeColorType.BackgroundSecondary => DarkModeColors.BackgroundSecondaryColor,
+            ThemeColorType.Elevated => DarkModeColors.ElevatedColor,
             ThemeColorType.Text => DarkModeColors.TextColor,
             ThemeColorType.TextSecondary => DarkModeColors.TextSecondaryColor,
             ThemeColorType.Border => DarkModeColors.BorderColor,
+            ThemeColorType.ActiveBorder => DarkModeColors.ActiveBorderColor,
             ThemeColorType.Accent => DarkModeColors.AccentColor,
+            ThemeColorType.Hover => DarkModeColors.HoverColor,
+            ThemeColorType.Selection => DarkModeColors.SelectionColor,
+            ThemeColorType.Disabled => DarkModeColors.DisabledColor,
             ThemeColorType.Success => DarkModeColors.SuccessColor,
             ThemeColorType.Error => DarkModeColors.ErrorColor,
             ThemeColorType.Warning => DarkModeColors.WarningColor,
@@ -282,19 +193,225 @@ public static class ThemeManager
             _ => DarkModeColors.TextColor,
         };
     }
+
+    private static void ApplyDarkModeToControls(Control.ControlCollection controls)
+    {
+        foreach (Control control in controls)
+        {
+            ApplyDarkModeToControl(control);
+
+            if (control.HasChildren)
+                ApplyDarkModeToControls(control.Controls);
+        }
+    }
+
+    private static void ApplyDarkModeToTabControl(TabControl tabControl)
+    {
+        tabControl.BackColor = DarkModeColors.BackgroundColor;
+        tabControl.ForeColor = DarkModeColors.TextColor;
+        tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
+
+        if (tabControl is not DarkTabControl)
+        {
+            tabControl.DrawItem -= DrawDarkTabItem;
+            tabControl.DrawItem += DrawDarkTabItem;
+        }
+
+        foreach (TabPage tabPage in tabControl.TabPages)
+            ApplyDarkModeToTabPage(tabPage);
+    }
+
+    private static void DrawDarkTabItem(object? sender, DrawItemEventArgs e)
+    {
+        if (sender is not TabControl tabControl || e.Index < 0 || e.Index >= tabControl.TabPages.Count)
+            return;
+
+        var tabPage = tabControl.TabPages[e.Index];
+        var tabRect = tabControl.GetTabRect(e.Index);
+        var selected = e.Index == tabControl.SelectedIndex;
+
+        using var brush = new SolidBrush(selected ? DarkModeColors.ActiveTabBackgroundColor : DarkModeColors.BackgroundSecondaryColor);
+        e.Graphics.FillRectangle(brush, tabRect);
+
+        TextRenderer.DrawText(
+            e.Graphics,
+            tabPage.Text,
+            tabControl.Font,
+            Rectangle.Inflate(tabRect, -8, -4),
+            selected ? DarkModeColors.TextColor : DarkModeColors.InactiveTabTextColor,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+
+        using var pen = new Pen(selected ? DarkModeColors.ActiveBorderColor : DarkModeColors.BorderColor);
+        e.Graphics.DrawRectangle(pen, tabRect.X, tabRect.Y, tabRect.Width - 1, tabRect.Height - 1);
+    }
+
+    private static void ApplyDarkModeToToolStrip(ToolStrip toolStrip)
+    {
+        toolStrip.Renderer = ToolStripRenderer;
+        toolStrip.BackColor = DarkModeColors.BackgroundSecondaryColor;
+        toolStrip.ForeColor = DarkModeColors.TextColor;
+        ApplyDarkModeToToolStripItems(toolStrip.Items);
+    }
+
+    private static void ApplyDarkModeToToolStripItems(ToolStripItemCollection items)
+    {
+        foreach (ToolStripItem item in items)
+        {
+            item.BackColor = DarkModeColors.BackgroundSecondaryColor;
+            item.ForeColor = item.Enabled ? DarkModeColors.TextColor : DarkModeColors.DisabledTextColor;
+
+            if (item is ToolStripMenuItem menuItem)
+            {
+                menuItem.DropDown.BackColor = DarkModeColors.BackgroundSecondaryColor;
+                menuItem.DropDown.ForeColor = DarkModeColors.TextColor;
+                menuItem.DropDown.Renderer = ToolStripRenderer;
+                ApplyDarkModeToToolStripItems(menuItem.DropDownItems);
+            }
+        }
+    }
+
+    private static void ApplyTextBox(TextBox textBox)
+    {
+        textBox.BackColor = DarkModeColors.SurfaceColor;
+        textBox.ForeColor = DarkModeColors.TextColor;
+        textBox.BorderStyle = BorderStyle.FixedSingle;
+    }
+
+    private static void ApplyRichTextBox(RichTextBox richTextBox)
+    {
+        richTextBox.BackColor = DarkModeColors.SurfaceColor;
+        richTextBox.ForeColor = DarkModeColors.TextColor;
+        richTextBox.BorderStyle = BorderStyle.FixedSingle;
+    }
+
+    private static void ApplyComboBox(ComboBox comboBox)
+    {
+        comboBox.BackColor = DarkModeColors.SurfaceColor;
+        comboBox.ForeColor = DarkModeColors.TextColor;
+        comboBox.FlatStyle = FlatStyle.Flat;
+    }
+
+    private static void ApplyButton(Button button)
+    {
+        var isImageOnly = string.IsNullOrWhiteSpace(button.Text)
+            && (button.Image is not null || button.BackgroundImage is not null);
+
+        button.FlatStyle = FlatStyle.Flat;
+        button.FlatAppearance.BorderColor = isImageOnly ? DarkModeColors.BackgroundColor : DarkModeColors.ActiveBorderColor;
+        button.FlatAppearance.MouseOverBackColor = DarkModeColors.HoverColor;
+        button.FlatAppearance.MouseDownBackColor = DarkModeColors.SelectionColor;
+        button.UseVisualStyleBackColor = false;
+        button.ForeColor = Color.White;
+        button.ImageAlign = ContentAlignment.MiddleLeft;
+        button.TextImageRelation = TextImageRelation.ImageBeforeText;
+        button.BackColor = isImageOnly ? Color.Transparent : DarkModeColors.AccentColor;
+    }
+
+    private static void ApplyLabel(Label label)
+    {
+        label.BackColor = Color.Transparent;
+        label.ForeColor = label.Enabled ? DarkModeColors.TextColor : DarkModeColors.DisabledTextColor;
+    }
+
+    private static void ApplyLinkLabel(LinkLabel linkLabel)
+    {
+        linkLabel.BackColor = Color.Transparent;
+        linkLabel.ForeColor = DarkModeColors.TextColor;
+        linkLabel.LinkColor = DarkModeColors.TextColor;
+        linkLabel.ActiveLinkColor = DarkModeColors.SelectionColor;
+        linkLabel.VisitedLinkColor = DarkModeColors.TextSecondaryColor;
+    }
+
+    private static void ApplyPictureBox(PictureBox pictureBox)
+    {
+        pictureBox.BackColor = Color.Transparent;
+        pictureBox.ForeColor = DarkModeColors.TextColor;
+    }
+
+    private static void ApplyDarkModeToDataGridView(DataGridView dgv)
+    {
+        dgv.BackgroundColor = DarkModeColors.BackgroundColor;
+        dgv.BackColor = DarkModeColors.BackgroundColor;
+        dgv.ForeColor = DarkModeColors.TextColor;
+        dgv.GridColor = DarkModeColors.BorderColor;
+        dgv.BorderStyle = BorderStyle.FixedSingle;
+        dgv.EnableHeadersVisualStyles = false;
+
+        dgv.DefaultCellStyle.BackColor = DarkModeColors.SurfaceColor;
+        dgv.DefaultCellStyle.ForeColor = DarkModeColors.TextColor;
+        dgv.DefaultCellStyle.SelectionBackColor = DarkModeColors.SelectionColor;
+        dgv.DefaultCellStyle.SelectionForeColor = Color.Black;
+        dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
+
+        dgv.AlternatingRowsDefaultCellStyle.BackColor = DarkModeColors.BackgroundSecondaryColor;
+        dgv.AlternatingRowsDefaultCellStyle.ForeColor = DarkModeColors.TextColor;
+        dgv.AlternatingRowsDefaultCellStyle.SelectionBackColor = DarkModeColors.SelectionColor;
+        dgv.AlternatingRowsDefaultCellStyle.SelectionForeColor = Color.Black;
+
+        dgv.ColumnHeadersDefaultCellStyle.BackColor = DarkModeColors.ElevatedColor;
+        dgv.ColumnHeadersDefaultCellStyle.ForeColor = DarkModeColors.TextColor;
+        dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = DarkModeColors.HoverColor;
+        dgv.ColumnHeadersDefaultCellStyle.SelectionForeColor = DarkModeColors.TextColor;
+
+        dgv.RowHeadersDefaultCellStyle.BackColor = DarkModeColors.ElevatedColor;
+        dgv.RowHeadersDefaultCellStyle.ForeColor = DarkModeColors.TextColor;
+        dgv.RowHeadersDefaultCellStyle.SelectionBackColor = DarkModeColors.HoverColor;
+        dgv.RowHeadersDefaultCellStyle.SelectionForeColor = DarkModeColors.TextColor;
+    }
+
+    private static void ApplyActiveTabSurfaceToContent(Control parent)
+    {
+        foreach (Control control in parent.Controls)
+        {
+            if (ShouldUseActiveTabSurface(control))
+                control.BackColor = DarkModeColors.ActiveTabBackgroundColor;
+
+            if (control.HasChildren)
+                ApplyActiveTabSurfaceToContent(control);
+        }
+    }
+
+    private static bool ShouldUseActiveTabSurface(Control control)
+    {
+        return control is UserControl
+            or Panel
+            or FlowLayoutPanel
+            or TableLayoutPanel
+            or GroupBox;
+    }
+
+    private static void HookDynamicChildren(Control control)
+    {
+        control.ControlAdded -= ControlAdded;
+        control.ControlAdded += ControlAdded;
+    }
+
+    private static void ControlAdded(object? sender, ControlEventArgs e)
+    {
+        if (e.Control is null)
+            return;
+
+        ApplyDarkModeToControl(e.Control);
+
+        if (e.Control.HasChildren)
+            ApplyDarkModeToControls(e.Control.Controls);
+    }
 }
 
-/// <summary>
-/// Define os tipos de cores disponíveis no tema.
-/// </summary>
 public enum ThemeColorType
 {
     Background,
+    Surface,
     BackgroundSecondary,
+    Elevated,
     Text,
     TextSecondary,
     Border,
+    ActiveBorder,
     Accent,
+    Hover,
+    Selection,
+    Disabled,
     Success,
     Error,
     Warning,

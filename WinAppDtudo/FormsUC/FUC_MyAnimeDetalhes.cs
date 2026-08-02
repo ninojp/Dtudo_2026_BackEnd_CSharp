@@ -37,7 +37,7 @@ public class FUC_MyAnimeDetalhes : UserControl
             RowCount = 3,
             BackColor = Color.Black
         };
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 138F));
+        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 200F));
         tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
 
@@ -54,13 +54,13 @@ public class FUC_MyAnimeDetalhes : UserControl
             Font = new Font("Segoe UI Black", 18F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Text = "MyAnime",
-            Location = new Point(100, 10)
+            Location = new Point(100, 20)
         };
 
         _lblResumo = new Label
         {
             AutoSize = true,
-            Font = new Font("Segoe UI", 12F, FontStyle.Regular),
+            Font = new Font("Segoe UI", 13F, FontStyle.Regular),
             ForeColor = Color.Goldenrod,
             Text = "",
             Location = new Point(140, 90)
@@ -69,11 +69,12 @@ public class FUC_MyAnimeDetalhes : UserControl
         _lblMyAnimeId = new Label
         {
             AutoSize = false,
+            Font = new Font("Segoe UI", 12F, FontStyle.Regular),
             ForeColor = Color.Gold,
             BackColor = Color.Black,
             Text = "MyAnime ID:",
-            Location = new Point(1280, 76),
-            Size = new Size(160, 22),
+            Location = new Point(1150, 90),
+            Size = new Size(200, 40),
             TextAlign = ContentAlignment.MiddleLeft,
             Cursor = Cursors.Hand
         };
@@ -81,9 +82,10 @@ public class FUC_MyAnimeDetalhes : UserControl
         _txtMyAnimeId = new TextBox
         {
             ReadOnly = true,
-            Width = 160,
-            Height = 26,
-            Location = new Point(1280, 102),
+            Width = 130,
+            Height = 30,
+            Location = new Point(1360, 90),
+            Font = new Font("Segoe UI Black", 13F, FontStyle.Bold),
             Text = _myAnimeId.ToString(),
             BorderStyle = BorderStyle.FixedSingle,
             BackColor = DarkModeColors.BackgroundSecondaryColor,
@@ -93,18 +95,18 @@ public class FUC_MyAnimeDetalhes : UserControl
 
         _btnSalvarEstrutura = new Button
         {
-            Text = "💾 Salvar Estrutura em Disco",
-            Width = 300,
-            Height = 50,
-            Location = new Point(700, 80)
+            Text = "💾 Salvar em Disco",
+            Width = 350,
+            Height = 65,
+            Location = new Point(700, 90)
         };
 
         _btnEditarMyAnime = new Button
         {
             Text = "Editar MyAnime",
-            Width = 250,
-            Height = 50,
-            Location = new Point(1015, 80)
+            Width = 300,
+            Height = 65,
+            Location = new Point(1600, 90)
         };
 
         pnlTopo.Controls.Add(_lblTitulo);
@@ -160,7 +162,7 @@ public class FUC_MyAnimeDetalhes : UserControl
             if (_myAnimeAtual is null)
             {
                 _lblStatus.Text = "❌ MyAnime não encontrado.";
-                MessageBox.Show($"MyAnime ID {_myAnimeId} não encontrado na ApiMyAnimes.",
+                WinAppDtudo.Services.DarkMessageBox.Show($"MyAnime ID {_myAnimeId} não encontrado na ApiMyAnimes.",
                     "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -203,7 +205,7 @@ public class FUC_MyAnimeDetalhes : UserControl
         catch (HttpRequestException ex)
         {
             _lblStatus.Text = "❌ Erro de conexão com ApiMyAnimes.";
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 $"Falha ao consultar ApiMyAnimes em:\n{ApiMyAnimesService.ApiBase}\n\nDetalhes: {ex.Message}",
                 "Erro de Conexão",
                 MessageBoxButtons.OK,
@@ -212,7 +214,7 @@ public class FUC_MyAnimeDetalhes : UserControl
         catch (Exception ex)
         {
             _lblStatus.Text = "❌ Erro ao carregar detalhes.";
-            MessageBox.Show($"Erro ao carregar detalhes do MyAnime:\n\n{ex.Message}",
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao carregar detalhes do MyAnime:\n\n{ex.Message}",
                 "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
@@ -237,7 +239,7 @@ public class FUC_MyAnimeDetalhes : UserControl
         catch (Exception ex)
         {
             _lblStatus.Text = "Nao foi possivel copiar o MyAnime ID.";
-            MessageBox.Show($"Falha ao copiar para a area de transferencia:\n\n{ex.Message}",
+            WinAppDtudo.Services.DarkMessageBox.Show($"Falha ao copiar para a area de transferencia:\n\n{ex.Message}",
                 "Clipboard indisponivel", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }
@@ -276,7 +278,7 @@ public class FUC_MyAnimeDetalhes : UserControl
     {
         if (_myAnimeAtual is null || _animesAtuais.Count == 0)
         {
-            MessageBox.Show("Não há dados carregados para exportar.", "Aviso",
+            WinAppDtudo.Services.DarkMessageBox.Show("Não há dados carregados para exportar.", "Aviso",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
@@ -294,7 +296,7 @@ public class FUC_MyAnimeDetalhes : UserControl
         var pastaRaiz = CriadorDeEstruturas.ObterCaminhoPastaRaiz(_myAnimeAtual, dialog.SelectedPath);
         if (Directory.Exists(pastaRaiz))
         {
-            MessageBox.Show(
+            WinAppDtudo.Services.DarkMessageBox.Show(
                 $"A pasta já existe e não será sobrescrita:\n\n{pastaRaiz}",
                 "Exportação interrompida",
                 MessageBoxButtons.OK,
@@ -322,14 +324,14 @@ public class FUC_MyAnimeDetalhes : UserControl
                 mensagem += $"\n\nOcorrências ({resultado.Erros.Count}):\n- " + string.Join("\n- ", resultado.Erros.Take(5));
             }
 
-            MessageBox.Show(mensagem, "Exportação concluída",
+            WinAppDtudo.Services.DarkMessageBox.Show(mensagem, "Exportação concluída",
                 MessageBoxButtons.OK,
                 resultado.Erros.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
             _lblStatus.Text = "❌ Erro ao criar estrutura em disco.";
-            MessageBox.Show($"Falha ao criar estrutura:\n\n{ex.Message}",
+            WinAppDtudo.Services.DarkMessageBox.Show($"Falha ao criar estrutura:\n\n{ex.Message}",
                 "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally

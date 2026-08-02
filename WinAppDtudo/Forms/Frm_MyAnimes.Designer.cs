@@ -42,7 +42,7 @@ partial class Frm_MyAnimes
         MnI_DBLocalBuscarAnime = new ToolStripMenuItem();
         MnI_ApiMyAnimeListBuscarNome = new ToolStripMenuItem();
         Mnu_AnalizarEstruturas = new ToolStripMenuItem();
-        Tbc_MyAnimes = new TabControl();
+        Tbc_MyAnimes = new WinAppDtudo.Controls.DarkTabControl();
         Iml_ImagensList = new ImageList(components);
         Mnu_MenuMyAnimes.SuspendLayout();
         SuspendLayout();
@@ -172,7 +172,6 @@ partial class Frm_MyAnimes
         Tbc_MyAnimes.Size = new Size(997, 632);
         Tbc_MyAnimes.SizeMode = TabSizeMode.Fixed;
         Tbc_MyAnimes.TabIndex = 1;
-        Tbc_MyAnimes.DrawItem += Tbc_MyAnimes_DrawItem;
         Tbc_MyAnimes.MouseDown += Tbc_MyAnimes_MouseDown;
         // 
         // Iml_ImagensList
@@ -218,7 +217,7 @@ partial class Frm_MyAnimes
 
     private MenuStrip Mnu_MenuMyAnimes;
     private ToolStripMenuItem MnI_DBLocalBuscarAnime;
-    private TabControl Tbc_MyAnimes;
+    private WinAppDtudo.Controls.DarkTabControl Tbc_MyAnimes;
     private ImageList Iml_ImagensList;
     private ToolStripMenuItem Mnu_MenuAbas;
     private ToolStripMenuItem MnI_AbrirAbas;

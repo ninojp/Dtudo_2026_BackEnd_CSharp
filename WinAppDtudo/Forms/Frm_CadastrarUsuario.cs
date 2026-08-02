@@ -27,7 +27,7 @@ public partial class Frm_CadastrarUsuario : Form
 
         if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(senha))
         {
-            MessageBox.Show("Informe login e senha.", "Cadastro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            WinAppDtudo.Services.DarkMessageBox.Show("Informe login e senha.", "Cadastro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -37,17 +37,17 @@ public partial class Frm_CadastrarUsuario : Form
             var response = await _authApiService.RegisterAsync(login, login, senha);
             if (response.Success)
             {
-                MessageBox.Show("Usuario cadastrado com sucesso.", "Cadastro", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                WinAppDtudo.Services.DarkMessageBox.Show("Usuario cadastrado com sucesso.", "Cadastro", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Close();
             }
             else
             {
-                MessageBox.Show(response.Message ?? "Nao foi possivel cadastrar o usuario.", "Cadastro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                WinAppDtudo.Services.DarkMessageBox.Show(response.Message ?? "Nao foi possivel cadastrar o usuario.", "Cadastro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         catch (HttpRequestException ex)
         {
-            MessageBox.Show($"Nao foi possivel conectar a ApiMyAnimes em {AppConfigurationService.ApiMyAnimesBaseUrl}.\n\n{ex.Message}", "Erro de conexao", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            WinAppDtudo.Services.DarkMessageBox.Show($"Nao foi possivel conectar a ApiMyAnimes em {AppConfigurationService.ApiMyAnimesBaseUrl}.\n\n{ex.Message}", "Erro de conexao", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {

@@ -13,6 +13,7 @@ internal static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
+        Application.SetColorMode(SystemColorMode.Dark);
 
         // Inicializa o gerenciador de temas (detecta Dark Mode do Windows 11)
         ThemeManager.Initialize();

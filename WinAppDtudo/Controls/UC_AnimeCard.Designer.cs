@@ -95,7 +95,7 @@ partial class UC_AnimeCard
         Controls.Add(Lbl_Info);
         Cursor = Cursors.Hand;
         ForeColor = Color.Gold;
-        Margin = new Padding(4, 3, 4, 3);
+        Margin = new Padding(15);
         Name = "UC_AnimeCard";
         Size = new Size(341, 525);
         ((System.ComponentModel.ISupportInitialize)Pbx_Capa).EndInit();
