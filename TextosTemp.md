@@ -1,4 +1,5 @@
-PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA.
+# PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA
+
 EU CRIEI TODOS OS PROJETOS, ME PERGUNTE SE PRECISAR DE ALGUMA INFORMAÇÃO SOBRE ALGUM PROJETO.
 
 Abaixo vou descrever minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "Dtudo2026" e seus projetos internos relacionados
@@ -11,12 +12,12 @@ O projeto ApiNode (deve ser ignorado) está sendo gradativamente sendo substitu�
 
 Projeto LibDtudo.Shared - Biblioteca para compartilhar Dtos, Modelos, Utils... entre os projetos dentro da solução Dtudo2026.
 
-Projeto ApiMyAnimes - Api Local MyAnimes (CRUD completo, documentada com Swagger) - https://localhost:63980
+Projeto ApiMyAnimes - Api Local MyAnimes (CRUD completo, documentada com Swagger) - <https://localhost:63980>
 Esta é uma Api Local que manipula Meu Banco de dados, Relacional (SQL Server) que contém minhas coleções, MyAnimes e seus Animes relacionados.  
 (/apiLocal/MyAnime) MyAnime (tabela_db) representa as coleções nomeadas MyAnime por titulo e uma lista de IDs de animes relacionados.
 (/apiLocal/Anime) Anime (tabela_db) contém informações detalhadas sobre cada anime.
 
-Projeto ApiMyAnimeList - Api local ApiMyAnimeList - https://localhost:7146
+Projeto ApiMyAnimeList - Api local ApiMyAnimeList - <https://localhost:7146>
 Esta é uma Api de consulta à API externa, Oficial MyAnimeList. Fornece endpoints para buscar (por nome ou ID) informações detalhadas sobre animes e seus relacionamentos.
 GET/ApiMyAnimeList/search  
 End-Point da minha Api Local que faz uma busca na Api externa ApiMyAnimeList, por nome do anime.
@@ -28,21 +29,15 @@ Busca os animes relacionados a um anime específico pelo ID do MyAnimeList. Util
 Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação de dados (Lê e grava no DB_Local e em disco local, pastas e arquivos).
 
 -------------------------------------------------------------------------------------------------------------------------------------
+
 O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
 
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\  
-Na aba DBLocal, após fazermos uma busca na base local, os resultados são exibidos em Cards, mas ESTOU TOTALMENTE INSATISFEITO com os resultados das buscas. Retorna muita COISA, mais de 500 resultados quase sempre (deve retornar no MAXIMO 100 resultados). Tem certos animes que estão sempre retornando em qualquer pesquisa (por exemplo, A Kite, A-Channel, A.I.C.O.,A-Channel: +A-Channel...)
-E agora descobri, MAIS UM ERRO GRAVE (não encontrou o anime "Sleazy Family", que já está cadastrado).
-JÁ É A TERCEIRA VEZ QUE PEÇO PARA CONSERTAR ERROS DE BUSCA, E AINDA NÃO FOI RESOLVIDO. VOU PEDIR NOVAMENTE:
-Quero uma implementação, modularizada, sem arquivos únicos muito extensos, REALMENTE COMPLETA, PROFISSIONAL, ROBUSTA, QUE COMTEMPLE TODOS OS CASOS POSSÍVEIS, com todos os detalhes necessários.  
-Me pergunte se precisar de mais informações sobre o que já existe, ou se precisar de detalhes sobre o que deve ser implementado.
-No meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite\ também existe uma aba de busca, que faz a mesma busca que a aba DBLocal do WinAppDtudo, mas com resultados diferentes (menos resultados).
-
-ef - a tale of melodies.
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
+No meu form inicial, 
 
 ===================================================================================================
 
-Documentação official da api MyAnimeList:  https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters  
+Documentação official da api MyAnimeList:  <https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters>  
 
 09/07/2026 NUMEROS DEPOIS DE POPULAR O DB LOCAL
 SQL Server, new query:

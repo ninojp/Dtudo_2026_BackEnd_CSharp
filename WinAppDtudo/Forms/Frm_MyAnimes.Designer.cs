@@ -56,7 +56,7 @@ partial class Frm_MyAnimes
         Mnu_MenuMyAnimes.Name = "Mnu_MenuMyAnimes";
         Mnu_MenuMyAnimes.Padding = new Padding(7, 2, 0, 2);
         Mnu_MenuMyAnimes.RenderMode = ToolStripRenderMode.Professional;
-        Mnu_MenuMyAnimes.Size = new Size(997, 40);
+        Mnu_MenuMyAnimes.Size = new Size(1080, 40);
         Mnu_MenuMyAnimes.TabIndex = 0;
         Mnu_MenuMyAnimes.Text = "menuMyAnimes";
         // 
@@ -161,6 +161,7 @@ partial class Frm_MyAnimes
         Tbc_MyAnimes.Dock = DockStyle.Fill;
         Tbc_MyAnimes.DrawMode = TabDrawMode.OwnerDrawFixed;
         Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 9.3F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        Tbc_MyAnimes.ForeColor = Color.Gold;
         Tbc_MyAnimes.ImageList = Iml_ImagensList;
         Tbc_MyAnimes.ImeMode = ImeMode.On;
         Tbc_MyAnimes.ItemSize = new Size(200, 50);
@@ -169,7 +170,7 @@ partial class Frm_MyAnimes
         Tbc_MyAnimes.Name = "Tbc_MyAnimes";
         Tbc_MyAnimes.Padding = new Point(10, 6);
         Tbc_MyAnimes.SelectedIndex = 0;
-        Tbc_MyAnimes.Size = new Size(997, 632);
+        Tbc_MyAnimes.Size = new Size(1080, 580);
         Tbc_MyAnimes.SizeMode = TabSizeMode.Fixed;
         Tbc_MyAnimes.TabIndex = 1;
         Tbc_MyAnimes.MouseDown += Tbc_MyAnimes_MouseDown;
@@ -194,7 +195,7 @@ partial class Frm_MyAnimes
         BackColor = SystemColors.Desktop;
         BackgroundImage = Properties.Resources.AnimesElas;
         BackgroundImageLayout = ImageLayout.Stretch;
-        ClientSize = new Size(997, 672);
+        ClientSize = new Size(1080, 620);
         Controls.Add(Tbc_MyAnimes);
         Controls.Add(Mnu_MenuMyAnimes);
         DoubleBuffered = true;

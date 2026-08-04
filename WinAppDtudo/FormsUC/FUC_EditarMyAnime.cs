@@ -7,6 +7,7 @@ namespace WinAppDtudo.FormsUC;
 public sealed class FUC_EditarMyAnime : UserControl
 {
     public event EventHandler<MyAnimeEditSavedEventArgs>? MyAnimeSalvo;
+    public event EventHandler<MyAnimeRemovedEventArgs>? MyAnimeRemovido;
 
     private readonly ApiMyAnimesService _apiMyAnimesService = new();
     private readonly MyAnimeEditFieldSet _fields = new();
@@ -18,6 +19,7 @@ public sealed class FUC_EditarMyAnime : UserControl
     private Panel _pnlEditor = null!;
     private Button _btnSalvar = null!;
     private Button _btnRecarregar = null!;
+    private Button _btnRemover = null!;
 
     private ObterMyAnimeDto? _myAnimeAtual;
     private bool _hasChanges;
@@ -29,6 +31,7 @@ public sealed class FUC_EditarMyAnime : UserControl
         _fields.Changed += (_, _) => SetDirty(true);
         Load += async (_, _) => await CarregarAsync(confirmarPerdaAlteracoes: false);
         ThemeManager.ApplyDarkModeToUserControl(this);
+        AplicarEstiloBotaoRemover(_btnRemover);
     }
 
     private void InitializeLayout()
@@ -88,23 +91,26 @@ public sealed class FUC_EditarMyAnime : UserControl
         };
 
         _btnSalvar = CreateButton("Salvar MyAnime", 52);
-        _btnSalvar.Dock = DockStyle.Top;
         _btnSalvar.Click += async (_, _) => await SalvarAsync();
 
-        var spacer = new Panel
+        _btnRecarregar = CreateButton("Recarregar", 46);
+        _btnRecarregar.Click += async (_, _) => await CarregarAsync(confirmarPerdaAlteracoes: true);
+
+        _btnRemover = CreateButton("Remover MyAnime", 46);
+        _btnRemover.Click += async (_, _) => await RemoverAsync();
+
+        var actionsPanel = new Panel
         {
             Dock = DockStyle.Top,
-            Height = 12,
+            Height = 168,
             BackColor = DarkModeColors.BackgroundSecondaryColor
         };
 
-        _btnRecarregar = CreateButton("Recarregar", 46);
-        _btnRecarregar.Dock = DockStyle.Top;
-        _btnRecarregar.Click += async (_, _) => await CarregarAsync(confirmarPerdaAlteracoes: true);
-
-        leftPanel.Controls.Add(_btnRecarregar);
-        leftPanel.Controls.Add(spacer);
-        leftPanel.Controls.Add(_btnSalvar);
+        actionsPanel.Controls.Add(_btnRemover);
+        actionsPanel.Controls.Add(_btnRecarregar);
+        actionsPanel.Controls.Add(_btnSalvar);
+        actionsPanel.Resize += (_, _) => OrganizarBotoes(actionsPanel);
+        leftPanel.Controls.Add(actionsPanel);
         leftPanel.Controls.Add(_lblResumo);
 
         _pnlEditor = new Panel
@@ -246,6 +252,57 @@ public sealed class FUC_EditarMyAnime : UserControl
         }
     }
 
+    private async Task RemoverAsync()
+    {
+        if (_myAnimeAtual is null)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show("Carregue o MyAnime antes de removê-lo.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var confirmacao = WinAppDtudo.Services.DarkMessageBox.Show(
+            $"O MyAnime '{_myAnimeAtual.Titulo}' será removido permanentemente do DB_Local.\n\nDeseja continuar?",
+            "Remover MyAnime",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning,
+            MessageBoxDefaultButton.Button2);
+        if (confirmacao != DialogResult.Yes)
+            return;
+
+        var myAnimeId = _myAnimeAtual.Id;
+        var titulo = _myAnimeAtual.Titulo;
+        SetBusy(true, "Removendo MyAnime...");
+        try
+        {
+            await _apiMyAnimesService.RemoverMyAnimeAsync(myAnimeId);
+            _myAnimeAtual = null;
+            SetDirty(false);
+            _lblStatus.Text = "MyAnime removido do DB_Local.";
+            WinAppDtudo.Services.DarkMessageBox.Show("MyAnime removido com sucesso do DB_Local.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MyAnimeRemovido?.Invoke(this, new MyAnimeRemovedEventArgs(myAnimeId, titulo));
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show($"MyAnime ID {myAnimeId} não foi encontrado no DB_Local.", "Não encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        catch (HttpRequestException ex)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show(
+                $"Falha ao remover na ApiMyAnimes em:\n{ApiMyAnimesService.ApiBase}\n\nDetalhes: {ex.Message}",
+                "Erro de Conexão",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        catch (Exception ex)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao remover MyAnime:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
     private void PopularResumo(ObterMyAnimeDto myAnime)
     {
         var idsUnicos = myAnime.AnimesMalId.Distinct().Count();
@@ -272,6 +329,7 @@ public sealed class FUC_EditarMyAnime : UserControl
     {
         _btnSalvar.Enabled = !busy && _myAnimeAtual is not null;
         _btnRecarregar.Enabled = !busy;
+        _btnRemover.Enabled = !busy && _myAnimeAtual is not null;
         UseWaitCursor = busy;
         if (!string.IsNullOrWhiteSpace(status))
             _lblStatus.Text = status;
@@ -300,9 +358,37 @@ public sealed class FUC_EditarMyAnime : UserControl
             UseVisualStyleBackColor = false
         };
     }
+
+    private void OrganizarBotoes(Panel panel)
+    {
+        const int buttonWidth = 300;
+        var left = Math.Max(0, (panel.ClientSize.Width - buttonWidth) / 2);
+
+        var larguraBotao = Math.Min(buttonWidth, panel.ClientSize.Width);
+        _btnSalvar.Width = larguraBotao;
+        _btnRecarregar.Width = larguraBotao;
+        _btnRemover.Width = larguraBotao;
+        _btnSalvar.Location = new Point(left, 0);
+        _btnRecarregar.Location = new Point(left, _btnSalvar.Bottom + 12);
+        _btnRemover.Location = new Point(left, _btnRecarregar.Bottom + 12);
+    }
+
+    private static void AplicarEstiloBotaoRemover(Button button)
+    {
+        button.BackColor = Color.Red;
+        button.ForeColor = Color.White;
+        button.FlatAppearance.MouseOverBackColor = Color.DarkRed;
+        button.FlatAppearance.MouseDownBackColor = Color.Maroon;
+    }
 }
 
 public sealed class MyAnimeEditSavedEventArgs(int myAnimeId, string titulo) : EventArgs
+{
+    public int MyAnimeId { get; } = myAnimeId;
+    public string Titulo { get; } = titulo;
+}
+
+public sealed class MyAnimeRemovedEventArgs(int myAnimeId, string titulo) : EventArgs
 {
     public int MyAnimeId { get; } = myAnimeId;
     public string Titulo { get; } = titulo;

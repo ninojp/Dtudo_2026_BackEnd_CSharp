@@ -48,7 +48,7 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
         var lblInput = new Label
         {
             AutoSize = true,
-            Text = "Digite o nome do anime:",
+            Text = "Digite o nome ou ID do anime:",
             Font = new Font("Segoe UI", 12F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Location = new Point(1080, 40)

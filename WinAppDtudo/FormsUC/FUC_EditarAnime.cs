@@ -7,6 +7,7 @@ namespace WinAppDtudo.FormsUC;
 public sealed class FUC_EditarAnime : UserControl
 {
     public event EventHandler<AnimeEditSavedEventArgs>? AnimeSalvo;
+    public event EventHandler<AnimeRemovedEventArgs>? AnimeRemovido;
 
     private static readonly string[] TiposAnime = ["TV", "Movie", "OVA", "ONA", "Special", "Music", "CM", "PV", "TV Special"];
     private static readonly string[] StatusAnime = ["Finished Airing", "Currently Airing", "Not yet aired"];
@@ -28,6 +29,7 @@ public sealed class FUC_EditarAnime : UserControl
     private PictureBox _pbxCapa = null!;
     private Button _btnSalvar = null!;
     private Button _btnRecarregar = null!;
+    private Button _btnRemover = null!;
     private Panel _pnlEditor = null!;
     private ObterAnimeDto? _animeAtual;
 
@@ -37,6 +39,7 @@ public sealed class FUC_EditarAnime : UserControl
         InitializeLayout();
         Load += async (_, _) => await CarregarAsync();
         ThemeManager.ApplyDarkModeToUserControl(this);
+        AplicarEstiloBotaoRemover(_btnRemover);
     }
 
     private void InitializeLayout()
@@ -109,6 +112,12 @@ public sealed class FUC_EditarAnime : UserControl
         _btnRecarregar.Margin = new Padding(0);
         _btnRecarregar.Click += async (_, _) => await CarregarAsync();
 
+        _btnRemover = CriarBotao("Remover Anime");
+        _btnRemover.Height = 44;
+        _btnRemover.Width = 360;
+        _btnRemover.Margin = new Padding(0);
+        _btnRemover.Click += async (_, _) => await RemoverAsync();
+
         var statsPanel = new Panel
         {
             Dock = DockStyle.Fill,
@@ -122,6 +131,7 @@ public sealed class FUC_EditarAnime : UserControl
         _lblTempoPorEpisodio = CriarStatsLabel(Color.Gold, 10F, FontStyle.Bold);
 
         statsPanel.Controls.Add(_btnRecarregar);
+        statsPanel.Controls.Add(_btnRemover);
         statsPanel.Controls.Add(_btnSalvar);
         statsPanel.Controls.Add(_lblTempoPorEpisodio);
         statsPanel.Controls.Add(_lblEpisodios);
@@ -264,10 +274,12 @@ public sealed class FUC_EditarAnime : UserControl
 
         _btnSalvar.Width = Math.Min(300, width);
         _btnRecarregar.Width = _btnSalvar.Width;
+        _btnRemover.Width = _btnSalvar.Width;
         var buttonLeft = (panel.ClientSize.Width - _btnSalvar.Width) / 2;
         var buttonTop = (_lblGeneros.Visible ? _lblGeneros.Bottom : _lblTempoPorEpisodio.Bottom) + 30;
         _btnSalvar.Location = new Point(buttonLeft, buttonTop);
         _btnRecarregar.Location = new Point(buttonLeft, _btnSalvar.Bottom + 12);
+        _btnRemover.Location = new Point(buttonLeft, _btnRecarregar.Bottom + 12);
     }
 
     private static Button CriarBotao(string text)
@@ -281,6 +293,14 @@ public sealed class FUC_EditarAnime : UserControl
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
             UseVisualStyleBackColor = false
         };
+    }
+
+    private static void AplicarEstiloBotaoRemover(Button button)
+    {
+        button.BackColor = Color.Red;
+        button.ForeColor = Color.White;
+        button.FlatAppearance.MouseOverBackColor = Color.DarkRed;
+        button.FlatAppearance.MouseDownBackColor = Color.Maroon;
     }
 
     private async Task CarregarAsync()
@@ -475,6 +495,56 @@ public sealed class FUC_EditarAnime : UserControl
         }
     }
 
+    private async Task RemoverAsync()
+    {
+        if (_animeAtual is null)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show("Carregue o anime antes de removê-lo.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var confirmacao = WinAppDtudo.Services.DarkMessageBox.Show(
+            $"O anime '{ObterTitulo(_animeAtual)}' será removido permanentemente do DB_Local.\n\nDeseja continuar?",
+            "Remover Anime",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning,
+            MessageBoxDefaultButton.Button2);
+        if (confirmacao != DialogResult.Yes)
+            return;
+
+        var malId = _animeAtual.MalId;
+        var myAnimeId = _animeAtual.MyAnimeID;
+        SetBusy(true, "Removendo anime...");
+        try
+        {
+            await _apiMyAnimesService.RemoverAnimeAsync(malId);
+            _animeAtual = null;
+            _lblStatus.Text = "Anime removido do DB_Local.";
+            WinAppDtudo.Services.DarkMessageBox.Show("Anime removido com sucesso do DB_Local.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            AnimeRemovido?.Invoke(this, new AnimeRemovedEventArgs(malId, myAnimeId));
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show($"Anime com MalId {malId} não foi encontrado no DB_Local.", "Não encontrado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        catch (HttpRequestException ex)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show(
+                $"Falha ao remover na ApiMyAnimes em:\n{ApiMyAnimesService.ApiBase}\n\nDetalhes: {ex.Message}",
+                "Erro de Conexão",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        catch (Exception ex)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao remover anime:\n\n{ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
     private async Task CarregarCapaAsync(ObterAnimeDto anime)
     {
         try
@@ -512,6 +582,7 @@ public sealed class FUC_EditarAnime : UserControl
     {
         _btnSalvar.Enabled = !busy && _animeAtual is not null;
         _btnRecarregar.Enabled = !busy;
+        _btnRemover.Enabled = !busy && _animeAtual is not null;
         UseWaitCursor = busy;
         if (!string.IsNullOrWhiteSpace(status))
             _lblStatus.Text = status;
@@ -526,6 +597,12 @@ public sealed class FUC_EditarAnime : UserControl
 }
 
 public sealed class AnimeEditSavedEventArgs(int malId, int myAnimeId) : EventArgs
+{
+    public int MalId { get; } = malId;
+    public int MyAnimeId { get; } = myAnimeId;
+}
+
+public sealed class AnimeRemovedEventArgs(int malId, int myAnimeId) : EventArgs
 {
     public int MalId { get; } = malId;
     public int MyAnimeId { get; } = myAnimeId;

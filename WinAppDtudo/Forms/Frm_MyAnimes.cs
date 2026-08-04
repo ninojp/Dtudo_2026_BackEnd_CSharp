@@ -400,6 +400,13 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             if (args.MyAnimeId > 0)
                 _ = AtualizarAbaMyAnimeAsync(args.MyAnimeId);
         };
+        ucEditar.AnimeRemovido += (_, args) =>
+        {
+            RemoverAbaPorNome(tabName);
+            RemoverAbaPorNome($"DB_{args.MalId}");
+            if (args.MyAnimeId > 0)
+                _ = AtualizarAbaMyAnimeAsync(args.MyAnimeId);
+        };
 
         var tabPage = new TabPage
         {
@@ -429,6 +436,11 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             Dock = DockStyle.Fill
         };
         ucEditar.MyAnimeSalvo += (_, args) => _ = AtualizarAbaMyAnimeAsync(args.MyAnimeId);
+        ucEditar.MyAnimeRemovido += (_, args) =>
+        {
+            RemoverAbaPorNome(tabName);
+            RemoverAbaPorNome($"MyAnime_{args.MyAnimeId}");
+        };
 
         var tabPage = new TabPage
         {
@@ -440,6 +452,17 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         tabPage.Controls.Add(ucEditar);
         Tbc_MyAnimes.TabPages.Add(tabPage);
         Tbc_MyAnimes.SelectedTab = tabPage;
+    }
+
+    private void RemoverAbaPorNome(string nome)
+    {
+        var tab = Tbc_MyAnimes.TabPages
+            .Cast<TabPage>()
+            .FirstOrDefault(page => page.Name == nome);
+        if (tab is null)
+            return;
+
+        Tbc_MyAnimes.TabPages.Remove(tab);
     }
 
     private async Task AtualizarAbaMyAnimeAsync(int myAnimeId)

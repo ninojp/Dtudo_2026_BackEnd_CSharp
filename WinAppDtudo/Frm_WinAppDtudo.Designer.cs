@@ -56,7 +56,7 @@ partial class Frm_WinAppDtudo
         Lbl_Titulo.BackColor = Color.Transparent;
         Lbl_Titulo.Font = new Font("Segoe UI Black", 15.9000006F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
         Lbl_Titulo.ForeColor = Color.Gold;
-        Lbl_Titulo.Location = new Point(535, 39);
+        Lbl_Titulo.Location = new Point(737, 45);
         Lbl_Titulo.Margin = new Padding(2, 0, 2, 0);
         Lbl_Titulo.Name = "Lbl_Titulo";
         Lbl_Titulo.Size = new Size(368, 30);
@@ -73,10 +73,10 @@ partial class Frm_WinAppDtudo
         Btn_Site_Dtudo.FlatStyle = FlatStyle.Flat;
         Btn_Site_Dtudo.Font = new Font("Segoe UI", 11.1F, FontStyle.Bold, GraphicsUnit.Point, 0);
         Btn_Site_Dtudo.ForeColor = Color.Gold;
-        Btn_Site_Dtudo.Location = new Point(141, 61);
+        Btn_Site_Dtudo.Location = new Point(278, 70);
         Btn_Site_Dtudo.Margin = new Padding(2);
         Btn_Site_Dtudo.Name = "Btn_Site_Dtudo";
-        Btn_Site_Dtudo.Size = new Size(185, 62);
+        Btn_Site_Dtudo.Size = new Size(216, 72);
         Btn_Site_Dtudo.TabIndex = 1;
         Btn_Site_Dtudo.Text = "DtudoSite";
         Btn_Site_Dtudo.TextAlign = ContentAlignment.TopCenter;
@@ -92,8 +92,9 @@ partial class Frm_WinAppDtudo
         Mnu_Principal.Items.AddRange(new ToolStripItem[] { MnI_Arquivo, MnI_MyAnimes, MnI_MyMusicX, MnI_NinoTI });
         Mnu_Principal.Location = new Point(0, 0);
         Mnu_Principal.Name = "Mnu_Principal";
+        Mnu_Principal.Padding = new Padding(7, 2, 0, 2);
         Mnu_Principal.RenderMode = ToolStripRenderMode.Professional;
-        Mnu_Principal.Size = new Size(886, 40);
+        Mnu_Principal.Size = new Size(1260, 40);
         Mnu_Principal.TabIndex = 7;
         Mnu_Principal.Text = "MenuPrincipal";
         // 
@@ -176,10 +177,10 @@ partial class Frm_WinAppDtudo
         Btn_MyAnimesForm.BackgroundImageLayout = ImageLayout.Stretch;
         Btn_MyAnimesForm.FlatAppearance.BorderSize = 0;
         Btn_MyAnimesForm.FlatStyle = FlatStyle.Flat;
-        Btn_MyAnimesForm.Location = new Point(354, 340);
+        Btn_MyAnimesForm.Location = new Point(526, 485);
         Btn_MyAnimesForm.Margin = new Padding(1, 2, 1, 2);
         Btn_MyAnimesForm.Name = "Btn_MyAnimesForm";
-        Btn_MyAnimesForm.Size = new Size(233, 202);
+        Btn_MyAnimesForm.Size = new Size(272, 233);
         Btn_MyAnimesForm.TabIndex = 14;
         Btn_MyAnimesForm.UseVisualStyleBackColor = false;
         // 
@@ -191,10 +192,10 @@ partial class Frm_WinAppDtudo
         Btn_MyMusicxForm.BackgroundImageLayout = ImageLayout.Stretch;
         Btn_MyMusicxForm.FlatAppearance.BorderSize = 0;
         Btn_MyMusicxForm.FlatStyle = FlatStyle.Flat;
-        Btn_MyMusicxForm.Location = new Point(79, 282);
+        Btn_MyMusicxForm.Location = new Point(92, 418);
         Btn_MyMusicxForm.Margin = new Padding(1, 2, 1, 2);
         Btn_MyMusicxForm.Name = "Btn_MyMusicxForm";
-        Btn_MyMusicxForm.Size = new Size(52, 148);
+        Btn_MyMusicxForm.Size = new Size(61, 171);
         Btn_MyMusicxForm.TabIndex = 15;
         Btn_MyMusicxForm.UseVisualStyleBackColor = false;
         // 
@@ -206,10 +207,10 @@ partial class Frm_WinAppDtudo
         Btn_NinoTIForm.BackgroundImageLayout = ImageLayout.Stretch;
         Btn_NinoTIForm.FlatAppearance.BorderSize = 0;
         Btn_NinoTIForm.FlatStyle = FlatStyle.Flat;
-        Btn_NinoTIForm.Location = new Point(771, 201);
+        Btn_NinoTIForm.Location = new Point(1126, 232);
         Btn_NinoTIForm.Margin = new Padding(1, 2, 1, 2);
         Btn_NinoTIForm.Name = "Btn_NinoTIForm";
-        Btn_NinoTIForm.Size = new Size(94, 84);
+        Btn_NinoTIForm.Size = new Size(110, 97);
         Btn_NinoTIForm.TabIndex = 16;
         Btn_NinoTIForm.UseVisualStyleBackColor = false;
         // 
@@ -218,10 +219,10 @@ partial class Frm_WinAppDtudo
         Lbl_DescricaoMyAnimes.Anchor = AnchorStyles.Bottom;
         Lbl_DescricaoMyAnimes.AutoSize = true;
         Lbl_DescricaoMyAnimes.BackColor = Color.Transparent;
-        Lbl_DescricaoMyAnimes.Location = new Point(377, 256);
+        Lbl_DescricaoMyAnimes.Location = new Point(553, 388);
         Lbl_DescricaoMyAnimes.Margin = new Padding(1, 0, 1, 0);
         Lbl_DescricaoMyAnimes.Name = "Lbl_DescricaoMyAnimes";
-        Lbl_DescricaoMyAnimes.Size = new Size(208, 91);
+        Lbl_DescricaoMyAnimes.Size = new Size(243, 105);
         Lbl_DescricaoMyAnimes.TabIndex = 17;
         Lbl_DescricaoMyAnimes.Text = resources.GetString("Lbl_DescricaoMyAnimes.Text");
         // 
@@ -230,10 +231,10 @@ partial class Frm_WinAppDtudo
         Lbl_DescricaoMyMusicX.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
         Lbl_DescricaoMyMusicX.AutoSize = true;
         Lbl_DescricaoMyMusicX.BackColor = Color.Transparent;
-        Lbl_DescricaoMyMusicX.Location = new Point(18, 426);
+        Lbl_DescricaoMyMusicX.Location = new Point(21, 584);
         Lbl_DescricaoMyMusicX.Margin = new Padding(1, 0, 1, 0);
         Lbl_DescricaoMyMusicX.Name = "Lbl_DescricaoMyMusicX";
-        Lbl_DescricaoMyMusicX.Size = new Size(203, 91);
+        Lbl_DescricaoMyMusicX.Size = new Size(237, 105);
         Lbl_DescricaoMyMusicX.TabIndex = 18;
         Lbl_DescricaoMyMusicX.Text = resources.GetString("Lbl_DescricaoMyMusicX.Text");
         // 
@@ -242,21 +243,21 @@ partial class Frm_WinAppDtudo
         Lbl_DescricaoNinoTI.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         Lbl_DescricaoNinoTI.AutoSize = true;
         Lbl_DescricaoNinoTI.BackColor = Color.Transparent;
-        Lbl_DescricaoNinoTI.Location = new Point(771, 123);
+        Lbl_DescricaoNinoTI.Location = new Point(1126, 142);
         Lbl_DescricaoNinoTI.Margin = new Padding(1, 0, 1, 0);
         Lbl_DescricaoNinoTI.Name = "Lbl_DescricaoNinoTI";
-        Lbl_DescricaoNinoTI.Size = new Size(103, 91);
+        Lbl_DescricaoNinoTI.Size = new Size(118, 105);
         Lbl_DescricaoNinoTI.TabIndex = 19;
         Lbl_DescricaoNinoTI.Text = "NinoTI - Frm_NinoTI\nAreas da T.I\nExibir detalhes\nCertificações...\nCursos...\nCriar estruturas\nMonitorar pastas...";
         // 
         // Frm_WinAppDtudo
         // 
-        AutoScaleDimensions = new SizeF(6F, 13F);
+        AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = SystemColors.Desktop;
         BackgroundImage = Properties.Resources.code01_background;
         BackgroundImageLayout = ImageLayout.Stretch;
-        ClientSize = new Size(886, 540);
+        ClientSize = new Size(1260, 715);
         Controls.Add(Lbl_DescricaoNinoTI);
         Controls.Add(Lbl_DescricaoMyMusicX);
         Controls.Add(Lbl_DescricaoMyAnimes);
@@ -267,6 +268,7 @@ partial class Frm_WinAppDtudo
         Controls.Add(Lbl_Titulo);
         Controls.Add(Mnu_Principal);
         DoubleBuffered = true;
+        Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
         ForeColor = Color.Gold;
         FormBorderStyle = FormBorderStyle.None;
         Icon = (Icon)resources.GetObject("$this.Icon");
