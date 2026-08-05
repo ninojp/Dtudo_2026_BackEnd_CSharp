@@ -2,7 +2,7 @@ using WinAppDtudo.Services;
 
 namespace WinAppDtudo.Forms;
 
-public class Frm_ProgressoOperacao : Form
+public class Frm_ProgressoOperacao : CustomFormNoBorder
 {
     private readonly Label _lblPercentual;
     private readonly Label _lblDetalhes;
@@ -10,6 +10,7 @@ public class Frm_ProgressoOperacao : Form
 
     public Frm_ProgressoOperacao(string titulo)
     {
+        AutoScaleMode = AutoScaleMode.Dpi;
         Text = titulo;
         StartPosition = FormStartPosition.CenterParent;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -66,6 +67,7 @@ public class Frm_ProgressoOperacao : Form
         pnl.BackColor = DarkModeColors.ActiveTabBackgroundColor;
         _lblPercentual.BackColor = DarkModeColors.ActiveTabBackgroundColor;
         _lblDetalhes.BackColor = DarkModeColors.ActiveTabBackgroundColor;
+        InitializeCustomFormNoBorder();
     }
 
     public void Atualizar(int percentual, string mensagem)

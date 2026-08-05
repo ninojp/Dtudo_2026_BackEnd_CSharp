@@ -2,7 +2,7 @@ using WinAppDtudo.Services;
 
 namespace WinAppDtudo.Forms;
 
-public partial class Frm_Questao : Form
+public partial class Frm_Questao : CustomFormNoBorder
 {
     public Frm_Questao(string nomeImagem="RadioAtivo", string mensagem="Texto padrão")
     {
@@ -12,8 +12,7 @@ public partial class Frm_Questao : Form
         Pic_PictureBox.Image = imagemTemp;
         Lbl_TextoDaCaixa.Text = mensagem;
         ThemeManager.ApplyDarkModeToForm(this);
-        Scale(new SizeF(2F, 2F));
-        Font = new Font(Font.FontFamily, Font.Size * 1.4F, Font.Style);
+        InitializeCustomFormNoBorder();
         StartPosition = FormStartPosition.CenterParent;
     }
 

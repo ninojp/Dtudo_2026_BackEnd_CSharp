@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="Btn_Site_Dtudo.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="Btn_DtudoSite.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAASwAAABkCAYAAAA8AQ3AAAAABGdBTUEAALGPC/xhBQAAABl0RVh0U29m
         dHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAANHDSURBVHhe7H0FeFTX1vY6YyFKjDjxEA8xEkJcgRCC
@@ -1022,24 +1022,6 @@
   <metadata name="Mnu_Principal.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <data name="Lbl_DescricaoMyAnimes.Text" xml:space="preserve">
-    <value>MyAnimes - Frm_MyAnimes
-Através do nome Encontramos os Animes
-Exibimos detalhes e Animes Relacionados
-MyAnime (tabela_db) - Coleção de animes
-Anime (tabela_db) - Anime e seus detalhes
-Cria estrutura de pastas e arquivos
-Monitorar e manipular as pastas e arquivos</value>
-  </data>
-  <data name="Lbl_DescricaoMyMusicX.Text" xml:space="preserve">
-    <value>MyMusicX - Frm_MyMusicX
-Através do nome encontramos o Artista
-Exibimos detalhes e Albuns Relacionados
-Discografia...
-Releases, Albuns, Simgles...
-Cria estrutura de pastas e arquivos
-Monitorar e Manipular as pastas</value>
-  </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>99</value>
   </metadata>

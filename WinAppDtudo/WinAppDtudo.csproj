@@ -10,7 +10,7 @@
     <StartupObject>WinAppDtudo.Program</StartupObject>
     <AssemblyTitle>WinAppDtudo</AssemblyTitle>
     <ApplicationIcon>Resources\YingYang_HD_Ico.ico</ApplicationIcon>
-    <ApplicationHighDpiMode>SystemAware</ApplicationHighDpiMode>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ForceDesignerDPIUnaware>true</ForceDesignerDPIUnaware>
     <ApplicationVisualStyles>true</ApplicationVisualStyles>
     <ApplicationUseCompatibleTextRendering>false</ApplicationUseCompatibleTextRendering>

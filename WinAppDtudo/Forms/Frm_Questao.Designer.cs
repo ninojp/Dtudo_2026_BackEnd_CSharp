@@ -78,8 +78,8 @@ partial class Frm_Questao
         // 
         // Frm_Questao
         // 
-        AutoScaleDimensions = new SizeF(10F, 25F);
-        AutoScaleMode = AutoScaleMode.Font;
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         ClientSize = new Size(626, 360);
         Controls.Add(Pic_PictureBox);
         Controls.Add(Lbl_TextoDaCaixa);

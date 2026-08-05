@@ -54,9 +54,9 @@ partial class Frm_MyAnimes
         Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_DBLocalBuscarAnime, MnI_ApiMyAnimeListBuscarNome, Mnu_AnalizarEstruturas });
         Mnu_MenuMyAnimes.Location = new Point(0, 0);
         Mnu_MenuMyAnimes.Name = "Mnu_MenuMyAnimes";
-        Mnu_MenuMyAnimes.Padding = new Padding(7, 2, 0, 2);
+        Mnu_MenuMyAnimes.Padding = new Padding(8, 2, 0, 2);
         Mnu_MenuMyAnimes.RenderMode = ToolStripRenderMode.Professional;
-        Mnu_MenuMyAnimes.Size = new Size(1080, 40);
+        Mnu_MenuMyAnimes.Size = new Size(1272, 40);
         Mnu_MenuMyAnimes.TabIndex = 0;
         Mnu_MenuMyAnimes.Text = "menuMyAnimes";
         // 
@@ -160,7 +160,7 @@ partial class Frm_MyAnimes
         Tbc_MyAnimes.AllowDrop = true;
         Tbc_MyAnimes.Dock = DockStyle.Fill;
         Tbc_MyAnimes.DrawMode = TabDrawMode.OwnerDrawFixed;
-        Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 9.3F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
         Tbc_MyAnimes.ForeColor = Color.Gold;
         Tbc_MyAnimes.ImageList = Iml_ImagensList;
         Tbc_MyAnimes.ImeMode = ImeMode.On;
@@ -170,7 +170,7 @@ partial class Frm_MyAnimes
         Tbc_MyAnimes.Name = "Tbc_MyAnimes";
         Tbc_MyAnimes.Padding = new Point(10, 6);
         Tbc_MyAnimes.SelectedIndex = 0;
-        Tbc_MyAnimes.Size = new Size(1080, 580);
+        Tbc_MyAnimes.Size = new Size(1272, 652);
         Tbc_MyAnimes.SizeMode = TabSizeMode.Fixed;
         Tbc_MyAnimes.TabIndex = 1;
         Tbc_MyAnimes.MouseDown += Tbc_MyAnimes_MouseDown;
@@ -188,17 +188,15 @@ partial class Frm_MyAnimes
         // Frm_MyAnimes
         // 
         AllowDrop = true;
-        AutoScaleDimensions = new SizeF(6F, 13F);
-        AutoScaleMode = AutoScaleMode.Font;
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         AutoScroll = true;
-        AutoSize = true;
         BackColor = SystemColors.Desktop;
-        BackgroundImage = Properties.Resources.AnimesElas;
         BackgroundImageLayout = ImageLayout.Stretch;
-        ClientSize = new Size(1080, 620);
+        ClientSize = new Size(1272, 692);
         Controls.Add(Tbc_MyAnimes);
         Controls.Add(Mnu_MenuMyAnimes);
-        DoubleBuffered = true;
+        Font = new Font("Segoe Fluent Icons", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
         ForeColor = Color.Gold;
         FormBorderStyle = FormBorderStyle.None;
         Icon = (Icon)resources.GetObject("$this.Icon");

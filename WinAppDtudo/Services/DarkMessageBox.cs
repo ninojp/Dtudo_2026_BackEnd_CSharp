@@ -42,7 +42,7 @@ public static class DarkMessageBox
         MessageBoxIcon icon,
         MessageBoxDefaultButton defaultButton)
     {
-        using var dialog = new Form
+        using var dialog = new CustomFormNoBorder
         {
             Text = string.IsNullOrWhiteSpace(caption) ? "Mensagem" : caption,
             StartPosition = owner is null ? FormStartPosition.CenterScreen : FormStartPosition.CenterParent,
@@ -52,7 +52,7 @@ public static class DarkMessageBox
             ShowInTaskbar = owner is null,
             BackColor = DarkModeColors.ActiveTabBackgroundColor,
             ForeColor = DarkModeColors.TextColor,
-            AutoScaleMode = AutoScaleMode.Font,
+            AutoScaleMode = AutoScaleMode.Dpi,
             Font = new Font("Segoe UI", 14F),
             Padding = new Padding(36)
         };
@@ -144,6 +144,7 @@ public static class DarkMessageBox
         dialog.Controls.Add(buttonsPanel);
         dialog.AcceptButton = defaultControl;
         dialog.CancelButton = cancelControl ?? buttonInfos.Select((_, index) => buttonsPanel.Controls[index]).OfType<Button>().FirstOrDefault();
+        dialog.InitializeCustomFormNoBorder();
 
         var activeOwner = owner ?? Form.ActiveForm;
         return activeOwner is null ? dialog.ShowDialog() : dialog.ShowDialog(activeOwner);

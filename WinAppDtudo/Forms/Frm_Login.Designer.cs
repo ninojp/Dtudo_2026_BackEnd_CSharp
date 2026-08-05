@@ -112,8 +112,8 @@ partial class Frm_Login
         // 
         // Frm_Login
         // 
-        AutoScaleDimensions = new SizeF(10F, 25F);
-        AutoScaleMode = AutoScaleMode.Font;
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         BackColor = SystemColors.Desktop;
         ClientSize = new Size(950, 444);
         Controls.Add(pictureBox1);

@@ -53,8 +53,8 @@ namespace WinAppDtudo.Forms
             // 
             // Frm_NinoTI
             // 
-            AutoScaleDimensions = new SizeF(13F, 26F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = SystemColors.ControlDarkDark;
             BackgroundImage = Properties.Resources.OlhoBRHacker1024;
             BackgroundImageLayout = ImageLayout.Stretch;

@@ -1,12 +1,17 @@
 /* eslint-disable no-undef */
-import 'dotenv/config';
-import express from 'express';
-import axios from 'axios';
+import dotenv from '../../DtudoSite/node_modules/dotenv/lib/main.js';
+import express from '../../DtudoSite/node_modules/express/index.js';
+import axios from '../../DtudoSite/node_modules/axios/index.js';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { buildHeaders } from './utils/helpers.js';
 import { getCached, setCache } from './utils/cache.js';
 import { searchArtistReleases } from './services/discogsSearch.js';
+
+dotenv.config({
+  path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.env'),
+});
 
 const app = express();
 const PORT = process.env.PORT || 4010;

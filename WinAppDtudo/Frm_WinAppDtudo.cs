@@ -8,7 +8,10 @@ namespace WinAppDtudo;
 /// </summary>
 public partial class Frm_WinAppDtudo : CustomFormNoBorder
 {
+    private const float DesignWidth = 1272F;
+    private const float DesignContentHeight = 652F;
     private readonly AuthApiService _authApiService = new();
+    private bool _isApplyingMainLayout;
 
     public Frm_WinAppDtudo()
     {
@@ -18,12 +21,18 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         // Inicializa o formulário customizado sem barra de título
         InitializeCustomFormNoBorder(Mnu_Principal);
         AddControlButtonsToMenuStrip(Mnu_Principal);
+        ConfigureNavigationButton(Btn_DtudoSite);
+        ConfigureNavigationButton(Btn_MyMusicxForm);
+        ConfigureNavigationButton(Btn_MyAnimesForm);
+        ConfigureNavigationButton(Btn_NinoTIForm);
 
         //Opções de inicialização do formulário, após a inicialização dos componentes.
         MnI_MyAnimes.Enabled = false;
         MnI_MyMusicX.Enabled = false;
         MnI_NinoTI.Enabled = false;
         MnI_Desconectar.Enabled = false;
+
+        InitializeMainLayout();
     }
     //=========================================================
     //Menu MyAnimes - Abrir formulário Frm_MyAnimes.
@@ -152,15 +161,143 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     }
     //=================================================================
     //Botão - Devera abrir o site Dtudo...
-    private void Btn_Site_Dtudo_Click(object sender, EventArgs e)
+    private void Btn_DtudoSite_Click(object sender, EventArgs e)
     {
-        //Deve abrir o FrontEnd.
-        //"dev": "vite --config DtudoSite/vite.config.js",
-        //http://localhost:5173/myanimes
-        //Deve abrir o BackEnd.
-        //"start": "json-server --watch ./ApiNode/db/animacoes.json --port 3666",
+        //Deve verificar se os serviços necessários (ApiMyAnimes e discogsProxy) estão em execução antes de abrir o site. Se não estiverem, deve iniciar os serviços.
+        //Deve abrir o FrontEnd. Meu Site, http://localhost:5173/myanimes
+        //C:\2026MeusProjetos\Dtudo2026\DtudoSite\
+        //    "scripts": {
         //"proxy": "node ./ApiNode/mymusicx/discogsProxy.js",
-        //OU executar ambos ao mesmo tempo com o comando:
-        //"serv": "concurrently \"npm run start\" \"npm run proxy\" \"npm run dev\"",
+        //"dev": "vite --config ./DtudoSite/vite.config.js",
+        //"api:myanimes:run": "dotnet run --project ApiMyAnimes/ApiMyAnimes.csproj --launch-profile ApiMyAnimes",
+        //"api:myanimelist:run": "dotnet run --project ApiMyAnimeList/ApiMyAnimeList.csproj --launch-profile https",
+        //"api:myanimes": "node scripts/run-if-down.js https://localhost:63980/apiLocal/Health -- npm run api:myanimes:run",
+        //"api:myanimelist": "node scripts/run-if-down.js https://localhost:7146/ApiMyAnimeList/health -- npm run api:myanimelist:run",
+        //"serv": "concurrently \"npm run api:myanimes\" \"npm run api:myanimelist\" \"npm run proxy\" \"npm run dev\" ",
+    }
+
+    private void Btn_MyAnimesForm_Click(object sender, EventArgs e)
+    {
+        Frm_MyAnimes formMyAnimes = new();
+        formMyAnimes.Show();
+    }
+
+    private void Btn_NinoTIForm_Click(object sender, EventArgs e)
+    {
+        Frm_NinoTI formNinoTI = new();
+        formNinoTI.Show();
+    }
+
+    private void Btn_MyMusicxForm_Click(object sender, EventArgs e)
+    {
+        Frm_MyMusicX formMyMusicX = new();
+        formMyMusicX.Show();
+    }
+
+    private void InitializeMainLayout()
+    {
+        ConfigureLayoutControl(Lbl_Titulo);
+        ConfigureLayoutControl(Btn_DtudoSite);
+        ConfigureLayoutControl(Btn_MyAnimesForm);
+        ConfigureLayoutControl(Btn_MyMusicxForm);
+        ConfigureLayoutControl(Btn_NinoTIForm);
+        ConfigureLayoutControl(Lbl_DescricaoMyMusicX);
+        ConfigureLayoutControl(Lbl_DescricaoMyAnimes);
+        ConfigureLayoutControl(label1);
+        ConfigureLayoutControl(label2);
+
+        Resize += Frm_WinAppDtudo_Resize;
+        DpiChanged += Frm_WinAppDtudo_DpiChanged;
+        Shown += Frm_WinAppDtudo_Shown;
+        ApplyMainLayout();
+    }
+
+    private static void ConfigureLayoutControl(Control control)
+    {
+        control.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        control.Dock = DockStyle.None;
+    }
+
+    private void Frm_WinAppDtudo_Resize(object? sender, EventArgs e)
+    {
+        ApplyMainLayout();
+    }
+
+    private void Frm_WinAppDtudo_DpiChanged(object? sender, EventArgs e)
+    {
+        ApplyMainLayout();
+    }
+
+    private void Frm_WinAppDtudo_Shown(object? sender, EventArgs e)
+    {
+        ApplyMainLayout();
+    }
+
+    private void ApplyMainLayout()
+    {
+        if (_isApplyingMainLayout || IsDisposed || ClientSize.Width <= 0 || ClientSize.Height <= 0)
+            return;
+
+        _isApplyingMainLayout = true;
+        SuspendLayout();
+        try
+        {
+            var contentTop = Mnu_Principal.Visible ? Mnu_Principal.Bottom : 0;
+            var contentWidth = ClientSize.Width;
+            var contentHeight = Math.Max(1, ClientSize.Height - contentTop);
+            var scale = Math.Min(contentWidth / DesignWidth, contentHeight / DesignContentHeight);
+            var offsetX = (contentWidth - DesignWidth * scale) / 2F;
+            var offsetY = contentTop + (contentHeight - DesignContentHeight * scale) / 2F;
+
+            SetScaledBounds(Lbl_Titulo, 801F, 12F, 296F, 90F, scale, offsetX, offsetY);
+            SetScaledBounds(Btn_DtudoSite, 280F, 85F, 242F, 86F, scale, offsetX, offsetY);
+            SetScaledBounds(label2, 333F, 51F, 157F, 42F, scale, offsetX, offsetY);
+            SetScaledBounds(Btn_NinoTIForm, 1044F, 233F, 144F, 120F, scale, offsetX, offsetY);
+            SetScaledBounds(label1, 1058F, 204F, 111F, 37F, scale, offsetX, offsetY);
+            SetScaledBounds(Btn_MyMusicxForm, 86F, 322F, 85F, 213F, scale, offsetX, offsetY);
+            SetScaledBounds(Lbl_DescricaoMyMusicX, 42F, 537F, 160F, 53F, scale, offsetX, offsetY);
+            SetScaledBounds(Btn_MyAnimesForm, 532F, 420F, 272F, 232F, scale, offsetX, offsetY);
+            SetScaledBounds(Lbl_DescricaoMyAnimes, 588F, 385F, 157F, 46F, scale, offsetX, offsetY);
+        }
+        finally
+        {
+            ResumeLayout(false);
+        }
+
+        _isApplyingMainLayout = false;
+    }
+
+    private static void SetScaledBounds(
+        Control control,
+        float x,
+        float y,
+        float width,
+        float height,
+        float scale,
+        float offsetX,
+        float offsetY)
+    {
+        var bounds = new Rectangle(
+            (int)Math.Round(offsetX + x * scale),
+            (int)Math.Round(offsetY + y * scale),
+            Math.Max(1, (int)Math.Round(width * scale)),
+            Math.Max(1, (int)Math.Round(height * scale)));
+
+        if (control.Bounds != bounds)
+            control.Bounds = bounds;
+    }
+
+    private static void ConfigureNavigationButton(Button button)
+    {
+        button.BackColor = Color.Transparent;
+        button.FlatStyle = FlatStyle.Flat;
+        button.FlatAppearance.BorderColor = Color.Gold;
+        button.FlatAppearance.BorderSize = 0;
+        button.FlatAppearance.MouseOverBackColor = Color.Transparent;
+        button.FlatAppearance.MouseDownBackColor = Color.Transparent;
+        button.UseVisualStyleBackColor = false;
+        button.Cursor = Cursors.Hand;
+        button.MouseEnter += (_, _) => button.FlatAppearance.BorderSize = 1;
+        button.MouseLeave += (_, _) => button.FlatAppearance.BorderSize = 0;
     }
 }

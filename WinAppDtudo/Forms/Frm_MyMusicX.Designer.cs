@@ -112,8 +112,8 @@ partial class Frm_MyMusicX
         // 
         // Frm_MyMusicX
         // 
-        AutoScaleDimensions = new SizeF(13F, 26F);
-        AutoScaleMode = AutoScaleMode.Font;
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         BackColor = SystemColors.Desktop;
         BackgroundImage = Properties.Resources.violaoEmChamas;
         BackgroundImageLayout = ImageLayout.Stretch;

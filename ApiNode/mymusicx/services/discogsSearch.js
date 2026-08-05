@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../../../DtudoSite/node_modules/axios/index.js';
 import { sleep, scoreItem } from '../utils/helpers.js';
 import { enrichMasters } from './enrichment.js';
 import { classifyReleases, categorizeReleases } from './classification.js';

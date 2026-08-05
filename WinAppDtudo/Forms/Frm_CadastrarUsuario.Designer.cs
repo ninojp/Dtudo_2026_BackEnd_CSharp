@@ -191,8 +191,8 @@ partial class Frm_CadastrarUsuario
         // 
         // Frm_CadastrarUsuario
         // 
-        AutoScaleDimensions = new SizeF(13F, 26F);
-        AutoScaleMode = AutoScaleMode.Font;
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         ClientSize = new Size(1099, 703);
         Controls.Add(Btn_CorDialogBox);
         Controls.Add(Btn_FontDialogBox);

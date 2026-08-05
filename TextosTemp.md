@@ -30,10 +30,11 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 
 -------------------------------------------------------------------------------------------------------------------------------------
 
-O Projeto, C:\2026MeusProjetos\Dtudo2026\ApiNode (PODE SER IGNORADO, lido apenas se necessário no contexto atual da pergunta)
-
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-No meu form inicial, 
+Eu quero que todos os meus Forms (WinForms) sejam responsivos, ou seja, que se ajustem automaticamente ao tamanho da tela do usuário, independentemente da resolução ou escala de DPI.
+Que possam ser redimensionados ao clicar na borda do form e arrastar para aumentar ou diminuir o tamanho da janela, e que os controles internos (botões, labels, textboxes, datagridviews, etc.) se ajustem proporcionalmente ao tamanho do form.
+Quero uma borda fina (cor Gold) em volta de todos os Forms (janelas) e cantos arredondados (raio de 10 pixels) para dar um visual moderno e elegante.
+No meu form inicial, Frm_WinAppDtudo, dentro do designer já tenho 4 botões (DtudoSite, MyMusicX, MyAnimes, Nino T.I), quero que eles tenham o fundo transparente, sem borda, e que ao passar o mouse sobre eles, apenas uma fina borda dourada apareça em volta do botão, e que o cursor mude para uma mãozinha (cursor de link) para indicar que é clicável.
 
 ===================================================================================================
 

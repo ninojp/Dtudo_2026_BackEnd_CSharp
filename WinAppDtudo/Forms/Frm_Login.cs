@@ -2,7 +2,7 @@ using WinAppDtudo.Services;
 
 namespace WinAppDtudo.Forms;
 
-public partial class Frm_Login : Form
+public partial class Frm_Login : CustomFormNoBorder
 {
     public string Login
     {
@@ -18,14 +18,13 @@ public partial class Frm_Login : Form
 
         // Aplicar o tema Dark Mode
         ThemeManager.ApplyDarkModeToForm(this);
+        InitializeCustomFormNoBorder();
 
         //Carregar os textos dos controles (componentes), após a inicialização do formulário.
         Lbl_NomeLabel.Text = "Nome do Usuário:";
         Lbl_SenhaLabel.Text = "Senha do Usuário:";
         Btn_Login.Text = "Login";
         Btn_Cancelar.Text = "Cancelar";
-        Scale(new SizeF(1.7F, 1.7F));
-        Font = new Font(Font.FontFamily, Font.Size * 1.35F, Font.Style);
         StartPosition = FormStartPosition.CenterParent;
     }
 

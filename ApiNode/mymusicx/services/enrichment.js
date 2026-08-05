@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../../../DtudoSite/node_modules/axios/index.js';
 
 // Enriquecimento de masters em paralelo
 export const enrichMasters = async (allItems, aggregateMap, headers) => {

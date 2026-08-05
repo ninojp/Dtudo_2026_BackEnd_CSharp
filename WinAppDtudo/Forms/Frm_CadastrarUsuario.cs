@@ -2,7 +2,7 @@ using WinAppDtudo.Services;
 
 namespace WinAppDtudo.Forms;
 
-public partial class Frm_CadastrarUsuario : Form
+public partial class Frm_CadastrarUsuario : CustomFormNoBorder
 {
     private readonly AuthApiService _authApiService = new();
 
@@ -11,6 +11,7 @@ public partial class Frm_CadastrarUsuario : Form
         InitializeComponent();
         // Aplicar o tema Dark Mode ao formulário e seus componentes
         ThemeManager.ApplyDarkModeToForm(this);
+        InitializeCustomFormNoBorder();
         Txb_Senha.UseSystemPasswordChar = true;
         Btn_Cadastrar.Click += Btn_Cadastrar_Click;
     }
