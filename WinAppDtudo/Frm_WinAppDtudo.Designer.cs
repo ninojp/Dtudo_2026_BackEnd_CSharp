@@ -195,7 +195,7 @@ partial class Frm_WinAppDtudo
         Btn_MyMusicxForm.BackgroundImageLayout = ImageLayout.Stretch;
         Btn_MyMusicxForm.FlatAppearance.BorderSize = 0;
         Btn_MyMusicxForm.FlatStyle = FlatStyle.Flat;
-        Btn_MyMusicxForm.Location = new Point(86, 362);
+        Btn_MyMusicxForm.Location = new Point(83, 375);
         Btn_MyMusicxForm.Margin = new Padding(1, 2, 1, 2);
         Btn_MyMusicxForm.Name = "Btn_MyMusicxForm";
         Btn_MyMusicxForm.Size = new Size(85, 213);
@@ -227,7 +227,7 @@ partial class Frm_WinAppDtudo
         Lbl_DescricaoMyMusicX.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
         Lbl_DescricaoMyMusicX.BackColor = Color.Transparent;
         Lbl_DescricaoMyMusicX.Font = new Font("Segoe Fluent Icons", 28.125F, FontStyle.Bold, GraphicsUnit.Point, 0);
-        Lbl_DescricaoMyMusicX.Location = new Point(42, 577);
+        Lbl_DescricaoMyMusicX.Location = new Point(52, 552);
         Lbl_DescricaoMyMusicX.Margin = new Padding(1, 0, 1, 0);
         Lbl_DescricaoMyMusicX.Name = "Lbl_DescricaoMyMusicX";
         Lbl_DescricaoMyMusicX.Size = new Size(160, 53);

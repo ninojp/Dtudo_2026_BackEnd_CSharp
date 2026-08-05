@@ -6,7 +6,7 @@ namespace WinAppDtudo.Helpers;
 /// Classe helper para aplicar facilmente o tema Dark Mode aos formulários.
 /// Use esta classe como base para todos os formulários da aplicação.
 /// </summary>
-public abstract class BaseFormDarkMode : Form
+public abstract class BaseFormDarkMode : GoldBorderForm
 {
     /// <summary>
     /// Construtor que aplica automaticamente o tema Dark Mode ao formulário.

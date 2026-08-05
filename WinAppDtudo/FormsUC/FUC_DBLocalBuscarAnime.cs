@@ -25,32 +25,12 @@ public class FUC_DBLocalBuscarAnime : UserControl
 
     public FUC_DBLocalBuscarAnime()
     {
-        var pnlMain = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 3,
-            BackColor = Color.Black
-        };
-        pnlMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 230F));
-        pnlMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        pnlMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 80F));
-
-        var pnlTopo = new Panel
-        {
-            Dock = DockStyle.Fill,
-            BackColor = Color.Black,
-            // Altere aqui a altura fixa do header. Os cards começam logo abaixo dele.
-            Height = 230
-        };
-
         var lblTitulo = new Label
         {
             AutoSize = true,
             Text = "📁 Busca de animes - DB_Local",
             Font = new Font("Segoe UI Black", 16F, FontStyle.Bold),
-            ForeColor = Color.Gold,
-            Location = new Point(50, 50)
+            ForeColor = Color.Gold
         };
 
         var lblInput = new Label
@@ -58,27 +38,17 @@ public class FUC_DBLocalBuscarAnime : UserControl
             AutoSize = true,
             Text = "Digite o título do anime",
             Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-            ForeColor = Color.Gold,
-            Location = new Point(1080, 40)
+            ForeColor = Color.Gold
         };
 
         _txbBusca = new TextBox
         {
-            Location = new Point(1000, 100),
-            Font = new Font("Segoe UI", 14F),
-            AutoSize = false,
-            Width = 1000,
-            // Altere aqui a altura fixa do TextBox.
-            Height = 60,
-
+            Font = new Font("Segoe UI", 14F)
         };
 
         _btnBuscar = new Button
         {
-            Text = "🔍 Buscar",
-            Location = new Point(1660, 42),
-            Width = 280,
-            Height = 45
+            Text = "🔍 Buscar"
         };
 
         _lblStatus = new Label
@@ -86,27 +56,11 @@ public class FUC_DBLocalBuscarAnime : UserControl
             AutoSize = true,
             Font = new Font("Segoe UI", 12F),
             ForeColor = Color.Gold,
-            Location = new Point(100, 140),
             Text = "Informe o nome e clique em Buscar."
         };
 
-        pnlTopo.Controls.Add(lblTitulo);
-        pnlTopo.Controls.Add(lblInput);
-        pnlTopo.Controls.Add(_txbBusca);
-        pnlTopo.Controls.Add(_btnBuscar);
-        pnlTopo.Controls.Add(_lblStatus);
-
         _flpCards = new FlowLayoutPanel
         {
-            Dock = DockStyle.Fill,
-            AutoScroll = true,
-            BackColor = Color.Black,
-            Padding = new Padding(50, 20, 20, 20)
-        };
-
-        var pnlPaginacao = new Panel
-        {
-            Dock = DockStyle.Fill,
             BackColor = Color.Black
         };
 
@@ -114,9 +68,6 @@ public class FUC_DBLocalBuscarAnime : UserControl
         {
             Text = "◄ Anterior",
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-            Width = 260,
-            Height = 48,
-            Location = new Point(12, 10),
             Enabled = false
         };
 
@@ -124,10 +75,6 @@ public class FUC_DBLocalBuscarAnime : UserControl
         {
             Text = "Próxima ►",
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-            Width = 260,
-            Height = 48,
-            Location = new Point(12, 10),
-            Anchor = AnchorStyles.Top | AnchorStyles.Right,
             Enabled = false
         };
 
@@ -136,20 +83,20 @@ public class FUC_DBLocalBuscarAnime : UserControl
             Text = "—",
             AutoSize = false,
             TextAlign = ContentAlignment.MiddleCenter,
-            Dock = DockStyle.Fill,
             ForeColor = Color.Gold
         };
 
-        pnlPaginacao.Controls.Add(_btnAnterior);
-        pnlPaginacao.Controls.Add(_btnProxima);
-        pnlPaginacao.Controls.Add(_lblPagina);
-        _lblPagina.SendToBack();
-
-        pnlMain.Controls.Add(pnlTopo, 0, 0);
-        pnlMain.Controls.Add(_flpCards, 0, 1);
-        pnlMain.Controls.Add(pnlPaginacao, 0, 2);
-
-        Controls.Add(pnlMain);
+        AnimeSearchLayout.Build(
+            this,
+            lblTitulo,
+            lblInput,
+            _txbBusca,
+            _btnBuscar,
+            _lblStatus,
+            _flpCards,
+            _btnAnterior,
+            _lblPagina,
+            _btnProxima);
 
         _btnBuscar.Click += async (_, _) => await BuscarPrimeiraPaginaAsync();
         _btnAnterior.Click += async (_, _) => await BuscarPaginaAsync(Math.Max(1, _paginaAtual - 1));
@@ -159,11 +106,6 @@ public class FUC_DBLocalBuscarAnime : UserControl
             if (e.KeyCode != Keys.Enter) return;
             e.SuppressKeyPress = true;
             await BuscarPrimeiraPaginaAsync();
-        };
-
-        pnlPaginacao.Resize += (_, _) =>
-        {
-            _btnProxima.Left = Math.Max(12, pnlPaginacao.Width - _btnProxima.Width - 12);
         };
 
         DoubleBuffered = true;

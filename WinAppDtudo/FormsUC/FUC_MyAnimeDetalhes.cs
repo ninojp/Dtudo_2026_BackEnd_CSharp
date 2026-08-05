@@ -37,103 +37,125 @@ public class FUC_MyAnimeDetalhes : UserControl
             RowCount = 3,
             BackColor = Color.Black
         };
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 200F));
+        tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        var pnlTopo = new Panel
+        var tlpTopo = new TableLayoutPanel
         {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
             Dock = DockStyle.Fill,
-            Height = 400,
-            BackColor = Color.Black
+            ColumnCount = 1,
+            RowCount = 3,
+            BackColor = Color.Black,
+            Padding = new Padding(24, 20, 24, 12)
         };
+        tlpTopo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        for (var row = 0; row < tlpTopo.RowCount; row++)
+            tlpTopo.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
         _lblTitulo = new Label
         {
-            AutoSize = true,
+            AutoSize = false,
+            AutoEllipsis = true,
+            Dock = DockStyle.Fill,
             Font = new Font("Segoe UI Black", 18F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Text = "MyAnime",
-            Location = new Point(100, 20)
+            MinimumSize = new Size(0, 48),
+            TextAlign = ContentAlignment.MiddleLeft
         };
 
         _lblResumo = new Label
         {
             AutoSize = true,
+            Dock = DockStyle.Top,
             Font = new Font("Segoe UI", 13F, FontStyle.Regular),
             ForeColor = Color.Goldenrod,
             Text = "",
-            Location = new Point(140, 90)
+            Margin = new Padding(0, 0, 0, 12)
         };
 
         _lblMyAnimeId = new Label
         {
-            AutoSize = false,
+            AutoSize = true,
             Font = new Font("Segoe UI", 12F, FontStyle.Regular),
             ForeColor = Color.Gold,
             BackColor = Color.Black,
             Text = "MyAnime ID:",
-            Location = new Point(1150, 90),
-            Size = new Size(200, 40),
             TextAlign = ContentAlignment.MiddleLeft,
-            Cursor = Cursors.Hand
+            Cursor = Cursors.Hand,
+            Margin = new Padding(0, 8, 8, 8)
         };
 
         _txtMyAnimeId = new TextBox
         {
             ReadOnly = true,
-            Width = 130,
-            Height = 30,
-            Location = new Point(1360, 90),
+            Width = 110,
             Font = new Font("Segoe UI Black", 13F, FontStyle.Bold),
             Text = _myAnimeId.ToString(),
             BorderStyle = BorderStyle.FixedSingle,
             BackColor = DarkModeColors.BackgroundSecondaryColor,
             ForeColor = DarkModeColors.TextColor,
-            Cursor = Cursors.Hand
+            Cursor = Cursors.Hand,
+            Margin = new Padding(0, 4, 16, 4)
         };
 
         _btnSalvarEstrutura = new Button
         {
-            Text = "💾 Salvar em Disco",
-            Width = 350,
-            Height = 65,
-            Location = new Point(700, 90)
+            Text = "💾 Salvar em Disco"
         };
 
         _btnEditarMyAnime = new Button
         {
-            Text = "Editar MyAnime",
-            Width = 300,
-            Height = 65,
-            Location = new Point(1600, 90)
+            Text = "Editar MyAnime"
         };
 
-        pnlTopo.Controls.Add(_lblTitulo);
-        pnlTopo.Controls.Add(_lblResumo);
-        pnlTopo.Controls.Add(_lblMyAnimeId);
-        pnlTopo.Controls.Add(_txtMyAnimeId);
-        pnlTopo.Controls.Add(_btnSalvarEstrutura);
-        pnlTopo.Controls.Add(_btnEditarMyAnime);
+        var flpAcoes = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Dock = DockStyle.Top,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = true,
+            BackColor = Color.Black,
+            Margin = Padding.Empty
+        };
+
+        ConfigurarBotaoAcao(_btnSalvarEstrutura);
+        ConfigurarBotaoAcao(_btnEditarMyAnime);
+        flpAcoes.Controls.AddRange([
+            _lblMyAnimeId,
+            _txtMyAnimeId,
+            _btnSalvarEstrutura,
+            _btnEditarMyAnime
+        ]);
+
+        tlpTopo.Controls.Add(_lblTitulo, 0, 0);
+        tlpTopo.Controls.Add(_lblResumo, 0, 1);
+        tlpTopo.Controls.Add(flpAcoes, 0, 2);
 
         _flpCards = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
             AutoScroll = true,
             BackColor = Color.Black,
-            Padding = new Padding(58, 36, 58, 36)
+            Padding = new Padding(24, 16, 24, 16),
+            AutoScrollMargin = new Size(12, 12)
         };
 
         _lblStatus = new Label
         {
             Dock = DockStyle.Fill,
+            AutoEllipsis = true,
             TextAlign = ContentAlignment.MiddleLeft,
             ForeColor = Color.DarkGray,
-            Padding = new Padding(12, 0, 0, 0),
+            Padding = new Padding(24, 8, 24, 8),
             Text = "—"
         };
 
-        tlpMain.Controls.Add(pnlTopo, 0, 0);
+        tlpMain.Controls.Add(tlpTopo, 0, 0);
         tlpMain.Controls.Add(_flpCards, 0, 1);
         tlpMain.Controls.Add(_lblStatus, 0, 2);
 
@@ -147,6 +169,17 @@ public class FUC_MyAnimeDetalhes : UserControl
 
         DoubleBuffered = true;
         ThemeManager.ApplyDarkModeToUserControl(this);
+    }
+
+    private static void ConfigurarBotaoAcao(Button button)
+    {
+        button.AutoSize = true;
+        button.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        button.MinimumSize = new Size(
+            TextRenderer.MeasureText(button.Text, button.Font).Width + 32,
+            button.Font.Height + 20);
+        button.Padding = new Padding(14, 8, 14, 8);
+        button.Margin = new Padding(0, 4, 12, 4);
     }
 
     private async Task CarregarDadosAsync()

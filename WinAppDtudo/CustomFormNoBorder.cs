@@ -1,4 +1,3 @@
-using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 
 namespace WinAppDtudo;
@@ -12,7 +11,6 @@ public class CustomFormNoBorder : Form
 {
     private const int WM_NCHITTEST = 0x84;
     private const int WM_NCLBUTTONDOWN = 0xA1;
-    private const int WM_SIZING = 0x0214;
     private const int WM_EXITSIZEMOVE = 0x0232;
     private const int HT_CAPTION = 0x2;
     private const int HTCLIENT = 0x1;
@@ -24,33 +22,21 @@ public class CustomFormNoBorder : Form
     private const int HTBOTTOM = 0xF;
     private const int HTBOTTOMLEFT = 0x10;
     private const int HTBOTTOMRIGHT = 0x11;
-    private const int CornerRadius = 10;
-    private const int ResizeBorder = 8;
-    private const int WS_EX_COMPOSITED = 0x02000000;
+    private const int ResizeBorderAt96Dpi = 8;
+    private const int BorderThickness = 1;
 
     private MenuStrip? _dragMenuStrip;
-    private BorderOverlay? _borderOverlay;
     private bool _formDragHandlerAttached;
-    private bool _isInteractiveResize;
 
     public CustomFormNoBorder()
     {
         AutoScaleMode = AutoScaleMode.Dpi;
         SetStyle(
-            ControlStyles.ResizeRedraw
+            ControlStyles.UserPaint
+            | ControlStyles.ResizeRedraw
             | ControlStyles.OptimizedDoubleBuffer
             | ControlStyles.AllPaintingInWmPaint,
             true);
-    }
-
-    protected override CreateParams CreateParams
-    {
-        get
-        {
-            var createParams = base.CreateParams;
-            createParams.ExStyle |= WS_EX_COMPOSITED;
-            return createParams;
-        }
     }
 
     [DllImport("user32.dll")]
@@ -69,6 +55,7 @@ public class CustomFormNoBorder : Form
         ControlBox = false;
         Text = string.Empty;
         FormBorderStyle = FormBorderStyle.None;
+        ReserveBorderSpace();
 
         if (menuStrip != null)
         {
@@ -86,8 +73,7 @@ public class CustomFormNoBorder : Form
             _formDragHandlerAttached = true;
         }
 
-        UpdateWindowRegion();
-        EnsureBorderOverlay();
+        Invalidate(true);
     }
 
     /// <summary>
@@ -141,54 +127,46 @@ public class CustomFormNoBorder : Form
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
-        UpdateWindowRegion();
+        Invalidate(true);
     }
 
     protected override void OnSizeChanged(EventArgs e)
     {
         base.OnSizeChanged(e);
-
-        if (!_isInteractiveResize)
-            UpdateWindowRegion();
-
         Invalidate();
-        _borderOverlay?.RefreshBorder();
     }
 
     protected override void OnDpiChanged(DpiChangedEventArgs e)
     {
         base.OnDpiChanged(e);
-        UpdateWindowRegion();
-        _borderOverlay?.RefreshBorder();
+        RedrawVisualTree();
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+
+        if (ClientSize.Width <= 0 || ClientSize.Height <= 0)
+            return;
+
+        const int borderThickness = 1;
+        var topAndLeftColor = Color.FromArgb(224, Color.Gold);
+
+        using var topAndLeftBrush = new SolidBrush(topAndLeftColor);
+        using var bottomAndRightBrush = new SolidBrush(Color.Gold);
+
+        e.Graphics.FillRectangle(topAndLeftBrush, 0, 0, ClientSize.Width, borderThickness);
+        e.Graphics.FillRectangle(topAndLeftBrush, 0, 0, borderThickness, ClientSize.Height);
+        e.Graphics.FillRectangle(bottomAndRightBrush, 0, ClientSize.Height - borderThickness, ClientSize.Width, borderThickness);
+        e.Graphics.FillRectangle(bottomAndRightBrush, ClientSize.Width - borderThickness, 0, borderThickness, ClientSize.Height);
     }
 
     protected override void WndProc(ref Message m)
     {
-        if (m.Msg == WM_SIZING)
-        {
-            if (!_isInteractiveResize)
-            {
-                _isInteractiveResize = true;
-                ReplaceRegion(null);
-                _borderOverlay?.RefreshBorder();
-            }
-
-            base.WndProc(ref m);
-            return;
-        }
-
         if (m.Msg == WM_EXITSIZEMOVE)
         {
             base.WndProc(ref m);
-
-            if (_isInteractiveResize)
-            {
-                _isInteractiveResize = false;
-                UpdateWindowRegion();
-                Invalidate();
-                _borderOverlay?.RefreshBorder();
-            }
-
+            RedrawVisualTree();
             return;
         }
 
@@ -239,7 +217,7 @@ public class CustomFormNoBorder : Form
 
     private void DragWindowFromForm(object? sender, MouseEventArgs e)
     {
-        if (e.Button != MouseButtons.Left || e.Y > ResizeBorder * 2)
+        if (e.Button != MouseButtons.Left || e.Y > GetResizeBorderWidth() * 2)
             return;
 
         DragWindow(sender, e);
@@ -247,10 +225,11 @@ public class CustomFormNoBorder : Form
 
     private int GetResizeHitTest(Point point)
     {
-        var left = point.X >= 0 && point.X <= ResizeBorder;
-        var right = point.X >= ClientSize.Width - ResizeBorder && point.X < ClientSize.Width;
-        var top = point.Y >= 0 && point.Y <= ResizeBorder;
-        var bottom = point.Y >= ClientSize.Height - ResizeBorder && point.Y < ClientSize.Height;
+        var resizeBorder = GetResizeBorderWidth();
+        var left = point.X >= 0 && point.X <= resizeBorder;
+        var right = point.X >= ClientSize.Width - resizeBorder && point.X < ClientSize.Width;
+        var top = point.Y >= 0 && point.Y <= resizeBorder;
+        var bottom = point.Y >= ClientSize.Height - resizeBorder && point.Y < ClientSize.Height;
 
         if (top && left)
             return HTTOPLEFT;
@@ -272,179 +251,50 @@ public class CustomFormNoBorder : Form
         return HTCLIENT;
     }
 
-    private void UpdateWindowRegion()
+    private int GetResizeBorderWidth()
     {
-        if (!IsHandleCreated || ClientSize.Width <= 1 || ClientSize.Height <= 1)
+        return Math.Max(BorderThickness, (int)Math.Round(ResizeBorderAt96Dpi * DeviceDpi / 96f));
+    }
+
+    private void ReserveBorderSpace()
+    {
+        Padding = new Padding(
+            Math.Max(Padding.Left, BorderThickness),
+            Math.Max(Padding.Top, BorderThickness),
+            Math.Max(Padding.Right, BorderThickness),
+            Math.Max(Padding.Bottom, BorderThickness));
+    }
+
+    private void RedrawVisualTree()
+    {
+        if (!IsHandleCreated || IsDisposed)
             return;
 
-        if (WindowState == FormWindowState.Maximized)
-        {
-            ReplaceRegion(null);
-            return;
-        }
-
-        var radius = Math.Max(1, (int)Math.Round(CornerRadius * DeviceDpi / 96f));
-        using var path = CreateRoundedRectanglePath(new Rectangle(0, 0, ClientSize.Width, ClientSize.Height), radius);
-        ReplaceRegion(new Region(path));
+        RedrawWindow(
+            Handle,
+            IntPtr.Zero,
+            IntPtr.Zero,
+            RedrawWindowFlags.Invalidate
+            | RedrawWindowFlags.Erase
+            | RedrawWindowFlags.AllChildren
+            | RedrawWindowFlags.UpdateNow
+            | RedrawWindowFlags.Frame);
     }
 
-    private void EnsureBorderOverlay()
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool RedrawWindow(
+        IntPtr hWnd,
+        IntPtr lprcUpdate,
+        IntPtr hrgnUpdate,
+        RedrawWindowFlags flags);
+
+    [Flags]
+    private enum RedrawWindowFlags : uint
     {
-        if (_borderOverlay != null)
-            return;
-
-        _borderOverlay = new BorderOverlay(this)
-        {
-            Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-            Bounds = ClientRectangle,
-            TabStop = false
-        };
-
-        Controls.Add(_borderOverlay);
-        _borderOverlay.BringToFront();
-        _borderOverlay.BackColor = Color.Transparent;
-        _borderOverlay.RefreshBorder();
-    }
-
-    private void ReplaceRegion(Region? region)
-    {
-        var previousRegion = Region;
-        Region = region;
-        previousRegion?.Dispose();
-    }
-
-    private sealed class BorderOverlay : Control
-    {
-        private const int WM_NCHITTEST = 0x84;
-        private const int WM_MOUSEACTIVATE = 0x21;
-        private const int HTTRANSPARENT = -1;
-        private const int MA_NOACTIVATE = 3;
-        private const int WS_EX_TRANSPARENT = 0x20;
-
-        private readonly CustomFormNoBorder _owner;
-
-        public BorderOverlay(CustomFormNoBorder owner)
-        {
-            _owner = owner;
-            SetStyle(
-                ControlStyles.UserPaint
-                | ControlStyles.AllPaintingInWmPaint
-                | ControlStyles.OptimizedDoubleBuffer
-                | ControlStyles.SupportsTransparentBackColor,
-                true);
-            BackColor = Color.Transparent;
-        }
-
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                var createParams = base.CreateParams;
-                createParams.ExStyle |= WS_EX_TRANSPARENT;
-                return createParams;
-            }
-        }
-
-        protected override void OnPaintBackground(PaintEventArgs e)
-        {
-            base.OnPaintBackground(e);
-        }
-
-        protected override void OnHandleCreated(EventArgs e)
-        {
-            base.OnHandleCreated(e);
-            RefreshBorder();
-        }
-
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            base.OnSizeChanged(e);
-            RefreshBorder();
-        }
-
-        public void RefreshBorder()
-        {
-            Visible = _owner.WindowState != FormWindowState.Maximized;
-            if (!Visible || ClientSize.Width <= 1 || ClientSize.Height <= 1)
-                return;
-
-            var borderWidth = Math.Max(0.5f, 96f / _owner.DeviceDpi);
-            var radius = Math.Max(1f, CornerRadius * _owner.DeviceDpi / 96f);
-            var inset = Math.Max(1f, borderWidth * 1.5f);
-            var innerBounds = new RectangleF(
-                inset,
-                inset,
-                Math.Max(1f, ClientSize.Width - inset * 2),
-                Math.Max(1f, ClientSize.Height - inset * 2));
-
-            using var outerPath = CreateRoundedRectanglePath(
-                new RectangleF(0, 0, ClientSize.Width, ClientSize.Height),
-                radius);
-            using var innerPath = CreateRoundedRectanglePath(
-                innerBounds,
-                Math.Max(1f, radius - inset));
-            var borderRegion = new Region(outerPath);
-            borderRegion.Exclude(innerPath);
-
-            var previousRegion = Region;
-            Region = borderRegion;
-            previousRegion?.Dispose();
-            Invalidate();
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            if (_owner.WindowState == FormWindowState.Maximized || ClientSize.Width <= 1 || ClientSize.Height <= 1)
-                return;
-
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            var borderWidth = Math.Max(0.5f, 96f / _owner.DeviceDpi);
-            var bounds = new RectangleF(
-                borderWidth / 2,
-                borderWidth / 2,
-                ClientSize.Width - borderWidth,
-                ClientSize.Height - borderWidth);
-            var radius = Math.Max(1f, CornerRadius * _owner.DeviceDpi / 96f);
-
-            using var path = CreateRoundedRectanglePath(bounds, radius);
-            using var pen = new Pen(Color.Gold, borderWidth);
-            e.Graphics.DrawPath(pen, path);
-        }
-
-        protected override void WndProc(ref Message m)
-        {
-            if (m.Msg == WM_NCHITTEST)
-            {
-                m.Result = (IntPtr)HTTRANSPARENT;
-                return;
-            }
-
-            if (m.Msg == WM_MOUSEACTIVATE)
-            {
-                m.Result = (IntPtr)MA_NOACTIVATE;
-                return;
-            }
-
-            base.WndProc(ref m);
-        }
-    }
-
-    private static GraphicsPath CreateRoundedRectanglePath(Rectangle bounds, int radius)
-    {
-        return CreateRoundedRectanglePath(new RectangleF(bounds.X, bounds.Y, bounds.Width, bounds.Height), radius);
-    }
-
-    private static GraphicsPath CreateRoundedRectanglePath(RectangleF bounds, float radius)
-    {
-        var path = new GraphicsPath();
-        var diameter = Math.Min(radius * 2, Math.Min(bounds.Width, bounds.Height));
-
-        path.AddArc(bounds.X, bounds.Y, diameter, diameter, 180, 90);
-        path.AddArc(bounds.Right - diameter, bounds.Y, diameter, diameter, 270, 90);
-        path.AddArc(bounds.Right - diameter, bounds.Bottom - diameter, diameter, diameter, 0, 90);
-        path.AddArc(bounds.X, bounds.Bottom - diameter, diameter, diameter, 90, 90);
-        path.CloseFigure();
-
-        return path;
+        Invalidate = 0x0001,
+        Erase = 0x0004,
+        AllChildren = 0x0080,
+        UpdateNow = 0x0100,
+        Frame = 0x0400
     }
 }

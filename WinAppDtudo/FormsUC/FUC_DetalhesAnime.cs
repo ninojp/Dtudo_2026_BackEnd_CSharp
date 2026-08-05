@@ -44,6 +44,7 @@ public partial class FUC_DetalhesAnime : UserControl
         InitializeComponent();
         _malId = malId;
         _consultaLocal = consultaLocal;
+        ConfigurarColunaDeDetalhes();
         Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
         Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
         Btn_ExibirMyAnime.Click += (_, _) =>
@@ -387,12 +388,70 @@ public partial class FUC_DetalhesAnime : UserControl
         BackColor = fundo;
         Pnl_Header.BackColor = fundo;
         Pnl_Conteudo.BackColor = fundo;
+        Pnl_Esquerda.BackColor = fundo;
+        Pnl_Stats.BackColor = fundo;
+        Pnl_Acoes.BackColor = fundo;
         Pnl_Info.BackColor = fundo;
 
         Lbl_TituloAnime.BackColor = fundo;
         Lbl_TituloIngles.BackColor = fundo;
         Lbl_Sinonimo.BackColor = fundo;
         Lbl_TituloJapones.BackColor = fundo;
+    }
+
+    private void ConfigurarColunaDeDetalhes()
+    {
+        Pnl_Esquerda.SuspendLayout();
+        Pnl_Esquerda.Controls.Remove(Pbx_Capa);
+        Pnl_Esquerda.Controls.Remove(Pnl_Stats);
+        Pnl_Esquerda.Controls.Remove(Pnl_Acoes);
+
+        var layoutColuna = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
+            BackColor = DarkModeColors.ActiveTabBackgroundColor,
+            Padding = new Padding(12)
+        };
+        layoutColuna.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        layoutColuna.RowStyles.Add(new RowStyle(SizeType.Percent, 56F));
+        layoutColuna.RowStyles.Add(new RowStyle(SizeType.Percent, 44F));
+        layoutColuna.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        Pbx_Capa.Dock = DockStyle.Fill;
+        Pbx_Capa.Margin = new Padding(0, 0, 0, 12);
+        Pbx_Capa.MinimumSize = new Size(0, 160);
+
+        Pnl_Stats.Dock = DockStyle.Fill;
+        Pnl_Stats.AutoScroll = true;
+        Pnl_Stats.Margin = new Padding(0, 0, 0, 12);
+
+        Pnl_Acoes.AutoSize = true;
+        Pnl_Acoes.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        Pnl_Acoes.Dock = DockStyle.Fill;
+        Pnl_Acoes.Padding = Padding.Empty;
+        ConfigurarBotaoAcao(Btn_SalvarComoMyAnime);
+        ConfigurarBotaoAcao(Btn_SalvarComoAnime);
+        Btn_SalvarComoMyAnime.Dock = DockStyle.Top;
+        Btn_SalvarComoAnime.Dock = DockStyle.Top;
+
+        layoutColuna.Controls.Add(Pbx_Capa, 0, 0);
+        layoutColuna.Controls.Add(Pnl_Stats, 0, 1);
+        layoutColuna.Controls.Add(Pnl_Acoes, 0, 2);
+        Pnl_Esquerda.Controls.Add(layoutColuna);
+        Pnl_Esquerda.ResumeLayout(true);
+    }
+
+    private static void ConfigurarBotaoAcao(Button button)
+    {
+        button.AutoSize = true;
+        button.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        button.MinimumSize = new Size(
+            TextRenderer.MeasureText(button.Text, button.Font).Width + 28,
+            button.Font.Height + 18);
+        button.Padding = new Padding(12, 8, 12, 8);
+        button.Margin = new Padding(0, 0, 0, 8);
     }
 
     private async Task CarregarCapaAsync(AnimeDetails anime)
@@ -964,7 +1023,7 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private bool ConfirmarSubstituicaoAnime()
     {
-        using var dialogo = new Form
+        using var dialogo = new GoldBorderForm
         {
             Text = "Anime já existente",
             StartPosition = FormStartPosition.CenterParent,
@@ -1029,7 +1088,7 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private void MostrarMyAnimeExistente(ObterMyAnimeDto myAnime)
     {
-        using var dialogo = new Form
+        using var dialogo = new GoldBorderForm
         {
             Text = "MyAnime já cadastrado",
             StartPosition = FormStartPosition.CenterParent,

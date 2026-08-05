@@ -4,7 +4,7 @@ public static class DarkInputDialog
 {
     public static string Show(string prompt, string title, string defaultValue = "")
     {
-        using var dialog = new Form
+        using var dialog = new GoldBorderForm
         {
             Text = title,
             StartPosition = FormStartPosition.CenterParent,

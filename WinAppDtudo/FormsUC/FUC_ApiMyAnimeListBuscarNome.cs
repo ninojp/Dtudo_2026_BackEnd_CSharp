@@ -25,86 +25,50 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
 
     public FUC_ApiMyAnimeListBuscarNome()
     {
-        var tlpMain = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 3,
-            BackColor = Color.Black
-        };
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 230F));
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 80F));
-
-        var pnlTopo = new Panel { Dock = DockStyle.Fill, BackColor = Color.Black };
         var lblTitulo = new Label
         {
             AutoSize = true,
             Text = "🧭 Busca Externa - ApiMyAnimeList",
             Font = new Font("Segoe UI Black", 16F, FontStyle.Bold),
-            ForeColor = Color.Gold,
-            Location = new Point(50, 50)
+            ForeColor = Color.Gold
         };
         var lblInput = new Label
         {
             AutoSize = true,
             Text = "Digite o nome ou ID do anime:",
             Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-            ForeColor = Color.Gold,
-            Location = new Point(1080, 40)
+            ForeColor = Color.Gold
         };
 
         _txbBusca = new TextBox
         {
-            Location = new Point(1000, 100),
-            Font = new Font("Segoe UI", 14F),
-            AutoSize = false,
-            Width = 1000,
-            Height = 60,
+            Font = new Font("Segoe UI", 14F)
         };
         _btnBuscar = new Button
         {
-            Text = "🔍 Buscar",
-            Location = new Point(1660, 42),
-            Width = 280,
-            Height = 45
+            Text = "🔍 Buscar"
         };
         _lblStatus = new Label
         {
             AutoSize = true,
             ForeColor = Color.Gold,
             Font = new Font("Segoe UI", 12F),
-            Location = new Point(100, 140),
             Text = "Informe o nome e clique em Buscar."
         };
 
-        pnlTopo.Controls.AddRange([lblTitulo, lblInput, _txbBusca, _btnBuscar, _lblStatus]);
-
         _flpCards = new FlowLayoutPanel
         {
-            Dock = DockStyle.Fill,
-            AutoScroll = true,
-            BackColor = Color.Black,
-            Padding = new Padding(40, 20, 1, 1)
+            BackColor = Color.Black
         };
-
-        var pnlPaginacao = new Panel { Dock = DockStyle.Fill, BackColor = Color.Black };
         _btnAnterior = new Button { 
             Text = "◄ Anterior", 
             Font = new Font("Segoe UI", 10F, FontStyle.Bold), 
-            Width = 260, 
-            Height = 48, 
-            Location = new Point(12, 10), 
             Enabled = false
         };
         _btnProxima = new Button
         {
             Text = "Próxima ►",
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-            Width = 260,
-            Height = 48,
-            Location = new Point(12, 10),
-            Anchor = AnchorStyles.Top | AnchorStyles.Right,
             Enabled = false
         };
         _lblPagina = new Label
@@ -112,16 +76,20 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
             Text = "—",
             AutoSize = false,
             TextAlign = ContentAlignment.MiddleCenter,
-            Dock = DockStyle.Fill,
             ForeColor = Color.Gold
         };
 
-        pnlPaginacao.Controls.AddRange([_btnAnterior, _btnProxima, _lblPagina]);
-        _lblPagina.SendToBack();
-        tlpMain.Controls.Add(pnlTopo, 0, 0);
-        tlpMain.Controls.Add(_flpCards, 0, 1);
-        tlpMain.Controls.Add(pnlPaginacao, 0, 2);
-        Controls.Add(tlpMain);
+        AnimeSearchLayout.Build(
+            this,
+            lblTitulo,
+            lblInput,
+            _txbBusca,
+            _btnBuscar,
+            _lblStatus,
+            _flpCards,
+            _btnAnterior,
+            _lblPagina,
+            _btnProxima);
 
         _btnBuscar.Click += async (_, _) => await BuscarPrimeiraPaginaAsync();
         _btnAnterior.Click += async (_, _) => await BuscarPaginaAsync(Math.Max(1, _paginaAtual - 1));
@@ -132,9 +100,6 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
             e.SuppressKeyPress = true;
             await BuscarPrimeiraPaginaAsync();
         };
-        pnlPaginacao.Resize += (_, _) =>
-            _btnProxima.Left = Math.Max(12, pnlPaginacao.Width - _btnProxima.Width - 12);
-
         DoubleBuffered = true;
         Name = nameof(FUC_ApiMyAnimeListBuscarNome);
         BackColor = SystemColors.AppWorkspace;
