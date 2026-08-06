@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ApiIdentity</name>
+    </assembly>
+    <members>
+        <member name="T:ApiIdentity.Migrations.InitialIdentityFoundation">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.InitialIdentityFoundation.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.InitialIdentityFoundation.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.InitialIdentityFoundation.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ApiIdentity.Migrations.AddIdentityGovernance">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddIdentityGovernance.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddIdentityGovernance.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddIdentityGovernance.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

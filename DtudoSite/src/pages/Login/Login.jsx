@@ -1,5 +1,5 @@
 import styles from './login.module.css'
-import { Link, useNavigate } from "react-router"
+import { Link, useNavigate } from "react-router-dom"
 import { use } from 'react';
 import AuthContext from '../../context_api/AuthContext/AuthContext';
 

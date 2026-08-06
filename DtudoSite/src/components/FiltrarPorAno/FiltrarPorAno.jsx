@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import styles from './FiltrarPorAno.module.css';
 
 export default function FiltrarPorAno({ anoSelecionado, setAnoSelecionado, animes }) {
-    const listaParaFiltrar = animes || [];
     const anosUnicos = useMemo(() => {
+        const listaParaFiltrar = animes || [];
         if (listaParaFiltrar.length > 0) {
             const allYears = listaParaFiltrar.map(anime => {
                 if (anime.year) return anime.year;
@@ -13,7 +13,7 @@ export default function FiltrarPorAno({ anoSelecionado, setAnoSelecionado, anime
             return [...new Set(allYears)].sort((a, b) => b - a); // Ordena decrescente
         }
         return [];
-    }, [listaParaFiltrar]);
+    }, [animes]);
     //=======================================================
     return (
         <div className={styles.divFiltrarAno}>

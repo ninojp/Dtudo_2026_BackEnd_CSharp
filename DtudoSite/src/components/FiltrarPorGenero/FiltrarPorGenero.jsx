@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import styles from './FiltrarPorGenero.module.css';
 
 export default function FiltrarPorGenero({ generoSelecionado, setGeneroSelecionado, animes }) {
-    const listaParaFiltrar = animes || [];
     const generosUnicos = useMemo(() => {
+        const listaParaFiltrar = animes || [];
         if (listaParaFiltrar.length > 0) {
             const allGenres = listaParaFiltrar.flatMap(anime => [
                 ...(anime.genres || []).map(g => typeof g === 'string' ? g : g.name),
@@ -14,7 +14,7 @@ export default function FiltrarPorGenero({ generoSelecionado, setGeneroSeleciona
             return [...new Set(allGenres.filter(Boolean))].sort();
         }
         return [];
-    }, [listaParaFiltrar]);
+    }, [animes]);
     //=======================================================
     return (
         <div className={styles.divFiltrarGenero}>

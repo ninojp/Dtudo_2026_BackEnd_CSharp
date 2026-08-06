@@ -48,4 +48,3 @@ C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Sinks.C
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Sinks.Debug.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Sinks.File.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Sinks.Seq.dll
-C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\staticwebassets.upToDateCheck.txt

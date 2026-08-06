@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 const API_AUTH_BASE_URL = (
     import.meta.env.VITE_API_AUTH_BASE_URL
@@ -27,22 +27,19 @@ const requestJson = async (path, payload) => {
 }
 
 export const useAuth = () => {
-    const [user, setUser] = useState(null)
-    const [isLoading, setIsLoading] = useState(true)
-
-    useEffect(() => {
+    const [user, setUser] = useState(() => {
         const storedUser = localStorage.getItem(AUTH_USER_KEY)
         if (storedUser) {
             try {
-                setUser(JSON.parse(storedUser))
+                return JSON.parse(storedUser)
             } catch (error) {
                 console.error('Erro ao carregar usuario do localStorage:', error)
                 localStorage.removeItem(AUTH_USER_KEY)
                 localStorage.removeItem(AUTH_TOKEN_KEY)
             }
         }
-        setIsLoading(false)
-    }, [])
+        return null
+    })
 
     const persistAuth = (authResponse) => {
         setUser(authResponse.user)
@@ -80,7 +77,7 @@ export const useAuth = () => {
 
     return {
         user,
-        isLoading,
+        isLoading: false,
         isAuthenticated: !!user,
         register,
         login,

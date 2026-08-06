@@ -1,6 +1,6 @@
 import { useContext, useState, useMemo, useCallback } from "react";
 import MyMusicxObjsListContext from "../../../context_api/MyMusicxObjsListContext/MyMusicxObjsListContext";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styles from './CardsMyMusicxList.module.css';
 import CampoBuscar from "../../CampoBuscar/CampoBuscar";
 import FiltrarPorLetra from "../../FiltrarPorLetra/FiltrarPorLetra";
@@ -11,7 +11,6 @@ import CardRelease from "../CardRelease/CardRelease";
 export default function CardsMyMusicxList() {
     const { listObjsMyMusicx } = useContext(MyMusicxObjsListContext);
     // console.log('listObjsMyMusicx:', listObjsMyMusicx);
-    const navigate = useNavigate();
     //Filtro por Letra
     const [letraSelecionada, setLetraSelecionada] = useState('');
     //Filtro por Ano
@@ -21,8 +20,6 @@ export default function CardsMyMusicxList() {
     const [limit, setLimit] = useState(48);
     //Estado local do campo Busca
     const [searchTerm, setSearchTerm] = useState('');
-    //Estado Local Modal, subpastas, item selecionado
-    const [selectedItem, setSelectedItem] = useState(null);
     //Filtros combinados e busca
     const filteredItems = useMemo(() => {
         let myMusicxList = listObjsMyMusicx;
@@ -58,16 +55,6 @@ export default function CardsMyMusicxList() {
         setSearchTerm(valor);
         setPage(1);
     }, []);
-    //Função ao clicar na imagem do card
-    const handleImageClick = useCallback((item) => {
-        // Se não houver subpastas, navega para a página de detalhes.
-        if (!item.subpastas || item.subpastas.length === 0) {
-            navigate(`/mymusicx/mymusicx-detalhes/${item.slug}`);
-        } else {
-            // Se houver uma ou mais subpastas, abre o modal.
-            setSelectedItem(item);
-        }
-    }, [navigate]);
     //=========================================================
     return (
         <main className={styles.mainCardsMyAnimesList}>
