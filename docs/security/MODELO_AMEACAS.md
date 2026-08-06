@@ -65,7 +65,7 @@ As classificacoes `Critico`, `Alto`, `Medio` e `Baixo` sao priorizacao inicial p
 | --- | --- | --- | --- | --- | --- |
 | T-01 | Spoofing | Controllers das duas APIs sem `AddAuthentication`, politicas ou `[Authorize]` | Um chamador anonimo se apresenta como operador ou servico porque a API nao demonstra identidade verificavel | Alteracao de catalogo, acesso a autenticacao e movimento entre servicos | Critico |
 | T-02 | Tampering | `POST`, `PUT`, `PATCH` e `DELETE` de `Anime` e `MyAnime` | Qualquer cliente que alcance a rota pode criar, alterar ou remover dados | Corrupcao ou perda do DB_Local | Critico |
-| T-03 | Tampering | `AuthController` e `LocalAuthService` | Registro publico cria identidades fora do convite manual; `me/{id}` aceita identificador fornecido pelo cliente | Contas indevidas e enumeracao de dados pessoais | Alto |
+| T-03 | Tampering | `AuthController` e `LocalAuthService` | Registro publico cria identidades fora do provisionamento administrativo; `me/{id}` aceita identificador fornecido pelo cliente | Contas indevidas e enumeracao de dados pessoais | Alto |
 | T-04 | Repudiation | `Console.WriteLine`, logs locais de importacao e ausencia de auditoria/correlacao observada | Acoes de alteracao nao possuem ator confiavel, motivo ou trilha append-only | Investigacao e responsabilizacao fracas | Alto |
 | T-05 | Information disclosure | `useAuth.js` e DTO `AuthResponse` | Token de sessao fica acessivel ao JavaScript e a qualquer script com acesso ao contexto do site | Sequestro de sessao legada | Critico |
 | T-06 | Information disclosure | `AuthController.Me`, dados publicos e mensagens de erro | Consulta por ID sem sessao e respostas de erro podem expor existencia, nomes ou caminhos | Exposicao de PII e topologia local | Alto |

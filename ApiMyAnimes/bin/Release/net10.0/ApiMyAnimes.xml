@@ -240,6 +240,11 @@
             Representa a tabela de animes importados da ApiMyAnimeList no banco de dados.
             </summary>
         </member>
+        <member name="P:ApiMyAnimes.Data.MyAnimesContext.SecurityAuditEvents">
+            <summary>
+            Representa a trilha de auditoria de segurança separada dos logs tecnicos.
+            </summary>
+        </member>
         <member name="M:ApiMyAnimes.Data.MyAnimesContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <summary>
             Configura o modelo do banco de dados, definindo chaves primárias e propriedades específicas para as entidades.
@@ -268,6 +273,18 @@
             <inheritdoc />
         </member>
         <member name="M:ApiMyAnimes.Migrations.CampoMyAnimeIdAdicionado.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ApiMyAnimes.Migrations.SecurityAuditTrail">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.SecurityAuditTrail.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.SecurityAuditTrail.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.SecurityAuditTrail.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:ApiMyAnimes.Services.AnimeBuscaLocalService">

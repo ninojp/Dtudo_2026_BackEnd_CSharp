@@ -35,6 +35,14 @@ Continue no mesmo chat somente para:
 
 Abra outro chat para iniciar a próxima etapa, fazer um gate independente ou tratar problema antigo não relacionado.
 
+### Contexto operacional vigente
+
+- A solução está em desenvolvimento ativo e não será publicada nesta fase. Development local é o único ambiente em execução.
+- A primeira publicação futura será uma versão mínima do `DtudoSite`, inicialmente voltada à consulta do catálogo pela `ApiMyAnimes`. Ela não autoriza colocar credenciais de serviço, tokens ou connection strings no React nem expor APIs, SQL ou Seq diretamente.
+- O trabalho atual deve priorizar bases executáveis localmente e sem custo recorrente: identidade, classificação etária, autenticação, autorização, proteção de dados sensíveis, logs centralizados e monitoramento de segurança.
+- Homologação e Production continuam com configurações, dados, chaves, certificados e contas separados, mas não devem ser provisionados, publicados ou cobrados antes de existir uma decisão de hospedagem e uma data de promoção.
+- As referências a Windows Server, IIS, SQL Server Express, BitLocker e contas Windows neste plano descrevem o perfil de uma futura hospedagem Windows autogerenciada. Caso a hospedagem escolhida use outra plataforma, a Etapa 27 deve substituir esses mecanismos por controles equivalentes antes de qualquer publicação, mantendo os mesmos limites de rede, identidade, segredo, log, backup e TLS.
+
 ### Estados permitidos
 
 - `Pendente`: ainda não iniciada.
@@ -74,16 +82,16 @@ A IA não deve iniciar a etapa seguinte no mesmo chat.
 
 ### 2.2 Identidade e usuários
 
-- Não haverá cadastro público; contas serão criadas somente por convite manual.
-- Haverá `Superadministrador` e usuários convidados do site.
-- Gestão de usuários, papéis, convites, dispositivos e sessões ocorrerá no WinApp.
+- Não haverá cadastro público. As contas serão pré-criadas por procedimento administrativo local, com trilha de auditoria; convites não fazem parte do primeiro lançamento.
+- Haverá `Superadministrador` e `Usuário do Site`. Novos papéis exigem decisão documentada e política explícita.
+- Gestão de usuários, papéis, provisionamento de contas, dispositivos e sessões ocorrerá no WinApp.
 - Primeiro superadministrador: bootstrap local de uso único.
 - Usuários do JSON atual serão descartados e recriados.
-- Convites: uso único, hash no banco, revogáveis e válidos por sete dias.
+- O provisionamento cria ou entrega a credencial inicial por canal administrativo seguro; senha temporária, token de ativação ou outro segredo nunca fica no repositório, log ou frontend.
 - Administradores: passkey preferencial e TOTP alternativo.
 - Recuperação administrativa: presencial/local.
 - Usuários: maiores de 18 anos. Não armazenar nascimento completo; guardar confirmação e versão dos termos.
-- Catálogo público; favoritos, preferências e listas pessoais autenticados e privados por padrão.
+- O primeiro lançamento não terá login, recursos pessoais ou conteúdo adulto. Em versão autenticada posterior, catálogo continua público; favoritos, preferências, listas pessoais e conteúdo 18+ ficam privados por padrão e exigem sessão válida.
 - Exportação e solicitação de exclusão dos próprios dados conforme LGPD.
 
 ### 2.3 Autenticação e autorização
@@ -99,7 +107,8 @@ A IA não deve iniciar a etapa seguinte no mesmo chat.
 
 ### 2.4 Infraestrutura, dados e operação
 
-- Hoje a solução permanece local. Na publicação, apenas IIS/`DtudoGateway` ficará público.
+- Hoje a solução permanece local e em desenvolvimento. Nenhum serviço será publicado durante as etapas de fundação.
+- Na primeira publicação futura, somente a entrada pública equivalente ao gateway/BFF poderá alcançar os serviços necessários. O `DtudoSite` não pode chamar APIs internas, SQL ou Seq diretamente.
 - APIs internas, SQL Server e Seq não serão expostos à internet.
 - Servidor de aplicações e SQL ficarão inicialmente no mesmo Windows Server.
 - Desenvolvimento, homologação e produção terão bancos, portas, contas, chaves e certificados distintos.
@@ -112,6 +121,26 @@ A IA não deve iniciar a etapa seguinte no mesmo chat.
 - Alertas iniciais: painel e notificações Windows no WinApp.
 - Repositório privado GitHub; GitHub Actions; runner de produção autohospedado e restrito.
 - WinApp: MSIX assinado por certificado interno confiável nas máquinas autorizadas.
+
+### 2.6 Prioridades da fundação para desenvolvimento
+
+As etapas de fundação devem produzir controles que funcionem localmente, sem depender de hospedagem paga ou de servidor provisionado. A ordem de prioridade é:
+
+1. Identidade local com contas pré-criadas, papéis, permissões, sessões revogáveis e administração pelo WinApp.
+2. Classificação etária por declaração explícita de maioridade. Armazenar somente a confirmação, versão da política e data UTC; não armazenar data de nascimento completa, documento ou imagem de documento.
+3. Autenticação e autorização no servidor, com negação por padrão, inclusive enquanto os clientes permanecem locais.
+4. Proteção de dados sensíveis: hash nativo do ASP.NET Core Identity para senhas, Data Protection/DPAPI ou armazenamento protegido pela plataforma para chaves e tokens, e criptografia de campos somente quando a classificação de dados justificar. Não criar algoritmos próprios nem criptografar indiscriminadamente o catálogo público.
+5. Logs técnicos centralizados no Seq local, auditoria separada e sinais de saúde/segurança que possam ser observados sem custo. A integração com serviço externo de monitoramento fica para a decisão de hospedagem.
+
+Uma conta previamente criada para a primeira publicação não é uma credencial compartilhada do frontend. O React nunca recebe senha de serviço, token de longa duração ou segredo; quando houver dados privados ou conteúdo condicionado à maioridade, o acesso deve ocorrer por sessão BFF autenticada.
+
+### 2.7 Primeiro lançamento público do catálogo
+
+- O primeiro lançamento público é somente o catálogo de leitura do `DtudoSite`; não tem tela de login, registro, preferências, favoritos, listas pessoais ou conteúdo 18+.
+- O frontend publicado é um cliente estático sem segredo. Ele consulta exclusivamente rotas públicas de leitura, expostas pelo gateway/BFF ou por uma borda pública equivalente, e nunca usa conta, senha, token de serviço ou connection string pré-criada.
+- APIs internas, SQL Server, Seq, health detalhado, Swagger e rotas de escrita continuam privados. O processo servidor, quando necessário para atender o catálogo, usa sua própria identidade com privilégio mínimo.
+- A publicação inicial ocorrerá em servidor Windows próprio, quando houver decisão de data e domínio. Até lá, Development local é a referência e a baseline da Etapa 07 não deve criar infraestrutura de servidor.
+- A ativação posterior de login, dados pessoais ou conteúdo 18+ é uma alteração de escopo: requer as etapas de identidade/BFF aplicáveis, testes de sessão e autorização, e uma revisão do gate de publicação.
 
 ### 2.5 Arquivos
 
@@ -324,20 +353,20 @@ Crie automação idempotente de backup e retenção de 30 dias para bancos, arqu
 Registre evidências sem segredos e o risco do mesmo host; atualize o status e não inicie a Etapa 07.
 ```
 
-### Etapa 07 - Ambientes, contas e hardening
+### Etapa 07 - Ambientes, contas e hardening local
 
 **Depende de:** Etapas 01, 02 e 06.
 
-**Escopo:** separar ambientes; contas Windows/SQL, ACLs, firewall, BitLocker, SQL Express e baseline IIS/TLS, sem publicar.
+**Escopo:** separar Development de perfis futuros, aplicar ACLs e isolamento local, e manter uma baseline idempotente e sem segredos para a futura hospedagem Windows. Sem publicar ou provisionar servidor.
 
-**Pronto quando:** scripts são idempotentes e testes negativos provam isolamento de bancos, diretórios e portas.
+**Pronto quando:** o perfil Development possui diretórios e bancos isolados, as verificações negativas provam isolamento de bancos, diretórios e portas, e a baseline futura não possui segredos. Windows Authentication, ACLs de serviço, firewall, BitLocker, SQL Express e IIS/TLS devem permanecer declarados e ter rollback para uso somente quando existir decisão de promoção.
 
 **Prompt para iniciar o chat:**
 
 ```prompt
 Execute exclusivamente a Etapa 07 de PLANO_SEGURANCA_DTUDO2026.md.
 Leia regras globais, decisões de infraestrutura, Etapa 07 e o status. Não publique serviços.
-Defina/configure separação de ambientes, contas Windows/SQL, Windows Authentication, ACLs, firewall, BitLocker, SQL Express e baseline IIS/TLS. Produza scripts idempotentes e rollback sem segredos.
+Defina/configure o isolamento local de Development e mantenha declarados os controles de promoção: contas Windows/SQL, Windows Authentication, ACLs, firewall, BitLocker, SQL Express e baseline IIS/TLS. Produza scripts idempotentes e rollback sem segredos; não provisione servidor nem exija hospedagem paga.
 Execute verificações negativas, registre ações administrativas, atualize o status e não inicie a Etapa 08.
 ```
 
@@ -371,7 +400,7 @@ Marque Concluído ou Reprovado, liste correções por etapa, atualize o status e
 ```prompt
 Execute exclusivamente a Etapa 09 de PLANO_SEGURANCA_DTUDO2026.md.
 Confirme Gate 08 no status. Leia regras, decisões de identidade e Etapa 09.
-Crie ApiIdentity com ASP.NET Core Identity, OpenIddict e banco/DbContext/conta separados. Configure migrations, chaves somente de desenvolvimento, configuração validada e health checks. Não implemente convites, MFA, BFF ou clientes.
+Crie ApiIdentity com ASP.NET Core Identity, OpenIddict e banco/DbContext/conta separados. Configure migrations, chaves somente de desenvolvimento, configuração validada e health checks. Não implemente provisionamento de contas, MFA, BFF ou clientes.
 Teste inicialização, isolamento, migration e rollback; atualize o status e não inicie a Etapa 10.
 ```
 
@@ -379,7 +408,7 @@ Teste inicialização, isolamento, migration e rollback; atualize o status e nã
 
 **Depende de:** Etapa 09.
 
-**Escopo:** modelos/contratos de usuário, maioridade, termos, papéis, permissões e políticas. Sem UI ou convites.
+**Escopo:** modelos/contratos de usuário, maioridade, termos, papéis, permissões e políticas. Sem UI ou provisionamento de contas.
 
 **Pronto quando:** constraints/índices existem, permissões são centralizadas e nascimento completo não é armazenado.
 
@@ -388,24 +417,24 @@ Teste inicialização, isolamento, migration e rollback; atualize o status e nã
 ```prompt
 Execute exclusivamente a Etapa 10 de PLANO_SEGURANCA_DTUDO2026.md.
 Leia regras, decisões de usuários/autorização, Etapa 10 e o status. Comece no DbContext da ApiIdentity.
-Modele confirmação de maioridade, aceite versionado dos termos, papéis e permissões. Crie catálogo central, políticas, constraints, índices, migrations e contratos. Não implemente convite, MFA ou UI.
+Modele confirmação de maioridade, aceite versionado dos termos, papéis e permissões. Crie catálogo central, políticas, constraints, índices, migrations e contratos. Não implemente provisionamento de contas, MFA ou UI.
 Teste invariantes, duplicidades e rollback; atualize o status e não inicie a Etapa 11.
 ```
 
-### Etapa 11 - Bootstrap e convites
+### Etapa 11 - Bootstrap e provisionamento de contas
 
 **Depende de:** Etapas 09 e 10.
 
-**Escopo:** bootstrap local único e convites com hash, sete dias, revogação e rate limiting.
+**Escopo:** bootstrap local único e provisionamento manual auditável de contas pré-criadas. Sem convite, registro público ou entrega de segredo pelo frontend.
 
-**Pronto quando:** bootstrap/replay não reutilizáveis; token bruto não fica no banco/log; convite inválido é recusado sem enumeração.
+**Pronto quando:** bootstrap e credencial inicial não são reutilizáveis; segredo bruto não fica no banco/log; tentativas inválidas não enumeram contas.
 
 **Prompt para iniciar o chat:**
 
 ```prompt
 Execute exclusivamente a Etapa 11 de PLANO_SEGURANCA_DTUDO2026.md.
-Leia regras, decisões de bootstrap/convite, Etapa 11 e o status.
-Implemente bootstrap local de uso único e convite manual com alta entropia, hash, sete dias, uso único, revogação e rate limiting. Não envie e-mail nem crie cadastro público.
+Leia regras, decisões de bootstrap/provisionamento, Etapa 11 e o status.
+Implemente bootstrap local de uso único e provisionamento administrativo de contas com segredo inicial de alta entropia, hash, expiração, uso único, revogação e rate limiting. Não envie e-mail, não crie convite e não crie cadastro público.
 Teste replay, expiração, revogação, concorrência, enumeração e bootstrap; atualize o status e não inicie a Etapa 12.
 ```
 
@@ -541,7 +570,7 @@ Teste isolamento, exportação, exclusão e minimização; atualize documentos/s
 ```prompt
 Execute exclusivamente a Etapa 19 de PLANO_SEGURANCA_DTUDO2026.md.
 Leia regras, decisões WinApp, Etapa 19 e o status. Localize somente cliente HTTP, inicialização, auth atual e padrões visuais próximos.
-Implemente navegador do sistema com Code + PKCE/loopback, DPAPI, renovação, logout e revogação. No Dark Mode existente, implemente gestão de convites, usuários, papéis, dispositivos e sessões com step-up.
+Implemente navegador do sistema com Code + PKCE/loopback, DPAPI, renovação, logout e revogação. No Dark Mode existente, implemente gestão de provisionamento de contas, usuários, papéis, dispositivos e sessões com step-up.
 Teste ausência de senha/token claro, permissões e revogação; atualize o status e não inicie a Etapa 20.
 ```
 
@@ -558,7 +587,7 @@ Teste ausência de senha/token claro, permissões e revogação; atualize o stat
 ```prompt
 Execute exclusivamente a Etapa 20 e o gate de identidade de PLANO_SEGURANCA_DTUDO2026.md.
 Leia regras, Etapas 09-20, bloqueios e status. Confirme todos os clientes novos antes de remover código.
-Remova LocalAuthService, AuthController provisório, JSON e configurações obsoletas. Revise convite, MFA, sessão, revogação, APIs, mTLS, BFF, site, LGPD e WinApp; reexecute negativos e rollback.
+Remova LocalAuthService, AuthController provisório, JSON e configurações obsoletas. Revise provisionamento de contas, MFA, sessão, revogação, APIs, mTLS, BFF, site, LGPD e WinApp; reexecute negativos e rollback.
 Marque Concluído ou Reprovado, atualize o status e não inicie a Etapa 21.
 ```
 
@@ -666,19 +695,19 @@ Simule falhas e recuperação; atualize o status e não inicie a Etapa 27.
 
 ### Etapa 27 - IIS, TLS e isolamento de rede
 
-**Depende de:** Etapas 16, 20 e 25.
+**Depende de:** Etapas 16, 20 e 26. A Etapa 25 é obrigatória somente antes de publicar qualquer fluxo de arquivo.
 
-**Escopo:** homologação via IIS/YARP, TLS, HSTS, headers, limites, rate limiting, firewall e bindings.
+**Escopo:** homologação do catálogo público via IIS/YARP, TLS, HSTS, headers, limites, rate limiting, firewall e bindings. O primeiro lançamento não inclui fluxos de arquivo, login ou conteúdo adulto.
 
-**Pronto quando:** externamente só o gateway responde e renovação TLS é comprovada.
+**Pronto quando:** externamente só o gateway responde, renovação TLS é comprovada e o site publicado contém somente catálogo público sem segredo, login ou conteúdo condicionado à idade.
 
 **Prompt para iniciar o chat:**
 
 ```prompt
 Execute exclusivamente a Etapa 27 de PLANO_SEGURANCA_DTUDO2026.md.
 Leia regras, arquitetura, decisões de rede, Etapa 27 e status. Trabalhe em homologação; não exponha produção.
-Configure IIS/YARP, domínio/TLS automático, HSTS, headers, limites, rate limiting, health checks, firewall e bindings internos. Restrinja CORS, Swagger e Seq.
-Teste portas/rotas/TLS/headers/CORS/renovação; atualize o status e não inicie a Etapa 28.
+Configure IIS/YARP, domínio/TLS automático, HSTS, headers, limites, rate limiting, health checks, firewall e bindings internos. Restrinja CORS, Swagger e Seq. Exponha apenas as rotas públicas de leitura necessárias ao catálogo.
+Teste portas/rotas/TLS/headers/CORS/renovação, ausência de segredos no build estático e negação de login/escrita/conteúdo adulto; atualize o status e não inicie a Etapa 28.
 ```
 
 ### Etapa 28 - Painel de saúde e alertas
@@ -781,9 +810,22 @@ Não publicar se:
 - rollback de migration/release/pacote não foi testado;
 - há falha crítica sem mitigação ou aceite explícito.
 
-## 10. Definição final de pronto
+## 10. Gates de publicação
 
-A segurança inicial estará pronta para publicação somente quando:
+### 10.1 Primeiro lançamento público do catálogo
+
+O catálogo público pode ser publicado antes dos módulos de arquivos, alertas e pacote do WinApp, desde que todos os itens abaixo tenham evidência e aprovação manual:
+
+1. Gate 08 e Gate 20 aprovados.
+2. Etapas 01 a 20, 26 e 27 concluídas, incluindo remoção do login legados do site e da API.
+3. O build do `DtudoSite` não contém segredo, token, conta de serviço, connection string, rota de escrita, tela de login ou conteúdo 18+.
+4. Somente as rotas públicas de leitura necessárias ao catálogo são alcançáveis pela internet; gateway/BFF, APIs internas, SQL, Seq, Swagger e health detalhado permanecem restritos.
+5. TLS, headers, CORS, rate limiting, logs/redação, auditoria, backup/restauração e rollback da implantação foram comprovados na hospedagem Windows escolhida.
+6. A publicação não transfere a conta pré-criada para o navegador. Se o catálogo precisar de acesso autenticado a um backend, a credencial pertence exclusivamente ao processo servidor com privilégio mínimo.
+
+### 10.2 Solução completa
+
+A segurança inicial da solução completa estará pronta para publicação somente quando:
 
 1. Etapas 01 a 30 estiverem `Concluídas`.
 2. Gates 08, 20 e 30 estiverem aprovados.

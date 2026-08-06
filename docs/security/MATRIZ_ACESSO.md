@@ -17,7 +17,7 @@ Permissoes de referencia para o alvo:
 - `catalog.read`: leitura do catalogo publico, com escopo de rota e limite.
 - `catalog.write`: criacao/atualizacao de catalogo pelo WinApp autorizado.
 - `catalog.delete`: exclusao de catalogo, com step-up quando aplicavel.
-- `identity.invite`: convite/bootstrap administrativo; sem cadastro publico.
+- `identity.provision`: bootstrap e provisionamento administrativo de conta pre-criada; sem convite ou cadastro publico.
 - `identity.login`: autenticacao pelo fluxo de identidade.
 - `identity.self.read`: leitura do proprio usuario; consulta administrativa separada.
 - `health.read`: health minimo, com exposicao restrita conforme o ambiente.
@@ -30,7 +30,7 @@ Permissoes de referencia para o alvo:
 | Sigla | Ator | Identidade observada hoje | Papel necessario no alvo |
 | --- | --- | --- | --- |
 | ANON | Navegador/cliente anonimo | Apenas alcance HTTP; sem identidade de API | Leitor do catalogo publico |
-| SITE | Usuario autenticado do site | `user` e token no `localStorage`; token nao e validado nos controllers lidos | Usuario convidado, com recursos proprios |
+| SITE | Usuario autenticado do site | `user` e token no `localStorage`; token nao e validado nos controllers lidos | Usuario do site pre-criado, com recursos proprios |
 | WIN | Operador do `WinAppDtudo` | Processo desktop sem token/certificado de servico observado | Cliente administrativo autorizado |
 | AMS | Processo `ApiMyAnimes` | `HttpClient` local sem Client Credentials/mTLS observados | Servico proprietario de `MyAnimes`/`Anime` |
 | MLS | Processo `ApiMyAnimeList` | `HttpClient` com Client ID configurado para API externa | Servico autorizado de egress MAL |
@@ -56,7 +56,7 @@ Permissoes de referencia para o alvo:
 | `PUT /apiLocal/MyAnime/{id}` | W* | W* | W | W | - | `catalog.write`; verificar colecao alvo |
 | `PATCH /apiLocal/MyAnime/{id}` | W* | W* | W | W | - | `catalog.write`; restringir campos e operacoes |
 | `DELETE /apiLocal/MyAnime/{id}` | W* | W* | W | W | - | `catalog.delete`; step-up e auditoria |
-| `POST /apiLocal/Auth/register` | A* | A* | A | A | - | Remover cadastro publico; substituir por `identity.invite`/bootstrap |
+| `POST /apiLocal/Auth/register` | A* | A* | A | A | - | Remover cadastro publico; substituir por `identity.provision`/bootstrap local |
 | `POST /apiLocal/Auth/login` | A* | A* | A | A | - | `identity.login` no servico de identidade; nao manter fluxo legado |
 | `GET /apiLocal/Auth/me/{id}` | R* | R* | R | R | - | `identity.self.read` somente para o proprio usuario; admin por politica |
 
