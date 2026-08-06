@@ -26,7 +26,6 @@ C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\staticwebassets
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\staticwebassets.development.json
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\staticwebassets.build.endpoints.json
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\swae.build.ex.cache
-C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\staticwebassets.upToDateCheck.txt
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\ApiMyAni.555274C4.Up2Date
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\ApiMyAnimeList.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Release\net10.0\refint\ApiMyAnimeList.dll
@@ -38,3 +37,14 @@ C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Microsoft.Entit
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\LibDtudo.Shared.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\LibDtudo.Shared.pdb
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\LibDtudo.Shared.xml
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Microsoft.Extensions.DependencyModel.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.AspNetCore.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Extensions.Hosting.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Extensions.Logging.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Formatting.Compact.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Settings.Configuration.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Sinks.Console.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Sinks.Debug.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Sinks.File.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\bin\Release\net10.0\Serilog.Sinks.Seq.dll

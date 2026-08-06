@@ -1,34 +1,67 @@
 using ApiMyAnimes.Data;
 using ApiMyAnimes.Configuration;
+using ApiMyAnimes.Infrastructure;
 using ApiMyAnimes.Services;
+using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
+using LibDtudo.Shared.Logging;
+using Serilog;
+using Serilog.Events;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var localDbConnection = builder.Configuration.GetConnectionString("LocalDbConnection");
+builder.Host.UseSerilog((context, services, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.With<SensitiveDataRedactionEnricher>();
+
+    var seqUrl = context.Configuration["Seq:Url"];
+    if (Uri.TryCreate(seqUrl, UriKind.Absolute, out var seqUri)
+        && seqUri.Scheme is "http" or "https")
+    {
+        loggerConfiguration.WriteTo.Seq(seqUri.ToString());
+    }
+});
+
+builder.Services.AddOptions<DatabaseOptions>()
+    .Bind(builder.Configuration.GetSection(DatabaseOptions.SectionName))
+    .Validate(options => !string.IsNullOrWhiteSpace(options.LocalDbConnection), "ConnectionStrings:LocalDbConnection nao configurada.")
+    .ValidateOnStart();
 
 // Add services to the container.
 //===============================
 // Configuração do Entity.Framework.Core para MyAnimeContext usando SQL Server
-builder.Services.AddDbContext<MyAnimesContext>(opts => opts.UseSqlServer(localDbConnection));
+builder.Services.AddDbContext<MyAnimesContext>((serviceProvider, options) =>
+    options.UseSqlServer(serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value.LocalDbConnection));
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 
 builder.Services.AddMemoryCache();
+builder.Services.AddTransient<CorrelationIdDelegatingHandler>();
 builder.Services.AddScoped<AnimeBuscaLocalService>();
 builder.Services.AddScoped<AnimeTitleConflictService>();
 builder.Services.AddSingleton<LocalAuthService>();
 builder.Services.AddOptions<AuthOptions>()
     .Bind(builder.Configuration.GetSection(AuthOptions.SectionName))
-    .Validate(options => !string.IsNullOrWhiteSpace(options.UsersFilePath), "Auth:UsersFilePath nao configurado.");
+    .Validate(options => !string.IsNullOrWhiteSpace(options.UsersFilePath), "Auth:UsersFilePath nao configurado.")
+    .ValidateOnStart();
 
-var apiMyAnimeListBaseUrl = builder.Configuration["ApiMyAnimeList:BaseUrl"] ?? "https://localhost:7146/";
-builder.Services.AddHttpClient<MyAnimeListImportClient>(client =>
+builder.Services.AddOptions<ApiMyAnimeListOptions>()
+    .Bind(builder.Configuration.GetSection(ApiMyAnimeListOptions.SectionName))
+    .Validate(options => Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out var uri)
+        && uri.Scheme == Uri.UriSchemeHttps, "ApiMyAnimeList:BaseUrl deve ser uma URL HTTPS absoluta.")
+    .ValidateOnStart();
+
+builder.Services.AddHttpClient<MyAnimeListImportClient>((serviceProvider, client) =>
 {
-    client.BaseAddress = new Uri(apiMyAnimeListBaseUrl);
+    var options = serviceProvider.GetRequiredService<IOptions<ApiMyAnimeListOptions>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
     client.Timeout = TimeSpan.FromSeconds(30);
-});
+}).AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -62,7 +95,6 @@ builder.Services.AddCors(options =>
 //=======================================================================
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -72,6 +104,23 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = "swagger";
     });
 }
+
+app.UseMiddleware<RequestCorrelationMiddleware>();
+app.UseSerilogRequestLogging(options =>
+{
+    options.GetLevel = (httpContext, _, exception) =>
+        exception is not null || httpContext.Response.StatusCode >= 500
+            ? LogEventLevel.Error
+            : httpContext.Response.StatusCode >= 400
+                ? LogEventLevel.Warning
+                : LogEventLevel.Information;
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestMethod", httpContext.Request.Method);
+        diagnosticContext.Set("RequestPath", httpContext.Request.Path.Value ?? "/");
+        diagnosticContext.Set("ResponseStatusCode", httpContext.Response.StatusCode);
+    };
+});
 
 app.UseHttpsRedirection();
 

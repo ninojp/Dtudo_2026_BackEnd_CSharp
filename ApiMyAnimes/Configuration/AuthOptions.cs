@@ -7,5 +7,5 @@ public sealed class AuthOptions
     public const string SectionName = "Auth";
 
     /// <summary>Caminho relativo ou absoluto do arquivo local de usuarios.</summary>
-    public string UsersFilePath { get; set; } = "App_Data/auth-users.json";
+    public string UsersFilePath { get; set; } = string.Empty;
 }

@@ -1,0 +1,115 @@
+# Matriz de Acesso
+
+## 1. Objetivo e legenda
+
+Esta matriz registra o acesso efetivo observado no estado atual e a permissao necessaria para a arquitetura-alvo. A coluna de alvo e uma referencia de planejamento, nao uma implementacao presente.
+
+Legenda do acesso atual:
+
+- `R`: leitura observada sem barreira de identidade no controller.
+- `W`: escrita, atualizacao ou exclusao observada sem barreira de identidade no controller.
+- `A`: operacao de autenticacao/registro observada sem sessao de API.
+- `-`: nao ha chamada observada para o ator naquela superficie.
+- `*`: a permissao depende de alcance de rede; CORS nao e uma autorizacao de servidor.
+
+Permissoes de referencia para o alvo:
+
+- `catalog.read`: leitura do catalogo publico, com escopo de rota e limite.
+- `catalog.write`: criacao/atualizacao de catalogo pelo WinApp autorizado.
+- `catalog.delete`: exclusao de catalogo, com step-up quando aplicavel.
+- `identity.invite`: convite/bootstrap administrativo; sem cadastro publico.
+- `identity.login`: autenticacao pelo fluxo de identidade.
+- `identity.self.read`: leitura do proprio usuario; consulta administrativa separada.
+- `health.read`: health minimo, com exposicao restrita conforme o ambiente.
+- `service.mal.read`: chamada interna autorizada a dados da MAL.
+- `filesystem.command`: operacao de arquivo por ID/comando no servico de arquivos.
+- `db.owner`: acesso do servico proprietario ao banco, nunca do cliente final.
+
+## 2. Atores
+
+| Sigla | Ator | Identidade observada hoje | Papel necessario no alvo |
+| --- | --- | --- | --- |
+| ANON | Navegador/cliente anonimo | Apenas alcance HTTP; sem identidade de API | Leitor do catalogo publico |
+| SITE | Usuario autenticado do site | `user` e token no `localStorage`; token nao e validado nos controllers lidos | Usuario convidado, com recursos proprios |
+| WIN | Operador do `WinAppDtudo` | Processo desktop sem token/certificado de servico observado | Cliente administrativo autorizado |
+| AMS | Processo `ApiMyAnimes` | `HttpClient` local sem Client Credentials/mTLS observados | Servico proprietario de `MyAnimes`/`Anime` |
+| MLS | Processo `ApiMyAnimeList` | `HttpClient` com Client ID configurado para API externa | Servico autorizado de egress MAL |
+| OSDB | Conta/processo do host e LocalDB | Windows/LocalDB com autenticacao integrada observada | Conta de servico com ACL minima |
+| MAL | API oficial externa | Identificada pela URL e credencial configurada fora desta matriz | Dependencia externa, somente resposta de dados |
+
+## 3. Endpoints da ApiMyAnimes
+
+| Endpoint/recurso | ANON atual | SITE atual | WIN atual | AMS atual | MLS atual | Permissao necessaria no alvo |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `GET /apiLocal/Health` | R* | R* | R | R | - | `health.read`; preferir rede interna para detalhes de banco |
+| `GET /apiLocal/Anime` | R* | R* | R | R | - | `catalog.read` |
+| `GET /apiLocal/Anime/buscar` | R* | R* | R | R | - | `catalog.read` |
+| `GET /apiLocal/Anime/{malId}` | R* | R* | R | R | - | `catalog.read` |
+| `POST /apiLocal/Anime/conflito-titulo` | W* | W* | W | W | - | `catalog.write` para validacao de importacao; limitar payload |
+| `POST /apiLocal/Anime` | W* | W* | W | W | - | `catalog.write`; somente operador/servico autorizado |
+| `PUT /apiLocal/Anime/{malId}` | W* | W* | W | W | - | `catalog.write`; verificar escopo do recurso |
+| `PATCH /apiLocal/Anime/{malId}` | W* | W* | W | W | - | `catalog.write`; restringir campos e operacoes |
+| `DELETE /apiLocal/Anime/{malId}` | W* | W* | W | W | - | `catalog.delete`; step-up e auditoria |
+| `GET /apiLocal/MyAnime` | R* | R* | R | R | - | `catalog.read`; confirmar se toda colecao e publica |
+| `GET /apiLocal/MyAnime/{id}` | R* | R* | R | R | - | `catalog.read` ou propriedade, conforme decisao de produto |
+| `POST /apiLocal/MyAnime` | W* | W* | W | W | - | `catalog.write`; somente operador/servico autorizado |
+| `PUT /apiLocal/MyAnime/{id}` | W* | W* | W | W | - | `catalog.write`; verificar colecao alvo |
+| `PATCH /apiLocal/MyAnime/{id}` | W* | W* | W | W | - | `catalog.write`; restringir campos e operacoes |
+| `DELETE /apiLocal/MyAnime/{id}` | W* | W* | W | W | - | `catalog.delete`; step-up e auditoria |
+| `POST /apiLocal/Auth/register` | A* | A* | A | A | - | Remover cadastro publico; substituir por `identity.invite`/bootstrap |
+| `POST /apiLocal/Auth/login` | A* | A* | A | A | - | `identity.login` no servico de identidade; nao manter fluxo legado |
+| `GET /apiLocal/Auth/me/{id}` | R* | R* | R | R | - | `identity.self.read` somente para o proprio usuario; admin por politica |
+
+Observacao: `SITE` e `ANON` possuem o mesmo acesso efetivo observado porque a API nao demonstra validacao do token persistido pelo frontend. `AMS` e `WIN` tambem nao enviam uma identidade de servico observada nos clientes lidos.
+
+## 4. Endpoints da ApiMyAnimeList
+
+| Endpoint/recurso | ANON atual | SITE atual | WIN atual | AMS atual | MLS atual | Permissao necessaria no alvo |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `GET /ApiMyAnimeList/health` | R* | R* | R | R | R | `health.read`; detalhes internos somente para rede/servico autorizado |
+| `GET /ApiMyAnimeList/search` | R* | R* | R | R | R | `catalog.read` publico via gateway; rota interna deve exigir `service.mal.read` |
+| `GET /ApiMyAnimeList/{malId}` | R* | R* | R | R | R | `catalog.read` publico via gateway; chamada interna com `service.mal.read` |
+| `GET /ApiMyAnimeList/{malId}/relations` | R* | R* | R | R | R | `catalog.read` publico via gateway; chamada interna com `service.mal.read` |
+
+`MLS` representa o proprio processo ao acessar a API externa MAL, nao um chamador HTTP da API local. A matriz registra que a identidade interna e o egress ainda precisam ser separados por credencial, audiencia, certificado e escopo.
+
+## 5. Superficies nao-HTTP
+
+| Recurso | ANON | SITE | WIN | AMS | MLS | OSDB | MAL | Permissao necessaria no alvo |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| SQL LocalDB `Dtudo2026Db` | - | - | - | W/R | - | W/R conforme processo | - | `db.owner` somente para ApiMyAnimes; retirar acesso do WinApp |
+| Arquivo `App_Data/auth-users*.json` | - | - | - | W/R | - | W/R conforme ACL | - | Somente identidade/servico designado; migrar para banco proprio |
+| Raiz de analise escolhida no WinApp | - | - | R | - | - | R conforme ACL | - | `filesystem.command` em ApiFileStorage; cliente envia ID/comando, nao caminho livre |
+| Raiz de exportacao e imagens | - | - | W | - | - | W conforme ACL | - | `filesystem.command`, quarentena, scanner e raiz permitida |
+| `LogsImportacao` | - | - | W/R | - | - | W/R conforme ACL | - | Escrita controlada e leitura minima; auditoria separada |
+| URLs de imagem e dados externos | - | R | R | - | R | - | W/R | `service.mal.read` e egress allowlist; validar resposta |
+| `localStorage.auth_user` / `auth_token` | R/W no JavaScript | R/W no JavaScript | - | - | - | - | - | Nenhum token de identidade deve ser acessivel ao React |
+| Processos `sqllocaldb`, `dotnet`, `npm`, Chrome | - | - | W/R sobre processo do usuario | - | - | W/R conforme host | - | Operacao administrativa local com conta e ACL restritas |
+
+## 6. Recursos e propriedade
+
+Os modelos atuais nao possuem `OwnerUserId` ou equivalente em `Anime` e `MyAnime`. Portanto:
+
+- `Anime` usa `MalId` como chave primaria e representa catalogo local.
+- `MyAnime` usa `Id`, titulo e lista de `AnimesMalId`; e uma colecao interna do DB_Local.
+- A propriedade pessoal de favoritos, preferencias e listas prevista no plano ainda nao aparece nesses modelos.
+- A matriz deve ser refinada na etapa de identidade/LGPD antes de atribuir acesso por usuario a um recurso que hoje e global.
+
+## 7. Regras de negacao por padrao para o alvo
+
+Estas regras registram o destino esperado, sem implementar controles nesta etapa:
+
+1. Ausencia de identidade, audiencia, escopo ou permissao deve resultar em negacao.
+2. CORS, URL local, rede LAN ou conhecimento de um ID nao concedem permissao.
+3. Rotas de escrita e exclusao nunca devem depender apenas da UI do WinApp.
+4. `AuthController` legado nao deve ser usado como prova de identidade depois da migracao.
+5. APIs internas devem aceitar somente o servico autorizado e a rota necessaria.
+6. O WinApp deve enviar IDs e comandos para arquivos, nunca caminhos absolutos/UNC livres.
+7. O browser nao deve receber access token, refresh token ou credencial de servico.
+8. Health, Swagger/OpenAPI e mensagens de erro devem revelar somente o necessario para seu publico.
+
+## 8. Evidencias e pendencias
+
+Evidencias principais: `ApiMyAnimes/Controllers/*.cs`, `ApiMyAnimes/Program.cs`, `ApiMyAnimeList/Controllers/MyAnimeListController.cs`, `ApiMyAnimeList/Program.cs`, `WinAppDtudo/Services/ApiMyAnimesService.cs`, `WinAppDtudo/Services/MyAnimeListApiService.cs`, `DtudoSite/src/hooks/useAuth.js`, `DtudoSite/src/api_conect/conectApiLocal.js` e os documentos de inventario/modelo desta etapa.
+
+Pendencias que nao bloqueiam a criacao desta matriz, mas bloqueiam a publicacao: fonte de identidade, papeis/permissoes concretos, autenticacao entre servicos, propriedade de recursos pessoais, gateway/BFF, servico de arquivos, ACLs, firewall, exposicao real das portas, auditoria e testes negativos.

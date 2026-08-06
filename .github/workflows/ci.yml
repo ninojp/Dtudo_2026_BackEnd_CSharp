@@ -1,0 +1,225 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+# This workflow intentionally uses only GitHub-hosted runners and has no
+# production environment or production secret access.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build, test and lint
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.x
+          cache: npm
+          cache-dependency-path: DtudoSite/package-lock.json
+
+      - name: Restore .NET dependencies
+        run: dotnet restore Dtudo2026.slnx
+
+      - name: Build .NET Release with analyzers
+        run: dotnet build Dtudo2026.slnx --configuration Release --no-restore --nologo -p:ContinuousIntegrationBuild=true -p:EnableNETAnalyzers=true -p:AnalysisLevel=latest-recommended
+
+      - name: Run .NET tests
+        run: dotnet test Dtudo2026.slnx --configuration Release --no-build --no-restore --nologo --logger "trx;LogFileName=tests.trx"
+
+      - name: Install frontend dependencies
+        working-directory: DtudoSite
+        run: npm ci --ignore-scripts
+
+      - name: Run frontend lint
+        working-directory: DtudoSite
+        run: npm run lint
+
+      - name: Build frontend Release
+        working-directory: DtudoSite
+        run: npm run build
+
+  codeql-csharp:
+    name: CodeQL / C#
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3.37.6
+        with:
+          languages: csharp
+          build-mode: manual
+          queries: security-extended
+
+      - name: Restore .NET dependencies
+        run: dotnet restore Dtudo2026.slnx -p:EnableWindowsTargeting=true
+
+      - name: Build for CodeQL
+        run: dotnet build Dtudo2026.slnx --configuration Release --no-restore --nologo -p:EnableWindowsTargeting=true -p:ContinuousIntegrationBuild=true
+
+      - name: Analyze with CodeQL
+        uses: github/codeql-action/analyze@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3.37.6
+        with:
+          category: /language:csharp
+          upload: ${{ github.event_name == 'push' }}
+
+  codeql-javascript:
+    name: CodeQL / JavaScript
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3.37.6
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+
+      - name: Analyze with CodeQL
+        uses: github/codeql-action/analyze@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3.37.6
+        with:
+          category: /language:javascript
+          upload: ${{ github.event_name == 'push' }}
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.x
+          cache: npm
+          cache-dependency-path: DtudoSite/package-lock.json
+
+      - name: Restore .NET dependencies
+        run: dotnet restore Dtudo2026.slnx -p:EnableWindowsTargeting=true
+
+      - name: Audit NuGet dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list Dtudo2026.slnx package --vulnerable --include-transitive --format json > dotnet-audit.json
+          vulnerable_count="$(jq '[.projects[]?.frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?) | select((.vulnerabilities // []) | length > 0)] | length' dotnet-audit.json)"
+          if [ "$vulnerable_count" -gt 0 ]; then
+            echo "NuGet vulnerabilities found: $vulnerable_count"
+            cat dotnet-audit.json
+            exit 1
+          fi
+
+      - name: Install frontend dependencies
+        working-directory: DtudoSite
+        run: npm ci --ignore-scripts
+
+      - name: Audit npm dependencies
+        working-directory: DtudoSite
+        run: npm audit --audit-level=high
+
+  dependency-review:
+    name: Dependency review
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  workflow-hygiene:
+    name: Workflow hygiene
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Require immutable action references
+        shell: bash
+        run: |
+          set -euo pipefail
+          unpinned="$(rg --no-heading --line-number '^\s*uses:' .github/workflows | rg -v '@[0-9a-f]{40}(\s|$)' || true)"
+          if [ -n "$unpinned" ]; then
+            echo "All GitHub Actions must be pinned to a full commit SHA."
+            printf '%s\n' "$unpinned"
+            exit 1
+          fi

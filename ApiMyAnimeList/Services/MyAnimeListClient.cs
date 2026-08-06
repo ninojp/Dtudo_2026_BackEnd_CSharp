@@ -46,15 +46,25 @@ public sealed class MyAnimeListClient(
             var transient = response.StatusCode == HttpStatusCode.TooManyRequests || (int)response.StatusCode >= 500;
             if (!transient || attempt >= _options.MaxRetries)
             {
-                var body = await response.Content.ReadAsStringAsync(cancellationToken);
-                throw new HttpRequestException($"MyAnimeList retornou {(int)response.StatusCode}: {body}", null, response.StatusCode);
+                throw new HttpRequestException(
+                    $"MyAnimeList retornou {(int)response.StatusCode} no endpoint {GetEndpoint(relativeUrl)}.",
+                    null,
+                    response.StatusCode);
             }
 
             var delay = RetryDelay(response, attempt);
-            _logger.LogWarning("Falha transitória da MAL ({StatusCode}) em {Url}; tentativa {Attempt}. Aguardando {Delay}ms.", (int)response.StatusCode, relativeUrl, attempt + 1, delay.TotalMilliseconds);
+            _logger.LogWarning(
+                "Falha transitória da MAL ({StatusCode}) no endpoint {Endpoint}; tentativa {Attempt}. Aguardando {Delay}ms.",
+                (int)response.StatusCode,
+                GetEndpoint(relativeUrl),
+                attempt + 1,
+                delay.TotalMilliseconds);
             await Task.Delay(delay, cancellationToken);
         }
     }
+
+    private static string GetEndpoint(string relativeUrl)
+        => relativeUrl.Split('?', 2)[0];
 
     private static TimeSpan RetryDelay(HttpResponseMessage response, int attempt)
     {

@@ -9,6 +9,26 @@ namespace ApiMyAnimes.Tests;
 public class AuthControllerTests
 {
     [Fact]
+    public void MissingDatabaseConnection_FailsClosedDuringStartup()
+    {
+        using var app = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                {
+                    configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        ["ConnectionStrings:LocalDbConnection"] = string.Empty
+                    });
+                });
+            });
+
+        var exception = Assert.ThrowsAny<Exception>(() => app.CreateClient());
+
+        Assert.Contains("ConnectionStrings:LocalDbConnection", exception.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task RegisterAndLogin_ReturnAuthenticatedUserWithoutPassword()
     {
         var usersFile = Path.Combine(Path.GetTempPath(), $"dtudo-auth-{Guid.NewGuid():N}.json");
