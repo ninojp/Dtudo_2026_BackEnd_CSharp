@@ -37,10 +37,10 @@ partial class Frm_WinAppDtudo
         MnI_Conectar = new ToolStripMenuItem();
         MnI_Desconectar = new ToolStripMenuItem();
         MnI_Sair = new ToolStripMenuItem();
-        MnI_DtudoSite = new ToolStripMenuItem();
         MnI_MyAnimes = new ToolStripMenuItem();
         MnI_MyMusicX = new ToolStripMenuItem();
         MnI_NinoTI = new ToolStripMenuItem();
+        MnI_DtudoSite = new ToolStripMenuItem();
         Btn_MyAnimesForm = new WinAppDtudo.Controls.NavigationImageButton();
         Btn_MyMusicxForm = new WinAppDtudo.Controls.NavigationImageButton();
         Btn_NinoTIForm = new WinAppDtudo.Controls.NavigationImageButton();
@@ -89,7 +89,7 @@ partial class Frm_WinAppDtudo
         Mnu_Principal.BackgroundImageLayout = ImageLayout.None;
         Mnu_Principal.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
         Mnu_Principal.ImageScalingSize = new Size(32, 32);
-        Mnu_Principal.Items.AddRange(new ToolStripItem[] { MnI_Arquivo, MnI_DtudoSite, MnI_MyAnimes, MnI_MyMusicX, MnI_NinoTI });
+        Mnu_Principal.Items.AddRange(new ToolStripItem[] { MnI_Arquivo, MnI_MyAnimes, MnI_MyMusicX, MnI_NinoTI, MnI_DtudoSite });
         Mnu_Principal.Location = new Point(0, 0);
         Mnu_Principal.Name = "Mnu_Principal";
         Mnu_Principal.Padding = new Padding(7, 2, 0, 2);
@@ -145,14 +145,6 @@ partial class Frm_WinAppDtudo
         MnI_Sair.Text = "&Sair";
         MnI_Sair.Click += MnI_Sair_Click;
         // 
-        // MnI_DtudoSite
-        // 
-        MnI_DtudoSite.Image = Properties.Resources.YingYang_HD;
-        MnI_DtudoSite.Name = "MnI_DtudoSite";
-        MnI_DtudoSite.Size = new Size(137, 36);
-        MnI_DtudoSite.Text = "DtudoSite";
-        MnI_DtudoSite.Click += MnI_DtudoSite_Click;
-        // 
         // MnI_MyAnimes
         // 
         MnI_MyAnimes.Image = Properties.Resources.TI_link;
@@ -176,6 +168,14 @@ partial class Frm_WinAppDtudo
         MnI_NinoTI.Size = new Size(106, 36);
         MnI_NinoTI.Text = "NinoTI";
         MnI_NinoTI.Click += MnI_NinoTI_Click;
+        // 
+        // MnI_DtudoSite
+        // 
+        MnI_DtudoSite.Image = Properties.Resources.DtudoFireLogo;
+        MnI_DtudoSite.Name = "MnI_DtudoSite";
+        MnI_DtudoSite.Size = new Size(184, 36);
+        MnI_DtudoSite.Text = "DtudoWebView2";
+        MnI_DtudoSite.Click += MnI_DtudoSite_Click;
         // 
         // Btn_MyAnimesForm
         // 
@@ -319,7 +319,6 @@ partial class Frm_WinAppDtudo
     private ToolStripMenuItem MnI_CadastrarUsuario;
     private ToolStripMenuItem MnI_Conectar;
     private ToolStripMenuItem MnI_Desconectar;
-    private ToolStripMenuItem MnI_DtudoSite;
     private PictureBox pictureBox1;
     private RichTextBox richTextBox1;
     private RichTextBox richTextBox2;
@@ -331,4 +330,5 @@ partial class Frm_WinAppDtudo
     private Label Lbl_DescricaoMyAnimes;
     private Label label1;
     private Label label2;
+    private ToolStripMenuItem MnI_DtudoSite;
 }

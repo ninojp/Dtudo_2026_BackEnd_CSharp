@@ -116,7 +116,7 @@ public static class AppConfigurationService
 
     private sealed class DtudoSiteSettings
     {
-        public string StartUrl { get; set; } = "http://localhost:5173/myanimes";
+        public string StartUrl { get; set; } = "http://localhost:5173/animes";
         public string? Directory { get; set; }
         public string LocalDbInstanceName { get; set; } = "MSSQLLocalDB";
         public int StartupTimeoutSeconds { get; set; } = 90;

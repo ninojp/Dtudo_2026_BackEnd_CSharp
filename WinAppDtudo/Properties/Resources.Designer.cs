@@ -133,6 +133,16 @@ namespace WinAppDtudo.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap DtudoFireLogo {
+            get {
+                object obj = ResourceManager.GetObject("DtudoFireLogo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap EsquerdaGatilho {
             get {
                 object obj = ResourceManager.GetObject("EsquerdaGatilho", resourceCulture);
@@ -157,6 +167,16 @@ namespace WinAppDtudo.Properties {
             get {
                 object obj = ResourceManager.GetObject("InterrogacaoBrasilV1", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Logo_Dtudo_206x151 {
+            get {
+                object obj = ResourceManager.GetObject("Logo-Dtudo-206x151", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         

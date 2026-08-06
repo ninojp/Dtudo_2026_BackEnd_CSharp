@@ -118,29 +118,62 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="AnimesElas" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\AnimesElas.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="RadioAtivo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RadioAtivo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="TI_link" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\TI_link.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MyAnimeList_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MyAnimeList_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="BaixoGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\BaixoGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="CaveraMetal" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\CaveraMetal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="maskVReal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\maskVReal.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="CaveraMetalIco" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\CaveraMetalIco.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="pngwing.com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pngwing.com.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="CimaGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\CimaGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="EsquerdaGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\EsquerdaGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="code01-background" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\code01-background.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="MaskVendettaReal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MaskVendettaReal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="DireitaGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DireitaGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="EsquerdaGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\EsquerdaGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="violaoEmChamas" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\violaoEmChamas.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Logo_Dtudo_300p" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Logo_Dtudo_300p.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RosaDosVentos" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RosaDosVentos.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="code01-background" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\code01-background.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Vvendetta" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Vvendetta.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="maskVRealIco" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\maskVRealIco.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="AnimesElas" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AnimesElas.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="NotaMusicaIco" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NotaMusica.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Logo-Dtudo-206x151" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Logo-Dtudo-206x151.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="onePieceGroup" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\onePieceGroup.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="InterrogacaoBrasil" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\InterrogacaoBrasil.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -148,64 +181,37 @@
   <data name="InterrogacaoBrasilV1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\InterrogacaoBrasilV1.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Logo_Dtudo_300p" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Logo_Dtudo_300p.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="MaskV" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\MaskV.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="MaskVendettaReal" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\MaskVendettaReal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="maskVReal" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\maskVReal.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="maskVRealIco" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\maskVRealIco.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="MyAnimeList_Logo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\MyAnimeList_Logo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="NotaMusica" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NotaMusica.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="NotaMusicaIco" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NotaMusica.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="OlhoBRHacker1024" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\OlhoBRHacker1024.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="onePieceGroup" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\onePieceGroup.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pngwing.com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pngwing.com.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="pngwing3" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pngwing3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="RadioAtivo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\RadioAtivo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="RosaDosVentos" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\RosaDosVentos.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="SlaveMoney" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SlaveMoney.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="TI_link" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\TI_link.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="violaoEmChamas" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\violaoEmChamas.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Vvendetta" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Vvendetta.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="YingYang_HD" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\YingYang_HD.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="OlhoBRHacker1024" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\OlhoBRHacker1024.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CaveraMetal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CaveraMetal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="NotaMusica" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NotaMusica.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SlaveMoney" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SlaveMoney.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MaskV" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MaskV.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CaveraMetalIco" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CaveraMetalIco.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="YingYang_HD_Ico" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\YingYang_HD_Ico.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="CimaGatilho" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CimaGatilho.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DtudoFireLogo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DtudoFireLogo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

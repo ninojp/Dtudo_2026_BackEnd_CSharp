@@ -10,7 +10,6 @@ if (!healthUrl || separator !== "--" || commandParts.length === 0) {
   process.exit(1);
 }
 
-const pollIntervalMs = Number(process.env.DTUDO_HEALTH_POLL_INTERVAL_MS ?? 5000);
 const timeoutMs = Number(process.env.DTUDO_HEALTH_TIMEOUT_MS ?? 2500);
 
 async function requestHealth(url) {
@@ -56,17 +55,13 @@ async function hasOpenPort(url) {
   });
 }
 
-function waitForever(message) {
+function keepProcessAlive(message) {
   console.log(message);
-  setInterval(async () => {
-    if (!(await requestHealth(healthUrl))) {
-      console.warn(`[dtudo] ${healthUrl} parou de responder.`);
-    }
-  }, pollIntervalMs);
+  setInterval(() => {}, 2_147_483_647);
 }
 
 if (await requestHealth(healthUrl)) {
-  waitForever(`[dtudo] ${healthUrl} ja esta rodando. Mantendo este processo ativo para o concurrently.`);
+  keepProcessAlive(`[dtudo] ${healthUrl} ja esta rodando. Mantendo este processo ativo para o concurrently.`);
 } else if (await hasOpenPort(healthUrl)) {
   console.error(`[dtudo] A porta de ${healthUrl} esta ocupada, mas o health check nao respondeu OK.`);
   console.error("[dtudo] Feche o processo nessa porta ou ajuste a URL configurada antes de iniciar a stack.");

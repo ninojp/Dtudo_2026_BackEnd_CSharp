@@ -1,12 +1,6 @@
 # PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA
 
-EU CRIEI TODOS OS PROJETOS, ME PERGUNTE SE PRECISAR DE ALGUMA INFORMAÇÃO SOBRE ALGUM PROJETO.
-
 Abaixo vou descrever minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "Dtudo2026" e seus projetos internos relacionados
-
-Após as descrições, vou detalhar o que quero que seja feito.
-
-Aplicação Desktop: WinAppDtudo, Front-End: DtudoSite e Back-End: ApiMyAnimes, ApiMyAnimeList, LibDtudo.Shared.
 
 O projeto ApiNode (deve ser ignorado) está sendo gradativamente sendo substituído pelos projetos ApiMyAnimes e ApiMyAnimeList.
 
@@ -31,15 +25,11 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 -------------------------------------------------------------------------------------------------------------------------------------
 
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-No meu Form inicial, Frm_WinAppDtudo, dentro do designer já tenho 4 botões (DtudoSite, MyMusicX, MyAnimes, Nino T.I), Agora quero que o botão DtudoSite abra o site DtudoSite (que é um projeto web, C:\2026MeusProjetos\Dtudo2026\DtudoSite) dentro de uma guia de um WebBrowser (chrome).
 
-Não fui bem claro na minha solicitação anterior, então vou detalhar melhor o que quero:
-Quando clicar no botão DtudoSite, deve verificar se o DB Local e a ApiMyAnimes estão ativas, se não estiverem deve ativa-los e depois abrir o site (executa um terminal, node, roda o npm run serv, e depois abre o site no navegador externo Google Chrome). EM UM NAVEGADOR EXTERNO DE INTERNET, GOOGLE CHROME.
+
+
 
 Quero uma implementação Profissional Completa, Robusta e que contemple todos os casos que um Form WinForms pode ter.
-
- e que funcione corretamente em qualquer resolução de tela, incluindo telas 4K e monitores com diferentes escalas de DPI.
-
 
 
 ===================================================================================================
