@@ -1,0 +1,256 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/PaginationButtons/PaginationButtons.jsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=2dab77fc"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import __vite__cjsImport1_react_compilerRuntime from "/node_modules/.vite/deps/react_compiler-runtime.js?v=2dab77fc"; const _c = __vite__cjsImport1_react_compilerRuntime["c"];
+import styles from "/src/components/PaginationButtons/PaginationButtons.module.css";
+export default function PaginationButtons(t0) {
+  const $ = _c(49);
+  if ($[0] !== "903edd714bd7d99484ba5f69085bfdecbd1b17b3eed16483213b11dffc97855f") {
+    for (let $i = 0; $i < 49; $i += 1) {
+      $[$i] = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel");
+    }
+    $[0] = "903edd714bd7d99484ba5f69085bfdecbd1b17b3eed16483213b11dffc97855f";
+  }
+  const {
+    currentPage,
+    totalPages,
+    onPageChange,
+    isLoading
+  } = t0;
+  let t1;
+  if ($[1] !== isLoading || $[2] !== onPageChange || $[3] !== totalPages) {
+    t1 = (newPage) => {
+      if (newPage >= 1 && newPage <= totalPages && !isLoading) {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+        onPageChange(newPage);
+      }
+    };
+    $[1] = isLoading;
+    $[2] = onPageChange;
+    $[3] = totalPages;
+    $[4] = t1;
+  } else {
+    t1 = $[4];
+  }
+  const handlePageChange = t1;
+  let t2;
+  if ($[5] !== handlePageChange) {
+    t2 = () => handlePageChange(1);
+    $[5] = handlePageChange;
+    $[6] = t2;
+  } else {
+    t2 = $[6];
+  }
+  const t3 = currentPage === 1 || isLoading;
+  const t4 = currentPage === 1 || isLoading ? "not-allowed" : "pointer";
+  let t5;
+  if ($[7] !== t4) {
+    t5 = {
+      cursor: t4
+    };
+    $[7] = t4;
+    $[8] = t5;
+  } else {
+    t5 = $[8];
+  }
+  let t6;
+  if ($[9] !== t2 || $[10] !== t3 || $[11] !== t5) {
+    t6 = /* @__PURE__ */ jsxDEV("button", { className: styles.btnPaginacao, onClick: t2, disabled: t3, style: t5, children: "⏮ Início" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx",
+      lineNumber: 58,
+      columnNumber: 10
+    }, this);
+    $[9] = t2;
+    $[10] = t3;
+    $[11] = t5;
+    $[12] = t6;
+  } else {
+    t6 = $[12];
+  }
+  let t7;
+  if ($[13] !== currentPage || $[14] !== handlePageChange) {
+    t7 = () => handlePageChange(currentPage - 1);
+    $[13] = currentPage;
+    $[14] = handlePageChange;
+    $[15] = t7;
+  } else {
+    t7 = $[15];
+  }
+  const t8 = currentPage <= 1 || isLoading;
+  const t9 = currentPage <= 1 || isLoading ? "not-allowed" : "pointer";
+  let t10;
+  if ($[16] !== t9) {
+    t10 = {
+      cursor: t9
+    };
+    $[16] = t9;
+    $[17] = t10;
+  } else {
+    t10 = $[17];
+  }
+  let t11;
+  if ($[18] !== t10 || $[19] !== t7 || $[20] !== t8) {
+    t11 = /* @__PURE__ */ jsxDEV("button", { className: styles.btnPaginacao, onClick: t7, disabled: t8, style: t10, children: "◀ Anterior" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx",
+      lineNumber: 89,
+      columnNumber: 11
+    }, this);
+    $[18] = t10;
+    $[19] = t7;
+    $[20] = t8;
+    $[21] = t11;
+  } else {
+    t11 = $[21];
+  }
+  let t12;
+  if ($[22] === /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel")) {
+    t12 = /* @__PURE__ */ jsxDEV("span", { className: styles.spanTxtPaginacao, children: "Página" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx",
+      lineNumber: 99,
+      columnNumber: 11
+    }, this);
+    $[22] = t12;
+  } else {
+    t12 = $[22];
+  }
+  let t13;
+  if ($[23] === /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel")) {
+    t13 = /* @__PURE__ */ jsxDEV("span", { className: styles.spanTxtPaginacao, children: "de" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx",
+      lineNumber: 106,
+      columnNumber: 11
+    }, this);
+    $[23] = t13;
+  } else {
+    t13 = $[23];
+  }
+  let t14;
+  if ($[24] !== currentPage || $[25] !== handlePageChange) {
+    t14 = () => handlePageChange(currentPage + 1);
+    $[24] = currentPage;
+    $[25] = handlePageChange;
+    $[26] = t14;
+  } else {
+    t14 = $[26];
+  }
+  const t15 = currentPage >= totalPages || isLoading;
+  const t16 = currentPage >= totalPages || isLoading ? "not-allowed" : "pointer";
+  let t17;
+  if ($[27] !== t16) {
+    t17 = {
+      cursor: t16
+    };
+    $[27] = t16;
+    $[28] = t17;
+  } else {
+    t17 = $[28];
+  }
+  let t18;
+  if ($[29] !== t14 || $[30] !== t15 || $[31] !== t17) {
+    t18 = /* @__PURE__ */ jsxDEV("button", { className: styles.btnPaginacao, onClick: t14, disabled: t15, style: t17, children: "Próxima ▶" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx",
+      lineNumber: 134,
+      columnNumber: 11
+    }, this);
+    $[29] = t14;
+    $[30] = t15;
+    $[31] = t17;
+    $[32] = t18;
+  } else {
+    t18 = $[32];
+  }
+  let t19;
+  if ($[33] !== handlePageChange || $[34] !== totalPages) {
+    t19 = () => handlePageChange(totalPages);
+    $[33] = handlePageChange;
+    $[34] = totalPages;
+    $[35] = t19;
+  } else {
+    t19 = $[35];
+  }
+  const t20 = currentPage === totalPages || isLoading;
+  const t21 = currentPage === totalPages || isLoading ? "not-allowed" : "pointer";
+  let t22;
+  if ($[36] !== t21) {
+    t22 = {
+      cursor: t21
+    };
+    $[36] = t21;
+    $[37] = t22;
+  } else {
+    t22 = $[37];
+  }
+  let t23;
+  if ($[38] !== t19 || $[39] !== t20 || $[40] !== t22) {
+    t23 = /* @__PURE__ */ jsxDEV("button", { className: styles.btnPaginacao, onClick: t19, disabled: t20, style: t22, children: "Última ⏭" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx",
+      lineNumber: 165,
+      columnNumber: 11
+    }, this);
+    $[38] = t19;
+    $[39] = t20;
+    $[40] = t22;
+    $[41] = t23;
+  } else {
+    t23 = $[41];
+  }
+  let t24;
+  if ($[42] !== currentPage || $[43] !== t11 || $[44] !== t18 || $[45] !== t23 || $[46] !== t6 || $[47] !== totalPages) {
+    t24 = /* @__PURE__ */ jsxDEV("div", { className: styles.divContainerBtnPag, children: [
+      t6,
+      t11,
+      t12,
+      " ",
+      currentPage,
+      " ",
+      t13,
+      " ",
+      totalPages,
+      t18,
+      t23
+    ] }, void 0, true, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx",
+      lineNumber: 175,
+      columnNumber: 11
+    }, this);
+    $[42] = currentPage;
+    $[43] = t11;
+    $[44] = t18;
+    $[45] = t23;
+    $[46] = t6;
+    $[47] = totalPages;
+    $[48] = t24;
+  } else {
+    t24 = $[48];
+  }
+  return t24;
+}
+_c2 = PaginationButtons;
+var _c2;
+$RefreshReg$(_c2, "PaginationButtons");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/PaginationButtons/PaginationButtons.jsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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QyxNQUFBLE1BQUFvQztBQUFBcEMsTUFBQSxNQUFBcUM7QUFBQXJDLE1BQUEsTUFBQXVDO0FBQUF2QyxNQUFBLE1BQUF3QztBQUFBQSxFQUFBO0FBQUFBLFVBQUF4QyxFQUFBO0FBQUE7QUFBQSxNQUFBeUM7QUFBQSxNQUFBekMsRUFBQSxRQUFBSyxlQUFBTCxFQUFBLFFBQUEyQixPQUFBM0IsRUFBQSxRQUFBbUMsT0FBQW5DLEVBQUEsUUFBQXdDLE9BQUF4QyxFQUFBLFFBQUFxQixNQUFBckIsRUFBQSxRQUFBTSxZQUFBO0FBakNYbUMsVUFBQSxnQ0FBZ0IsV0FBQTVDLE9BQU02QyxvQkFDcEJyQjtBQUFBQTtBQUFBQSxNQVFBTTtBQUFBQSxNQVFBQztBQUFBQSxNQUF1RDtBQUFBLE1BQUV2QjtBQUFBQSxNQUFZO0FBQUEsTUFBQ3lCO0FBQUFBLE1BQW1EO0FBQUEsTUFBRXhCO0FBQUFBLE1BRTNINkI7QUFBQUEsTUFRQUs7QUFBQUEsU0EzQkY7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQWtDQTtBQUFNeEMsTUFBQSxNQUFBSztBQUFBTCxNQUFBLE1BQUEyQjtBQUFBM0IsTUFBQSxNQUFBbUM7QUFBQW5DLE1BQUEsTUFBQXdDO0FBQUF4QyxNQUFBLE1BQUFxQjtBQUFBckIsTUFBQSxNQUFBTTtBQUFBTixNQUFBLE1BQUF5QztBQUFBQSxFQUFBO0FBQUFBLFVBQUF6QyxFQUFBO0FBQUE7QUFBQSxTQWxDTnlDO0FBa0NNO0FBRVRFLE1BQUE3QztBQUFBLElBQUE2QztBQUFBQyxhQUFBRCxLQUFBIiwibmFtZXMiOlsic3R5bGVzIiwiUGFnaW5hdGlvbkJ1dHRvbnMiLCJ0MCIsIiQiLCJfYyIsIiRpIiwiU3ltYm9sIiwiZm9yIiwiY3VycmVudFBhZ2UiLCJ0b3RhbFBhZ2VzIiwib25QYWdlQ2hhbmdlIiwiaXNMb2FkaW5nIiwidDEiLCJuZXdQYWdlIiwid2luZG93Iiwic2Nyb2xsVG8iLCJ0b3AiLCJiZWhhdmlvciIsImhhbmRsZVBhZ2VDaGFuZ2UiLCJ0MiIsInQzIiwidDQiLCJ0NSIsImN1cnNvciIsInQ2IiwiYnRuUGFnaW5hY2FvIiwidDciLCJ0OCIsInQ5IiwidDEwIiwidDExIiwidDEyIiwic3BhblR4dFBhZ2luYWNhbyIsInQxMyIsInQxNCIsInQxNSIsInQxNiIsInQxNyIsInQxOCIsInQxOSIsInQyMCIsInQyMSIsInQyMiIsInQyMyIsInQyNCIsImRpdkNvbnRhaW5lckJ0blBhZyIsIl9jMiIsIiRSZWZyZXNoUmVnJCJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlcyI6WyJQYWdpbmF0aW9uQnV0dG9ucy5qc3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHN0eWxlcyBmcm9tICcuL1BhZ2luYXRpb25CdXR0b25zLm1vZHVsZS5jc3MnO1xuXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBQYWdpbmF0aW9uQnV0dG9ucyh7ICBjdXJyZW50UGFnZSwgdG90YWxQYWdlcywgb25QYWdlQ2hhbmdlLCBpc0xvYWRpbmcgfSkge1xuICAvKipcbiAgICogTWFuaXB1bGFkb3IgcGFyYSBtdWRhbsOnYSBkZSBww6FnaW5hLlxuICAgKiBSb2xhIGEgamFuZWxhIHBhcmEgbyB0b3BvIGUgY2hhbWEgYSBmdW7Dp8OjbyBvblBhZ2VDaGFuZ2UgY29tIGEgbm92YSBww6FnaW5hLlxuICAgKiBAcGFyYW0ge251bWJlcn0gbmV3UGFnZSAtIE8gbsO6bWVybyBkYSBub3ZhIHDDoWdpbmEuXG4gICAqL1xuICBjb25zdCBoYW5kbGVQYWdlQ2hhbmdlID0gKG5ld1BhZ2UpID0+IHtcbiAgICBpZiAobmV3UGFnZSA+PSAxICYmIG5ld1BhZ2UgPD0gdG90YWxQYWdlcyAmJiAhaXNMb2FkaW5nKSB7XG4gICAgICB3aW5kb3cuc2Nyb2xsVG8oe1xuICAgICAgICB0b3A6IDAsXG4gICAgICAgIGJlaGF2aW9yOiAnc21vb3RoJ1xuICAgICAgfSk7XG4gICAgICBvblBhZ2VDaGFuZ2UobmV3UGFnZSk7XG4gICAgfVxuICB9O1xuXG4gIC8vPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPXtzdHlsZXMuZGl2Q29udGFpbmVyQnRuUGFnfT5cbiAgICAgIDxidXR0b24gY2xhc3NOYW1lPXtzdHlsZXMuYnRuUGFnaW5hY2FvfVxuICAgICAgICBvbkNsaWNrPXsoKSA9PiBoYW5kbGVQYWdlQ2hhbmdlKDEpfVxuICAgICAgICBkaXNhYmxlZD17Y3VycmVudFBhZ2UgPT09IDEgfHwgaXNMb2FkaW5nfVxuICAgICAgICBzdHlsZT17eyBjdXJzb3I6IGN1cnJlbnRQYWdlID09PSAxIHx8IGlzTG9hZGluZyA/ICdub3QtYWxsb3dlZCcgOiAncG9pbnRlcicgfX1cbiAgICAgID5cbiAgICAgICAg4o+uIEluw61jaW9cbiAgICAgIDwvYnV0dG9uPlxuXG4gICAgICA8YnV0dG9uIGNsYXNzTmFtZT17c3R5bGVzLmJ0blBhZ2luYWNhb31cbiAgICAgICAgb25DbGljaz17KCkgPT4gaGFuZGxlUGFnZUNoYW5nZShjdXJyZW50UGFnZSAtIDEpfVxuICAgICAgICBkaXNhYmxlZD17Y3VycmVudFBhZ2UgPD0gMSB8fCBpc0xvYWRpbmd9XG4gICAgICAgIHN0eWxlPXt7IGN1cnNvcjogY3VycmVudFBhZ2UgPD0gMSB8fCBpc0xvYWRpbmcgPyAnbm90LWFsbG93ZWQnIDogJ3BvaW50ZXInIH19XG4gICAgICA+XG4gICAgICAgIOKXgCBBbnRlcmlvclxuICAgICAgPC9idXR0b24+XG5cbiAgICAgIDxzcGFuIGNsYXNzTmFtZT17c3R5bGVzLnNwYW5UeHRQYWdpbmFjYW99PlDDoWdpbmE8L3NwYW4+IHtjdXJyZW50UGFnZX0gPHNwYW4gY2xhc3NOYW1lPXtzdHlsZXMuc3BhblR4dFBhZ2luYWNhb30+ZGU8L3NwYW4+IHt0b3RhbFBhZ2VzfVxuXG4gICAgICA8YnV0dG9uIGNsYXNzTmFtZT17c3R5bGVzLmJ0blBhZ2luYWNhb31cbiAgICAgICAgb25DbGljaz17KCkgPT4gaGFuZGxlUGFnZUNoYW5nZShjdXJyZW50UGFnZSArIDEpfVxuICAgICAgICBkaXNhYmxlZD17Y3VycmVudFBhZ2UgPj0gdG90YWxQYWdlcyB8fCBpc0xvYWRpbmd9XG4gICAgICAgIHN0eWxlPXt7IGN1cnNvcjogY3VycmVudFBhZ2UgPj0gdG90YWxQYWdlcyB8fCBpc0xvYWRpbmcgPyAnbm90LWFsbG93ZWQnIDogJ3BvaW50ZXInIH19XG4gICAgICA+XG4gICAgICAgIFByw7N4aW1hIOKWtlxuICAgICAgPC9idXR0b24+XG5cbiAgICAgIDxidXR0b24gY2xhc3NOYW1lPXtzdHlsZXMuYnRuUGFnaW5hY2FvfVxuICAgICAgICBvbkNsaWNrPXsoKSA9PiBoYW5kbGVQYWdlQ2hhbmdlKHRvdGFsUGFnZXMpfVxuICAgICAgICBkaXNhYmxlZD17Y3VycmVudFBhZ2UgPT09IHRvdGFsUGFnZXMgfHwgaXNMb2FkaW5nfVxuICAgICAgICBzdHlsZT17eyBjdXJzb3I6IGN1cnJlbnRQYWdlID09PSB0b3RhbFBhZ2VzIHx8IGlzTG9hZGluZyA/ICdub3QtYWxsb3dlZCcgOiAncG9pbnRlcicgfX1cbiAgICAgID5cbiAgICAgICAgw5psdGltYSDij61cbiAgICAgIDwvYnV0dG9uPlxuICAgIDwvZGl2PlxuICApO1xufVxuIl0sImZpbGUiOiJDOi8yMDI2TWV1c1Byb2pldG9zL0R0dWRvMjAyNi9EdHVkb1NpdGUvc3JjL2NvbXBvbmVudHMvUGFnaW5hdGlvbkJ1dHRvbnMvUGFnaW5hdGlvbkJ1dHRvbnMuanN4In0=

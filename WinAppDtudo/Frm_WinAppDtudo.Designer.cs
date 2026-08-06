@@ -30,24 +30,29 @@ partial class Frm_WinAppDtudo
     {
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Frm_WinAppDtudo));
         Lbl_Titulo = new Label();
-        Btn_DtudoSite = new Button();
+        Btn_DtudoSite = new WinAppDtudo.Controls.NavigationImageButton();
         Mnu_Principal = new MenuStrip();
         MnI_Arquivo = new ToolStripMenuItem();
         MnI_CadastrarUsuario = new ToolStripMenuItem();
         MnI_Conectar = new ToolStripMenuItem();
         MnI_Desconectar = new ToolStripMenuItem();
         MnI_Sair = new ToolStripMenuItem();
+        MnI_DtudoSite = new ToolStripMenuItem();
         MnI_MyAnimes = new ToolStripMenuItem();
         MnI_MyMusicX = new ToolStripMenuItem();
         MnI_NinoTI = new ToolStripMenuItem();
-        Btn_MyAnimesForm = new Button();
-        Btn_MyMusicxForm = new Button();
-        Btn_NinoTIForm = new Button();
+        Btn_MyAnimesForm = new WinAppDtudo.Controls.NavigationImageButton();
+        Btn_MyMusicxForm = new WinAppDtudo.Controls.NavigationImageButton();
+        Btn_NinoTIForm = new WinAppDtudo.Controls.NavigationImageButton();
         Lbl_DescricaoMyMusicX = new Label();
         Lbl_DescricaoMyAnimes = new Label();
         label1 = new Label();
         label2 = new Label();
+        ((System.ComponentModel.ISupportInitialize)Btn_DtudoSite).BeginInit();
         Mnu_Principal.SuspendLayout();
+        ((System.ComponentModel.ISupportInitialize)Btn_MyAnimesForm).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)Btn_MyMusicxForm).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)Btn_NinoTIForm).BeginInit();
         SuspendLayout();
         // 
         // Lbl_Titulo
@@ -66,21 +71,16 @@ partial class Frm_WinAppDtudo
         // 
         // Btn_DtudoSite
         // 
+        Btn_DtudoSite.AccessibleRole = AccessibleRole.PushButton;
         Btn_DtudoSite.Anchor = AnchorStyles.Top;
         Btn_DtudoSite.BackColor = Color.Transparent;
-        Btn_DtudoSite.BackgroundImage = (Image)resources.GetObject("Btn_DtudoSite.BackgroundImage");
-        Btn_DtudoSite.BackgroundImageLayout = ImageLayout.Stretch;
-        Btn_DtudoSite.FlatAppearance.BorderSize = 0;
-        Btn_DtudoSite.FlatStyle = FlatStyle.Flat;
-        Btn_DtudoSite.Font = new Font("Segoe UI", 11.1F, FontStyle.Bold, GraphicsUnit.Point, 0);
-        Btn_DtudoSite.ForeColor = Color.Gold;
+        Btn_DtudoSite.Image = (Image)resources.GetObject("Btn_DtudoSite.Image");
         Btn_DtudoSite.Location = new Point(280, 125);
         Btn_DtudoSite.Margin = new Padding(2);
         Btn_DtudoSite.Name = "Btn_DtudoSite";
         Btn_DtudoSite.Size = new Size(242, 86);
+        Btn_DtudoSite.SizeMode = PictureBoxSizeMode.StretchImage;
         Btn_DtudoSite.TabIndex = 1;
-        Btn_DtudoSite.TextAlign = ContentAlignment.TopCenter;
-        Btn_DtudoSite.UseVisualStyleBackColor = false;
         Btn_DtudoSite.Click += Btn_DtudoSite_Click;
         // 
         // Mnu_Principal
@@ -89,7 +89,7 @@ partial class Frm_WinAppDtudo
         Mnu_Principal.BackgroundImageLayout = ImageLayout.None;
         Mnu_Principal.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
         Mnu_Principal.ImageScalingSize = new Size(32, 32);
-        Mnu_Principal.Items.AddRange(new ToolStripItem[] { MnI_Arquivo, MnI_MyAnimes, MnI_MyMusicX, MnI_NinoTI });
+        Mnu_Principal.Items.AddRange(new ToolStripItem[] { MnI_Arquivo, MnI_DtudoSite, MnI_MyAnimes, MnI_MyMusicX, MnI_NinoTI });
         Mnu_Principal.Location = new Point(0, 0);
         Mnu_Principal.Name = "Mnu_Principal";
         Mnu_Principal.Padding = new Padding(7, 2, 0, 2);
@@ -145,6 +145,14 @@ partial class Frm_WinAppDtudo
         MnI_Sair.Text = "&Sair";
         MnI_Sair.Click += MnI_Sair_Click;
         // 
+        // MnI_DtudoSite
+        // 
+        MnI_DtudoSite.Image = Properties.Resources.YingYang_HD;
+        MnI_DtudoSite.Name = "MnI_DtudoSite";
+        MnI_DtudoSite.Size = new Size(137, 36);
+        MnI_DtudoSite.Text = "DtudoSite";
+        MnI_DtudoSite.Click += MnI_DtudoSite_Click;
+        // 
         // MnI_MyAnimes
         // 
         MnI_MyAnimes.Image = Properties.Resources.TI_link;
@@ -171,55 +179,44 @@ partial class Frm_WinAppDtudo
         // 
         // Btn_MyAnimesForm
         // 
+        Btn_MyAnimesForm.AccessibleRole = AccessibleRole.PushButton;
         Btn_MyAnimesForm.Anchor = AnchorStyles.Bottom;
         Btn_MyAnimesForm.BackColor = Color.Transparent;
-        Btn_MyAnimesForm.BackgroundImage = Properties.Resources.onePieceGroup;
-        Btn_MyAnimesForm.BackgroundImageLayout = ImageLayout.Stretch;
-        Btn_MyAnimesForm.FlatAppearance.BorderSize = 0;
-        Btn_MyAnimesForm.FlatStyle = FlatStyle.Flat;
-        Btn_MyAnimesForm.Font = new Font("Microsoft Sans Serif", 16.125F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        Btn_MyAnimesForm.Image = Properties.Resources.onePieceGroup;
         Btn_MyAnimesForm.Location = new Point(532, 462);
         Btn_MyAnimesForm.Margin = new Padding(1, 2, 1, 2);
         Btn_MyAnimesForm.Name = "Btn_MyAnimesForm";
         Btn_MyAnimesForm.Size = new Size(272, 233);
+        Btn_MyAnimesForm.SizeMode = PictureBoxSizeMode.StretchImage;
         Btn_MyAnimesForm.TabIndex = 14;
-        Btn_MyAnimesForm.TextAlign = ContentAlignment.TopLeft;
-        Btn_MyAnimesForm.UseVisualStyleBackColor = false;
         Btn_MyAnimesForm.Click += Btn_MyAnimesForm_Click;
         // 
         // Btn_MyMusicxForm
         // 
+        Btn_MyMusicxForm.AccessibleRole = AccessibleRole.PushButton;
         Btn_MyMusicxForm.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
         Btn_MyMusicxForm.BackColor = Color.Transparent;
-        Btn_MyMusicxForm.BackgroundImage = Properties.Resources.NotaMusica;
-        Btn_MyMusicxForm.BackgroundImageLayout = ImageLayout.Stretch;
-        Btn_MyMusicxForm.FlatAppearance.BorderSize = 0;
-        Btn_MyMusicxForm.FlatStyle = FlatStyle.Flat;
-        Btn_MyMusicxForm.Location = new Point(83, 375);
+        Btn_MyMusicxForm.Image = Properties.Resources.NotaMusica;
+        Btn_MyMusicxForm.Location = new Point(96, 377);
         Btn_MyMusicxForm.Margin = new Padding(1, 2, 1, 2);
         Btn_MyMusicxForm.Name = "Btn_MyMusicxForm";
         Btn_MyMusicxForm.Size = new Size(85, 213);
+        Btn_MyMusicxForm.SizeMode = PictureBoxSizeMode.StretchImage;
         Btn_MyMusicxForm.TabIndex = 15;
-        Btn_MyMusicxForm.UseVisualStyleBackColor = false;
         Btn_MyMusicxForm.Click += Btn_MyMusicxForm_Click;
         // 
         // Btn_NinoTIForm
         // 
+        Btn_NinoTIForm.AccessibleRole = AccessibleRole.PushButton;
         Btn_NinoTIForm.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         Btn_NinoTIForm.BackColor = Color.Transparent;
-        Btn_NinoTIForm.BackgroundImage = Properties.Resources.TI_link;
-        Btn_NinoTIForm.BackgroundImageLayout = ImageLayout.Stretch;
-        Btn_NinoTIForm.FlatAppearance.BorderSize = 0;
-        Btn_NinoTIForm.FlatStyle = FlatStyle.Flat;
-        Btn_NinoTIForm.Font = new Font("Segoe Fluent Icons", 16.125F, FontStyle.Bold, GraphicsUnit.Point, 0);
-        Btn_NinoTIForm.ForeColor = Color.Gold;
+        Btn_NinoTIForm.Image = Properties.Resources.TI_link;
         Btn_NinoTIForm.Location = new Point(1044, 273);
         Btn_NinoTIForm.Margin = new Padding(1, 2, 1, 2);
         Btn_NinoTIForm.Name = "Btn_NinoTIForm";
         Btn_NinoTIForm.Size = new Size(144, 120);
+        Btn_NinoTIForm.SizeMode = PictureBoxSizeMode.StretchImage;
         Btn_NinoTIForm.TabIndex = 16;
-        Btn_NinoTIForm.TextAlign = ContentAlignment.BottomLeft;
-        Btn_NinoTIForm.UseVisualStyleBackColor = false;
         Btn_NinoTIForm.Click += Btn_NinoTIForm_Click;
         // 
         // Lbl_DescricaoMyMusicX
@@ -299,8 +296,12 @@ partial class Frm_WinAppDtudo
         StartPosition = FormStartPosition.CenterScreen;
         Text = "WinApp Dtudo";
         MouseDown += Frm_WinAppDtudo_MouseDown;
+        ((System.ComponentModel.ISupportInitialize)Btn_DtudoSite).EndInit();
         Mnu_Principal.ResumeLayout(false);
         Mnu_Principal.PerformLayout();
+        ((System.ComponentModel.ISupportInitialize)Btn_MyAnimesForm).EndInit();
+        ((System.ComponentModel.ISupportInitialize)Btn_MyMusicxForm).EndInit();
+        ((System.ComponentModel.ISupportInitialize)Btn_NinoTIForm).EndInit();
         ResumeLayout(false);
         PerformLayout();
     }
@@ -308,7 +309,7 @@ partial class Frm_WinAppDtudo
     #endregion
 
     private Label Lbl_Titulo;
-    private Button Btn_DtudoSite;
+    private WinAppDtudo.Controls.NavigationImageButton Btn_DtudoSite;
     private MenuStrip Mnu_Principal;
     private ToolStripMenuItem MnI_Arquivo;
     private ToolStripMenuItem MnI_Sair;
@@ -318,13 +319,14 @@ partial class Frm_WinAppDtudo
     private ToolStripMenuItem MnI_CadastrarUsuario;
     private ToolStripMenuItem MnI_Conectar;
     private ToolStripMenuItem MnI_Desconectar;
+    private ToolStripMenuItem MnI_DtudoSite;
     private PictureBox pictureBox1;
     private RichTextBox richTextBox1;
     private RichTextBox richTextBox2;
     private RichTextBox richTextBox3;
-    private Button Btn_MyAnimesForm;
-    private Button Btn_MyMusicxForm;
-    private Button Btn_NinoTIForm;
+    private WinAppDtudo.Controls.NavigationImageButton Btn_MyAnimesForm;
+    private WinAppDtudo.Controls.NavigationImageButton Btn_MyMusicxForm;
+    private WinAppDtudo.Controls.NavigationImageButton Btn_NinoTIForm;
     private Label Lbl_DescricaoMyMusicX;
     private Label Lbl_DescricaoMyAnimes;
     private Label label1;

@@ -1,0 +1,225 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/NavBarPage/NavBarPage.jsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=2dab77fc"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport1_react_compilerRuntime from "/node_modules/.vite/deps/react_compiler-runtime.js?v=2dab77fc"; const _c = __vite__cjsImport1_react_compilerRuntime["c"];
+import styles from "/src/components/NavBarPage/NavBarPage.module.css";
+import { Link } from "/node_modules/.vite/deps/react-router-dom.js?v=2dab77fc";
+import { IconAccount } from "/src/components/Icons/IconAccount.jsx";
+import { IconLogout } from "/src/components/Icons/IconLogout.jsx";
+import IconRegister from "/src/components/Icons/IconRegister.jsx";
+import AuthContext from "/src/context_api/AuthContext/AuthContext.js";
+import { IconLogin } from "/src/components/Icons/IconLogin.jsx";
+import __vite__cjsImport9_react from "/node_modules/.vite/deps/react.js?v=2dab77fc"; const useContext = __vite__cjsImport9_react["useContext"];
+export default function NavBarPage() {
+  _s();
+  const $ = _c(18);
+  if ($[0] !== "c70924e21f7eddae94fe7d48b738b9e341926a4d5aae020bd119cbec100ab042") {
+    for (let $i = 0; $i < 18; $i += 1) {
+      $[$i] = /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel");
+    }
+    $[0] = "c70924e21f7eddae94fe7d48b738b9e341926a4d5aae020bd119cbec100ab042";
+  }
+  const {
+    isAuthenticated
+  } = useContext(AuthContext);
+  let t0;
+  if ($[1] === /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel")) {
+    t0 = /* @__PURE__ */ jsxDEV(Link, { to: "/", children: /* @__PURE__ */ jsxDEV("div", { className: styles.divContainerImgLogo, children: /* @__PURE__ */ jsxDEV("img", { src: "/Logo_Dtudo_300p.png", alt: "Imagem Logo Dtudo" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 25,
+      columnNumber: 67
+    }, this) }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 25,
+      columnNumber: 23
+    }, this) }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 25,
+      columnNumber: 10
+    }, this);
+    $[1] = t0;
+  } else {
+    t0 = $[1];
+  }
+  let t1;
+  if ($[2] === /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel")) {
+    t1 = /* @__PURE__ */ jsxDEV(Link, { to: "animes", children: /* @__PURE__ */ jsxDEV("li", { className: styles.liMenuLink, children: " Animes " }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 32,
+      columnNumber: 28
+    }, this) }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 32,
+      columnNumber: 10
+    }, this);
+    $[2] = t1;
+  } else {
+    t1 = $[2];
+  }
+  let t2;
+  if ($[3] === /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel")) {
+    t2 = /* @__PURE__ */ jsxDEV(Link, { to: "ninoti", children: /* @__PURE__ */ jsxDEV("li", { className: styles.liMenuLink, children: " NinoT.I " }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 39,
+      columnNumber: 28
+    }, this) }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 39,
+      columnNumber: 10
+    }, this);
+    $[3] = t2;
+  } else {
+    t2 = $[3];
+  }
+  let t3;
+  if ($[4] === /* @__PURE__ */ Symbol.for("react.memo_cache_sentinel")) {
+    t3 = /* @__PURE__ */ jsxDEV("div", { className: styles.divContainerLogoTituloMenu, children: [
+      t0,
+      /* @__PURE__ */ jsxDEV("ul", { className: styles.ulMenuLinksContanier, children: [
+        t1,
+        t2,
+        /* @__PURE__ */ jsxDEV(Link, { to: "mymusicx", children: /* @__PURE__ */ jsxDEV("li", { className: styles.liMenuLink, children: " MyMusicX " }, void 0, false, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+          lineNumber: 46,
+          columnNumber: 137
+        }, this) }, void 0, false, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+          lineNumber: 46,
+          columnNumber: 117
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+        lineNumber: 46,
+        columnNumber: 65
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 46,
+      columnNumber: 10
+    }, this);
+    $[4] = t3;
+  } else {
+    t3 = $[4];
+  }
+  let t4;
+  if ($[5] !== isAuthenticated) {
+    t4 = !isAuthenticated && /* @__PURE__ */ jsxDEV(Link, { to: "/auth/register", title: "Criar Conta", children: /* @__PURE__ */ jsxDEV(IconRegister, { cor: "#ffffffc0", largura: "24px", altura: "24px" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 53,
+      columnNumber: 76
+    }, this) }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 53,
+      columnNumber: 30
+    }, this);
+    $[5] = isAuthenticated;
+    $[6] = t4;
+  } else {
+    t4 = $[6];
+  }
+  let t5;
+  if ($[7] !== isAuthenticated) {
+    t5 = !isAuthenticated && /* @__PURE__ */ jsxDEV(Link, { to: "/auth/login", title: "Fazer Login", children: /* @__PURE__ */ jsxDEV(IconLogin, { cor: "#ffffffc0", largura: "24px", altura: "24px" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 61,
+      columnNumber: 73
+    }, this) }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 61,
+      columnNumber: 30
+    }, this);
+    $[7] = isAuthenticated;
+    $[8] = t5;
+  } else {
+    t5 = $[8];
+  }
+  let t6;
+  if ($[9] !== isAuthenticated) {
+    t6 = isAuthenticated && /* @__PURE__ */ jsxDEV(Link, { to: "#", title: "Perfil Usuário", children: /* @__PURE__ */ jsxDEV(IconAccount, { cor: "#ffffffc0", largura: "24px", altura: "24px" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 69,
+      columnNumber: 70
+    }, this) }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 69,
+      columnNumber: 29
+    }, this);
+    $[9] = isAuthenticated;
+    $[10] = t6;
+  } else {
+    t6 = $[10];
+  }
+  let t7;
+  if ($[11] !== isAuthenticated) {
+    t7 = isAuthenticated && /* @__PURE__ */ jsxDEV(Link, { to: "/auth/logout", title: "Fazer Logout", children: /* @__PURE__ */ jsxDEV(IconLogout, { cor: "#ffffffc0", largura: "24px", altura: "24px" }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 77,
+      columnNumber: 74
+    }, this) }, void 0, false, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 77,
+      columnNumber: 29
+    }, this);
+    $[11] = isAuthenticated;
+    $[12] = t7;
+  } else {
+    t7 = $[12];
+  }
+  let t8;
+  if ($[13] !== t4 || $[14] !== t5 || $[15] !== t6 || $[16] !== t7) {
+    t8 = /* @__PURE__ */ jsxDEV("nav", { className: styles.navBarPageContainer, children: [
+      t3,
+      /* @__PURE__ */ jsxDEV("div", { className: styles.divContainerIconsLogin, children: [
+        t4,
+        t5,
+        t6,
+        t7
+      ] }, void 0, true, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+        lineNumber: 85,
+        columnNumber: 58
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx",
+      lineNumber: 85,
+      columnNumber: 10
+    }, this);
+    $[13] = t4;
+    $[14] = t5;
+    $[15] = t6;
+    $[16] = t7;
+    $[17] = t8;
+  } else {
+    t8 = $[17];
+  }
+  return t8;
+}
+_s(NavBarPage, "gDsCjeeItUuvgOWf1v4qoK9RF6k=");
+_c2 = NavBarPage;
+;
+var _c2;
+$RefreshReg$(_c2, "NavBarPage");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/components/NavBarPage/NavBarPage.jsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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QSxTQXhCSjtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBeUJBO0FBQU1qQixNQUFBLE1BQUFjO0FBQUFkLE1BQUEsTUFBQWU7QUFBQWYsTUFBQSxNQUFBZ0I7QUFBQWhCLE1BQUEsTUFBQWlCO0FBQUFqQixNQUFBLE1BQUFrQjtBQUFBQSxFQUFBO0FBQUFBLFNBQUFsQixFQUFBO0FBQUE7QUFBQSxTQXpCTmtCO0FBeUJNO0FBRWJuQixHQUFBRCxZQUFBO0FBQUF1QixNQUFBdkI7QUFBQTtBQUFDLElBQUF1QjtBQUFBQyxhQUFBRCxLQUFBIiwibmFtZXMiOlsic3R5bGVzIiwiTGluayIsIkljb25BY2NvdW50IiwiSWNvbkxvZ291dCIsIkljb25SZWdpc3RlciIsIkF1dGhDb250ZXh0IiwiSWNvbkxvZ2luIiwidXNlQ29udGV4dCIsIk5hdkJhclBhZ2UiLCJfcyIsIiQiLCJfYyIsIiRpIiwiU3ltYm9sIiwiZm9yIiwiaXNBdXRoZW50aWNhdGVkIiwidDAiLCJkaXZDb250YWluZXJJbWdMb2dvIiwidDEiLCJsaU1lbnVMaW5rIiwidDIiLCJ0MyIsImRpdkNvbnRhaW5lckxvZ29UaXR1bG9NZW51IiwidWxNZW51TGlua3NDb250YW5pZXIiLCJ0NCIsInQ1IiwidDYiLCJ0NyIsInQ4IiwibmF2QmFyUGFnZUNvbnRhaW5lciIsImRpdkNvbnRhaW5lckljb25zTG9naW4iLCJfYzIiLCIkUmVmcmVzaFJlZyQiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZXMiOlsiTmF2QmFyUGFnZS5qc3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHN0eWxlcyBmcm9tICcuL05hdkJhclBhZ2UubW9kdWxlLmNzcyc7XG5pbXBvcnQgeyBMaW5rIH0gZnJvbSAncmVhY3Qtcm91dGVyLWRvbSc7XG5pbXBvcnQgeyBJY29uQWNjb3VudCB9IGZyb20gJy4uL0ljb25zL0ljb25BY2NvdW50JztcbmltcG9ydCB7IEljb25Mb2dvdXQgfSBmcm9tICcuLi9JY29ucy9JY29uTG9nb3V0JztcbmltcG9ydCBJY29uUmVnaXN0ZXIgZnJvbSAnLi4vSWNvbnMvSWNvblJlZ2lzdGVyJztcbmltcG9ydCBBdXRoQ29udGV4dCBmcm9tICcuLi8uLi9jb250ZXh0X2FwaS9BdXRoQ29udGV4dC9BdXRoQ29udGV4dCc7XG5pbXBvcnQgeyBJY29uTG9naW4gfSBmcm9tIFwiLi4vSWNvbnMvSWNvbkxvZ2luXCI7XG5pbXBvcnQgeyB1c2VDb250ZXh0IH0gZnJvbSAncmVhY3QnO1xuXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBOYXZCYXJQYWdlKCkge1xuICAgIGNvbnN0IHsgaXNBdXRoZW50aWNhdGVkIH0gPSB1c2VDb250ZXh0KEF1dGhDb250ZXh0KTtcbiAgICByZXR1cm4gKFxuICAgICAgICA8bmF2IGNsYXNzTmFtZT17c3R5bGVzLm5hdkJhclBhZ2VDb250YWluZXJ9PlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e3N0eWxlcy5kaXZDb250YWluZXJMb2dvVGl0dWxvTWVudX0+XG4gICAgICAgICAgICAgICAgPExpbmsgdG89XCIvXCI+XG4gICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtzdHlsZXMuZGl2Q29udGFpbmVySW1nTG9nb30+XG4gICAgICAgICAgICAgICAgICAgICAgICA8aW1nIHNyYz1cIi9Mb2dvX0R0dWRvXzMwMHAucG5nXCIgYWx0PVwiSW1hZ2VtIExvZ28gRHR1ZG9cIiAvPlxuICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8L0xpbms+XG4gICAgICAgICAgICAgICAgPHVsIGNsYXNzTmFtZT17c3R5bGVzLnVsTWVudUxpbmtzQ29udGFuaWVyfT5cbiAgICAgICAgICAgICAgICAgICAgPExpbmsgdG89J2FuaW1lcyc+XG4gICAgICAgICAgICAgICAgICAgICAgICA8bGkgY2xhc3NOYW1lPXtzdHlsZXMubGlNZW51TGlua30+IEFuaW1lcyA8L2xpPlxuICAgICAgICAgICAgICAgICAgICA8L0xpbms+XG4gICAgICAgICAgICAgICAgICAgIDxMaW5rIHRvPSduaW5vdGknPlxuICAgICAgICAgICAgICAgICAgICAgICAgPGxpIGNsYXNzTmFtZT17c3R5bGVzLmxpTWVudUxpbmt9PiBOaW5vVC5JIDwvbGk+XG4gICAgICAgICAgICAgICAgICAgIDwvTGluaz5cbiAgICAgICAgICAgICAgICAgICAgPExpbmsgdG89J215bXVzaWN4Jz5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxsaSBjbGFzc05hbWU9e3N0eWxlcy5saU1lbnVMaW5rfT4gTXlNdXNpY1ggPC9saT5cbiAgICAgICAgICAgICAgICAgICAgPC9MaW5rPlxuICAgICAgICAgICAgICAgIDwvdWw+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtzdHlsZXMuZGl2Q29udGFpbmVySWNvbnNMb2dpbn0+XG4gICAgICAgICAgICAgICAgeyFpc0F1dGhlbnRpY2F0ZWQgJiYgPExpbmsgdG89Jy9hdXRoL3JlZ2lzdGVyJyB0aXRsZT0nQ3JpYXIgQ29udGEnPjxJY29uUmVnaXN0ZXIgY29yPXsnI2ZmZmZmZmMwJ30gbGFyZ3VyYT17JzI0cHgnfSBhbHR1cmE9eycyNHB4J30gLz48L0xpbms+fVxuICAgICAgICAgICAgICAgIHshaXNBdXRoZW50aWNhdGVkICYmIDxMaW5rIHRvPScvYXV0aC9sb2dpbicgdGl0bGU9J0ZhemVyIExvZ2luJz48SWNvbkxvZ2luIGNvcj17JyNmZmZmZmZjMCd9IGxhcmd1cmE9eycyNHB4J30gYWx0dXJhPXsnMjRweCd9IC8+PC9MaW5rPn1cbiAgICAgICAgICAgICAgICB7aXNBdXRoZW50aWNhdGVkICYmIDxMaW5rIHRvPScjJyB0aXRsZT0nUGVyZmlsIFVzdcOhcmlvJz48SWNvbkFjY291bnQgY29yPXsnI2ZmZmZmZmMwJ30gbGFyZ3VyYT17JzI0cHgnfSBhbHR1cmE9eycyNHB4J30gLz48L0xpbms+fVxuICAgICAgICAgICAgICAgIHtpc0F1dGhlbnRpY2F0ZWQgJiYgPExpbmsgdG89Jy9hdXRoL2xvZ291dCcgdGl0bGU9J0ZhemVyIExvZ291dCc+PEljb25Mb2dvdXQgY29yPXsnI2ZmZmZmZmMwJ30gbGFyZ3VyYT17JzI0cHgnfSBhbHR1cmE9eycyNHB4J30gLz48L0xpbms+fVxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvbmF2PlxuICAgIClcbn07XG4iXSwiZmlsZSI6IkM6LzIwMjZNZXVzUHJvamV0b3MvRHR1ZG8yMDI2L0R0dWRvU2l0ZS9zcmMvY29tcG9uZW50cy9OYXZCYXJQYWdlL05hdkJhclBhZ2UuanN4In0=

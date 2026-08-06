@@ -11,20 +11,22 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     private const float DesignWidth = 1272F;
     private const float DesignContentHeight = 652F;
     private readonly AuthApiService _authApiService = new();
+    private readonly ApiMyAnimesHealthCheckService _apiMyAnimesHealthCheckService = new();
+    private readonly CancellationTokenSource _formClosingCancellationTokenSource = new();
+    private readonly DtudoSiteStartupService _dtudoSiteStartupService;
+    private Frm_DtudoSiteBrowser? _dtudoSiteBrowser;
     private bool _isApplyingMainLayout;
+    private bool _isOpeningDtudoSite;
 
     public Frm_WinAppDtudo()
     {
         InitializeComponent();
+        _dtudoSiteStartupService = new DtudoSiteStartupService(_apiMyAnimesHealthCheckService);
         // Aplicar o tema Dark Mode ao formulário e seus componentes
         ThemeManager.ApplyDarkModeToForm(this);
         // Inicializa o formulário customizado sem barra de título
         InitializeCustomFormNoBorder(Mnu_Principal);
         AddControlButtonsToMenuStrip(Mnu_Principal);
-        ConfigureNavigationButton(Btn_DtudoSite);
-        ConfigureNavigationButton(Btn_MyMusicxForm);
-        ConfigureNavigationButton(Btn_MyAnimesForm);
-        ConfigureNavigationButton(Btn_NinoTIForm);
 
         //Opções de inicialização do formulário, após a inicialização dos componentes.
         MnI_MyAnimes.Enabled = false;
@@ -33,6 +35,8 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         MnI_Desconectar.Enabled = false;
 
         InitializeMainLayout();
+        FormClosing += Frm_WinAppDtudo_FormClosing;
+        FormClosed += Frm_WinAppDtudo_FormClosed;
     }
     //=========================================================
     //Menu MyAnimes - Abrir formulário Frm_MyAnimes.
@@ -160,20 +164,140 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         WinAppDtudo.Services.DarkMessageBox.Show("Opção 3 selecionada");
     }
     //=================================================================
-    //Botão - Devera abrir o site Dtudo...
-    private void Btn_DtudoSite_Click(object sender, EventArgs e)
+    private async void Btn_DtudoSite_Click(object sender, EventArgs e)
     {
-        //Deve verificar se os serviços necessários (ApiMyAnimes e discogsProxy) estão em execução antes de abrir o site. Se não estiverem, deve iniciar os serviços.
-        //Deve abrir o FrontEnd. Meu Site, http://localhost:5173/myanimes
-        //C:\2026MeusProjetos\Dtudo2026\DtudoSite\
-        //    "scripts": {
-        //"proxy": "node ./ApiNode/mymusicx/discogsProxy.js",
-        //"dev": "vite --config ./DtudoSite/vite.config.js",
-        //"api:myanimes:run": "dotnet run --project ApiMyAnimes/ApiMyAnimes.csproj --launch-profile ApiMyAnimes",
-        //"api:myanimelist:run": "dotnet run --project ApiMyAnimeList/ApiMyAnimeList.csproj --launch-profile https",
-        //"api:myanimes": "node scripts/run-if-down.js https://localhost:63980/apiLocal/Health -- npm run api:myanimes:run",
-        //"api:myanimelist": "node scripts/run-if-down.js https://localhost:7146/ApiMyAnimeList/health -- npm run api:myanimelist:run",
-        //"serv": "concurrently \"npm run api:myanimes\" \"npm run api:myanimelist\" \"npm run proxy\" \"npm run dev\" ",
+        await ExecuteDtudoSiteActionAsync(OpenDtudoSiteInGoogleChromeAsync);
+    }
+
+    private async void MnI_DtudoSite_Click(object sender, EventArgs e)
+    {
+        await ExecuteDtudoSiteActionAsync(OpenDtudoSiteInWebViewAsync);
+    }
+
+    private async Task ExecuteDtudoSiteActionAsync(Func<CancellationToken, Task> action)
+    {
+        if (_isOpeningDtudoSite || IsDisposed)
+            return;
+
+        _isOpeningDtudoSite = true;
+        Btn_DtudoSite.Enabled = false;
+        MnI_DtudoSite.Enabled = false;
+        var wasUsingWaitCursor = UseWaitCursor;
+        UseWaitCursor = true;
+
+        try
+        {
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                _formClosingCancellationTokenSource.Token);
+            await action(cancellationTokenSource.Token);
+        }
+        catch (OperationCanceledException) when (_formClosingCancellationTokenSource.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            if (!IsDisposed)
+            {
+                DarkMessageBox.Show(
+                    $"Nao foi possivel abrir o DtudoSite.\n\n{exception.Message}",
+                    "Erro ao abrir DtudoSite",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+        finally
+        {
+            if (!IsDisposed)
+            {
+                UseWaitCursor = wasUsingWaitCursor;
+                Btn_DtudoSite.Enabled = true;
+                MnI_DtudoSite.Enabled = true;
+            }
+
+            _isOpeningDtudoSite = false;
+        }
+    }
+
+    private async Task OpenDtudoSiteInGoogleChromeAsync(CancellationToken cancellationToken)
+    {
+        if (!TryGetDtudoSiteStartUri(out var startUri))
+            return;
+
+        var startupResult = await _dtudoSiteStartupService.EnsureReadyAsync(startUri, cancellationToken);
+        if (!startupResult.Succeeded)
+        {
+            ShowDtudoSiteFailure("Servicos locais indisponiveis", startupResult.Message);
+            return;
+        }
+
+        var chromeResult = _dtudoSiteStartupService.OpenInGoogleChrome(startUri);
+        if (!chromeResult.Succeeded)
+            ShowDtudoSiteFailure("Google Chrome indisponivel", chromeResult.Message);
+    }
+
+    private async Task OpenDtudoSiteInWebViewAsync(CancellationToken cancellationToken)
+    {
+        if (!TryGetDtudoSiteStartUri(out var startUri))
+            return;
+
+        var startupResult = await _dtudoSiteStartupService.EnsureReadyAsync(startUri, cancellationToken);
+        if (!startupResult.Succeeded)
+        {
+            ShowDtudoSiteFailure("Servicos locais indisponiveis", startupResult.Message);
+            return;
+        }
+
+        if (_dtudoSiteBrowser is null || _dtudoSiteBrowser.IsDisposed)
+        {
+            _dtudoSiteBrowser = new Frm_DtudoSiteBrowser(startUri);
+            _dtudoSiteBrowser.FormClosed += DtudoSiteBrowser_FormClosed;
+            _dtudoSiteBrowser.Show(this);
+        }
+        else
+        {
+            if (_dtudoSiteBrowser.WindowState == FormWindowState.Minimized)
+                _dtudoSiteBrowser.WindowState = FormWindowState.Normal;
+
+            _dtudoSiteBrowser.Activate();
+        }
+
+        await _dtudoSiteBrowser.OpenNewTabAsync(startUri, cancellationToken);
+    }
+
+    private bool TryGetDtudoSiteStartUri(out Uri startUri)
+    {
+        if (Uri.TryCreate(AppConfigurationService.DtudoSiteStartUrl, UriKind.Absolute, out var parsedUri)
+            && parsedUri is not null)
+        {
+            startUri = parsedUri;
+            return true;
+        }
+
+        startUri = null!;
+        ShowDtudoSiteFailure("Configuracao invalida", "A URL configurada para o DtudoSite e invalida.");
+        return false;
+    }
+
+    private void ShowDtudoSiteFailure(string title, string message)
+    {
+        if (!IsDisposed)
+            DarkMessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+
+    private void DtudoSiteBrowser_FormClosed(object? sender, FormClosedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _dtudoSiteBrowser))
+            _dtudoSiteBrowser = null;
+    }
+
+    private void Frm_WinAppDtudo_FormClosing(object? sender, FormClosingEventArgs e)
+    {
+        _formClosingCancellationTokenSource.Cancel();
+    }
+
+    private void Frm_WinAppDtudo_FormClosed(object? sender, FormClosedEventArgs e)
+    {
+        _dtudoSiteStartupService.Dispose();
     }
 
     private void Btn_MyAnimesForm_Click(object sender, EventArgs e)
@@ -287,17 +411,4 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             control.Bounds = bounds;
     }
 
-    private static void ConfigureNavigationButton(Button button)
-    {
-        button.BackColor = Color.Transparent;
-        button.FlatStyle = FlatStyle.Flat;
-        button.FlatAppearance.BorderColor = Color.Gold;
-        button.FlatAppearance.BorderSize = 0;
-        button.FlatAppearance.MouseOverBackColor = Color.Transparent;
-        button.FlatAppearance.MouseDownBackColor = Color.Transparent;
-        button.UseVisualStyleBackColor = false;
-        button.Cursor = Cursors.Hand;
-        button.MouseEnter += (_, _) => button.FlatAppearance.BorderSize = 1;
-        button.MouseLeave += (_, _) => button.FlatAppearance.BorderSize = 0;
-    }
 }

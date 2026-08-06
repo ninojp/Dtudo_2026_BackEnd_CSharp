@@ -1,0 +1,581 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=2dab77fc"; const Fragment = __vite__cjsImport0_react_jsxDevRuntime["Fragment"]; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport1_react from "/node_modules/.vite/deps/react.js?v=2dab77fc"; const useContext = __vite__cjsImport1_react["useContext"]; const useEffect = __vite__cjsImport1_react["useEffect"]; const useMemo = __vite__cjsImport1_react["useMemo"]; const useState = __vite__cjsImport1_react["useState"];
+import { Link, useNavigate, useParams } from "/node_modules/.vite/deps/react-router-dom.js?v=2dab77fc";
+import HeaderPage from "/src/components/HeaderPage/HeaderPage.jsx";
+import H1TituloPage from "/src/components/H1TituloPage/H1TituloPage.jsx";
+import H2SubTitulo from "/src/components/H2SubTitulo/H2SubTitulo.jsx";
+import AuthContext from "/src/context_api/AuthContext/AuthContext.js";
+import AnimesContext from "/src/context_api/AnimesContext/AnimesContext.js";
+import { buscarAnimePorMalId, buscarTodasColecoesMyAnimeDaApiLocal } from "/src/services/apiMyAnimes.js";
+import { ehAnimeAdulto, obterAnimesRelacionados, obterAnoAnime, obterColecoesComAnime, obterGenerosAnime, obterIdAnime, obterImagemAnime, obterTituloAnime } from "/src/utils/animeContentUtils.js";
+import styles from "/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.module.css";
+const formatarNumero = (valor) => valor ? Number(valor).toLocaleString("pt-BR") : "N/A";
+const formatarLista = (valores) => Array.isArray(valores) && valores.length > 0 ? valores.join(", ") : "N/A";
+export default function AnimesDetalhes() {
+  _s();
+  const {
+    malId
+  } = useParams();
+  const navigate = useNavigate();
+  const {
+    isAuthenticated
+  } = useContext(AuthContext);
+  const {
+    listObjsDetalhesAnimes,
+    isLoading: listaCarregando
+  } = useContext(AnimesContext);
+  const [animeRemoto, setAnimeRemoto] = useState(null);
+  const [colecoes, setColecoes] = useState([]);
+  const [isLoadingColecoes, setIsLoadingColecoes] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [avisoRelacionados, setAvisoRelacionados] = useState("");
+  const malIdNumerico = Number(malId);
+  const animeDaLista = useMemo(() => listObjsDetalhesAnimes.find((anime) => Number(obterIdAnime(anime)) === malIdNumerico), [listObjsDetalhesAnimes, malIdNumerico]);
+  const anime_0 = animeDaLista || animeRemoto;
+  const colecoesComAnime = useMemo(() => obterColecoesComAnime(colecoes, malIdNumerico), [colecoes, malIdNumerico]);
+  const animesRelacionados = useMemo(() => obterAnimesRelacionados({
+    colecoesComAnime,
+    incluirAdultos: isAuthenticated,
+    listObjsDetalhesAnimes
+  }), [colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes]);
+  useEffect(() => {
+    if (!Number.isInteger(malIdNumerico) || malIdNumerico <= 0) {
+      navigate("/animes", {
+        replace: true
+      });
+      return;
+    }
+    if (animeDaLista) {
+      setAnimeRemoto(null);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+    if (listaCarregando) return;
+    const controller = new AbortController();
+    let ativo = true;
+    async function carregarAnime() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const animeEncontrado = await buscarAnimePorMalId(malIdNumerico, controller.signal);
+        if (ativo) setAnimeRemoto(animeEncontrado);
+      } catch (erro) {
+        if (erro.code === "ERR_CANCELED" || !ativo) return;
+        setError("Nao foi possivel carregar os detalhes deste anime.");
+      } finally {
+        if (ativo) setIsLoading(false);
+      }
+    }
+    carregarAnime();
+    return () => {
+      ativo = false;
+      controller.abort();
+    };
+  }, [animeDaLista, listaCarregando, malIdNumerico, navigate]);
+  useEffect(() => {
+    if (!isLoading && anime_0 && ehAnimeAdulto(anime_0) && !isAuthenticated) {
+      navigate("/animes", {
+        replace: true
+      });
+    }
+  }, [anime_0, isAuthenticated, isLoading, navigate]);
+  useEffect(() => {
+    const controller_0 = new AbortController();
+    let ativo_0 = true;
+    async function carregarColecoes() {
+      setIsLoadingColecoes(true);
+      try {
+        const colecoesDaApi = await buscarTodasColecoesMyAnimeDaApiLocal(controller_0.signal);
+        if (ativo_0) setColecoes(colecoesDaApi);
+      } catch (erro_0) {
+        if (erro_0.code === "ERR_CANCELED" || !ativo_0) return;
+        setColecoes([]);
+      } finally {
+        if (ativo_0) setIsLoadingColecoes(false);
+      }
+    }
+    carregarColecoes();
+    return () => {
+      ativo_0 = false;
+      controller_0.abort();
+    };
+  }, []);
+  function handleClickRelacionados(event) {
+    if (isLoadingColecoes) {
+      event.preventDefault();
+      setAvisoRelacionados("Aguarde, ainda estamos verificando os animes relacionados.");
+      return;
+    }
+    if (animesRelacionados.length === 0) {
+      event.preventDefault();
+      setAvisoRelacionados("Nao existem animes relacionados para este anime.");
+      return;
+    }
+    setAvisoRelacionados("");
+  }
+  if (isLoading || listaCarregando) return /* @__PURE__ */ jsxDEV("main", { className: styles.mainDetalhes, children: "Loading..." }, void 0, false, {
+    fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+    lineNumber: 118,
+    columnNumber: 44
+  }, this);
+  if (error) {
+    return /* @__PURE__ */ jsxDEV("main", { className: styles.mainDetalhes, role: "alert", children: [
+      /* @__PURE__ */ jsxDEV("p", { children: error }, void 0, false, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 121,
+        columnNumber: 17
+      }, this),
+      /* @__PURE__ */ jsxDEV(Link, { to: "/animes", className: styles.linkVoltar, children: "Voltar para Animes" }, void 0, false, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 122,
+        columnNumber: 17
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+      lineNumber: 120,
+      columnNumber: 12
+    }, this);
+  }
+  if (!anime_0) {
+    return /* @__PURE__ */ jsxDEV("main", { className: styles.mainDetalhes, children: [
+      /* @__PURE__ */ jsxDEV("p", { children: "Anime nao encontrado." }, void 0, false, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 127,
+        columnNumber: 17
+      }, this),
+      /* @__PURE__ */ jsxDEV(Link, { to: "/animes", className: styles.linkVoltar, children: "Voltar para Animes" }, void 0, false, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 128,
+        columnNumber: 17
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+      lineNumber: 126,
+      columnNumber: 12
+    }, this);
+  }
+  const titulo = obterTituloAnime(anime_0);
+  const imagem = obterImagemAnime(anime_0);
+  const generos = obterGenerosAnime(anime_0);
+  return /* @__PURE__ */ jsxDEV(Fragment, { children: [
+    /* @__PURE__ */ jsxDEV(HeaderPage, { children: [
+      /* @__PURE__ */ jsxDEV(H1TituloPage, { children: titulo }, void 0, false, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 136,
+        columnNumber: 17
+      }, this),
+      /* @__PURE__ */ jsxDEV(H2SubTitulo, { children: anime_0.titleJapanese || anime_0.titleEnglish || anime_0.type || "Detalhes do anime" }, void 0, false, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 137,
+        columnNumber: 17
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+      lineNumber: 135,
+      columnNumber: 13
+    }, this),
+    /* @__PURE__ */ jsxDEV("main", { className: styles.mainDetalhes, children: [
+      /* @__PURE__ */ jsxDEV("section", { className: styles.sectionResumo, children: [
+        /* @__PURE__ */ jsxDEV("figure", { className: styles.figurePoster, children: imagem ? /* @__PURE__ */ jsxDEV("img", { className: styles.imgPoster, src: imagem, alt: titulo }, void 0, false, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 142,
+          columnNumber: 35
+        }, this) : /* @__PURE__ */ jsxDEV("div", { className: styles.posterIndisponivel, children: "Imagem indisponivel" }, void 0, false, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 142,
+          columnNumber: 100
+        }, this) }, void 0, false, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 141,
+          columnNumber: 21
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: styles.divInfoPrincipal, children: [
+          /* @__PURE__ */ jsxDEV("div", { className: styles.divAcoes, children: [
+            /* @__PURE__ */ jsxDEV(Link, { to: "/animes", className: styles.linkVoltar, children: "Voltar" }, void 0, false, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 147,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV(Link, { to: `/animes/animes-relacionados/${obterIdAnime(anime_0)}`, className: styles.linkAcao, onClick: handleClickRelacionados, children: "Relacionados" }, void 0, false, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 148,
+              columnNumber: 29
+            }, this),
+            anime_0.malUrl && /* @__PURE__ */ jsxDEV("a", { href: anime_0.malUrl, target: "_blank", rel: "noreferrer", className: styles.linkAcao, children: "MyAnimeList" }, void 0, false, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 151,
+              columnNumber: 48
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 146,
+            columnNumber: 25
+          }, this),
+          avisoRelacionados && /* @__PURE__ */ jsxDEV("p", { className: styles.pAvisoRelacionados, role: "status", children: avisoRelacionados }, void 0, false, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 155,
+            columnNumber: 47
+          }, this),
+          /* @__PURE__ */ jsxDEV("dl", { className: styles.dlMetadados, children: [
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "MalId" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 158,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: obterIdAnime(anime_0) }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 158,
+                columnNumber: 48
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 158,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "Ano" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 159,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: obterAnoAnime(anime_0) || "N/A" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 159,
+                columnNumber: 46
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 159,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "Episodios" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 160,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: anime_0.episodes || anime_0.episodios || "N/A" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 160,
+                columnNumber: 52
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 160,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "Status" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 161,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: anime_0.status || "N/A" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 161,
+                columnNumber: 49
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 161,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "Tipo" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 162,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: anime_0.type || "N/A" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 162,
+                columnNumber: 47
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 162,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "Fonte" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 163,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: anime_0.source || "N/A" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 163,
+                columnNumber: 48
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 163,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "Score" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 164,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: anime_0.score ?? "N/A" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 164,
+                columnNumber: 48
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 164,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "Popularidade" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 165,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: formatarNumero(anime_0.popularity) }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 165,
+                columnNumber: 55
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 165,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "Membros" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 166,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: formatarNumero(anime_0.members) }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 166,
+                columnNumber: 50
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 166,
+              columnNumber: 29
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("dt", { children: "Favoritos" }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 167,
+                columnNumber: 34
+              }, this),
+              /* @__PURE__ */ jsxDEV("dd", { children: formatarNumero(anime_0.favorites) }, void 0, false, {
+                fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+                lineNumber: 167,
+                columnNumber: 52
+              }, this)
+            ] }, void 0, true, {
+              fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+              lineNumber: 167,
+              columnNumber: 29
+            }, this)
+          ] }, void 0, true, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 157,
+            columnNumber: 25
+          }, this)
+        ] }, void 0, true, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 145,
+          columnNumber: 21
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 140,
+        columnNumber: 17
+      }, this),
+      /* @__PURE__ */ jsxDEV("section", { className: styles.sectionTexto, children: [
+        /* @__PURE__ */ jsxDEV("h3", { children: "Sinopse" }, void 0, false, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 173,
+          columnNumber: 21
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: anime_0.synopsis || "Sinopse nao informada." }, void 0, false, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 174,
+          columnNumber: 21
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 172,
+        columnNumber: 17
+      }, this),
+      anime_0.background && /* @__PURE__ */ jsxDEV("section", { className: styles.sectionTexto, children: [
+        /* @__PURE__ */ jsxDEV("h3", { children: "Background" }, void 0, false, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 178,
+          columnNumber: 25
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: anime_0.background }, void 0, false, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 179,
+          columnNumber: 25
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 177,
+        columnNumber: 40
+      }, this),
+      /* @__PURE__ */ jsxDEV("section", { className: styles.sectionListas, children: [
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Generos:" }, void 0, false, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 183,
+            columnNumber: 24
+          }, this),
+          " ",
+          formatarLista(generos)
+        ] }, void 0, true, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 183,
+          columnNumber: 21
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Estudios:" }, void 0, false, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 184,
+            columnNumber: 24
+          }, this),
+          " ",
+          formatarLista(anime_0.studios)
+        ] }, void 0, true, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 184,
+          columnNumber: 21
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Produtores:" }, void 0, false, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 185,
+            columnNumber: 24
+          }, this),
+          " ",
+          formatarLista(anime_0.producers)
+        ] }, void 0, true, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 185,
+          columnNumber: 21
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Temas:" }, void 0, false, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 186,
+            columnNumber: 24
+          }, this),
+          " ",
+          formatarLista(anime_0.themes)
+        ] }, void 0, true, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 186,
+          columnNumber: 21
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Demografia:" }, void 0, false, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 187,
+            columnNumber: 24
+          }, this),
+          " ",
+          formatarLista(anime_0.demographics)
+        ] }, void 0, true, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 187,
+          columnNumber: 21
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Classificacao:" }, void 0, false, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 188,
+            columnNumber: 24
+          }, this),
+          " ",
+          anime_0.rating || "N/A"
+        ] }, void 0, true, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 188,
+          columnNumber: 21
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Duracao:" }, void 0, false, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 189,
+            columnNumber: 24
+          }, this),
+          " ",
+          anime_0.duration || "N/A"
+        ] }, void 0, true, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 189,
+          columnNumber: 21
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { children: [
+          /* @__PURE__ */ jsxDEV("strong", { children: "Exibicao:" }, void 0, false, {
+            fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+            lineNumber: 190,
+            columnNumber: 24
+          }, this),
+          " ",
+          anime_0.aired || "N/A"
+        ] }, void 0, true, {
+          fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+          lineNumber: 190,
+          columnNumber: 21
+        }, this)
+      ] }, void 0, true, {
+        fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+        lineNumber: 182,
+        columnNumber: 17
+      }, this)
+    ] }, void 0, true, {
+      fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+      lineNumber: 139,
+      columnNumber: 13
+    }, this)
+  ] }, void 0, true, {
+    fileName: "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx",
+    lineNumber: 134,
+    columnNumber: 10
+  }, this);
+}
+_s(AnimesDetalhes, "O67nIhIiFPD3R2LdKTyTciVz4f8=", false, function() {
+  return [useParams, useNavigate];
+});
+_c = AnimesDetalhes;
+var _c;
+$RefreshReg$(_c, "AnimesDetalhes");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "C:/2026MeusProjetos/Dtudo2026/DtudoSite/src/pages/Animes/AnimesDetalhes/AnimesDetalhes.jsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,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LE9BQUU7QUFBQSxpQ0FBQyxZQUFPLHlCQUFSO0FBQUE7QUFBQTtBQUFBO0FBQUEsaUJBQWlCO0FBQUEsVUFBUztBQUFBLFVBQUV2RCxRQUFNd0QsU0FBUztBQUFBLGFBQTlDO0FBQUE7QUFBQTtBQUFBO0FBQUEsZUFBb0Q7QUFBQSxXQVJ4RDtBQUFBO0FBQUE7QUFBQTtBQUFBLGFBU0E7QUFBQSxTQWxFSjtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBbUVBO0FBQUEsT0F4RUo7QUFBQTtBQUFBO0FBQUE7QUFBQSxTQXlFQTtBQUVSO0FBQUM3RSxHQXJOdUJELGdCQUFjO0FBQUEsVUFDaEIzQixXQUNERCxXQUFXO0FBQUE7QUFBQTJHLEtBRlIvRTtBQUFjLElBQUErRTtBQUFBQyxhQUFBRCxJQUFBIiwibmFtZXMiOlsidXNlQ29udGV4dCIsInVzZUVmZmVjdCIsInVzZU1lbW8iLCJ1c2VTdGF0ZSIsIkxpbmsiLCJ1c2VOYXZpZ2F0ZSIsInVzZVBhcmFtcyIsIkhlYWRlclBhZ2UiLCJIMVRpdHVsb1BhZ2UiLCJIMlN1YlRpdHVsbyIsIkF1dGhDb250ZXh0IiwiQW5pbWVzQ29udGV4dCIsImJ1c2NhckFuaW1lUG9yTWFsSWQiLCJidXNjYXJUb2Rhc0NvbGVjb2VzTXlBbmltZURhQXBpTG9jYWwiLCJlaEFuaW1lQWR1bHRvIiwib2J0ZXJBbmltZXNSZWxhY2lvbmFkb3MiLCJvYnRlckFub0FuaW1lIiwib2J0ZXJDb2xlY29lc0NvbUFuaW1lIiwib2J0ZXJHZW5lcm9zQW5pbWUiLCJvYnRlcklkQW5pbWUiLCJvYnRlckltYWdlbUFuaW1lIiwib2J0ZXJUaXR1bG9BbmltZSIsInN0eWxlcyIsImZvcm1hdGFyTnVtZXJvIiwidmFsb3IiLCJOdW1iZXIiLCJ0b0xvY2FsZVN0cmluZyIsImZvcm1hdGFyTGlzdGEiLCJ2YWxvcmVzIiwiQXJyYXkiLCJpc0FycmF5IiwibGVuZ3RoIiwiam9pbiIsIkFuaW1lc0RldGFsaGVzIiwiX3MiLCJtYWxJZCIsIm5hdmlnYXRlIiwiaXNBdXRoZW50aWNhdGVkIiwibGlzdE9ianNEZXRhbGhlc0FuaW1lcyIsImlzTG9hZGluZyIsImxpc3RhQ2FycmVnYW5kbyIsImFuaW1lUmVtb3RvIiwic2V0QW5pbWVSZW1vdG8iLCJjb2xlY29lcyIsInNldENvbGVjb2VzIiwiaXNMb2FkaW5nQ29sZWNvZXMiLCJzZXRJc0xvYWRpbmdDb2xlY29lcyIsInNldElzTG9hZGluZyIsImVycm9yIiwic2V0RXJyb3IiLCJhdmlzb1JlbGFjaW9uYWRvcyIsInNldEF2aXNvUmVsYWNpb25hZG9zIiwibWFsSWROdW1lcmljbyIsImFuaW1lRGFMaXN0YSIsImZpbmQiLCJhbmltZSIsImNvbGVjb2VzQ29tQW5pbWUiLCJhbmltZXNSZWxhY2lvbmFkb3MiLCJpbmNsdWlyQWR1bHRvcyIsImlzSW50ZWdlciIsInJlcGxhY2UiLCJjb250cm9sbGVyIiwiQWJvcnRDb250cm9sbGVyIiwiYXRpdm8iLCJjYXJyZWdhckFuaW1lIiwiYW5pbWVFbmNvbnRyYWRvIiwic2lnbmFsIiwiZXJybyIsImNvZGUiLCJhYm9ydCIsImNhcnJlZ2FyQ29sZWNvZXMiLCJjb2xlY29lc0RhQXBpIiwiaGFuZGxlQ2xpY2tSZWxhY2lvbmFkb3MiLCJldmVudCIsInByZXZlbnREZWZhdWx0IiwibWFpbkRldGFsaGVzIiwibGlua1ZvbHRhciIsInRpdHVsbyIsImltYWdlbSIsImdlbmVyb3MiLCJ0aXRsZUphcGFuZXNlIiwidGl0bGVFbmdsaXNoIiwidHlwZSIsInNlY3Rpb25SZXN1bW8iLCJmaWd1cmVQb3N0ZXIiLCJpbWdQb3N0ZXIiLCJwb3N0ZXJJbmRpc3Bvbml2ZWwiLCJkaXZJbmZvUHJpbmNpcGFsIiwiZGl2QWNvZXMiLCJsaW5rQWNhbyIsIm1hbFVybCIsInBBdmlzb1JlbGFjaW9uYWRvcyIsImRsTWV0YWRhZG9zIiwiZXBpc29kZXMiLCJlcGlzb2Rpb3MiLCJzdGF0dXMiLCJzb3VyY2UiLCJzY29yZSIsInBvcHVsYXJpdHkiLCJtZW1iZXJzIiwiZmF2b3JpdGVzIiwic2VjdGlvblRleHRvIiwic3lub3BzaXMiLCJiYWNrZ3JvdW5kIiwic2VjdGlvbkxpc3RhcyIsInN0dWRpb3MiLCJwcm9kdWNlcnMiLCJ0aGVtZXMiLCJkZW1vZ3JhcGhpY3MiLCJyYXRpbmciLCJkdXJhdGlvbiIsImFpcmVkIiwiX2MiLCIkUmVmcmVzaFJlZyQiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZXMiOlsiQW5pbWVzRGV0YWxoZXMuanN4Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IHVzZUNvbnRleHQsIHVzZUVmZmVjdCwgdXNlTWVtbywgdXNlU3RhdGUgfSBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBMaW5rLCB1c2VOYXZpZ2F0ZSwgdXNlUGFyYW1zIH0gZnJvbSAncmVhY3Qtcm91dGVyLWRvbSc7XG5pbXBvcnQgSGVhZGVyUGFnZSBmcm9tICcuLi8uLi8uLi9jb21wb25lbnRzL0hlYWRlclBhZ2UvSGVhZGVyUGFnZSc7XG5pbXBvcnQgSDFUaXR1bG9QYWdlIGZyb20gJy4uLy4uLy4uL2NvbXBvbmVudHMvSDFUaXR1bG9QYWdlL0gxVGl0dWxvUGFnZSc7XG5pbXBvcnQgSDJTdWJUaXR1bG8gZnJvbSAnLi4vLi4vLi4vY29tcG9uZW50cy9IMlN1YlRpdHVsby9IMlN1YlRpdHVsbyc7XG5pbXBvcnQgQXV0aENvbnRleHQgZnJvbSAnLi4vLi4vLi4vY29udGV4dF9hcGkvQXV0aENvbnRleHQvQXV0aENvbnRleHQnO1xuaW1wb3J0IEFuaW1lc0NvbnRleHQgZnJvbSAnLi4vLi4vLi4vY29udGV4dF9hcGkvQW5pbWVzQ29udGV4dC9BbmltZXNDb250ZXh0JztcbmltcG9ydCB7IGJ1c2NhckFuaW1lUG9yTWFsSWQsIGJ1c2NhclRvZGFzQ29sZWNvZXNNeUFuaW1lRGFBcGlMb2NhbCB9IGZyb20gJy4uLy4uLy4uL3NlcnZpY2VzL2FwaU15QW5pbWVzJztcbmltcG9ydCB7XG4gICAgZWhBbmltZUFkdWx0byxcbiAgICBvYnRlckFuaW1lc1JlbGFjaW9uYWRvcyxcbiAgICBvYnRlckFub0FuaW1lLFxuICAgIG9idGVyQ29sZWNvZXNDb21BbmltZSxcbiAgICBvYnRlckdlbmVyb3NBbmltZSxcbiAgICBvYnRlcklkQW5pbWUsXG4gICAgb2J0ZXJJbWFnZW1BbmltZSxcbiAgICBvYnRlclRpdHVsb0FuaW1lLFxufSBmcm9tICcuLi8uLi8uLi91dGlscy9hbmltZUNvbnRlbnRVdGlscyc7XG5pbXBvcnQgc3R5bGVzIGZyb20gJy4vQW5pbWVzRGV0YWxoZXMubW9kdWxlLmNzcyc7XG5cbmNvbnN0IGZvcm1hdGFyTnVtZXJvID0gKHZhbG9yKSA9PiB2YWxvciA/IE51bWJlcih2YWxvcikudG9Mb2NhbGVTdHJpbmcoJ3B0LUJSJykgOiAnTi9BJztcbmNvbnN0IGZvcm1hdGFyTGlzdGEgPSAodmFsb3JlcykgPT4gQXJyYXkuaXNBcnJheSh2YWxvcmVzKSAmJiB2YWxvcmVzLmxlbmd0aCA+IDAgPyB2YWxvcmVzLmpvaW4oJywgJykgOiAnTi9BJztcblxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gQW5pbWVzRGV0YWxoZXMoKSB7XG4gICAgY29uc3QgeyBtYWxJZCB9ID0gdXNlUGFyYW1zKCk7XG4gICAgY29uc3QgbmF2aWdhdGUgPSB1c2VOYXZpZ2F0ZSgpO1xuICAgIGNvbnN0IHsgaXNBdXRoZW50aWNhdGVkIH0gPSB1c2VDb250ZXh0KEF1dGhDb250ZXh0KTtcbiAgICBjb25zdCB7IGxpc3RPYmpzRGV0YWxoZXNBbmltZXMsIGlzTG9hZGluZzogbGlzdGFDYXJyZWdhbmRvIH0gPSB1c2VDb250ZXh0KEFuaW1lc0NvbnRleHQpO1xuICAgIGNvbnN0IFthbmltZVJlbW90bywgc2V0QW5pbWVSZW1vdG9dID0gdXNlU3RhdGUobnVsbCk7XG4gICAgY29uc3QgW2NvbGVjb2VzLCBzZXRDb2xlY29lc10gPSB1c2VTdGF0ZShbXSk7XG4gICAgY29uc3QgW2lzTG9hZGluZ0NvbGVjb2VzLCBzZXRJc0xvYWRpbmdDb2xlY29lc10gPSB1c2VTdGF0ZSh0cnVlKTtcbiAgICBjb25zdCBbaXNMb2FkaW5nLCBzZXRJc0xvYWRpbmddID0gdXNlU3RhdGUodHJ1ZSk7XG4gICAgY29uc3QgW2Vycm9yLCBzZXRFcnJvcl0gPSB1c2VTdGF0ZShudWxsKTtcbiAgICBjb25zdCBbYXZpc29SZWxhY2lvbmFkb3MsIHNldEF2aXNvUmVsYWNpb25hZG9zXSA9IHVzZVN0YXRlKCcnKTtcblxuICAgIGNvbnN0IG1hbElkTnVtZXJpY28gPSBOdW1iZXIobWFsSWQpO1xuICAgIGNvbnN0IGFuaW1lRGFMaXN0YSA9IHVzZU1lbW8oXG4gICAgICAgICgpID0+IGxpc3RPYmpzRGV0YWxoZXNBbmltZXMuZmluZCgoYW5pbWUpID0+IE51bWJlcihvYnRlcklkQW5pbWUoYW5pbWUpKSA9PT0gbWFsSWROdW1lcmljbyksXG4gICAgICAgIFtsaXN0T2Jqc0RldGFsaGVzQW5pbWVzLCBtYWxJZE51bWVyaWNvXVxuICAgICk7XG4gICAgY29uc3QgYW5pbWUgPSBhbmltZURhTGlzdGEgfHwgYW5pbWVSZW1vdG87XG5cbiAgICBjb25zdCBjb2xlY29lc0NvbUFuaW1lID0gdXNlTWVtbygoKSA9PiBvYnRlckNvbGVjb2VzQ29tQW5pbWUoY29sZWNvZXMsIG1hbElkTnVtZXJpY28pLCBbY29sZWNvZXMsIG1hbElkTnVtZXJpY29dKTtcbiAgICBjb25zdCBhbmltZXNSZWxhY2lvbmFkb3MgPSB1c2VNZW1vKCgpID0+IG9idGVyQW5pbWVzUmVsYWNpb25hZG9zKHtcbiAgICAgICAgY29sZWNvZXNDb21BbmltZSxcbiAgICAgICAgaW5jbHVpckFkdWx0b3M6IGlzQXV0aGVudGljYXRlZCxcbiAgICAgICAgbGlzdE9ianNEZXRhbGhlc0FuaW1lcyxcbiAgICB9KSwgW2NvbGVjb2VzQ29tQW5pbWUsIGlzQXV0aGVudGljYXRlZCwgbGlzdE9ianNEZXRhbGhlc0FuaW1lc10pO1xuXG4gICAgdXNlRWZmZWN0KCgpID0+IHtcbiAgICAgICAgaWYgKCFOdW1iZXIuaXNJbnRlZ2VyKG1hbElkTnVtZXJpY28pIHx8IG1hbElkTnVtZXJpY28gPD0gMCkge1xuICAgICAgICAgICAgbmF2aWdhdGUoJy9hbmltZXMnLCB7IHJlcGxhY2U6IHRydWUgfSk7XG4gICAgICAgICAgICByZXR1cm47XG4gICAgICAgIH1cblxuICAgICAgICBpZiAoYW5pbWVEYUxpc3RhKSB7XG4gICAgICAgICAgICBzZXRBbmltZVJlbW90byhudWxsKTtcbiAgICAgICAgICAgIHNldElzTG9hZGluZyhmYWxzZSk7XG4gICAgICAgICAgICBzZXRFcnJvcihudWxsKTtcbiAgICAgICAgICAgIHJldHVybjtcbiAgICAgICAgfVxuXG4gICAgICAgIGlmIChsaXN0YUNhcnJlZ2FuZG8pIHJldHVybjtcblxuICAgICAgICBjb25zdCBjb250cm9sbGVyID0gbmV3IEFib3J0Q29udHJvbGxlcigpO1xuICAgICAgICBsZXQgYXRpdm8gPSB0cnVlO1xuXG4gICAgICAgIGFzeW5jIGZ1bmN0aW9uIGNhcnJlZ2FyQW5pbWUoKSB7XG4gICAgICAgICAgICBzZXRJc0xvYWRpbmcodHJ1ZSk7XG4gICAgICAgICAgICBzZXRFcnJvcihudWxsKTtcblxuICAgICAgICAgICAgdHJ5IHtcbiAgICAgICAgICAgICAgICBjb25zdCBhbmltZUVuY29udHJhZG8gPSBhd2FpdCBidXNjYXJBbmltZVBvck1hbElkKG1hbElkTnVtZXJpY28sIGNvbnRyb2xsZXIuc2lnbmFsKTtcbiAgICAgICAgICAgICAgICBpZiAoYXRpdm8pIHNldEFuaW1lUmVtb3RvKGFuaW1lRW5jb250cmFkbyk7XG4gICAgICAgICAgICB9IGNhdGNoIChlcnJvKSB7XG4gICAgICAgICAgICAgICAgaWYgKGVycm8uY29kZSA9PT0gJ0VSUl9DQU5DRUxFRCcgfHwgIWF0aXZvKSByZXR1cm47XG4gICAgICAgICAgICAgICAgc2V0RXJyb3IoJ05hbyBmb2kgcG9zc2l2ZWwgY2FycmVnYXIgb3MgZGV0YWxoZXMgZGVzdGUgYW5pbWUuJyk7XG4gICAgICAgICAgICB9IGZpbmFsbHkge1xuICAgICAgICAgICAgICAgIGlmIChhdGl2bykgc2V0SXNMb2FkaW5nKGZhbHNlKTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfVxuXG4gICAgICAgIGNhcnJlZ2FyQW5pbWUoKTtcbiAgICAgICAgcmV0dXJuICgpID0+IHtcbiAgICAgICAgICAgIGF0aXZvID0gZmFsc2U7XG4gICAgICAgICAgICBjb250cm9sbGVyLmFib3J0KCk7XG4gICAgICAgIH07XG4gICAgfSwgW2FuaW1lRGFMaXN0YSwgbGlzdGFDYXJyZWdhbmRvLCBtYWxJZE51bWVyaWNvLCBuYXZpZ2F0ZV0pO1xuXG4gICAgdXNlRWZmZWN0KCgpID0+IHtcbiAgICAgICAgaWYgKCFpc0xvYWRpbmcgJiYgYW5pbWUgJiYgZWhBbmltZUFkdWx0byhhbmltZSkgJiYgIWlzQXV0aGVudGljYXRlZCkge1xuICAgICAgICAgICAgbmF2aWdhdGUoJy9hbmltZXMnLCB7IHJlcGxhY2U6IHRydWUgfSk7XG4gICAgICAgIH1cbiAgICB9LCBbYW5pbWUsIGlzQXV0aGVudGljYXRlZCwgaXNMb2FkaW5nLCBuYXZpZ2F0ZV0pO1xuXG4gICAgdXNlRWZmZWN0KCgpID0+IHtcbiAgICAgICAgY29uc3QgY29udHJvbGxlciA9IG5ldyBBYm9ydENvbnRyb2xsZXIoKTtcbiAgICAgICAgbGV0IGF0aXZvID0gdHJ1ZTtcblxuICAgICAgICBhc3luYyBmdW5jdGlvbiBjYXJyZWdhckNvbGVjb2VzKCkge1xuICAgICAgICAgICAgc2V0SXNMb2FkaW5nQ29sZWNvZXModHJ1ZSk7XG5cbiAgICAgICAgICAgIHRyeSB7XG4gICAgICAgICAgICAgICAgY29uc3QgY29sZWNvZXNEYUFwaSA9IGF3YWl0IGJ1c2NhclRvZGFzQ29sZWNvZXNNeUFuaW1lRGFBcGlMb2NhbChjb250cm9sbGVyLnNpZ25hbCk7XG4gICAgICAgICAgICAgICAgaWYgKGF0aXZvKSBzZXRDb2xlY29lcyhjb2xlY29lc0RhQXBpKTtcbiAgICAgICAgICAgIH0gY2F0Y2ggKGVycm8pIHtcbiAgICAgICAgICAgICAgICBpZiAoZXJyby5jb2RlID09PSAnRVJSX0NBTkNFTEVEJyB8fCAhYXRpdm8pIHJldHVybjtcbiAgICAgICAgICAgICAgICBzZXRDb2xlY29lcyhbXSk7XG4gICAgICAgICAgICB9IGZpbmFsbHkge1xuICAgICAgICAgICAgICAgIGlmIChhdGl2bykgc2V0SXNMb2FkaW5nQ29sZWNvZXMoZmFsc2UpO1xuICAgICAgICAgICAgfVxuICAgICAgICB9XG5cbiAgICAgICAgY2FycmVnYXJDb2xlY29lcygpO1xuICAgICAgICByZXR1cm4gKCkgPT4ge1xuICAgICAgICAgICAgYXRpdm8gPSBmYWxzZTtcbiAgICAgICAgICAgIGNvbnRyb2xsZXIuYWJvcnQoKTtcbiAgICAgICAgfTtcbiAgICB9LCBbXSk7XG5cbiAgICBmdW5jdGlvbiBoYW5kbGVDbGlja1JlbGFjaW9uYWRvcyhldmVudCkge1xuICAgICAgICBpZiAoaXNMb2FkaW5nQ29sZWNvZXMpIHtcbiAgICAgICAgICAgIGV2ZW50LnByZXZlbnREZWZhdWx0KCk7XG4gICAgICAgICAgICBzZXRBdmlzb1JlbGFjaW9uYWRvcygnQWd1YXJkZSwgYWluZGEgZXN0YW1vcyB2ZXJpZmljYW5kbyBvcyBhbmltZXMgcmVsYWNpb25hZG9zLicpO1xuICAgICAgICAgICAgcmV0dXJuO1xuICAgICAgICB9XG5cbiAgICAgICAgaWYgKGFuaW1lc1JlbGFjaW9uYWRvcy5sZW5ndGggPT09IDApIHtcbiAgICAgICAgICAgIGV2ZW50LnByZXZlbnREZWZhdWx0KCk7XG4gICAgICAgICAgICBzZXRBdmlzb1JlbGFjaW9uYWRvcygnTmFvIGV4aXN0ZW0gYW5pbWVzIHJlbGFjaW9uYWRvcyBwYXJhIGVzdGUgYW5pbWUuJyk7XG4gICAgICAgICAgICByZXR1cm47XG4gICAgICAgIH1cblxuICAgICAgICBzZXRBdmlzb1JlbGFjaW9uYWRvcygnJyk7XG4gICAgfVxuXG4gICAgaWYgKGlzTG9hZGluZyB8fCBsaXN0YUNhcnJlZ2FuZG8pIHJldHVybiA8bWFpbiBjbGFzc05hbWU9e3N0eWxlcy5tYWluRGV0YWxoZXN9PkxvYWRpbmcuLi48L21haW4+O1xuXG4gICAgaWYgKGVycm9yKSB7XG4gICAgICAgIHJldHVybiAoXG4gICAgICAgICAgICA8bWFpbiBjbGFzc05hbWU9e3N0eWxlcy5tYWluRGV0YWxoZXN9IHJvbGU9XCJhbGVydFwiPlxuICAgICAgICAgICAgICAgIDxwPntlcnJvcn08L3A+XG4gICAgICAgICAgICAgICAgPExpbmsgdG89XCIvYW5pbWVzXCIgY2xhc3NOYW1lPXtzdHlsZXMubGlua1ZvbHRhcn0+Vm9sdGFyIHBhcmEgQW5pbWVzPC9MaW5rPlxuICAgICAgICAgICAgPC9tYWluPlxuICAgICAgICApO1xuICAgIH1cblxuICAgIGlmICghYW5pbWUpIHtcbiAgICAgICAgcmV0dXJuIChcbiAgICAgICAgICAgIDxtYWluIGNsYXNzTmFtZT17c3R5bGVzLm1haW5EZXRhbGhlc30+XG4gICAgICAgICAgICAgICAgPHA+QW5pbWUgbmFvIGVuY29udHJhZG8uPC9wPlxuICAgICAgICAgICAgICAgIDxMaW5rIHRvPVwiL2FuaW1lc1wiIGNsYXNzTmFtZT17c3R5bGVzLmxpbmtWb2x0YXJ9PlZvbHRhciBwYXJhIEFuaW1lczwvTGluaz5cbiAgICAgICAgICAgIDwvbWFpbj5cbiAgICAgICAgKTtcbiAgICB9XG5cbiAgICBjb25zdCB0aXR1bG8gPSBvYnRlclRpdHVsb0FuaW1lKGFuaW1lKTtcbiAgICBjb25zdCBpbWFnZW0gPSBvYnRlckltYWdlbUFuaW1lKGFuaW1lKTtcbiAgICBjb25zdCBnZW5lcm9zID0gb2J0ZXJHZW5lcm9zQW5pbWUoYW5pbWUpO1xuXG4gICAgcmV0dXJuIChcbiAgICAgICAgPD5cbiAgICAgICAgICAgIDxIZWFkZXJQYWdlPlxuICAgICAgICAgICAgICAgIDxIMVRpdHVsb1BhZ2U+e3RpdHVsb308L0gxVGl0dWxvUGFnZT5cbiAgICAgICAgICAgICAgICA8SDJTdWJUaXR1bG8+e2FuaW1lLnRpdGxlSmFwYW5lc2UgfHwgYW5pbWUudGl0bGVFbmdsaXNoIHx8IGFuaW1lLnR5cGUgfHwgJ0RldGFsaGVzIGRvIGFuaW1lJ308L0gyU3ViVGl0dWxvPlxuICAgICAgICAgICAgPC9IZWFkZXJQYWdlPlxuICAgICAgICAgICAgPG1haW4gY2xhc3NOYW1lPXtzdHlsZXMubWFpbkRldGFsaGVzfT5cbiAgICAgICAgICAgICAgICA8c2VjdGlvbiBjbGFzc05hbWU9e3N0eWxlcy5zZWN0aW9uUmVzdW1vfT5cbiAgICAgICAgICAgICAgICAgICAgPGZpZ3VyZSBjbGFzc05hbWU9e3N0eWxlcy5maWd1cmVQb3N0ZXJ9PlxuICAgICAgICAgICAgICAgICAgICAgICAge2ltYWdlbSA/IChcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8aW1nIGNsYXNzTmFtZT17c3R5bGVzLmltZ1Bvc3Rlcn0gc3JjPXtpbWFnZW19IGFsdD17dGl0dWxvfSAvPlxuICAgICAgICAgICAgICAgICAgICAgICAgKSA6IChcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT17c3R5bGVzLnBvc3RlckluZGlzcG9uaXZlbH0+SW1hZ2VtIGluZGlzcG9uaXZlbDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgKX1cbiAgICAgICAgICAgICAgICAgICAgPC9maWd1cmU+XG5cbiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e3N0eWxlcy5kaXZJbmZvUHJpbmNpcGFsfT5cbiAgICAgICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtzdHlsZXMuZGl2QWNvZXN9PlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxMaW5rIHRvPVwiL2FuaW1lc1wiIGNsYXNzTmFtZT17c3R5bGVzLmxpbmtWb2x0YXJ9PlZvbHRhcjwvTGluaz5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlua1xuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0bz17YC9hbmltZXMvYW5pbWVzLXJlbGFjaW9uYWRvcy8ke29idGVySWRBbmltZShhbmltZSl9YH1cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtzdHlsZXMubGlua0FjYW99XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9e2hhbmRsZUNsaWNrUmVsYWNpb25hZG9zfVxuICAgICAgICAgICAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUmVsYWNpb25hZG9zXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaW5rPlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIHthbmltZS5tYWxVcmwgJiYgKFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8YSBocmVmPXthbmltZS5tYWxVcmx9IHRhcmdldD1cIl9ibGFua1wiIHJlbD1cIm5vcmVmZXJyZXJcIiBjbGFzc05hbWU9e3N0eWxlcy5saW5rQWNhb30+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBNeUFuaW1lTGlzdFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2E+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgKX1cbiAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAge2F2aXNvUmVsYWNpb25hZG9zICYmIChcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9e3N0eWxlcy5wQXZpc29SZWxhY2lvbmFkb3N9IHJvbGU9XCJzdGF0dXNcIj57YXZpc29SZWxhY2lvbmFkb3N9PC9wPlxuICAgICAgICAgICAgICAgICAgICAgICAgKX1cblxuICAgICAgICAgICAgICAgICAgICAgICAgPGRsIGNsYXNzTmFtZT17c3R5bGVzLmRsTWV0YWRhZG9zfT5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PjxkdD5NYWxJZDwvZHQ+PGRkPntvYnRlcklkQW5pbWUoYW5pbWUpfTwvZGQ+PC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj48ZHQ+QW5vPC9kdD48ZGQ+e29idGVyQW5vQW5pbWUoYW5pbWUpIHx8ICdOL0EnfTwvZGQ+PC9kaXY+XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPGRpdj48ZHQ+RXBpc29kaW9zPC9kdD48ZGQ+e2FuaW1lLmVwaXNvZGVzIHx8IGFuaW1lLmVwaXNvZGlvcyB8fCAnTi9BJ308L2RkPjwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+PGR0PlN0YXR1czwvZHQ+PGRkPnthbmltZS5zdGF0dXMgfHwgJ04vQSd9PC9kZD48L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PjxkdD5UaXBvPC9kdD48ZGQ+e2FuaW1lLnR5cGUgfHwgJ04vQSd9PC9kZD48L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PjxkdD5Gb250ZTwvZHQ+PGRkPnthbmltZS5zb3VyY2UgfHwgJ04vQSd9PC9kZD48L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PjxkdD5TY29yZTwvZHQ+PGRkPnthbmltZS5zY29yZSA/PyAnTi9BJ308L2RkPjwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+PGR0PlBvcHVsYXJpZGFkZTwvZHQ+PGRkPntmb3JtYXRhck51bWVybyhhbmltZS5wb3B1bGFyaXR5KX08L2RkPjwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxkaXY+PGR0Pk1lbWJyb3M8L2R0PjxkZD57Zm9ybWF0YXJOdW1lcm8oYW5pbWUubWVtYmVycyl9PC9kZD48L2Rpdj5cbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8ZGl2PjxkdD5GYXZvcml0b3M8L2R0PjxkZD57Zm9ybWF0YXJOdW1lcm8oYW5pbWUuZmF2b3JpdGVzKX08L2RkPjwvZGl2PlxuICAgICAgICAgICAgICAgICAgICAgICAgPC9kbD5cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPC9zZWN0aW9uPlxuXG4gICAgICAgICAgICAgICAgPHNlY3Rpb24gY2xhc3NOYW1lPXtzdHlsZXMuc2VjdGlvblRleHRvfT5cbiAgICAgICAgICAgICAgICAgICAgPGgzPlNpbm9wc2U8L2gzPlxuICAgICAgICAgICAgICAgICAgICA8cD57YW5pbWUuc3lub3BzaXMgfHwgJ1Npbm9wc2UgbmFvIGluZm9ybWFkYS4nfTwvcD5cbiAgICAgICAgICAgICAgICA8L3NlY3Rpb24+XG5cbiAgICAgICAgICAgICAgICB7YW5pbWUuYmFja2dyb3VuZCAmJiAoXG4gICAgICAgICAgICAgICAgICAgIDxzZWN0aW9uIGNsYXNzTmFtZT17c3R5bGVzLnNlY3Rpb25UZXh0b30+XG4gICAgICAgICAgICAgICAgICAgICAgICA8aDM+QmFja2dyb3VuZDwvaDM+XG4gICAgICAgICAgICAgICAgICAgICAgICA8cD57YW5pbWUuYmFja2dyb3VuZH08L3A+XG4gICAgICAgICAgICAgICAgICAgIDwvc2VjdGlvbj5cbiAgICAgICAgICAgICAgICApfVxuXG4gICAgICAgICAgICAgICAgPHNlY3Rpb24gY2xhc3NOYW1lPXtzdHlsZXMuc2VjdGlvbkxpc3Rhc30+XG4gICAgICAgICAgICAgICAgICAgIDxwPjxzdHJvbmc+R2VuZXJvczo8L3N0cm9uZz4ge2Zvcm1hdGFyTGlzdGEoZ2VuZXJvcyl9PC9wPlxuICAgICAgICAgICAgICAgICAgICA8cD48c3Ryb25nPkVzdHVkaW9zOjwvc3Ryb25nPiB7Zm9ybWF0YXJMaXN0YShhbmltZS5zdHVkaW9zKX08L3A+XG4gICAgICAgICAgICAgICAgICAgIDxwPjxzdHJvbmc+UHJvZHV0b3Jlczo8L3N0cm9uZz4ge2Zvcm1hdGFyTGlzdGEoYW5pbWUucHJvZHVjZXJzKX08L3A+XG4gICAgICAgICAgICAgICAgICAgIDxwPjxzdHJvbmc+VGVtYXM6PC9zdHJvbmc+IHtmb3JtYXRhckxpc3RhKGFuaW1lLnRoZW1lcyl9PC9wPlxuICAgICAgICAgICAgICAgICAgICA8cD48c3Ryb25nPkRlbW9ncmFmaWE6PC9zdHJvbmc+IHtmb3JtYXRhckxpc3RhKGFuaW1lLmRlbW9ncmFwaGljcyl9PC9wPlxuICAgICAgICAgICAgICAgICAgICA8cD48c3Ryb25nPkNsYXNzaWZpY2FjYW86PC9zdHJvbmc+IHthbmltZS5yYXRpbmcgfHwgJ04vQSd9PC9wPlxuICAgICAgICAgICAgICAgICAgICA8cD48c3Ryb25nPkR1cmFjYW86PC9zdHJvbmc+IHthbmltZS5kdXJhdGlvbiB8fCAnTi9BJ308L3A+XG4gICAgICAgICAgICAgICAgICAgIDxwPjxzdHJvbmc+RXhpYmljYW86PC9zdHJvbmc+IHthbmltZS5haXJlZCB8fCAnTi9BJ308L3A+XG4gICAgICAgICAgICAgICAgPC9zZWN0aW9uPlxuICAgICAgICAgICAgPC9tYWluPlxuICAgICAgICA8Lz5cbiAgICApO1xufVxuIl0sImZpbGUiOiJDOi8yMDI2TWV1c1Byb2pldG9zL0R0dWRvMjAyNi9EdHVkb1NpdGUvc3JjL3BhZ2VzL0FuaW1lcy9BbmltZXNEZXRhbGhlcy9BbmltZXNEZXRhbGhlcy5qc3gifQ==

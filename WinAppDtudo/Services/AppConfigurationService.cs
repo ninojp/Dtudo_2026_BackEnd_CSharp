@@ -15,6 +15,24 @@ public static class AppConfigurationService
     public static string ApiMyAnimeListAutoStartUrl =>
         GetEnvironment("DTUDO_API_MYANIMELIST_AUTOSTART_URL") ?? Settings.Value.ApiMyAnimeList.AutoStartUrl;
 
+    public static string DtudoSiteStartUrl =>
+        GetEnvironment("DTUDO_SITE_START_URL") ?? Settings.Value.DtudoSite.StartUrl;
+
+    public static string? DtudoSiteDirectory =>
+        GetEnvironmentValue("DTUDO_SITE_DIRECTORY") ?? Settings.Value.DtudoSite.Directory;
+
+    public static string DtudoLocalDbInstanceName =>
+        GetEnvironmentValue("DTUDO_LOCALDB_INSTANCE") ?? Settings.Value.DtudoSite.LocalDbInstanceName;
+
+    public static TimeSpan DtudoSiteStartupTimeout =>
+        TimeSpan.FromSeconds(Math.Clamp(Settings.Value.DtudoSite.StartupTimeoutSeconds, 15, 300));
+
+    public static string? GoogleChromeExecutablePath =>
+        GetEnvironmentValue("DTUDO_GOOGLE_CHROME_PATH") ?? Settings.Value.DtudoSite.GoogleChromeExecutablePath;
+
+    public static string? NpmExecutablePath =>
+        GetEnvironmentValue("DTUDO_NPM_PATH") ?? Settings.Value.DtudoSite.NpmExecutablePath;
+
     public static bool AllowInvalidCertificates =>
         bool.TryParse(GetEnvironment("DTUDO_ALLOW_INVALID_CERTIFICATES"), out var envValue)
             ? envValue
@@ -76,10 +94,17 @@ public static class AppConfigurationService
         return string.IsNullOrWhiteSpace(value) ? null : value.TrimEnd('/');
     }
 
+    private static string? GetEnvironmentValue(string name)
+    {
+        var value = Environment.GetEnvironmentVariable(name);
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
     private sealed class AppSettings
     {
         public ApiSettings ApiMyAnimes { get; set; } = new("https://localhost:63980");
         public ApiSettings ApiMyAnimeList { get; set; } = new("https://localhost:7146");
+        public DtudoSiteSettings DtudoSite { get; set; } = new();
         public HttpSettings Http { get; set; } = new();
     }
 
@@ -87,6 +112,16 @@ public static class AppConfigurationService
     {
         public string BaseUrl { get; set; } = baseUrl;
         public string AutoStartUrl { get; set; } = baseUrl;
+    }
+
+    private sealed class DtudoSiteSettings
+    {
+        public string StartUrl { get; set; } = "http://localhost:5173/myanimes";
+        public string? Directory { get; set; }
+        public string LocalDbInstanceName { get; set; } = "MSSQLLocalDB";
+        public int StartupTimeoutSeconds { get; set; } = 90;
+        public string? GoogleChromeExecutablePath { get; set; }
+        public string? NpmExecutablePath { get; set; }
     }
 
     private sealed class HttpSettings

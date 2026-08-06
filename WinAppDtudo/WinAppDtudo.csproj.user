@@ -10,6 +10,9 @@
     <Compile Update="Controls\DarkTabControl.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="Controls\NavigationImageButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="Controls\SelectableTextLabel.cs">
       <SubType>Component</SubType>
     </Compile>

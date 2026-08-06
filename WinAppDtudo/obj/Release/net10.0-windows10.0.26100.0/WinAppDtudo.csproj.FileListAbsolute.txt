@@ -52,3 +52,12 @@ C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\SixLabors.ImageSharp.dll
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\appsettings.json
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Release\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_DBLocalBuscarAnime.resources
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\runtimes\win-x86\native\WebView2Loader.dll
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\runtimes\win-x64\native\WebView2Loader.dll
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\runtimes\win-arm64\native\WebView2Loader.dll
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Core.dll
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.WinForms.dll
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Wpf.dll
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Core.xml
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.WinForms.xml
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Wpf.xml
