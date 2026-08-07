@@ -56,15 +56,12 @@ O WinApp le `WinAppDtudo/appsettings.json` e tambem aceita variaveis:
 - `DTUDO_API_MYANIMELIST_AUTOSTART_URL`
 - `DTUDO_ALLOW_INVALID_CERTIFICATES`
 
-## Autenticacao Local
+## Identidade e autenticacao
 
-`ApiMyAnimes` expoe:
-
-- `POST /apiLocal/Auth/register`
-- `POST /apiLocal/Auth/login`
-- `GET /apiLocal/Auth/me/{id}`
-
-Usuarios locais ficam em `ApiMyAnimes/App_Data/*.json`, ignorado pelo Git. Senhas sao armazenadas com PBKDF2.
+- `ApiIdentity` e o proprietario de contas, provisionamento, MFA, sessoes, tokens e revogacao.
+- `DtudoGateway` atende o site com OIDC Code + PKCE e sessao por cookie server-side; o React nao recebe tokens.
+- `WinAppDtudo` usa o navegador do sistema com PKCE, callback loopback e armazenamento local protegido por DPAPI.
+- `ApiMyAnimes` nao expoe mais cadastro, login ou consulta de usuarios locais; o catalogo usa as politicas e identidades da arquitetura nova.
 
 
 Finalmente após anos de estudo e dedicação contínua. Agora vou começar a colocar em prática um projeto que já teve varias caras e dessa vez está ficando do jeito que quero e tenho capacidade de executar.  

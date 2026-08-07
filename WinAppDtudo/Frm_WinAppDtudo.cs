@@ -10,7 +10,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
 {
     private const float DesignWidth = 1272F;
     private const float DesignContentHeight = 652F;
-    private readonly AuthApiService _authApiService = new();
+    private readonly WinAppAuthenticationService _identityAuthenticationService = new();
     private readonly ApiMyAnimesHealthCheckService _apiMyAnimesHealthCheckService = new();
     private readonly CancellationTokenSource _formClosingCancellationTokenSource = new();
     private readonly DtudoSiteStartupService _dtudoSiteStartupService;
@@ -33,6 +33,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         MnI_MyMusicX.Enabled = false;
         MnI_NinoTI.Enabled = false;
         MnI_Desconectar.Enabled = false;
+        MnI_CadastrarUsuario.Enabled = false;
 
         InitializeMainLayout();
         FormClosing += Frm_WinAppDtudo_FormClosing;
@@ -42,7 +43,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     //Menu MyAnimes - Abrir formulário Frm_MyAnimes.
     private void MnI_MyAnimes_Click(object sender, EventArgs e)
     {
-        Frm_MyAnimes formMyAnimes = new();
+        Frm_MyAnimes formMyAnimes = new(_identityAuthenticationService);
         formMyAnimes.Show();
     }
     //Menu MyMusicX - Abrir formulário Frm_MyMusicX.
@@ -58,65 +59,113 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         formNinoTI.Show();
     }
     //==============================================================
-    //Menu Cadastrar Usuário - Abrir formulário Frm_CadastrarUsuario.
+    //Menu Cadastrar Usuario - abrir a administracao protegida do Identity.
     private void MnI_CadastrarUsuario_Click(object sender, EventArgs e)
     {
-        Frm_CadastrarUsuario formCadastrarUsuario = new();
-        formCadastrarUsuario.Show();
+        using var formAdministration = new Frm_IdentityAdministration(_identityAuthenticationService);
+        formAdministration.ShowDialog(this);
     }
-    //Menu Conectar - Abrir formulário Frm_Login.
+    //Menu Conectar - iniciar autenticacao no navegador do sistema.
     private async void MnI_Conectar_Click(object sender, EventArgs e)
     {
-        using Frm_Login formLogin = new();
-        var resultado = formLogin.ShowDialog();
-        if (resultado == DialogResult.OK)
+        if (_identityAuthenticationService.IsAuthenticated)
         {
-            string senha = formLogin.Senha;
-            string login = formLogin.Login;
-            try
-            {
-                var authResponse = await _authApiService.LoginAsync(login, senha);
-                if (authResponse.Success && authResponse.User is not null)
-                {
-                    MnI_Conectar.Enabled = false;
-                    MnI_MyAnimes.Enabled = true;
-                    MnI_MyMusicX.Enabled = true;
-                    MnI_NinoTI.Enabled = true;
-                    MnI_Desconectar.Enabled = true;
-                    WinAppDtudo.Services.DarkMessageBox.Show($"Login realizado com sucesso! Bem-vindo, {authResponse.User.Name}.", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    WinAppDtudo.Services.DarkMessageBox.Show(authResponse.Message ?? "Usuario ou senha invalida.", "Mensagem", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                WinAppDtudo.Services.DarkMessageBox.Show($"Nao foi possivel conectar a ApiMyAnimes em {AppConfigurationService.ApiMyAnimesBaseUrl}.\n\n{ex.Message}", "Erro de conexao", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            return;
         }
-        else if (resultado == DialogResult.Cancel)
-        { WinAppDtudo.Services.DarkMessageBox.Show($"Login cancelado."); }
+
+        try
+        {
+            UseWaitCursor = true;
+            var session = await _identityAuthenticationService.SignInAsync(
+                _formClosingCancellationTokenSource.Token);
+            SetAuthenticatedUi(true);
+            DarkMessageBox.Show(
+                $"Login realizado no navegador do sistema.\nSessao: {session.SessionId:D}",
+                "Identity",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+        catch (OperationCanceledException) when (_formClosingCancellationTokenSource.IsCancellationRequested)
+        {
+        }
+        catch (WinAppAuthenticationException exception)
+        {
+            DarkMessageBox.Show(
+                exception.Message,
+                "Falha na autenticacao",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        catch (HttpRequestException exception)
+        {
+            DarkMessageBox.Show(
+                $"Nao foi possivel conectar ao ApiIdentity em {AppConfigurationService.ApiIdentityBaseUrl}.\n\n{exception.Message}",
+                "Erro de conexao",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        finally
+        {
+            UseWaitCursor = false;
+        }
     }
-    //Menu Desconectar - Desconectar o usuário atual.
-    private void MnI_Desconectar_Click(object sender, EventArgs e)
+    //Menu Desconectar - revogar a sessao atual e limpar o armazenamento local.
+    private async void MnI_Desconectar_Click(object sender, EventArgs e)
     {
         Frm_Questao formQuestao = new("InterrogacaoBrasil", "Deseja realmente se desconectar?");
         var resultado = formQuestao.ShowDialog();
         if (resultado == DialogResult.OK)
         {
-            MnI_Conectar.Enabled = true;
-            MnI_MyAnimes.Enabled = false;
-            MnI_MyMusicX.Enabled = false;
-            MnI_NinoTI.Enabled = false;
-            MnI_Desconectar.Enabled = false;
-            //Fecha todos os formulários abertos, exceto o THIS.Frm_WinAppControlStore.
-            foreach (Form form in Application.OpenForms.Cast<Form>().ToList())
-            { if (form != this) form.Close(); }
-            WinAppDtudo.Services.DarkMessageBox.Show("Você foi Desconectado!");
+            try
+            {
+                UseWaitCursor = true;
+                var revoked = await _identityAuthenticationService.SignOutAsync(
+                    _formClosingCancellationTokenSource.Token);
+                SetAuthenticatedUi(false);
+                foreach (Form form in Application.OpenForms.Cast<Form>().ToList())
+                {
+                    if (form != this)
+                    {
+                        form.Close();
+                    }
+                }
+
+                DarkMessageBox.Show(
+                    revoked
+                        ? "Sessao encerrada e revogada no Identity."
+                        : "Sessao local encerrada. A revogacao remota nao foi confirmada.",
+                    "Identity",
+                    MessageBoxButtons.OK,
+                    revoked ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+            }
+            catch (OperationCanceledException) when (_formClosingCancellationTokenSource.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                DarkMessageBox.Show(
+                    $"A sessao local nao pode ser encerrada com seguranca.\n\n{exception.Message}",
+                    "Falha ao desconectar",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            finally
+            {
+                UseWaitCursor = false;
+            }
         }
         else if (resultado == DialogResult.Cancel)
-        { WinAppDtudo.Services.DarkMessageBox.Show($"Desconexão cancelada."); }
+        { DarkMessageBox.Show("Desconexao cancelada."); }
+    }
+
+    private void SetAuthenticatedUi(bool isAuthenticated)
+    {
+        MnI_Conectar.Enabled = !isAuthenticated;
+        MnI_CadastrarUsuario.Enabled = isAuthenticated;
+        MnI_MyAnimes.Enabled = isAuthenticated;
+        MnI_MyMusicX.Enabled = isAuthenticated;
+        MnI_NinoTI.Enabled = isAuthenticated;
+        MnI_Desconectar.Enabled = isAuthenticated;
     }
     //Menu Sair - Fechar a aplicação Toda.
     private void MnI_Sair_Click(object sender, EventArgs e)
@@ -298,6 +347,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     private void Frm_WinAppDtudo_FormClosed(object? sender, FormClosedEventArgs e)
     {
         _dtudoSiteStartupService.Dispose();
+        _identityAuthenticationService.Dispose();
     }
 
     private void Btn_MyAnimesForm_Click(object sender, EventArgs e)

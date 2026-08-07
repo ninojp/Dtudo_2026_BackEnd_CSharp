@@ -13,7 +13,7 @@ public sealed class FUC_EditarAnime : UserControl
     private static readonly string[] StatusAnime = ["Finished Airing", "Currently Airing", "Not yet aired"];
     private static readonly string[] Temporadas = ["winter", "spring", "summer", "fall"];
 
-    private readonly ApiMyAnimesService _apiMyAnimesService = new();
+    private readonly ApiMyAnimesService _apiMyAnimesService;
     private readonly AnimeEditFieldSet _fields = new();
     private readonly int _malId;
 
@@ -33,9 +33,10 @@ public sealed class FUC_EditarAnime : UserControl
     private Panel _pnlEditor = null!;
     private ObterAnimeDto? _animeAtual;
 
-    public FUC_EditarAnime(int malId)
+    public FUC_EditarAnime(int malId, ApiMyAnimesService? apiMyAnimesService = null)
     {
         _malId = malId;
+        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService();
         InitializeLayout();
         Load += async (_, _) => await CarregarAsync();
         ThemeManager.ApplyDarkModeToUserControl(this);

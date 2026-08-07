@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Net.Http.Json;
 using LibDtudo.Shared.Dtos;
 using LibDtudo.Shared.Search;
 using System.Net;
@@ -9,20 +10,46 @@ namespace WinAppDtudo.Services;
 public class ApiMyAnimesService
 {
     private const int MaxResultadosBusca = 100;
-    private static readonly HttpClient _httpClient;
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
+    private readonly HttpClient _httpClient;
+    private readonly WinAppAuthenticationService? _authenticationService;
 
     public static string ApiBase => AppConfigurationService.ApiMyAnimesBaseUrl;
 
-    static ApiMyAnimesService()
+    public ApiMyAnimesService(
+        WinAppAuthenticationService? authenticationService = null,
+        HttpClient? httpClient = null)
     {
-        var handler = AppConfigurationService.CreateHttpClientHandler();
+        _authenticationService = authenticationService;
+        _httpClient = httpClient ?? new HttpClient(AppConfigurationService.CreateHttpClientHandler());
+        _httpClient.BaseAddress ??= new Uri(ApiBase.TrimEnd('/') + "/");
+        _httpClient.Timeout = TimeSpan.FromSeconds(120);
+    }
 
-        _httpClient = new HttpClient(handler)
+    public async Task<EnsureMyAnimeCollectionResponse> GarantirMyAnimeColecaoAsync(
+        AdicionaMyAnimeDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var request = new EnsureMyAnimeCollectionRequest
         {
-            BaseAddress = new Uri(ApiBase.TrimEnd('/') + "/"),
-            Timeout = TimeSpan.FromSeconds(120)
+            Titulo = dto.Titulo,
+            AnimesMalId = dto.AnimesMalId
         };
+
+        using var response = await SendJsonAsync(
+            HttpMethod.Put,
+            "apiLocal/catalog-migration/my-animes/by-title",
+            request,
+            requiresAuthentication: true,
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<EnsureMyAnimeCollectionResponse>(
+            _jsonOptions,
+            cancellationToken)
+            ?? throw new InvalidOperationException("A ApiMyAnimes retornou uma colecao vazia.");
     }
 
     public async Task<ApiAnimesBuscaResult> BuscarAnimesPorTituloAsync(string query, int page = 1, int pageSize = 20)
@@ -151,80 +178,117 @@ public class ApiMyAnimesService
         return JsonSerializer.Deserialize<ObterMyAnimeDto>(json, _jsonOptions);
     }
 
-    public async Task<int?> AdicionarMyAnimeAsync(AdicionaMyAnimeDto dto)
+    public async Task<int?> AdicionarMyAnimeAsync(
+        AdicionaMyAnimeDto dto,
+        CancellationToken cancellationToken = default)
     {
-        var tituloNormalizado = dto.Titulo?.Trim() ?? string.Empty;
-        var myAnimeExistente = await ObterMyAnimePorTituloAsync(tituloNormalizado);
-        if (myAnimeExistente is not null)
-            throw new HttpRequestException($"MyAnime '{tituloNormalizado}' já existe.", null, HttpStatusCode.Conflict);
-
-        var content = SerializarJson(dto);
-        using var response = await _httpClient.PostAsync("apiLocal/MyAnime", content);
-        response.EnsureSuccessStatusCode();
-
-        return ExtrairIdMyAnime(response);
+        var response = await GarantirMyAnimeColecaoAsync(dto, cancellationToken);
+        return response.Id;
     }
 
-    public async Task AtualizarMyAnimeAsync(int id, AtualizaMyAnimeDto dto)
+    public async Task AtualizarMyAnimeAsync(
+        int id,
+        AtualizaMyAnimeDto dto,
+        CancellationToken cancellationToken = default)
     {
-        var content = SerializarJson(dto);
-        using var response = await _httpClient.PutAsync($"apiLocal/MyAnime/{id}", content);
-        response.EnsureSuccessStatusCode();
-    }
-
-    public async Task RemoverMyAnimeAsync(int id)
-    {
-        using var response = await _httpClient.DeleteAsync($"apiLocal/MyAnime/{id}");
+        using var response = await SendJsonAsync(
+            HttpMethod.Put,
+            $"apiLocal/MyAnime/{id}",
+            dto,
+            requiresAuthentication: true,
+            cancellationToken);
         response.EnsureSuccessStatusCode();
     }
 
-    public async Task AssociarAnimeAoMyAnimeAsync(int malId, int myAnimeId)
+    public async Task RemoverMyAnimeAsync(int id, CancellationToken cancellationToken = default)
     {
-        var anime = await ObterAnimePorMalIdAsync(malId);
-        if (anime is null)
-            return;
-
-        anime.MyAnimeID = myAnimeId;
-        var content = SerializarJson(anime);
-        using var response = await _httpClient.PutAsync($"apiLocal/Anime/{malId}", content);
+        using var response = await SendAsync(
+            HttpMethod.Delete,
+            $"apiLocal/MyAnime/{id}",
+            contentFactory: null,
+            requiresAuthentication: true,
+            cancellationToken);
         response.EnsureSuccessStatusCode();
     }
 
-    public async Task AdicionarAnimeAsync(AdicionaAnimeDto dto)
+    public async Task<EnsureAnimeAssociationResponse> AssociarAnimeAoMyAnimeAsync(
+        int malId,
+        int myAnimeId,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new EnsureAnimeAssociationRequest { MyAnimeId = myAnimeId };
+        using var response = await SendJsonAsync(
+            HttpMethod.Put,
+            $"apiLocal/catalog-migration/animes/{malId}/my-anime",
+            request,
+            requiresAuthentication: true,
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<EnsureAnimeAssociationResponse>(
+            _jsonOptions,
+            cancellationToken)
+            ?? throw new InvalidOperationException("A ApiMyAnimes retornou uma associacao vazia.");
+    }
+
+    public async Task AdicionarAnimeAsync(
+        AdicionaAnimeDto dto,
+        CancellationToken cancellationToken = default)
     {
         var animeExistente = await ObterAnimePorMalIdAsync(dto.MalId);
         if (animeExistente is not null)
             throw new HttpRequestException($"Anime com MalId {dto.MalId} já existe.", null, HttpStatusCode.Conflict);
 
-        var content = SerializarJson(dto);
-        using var response = await _httpClient.PostAsync("apiLocal/Anime", content);
+        using var response = await SendJsonAsync(
+            HttpMethod.Post,
+            "apiLocal/Anime",
+            dto,
+            requiresAuthentication: true,
+            cancellationToken);
         response.EnsureSuccessStatusCode();
     }
 
-    public async Task<ConflitoTituloAnimeDto?> BuscarConflitoDeTituloAsync(AdicionaAnimeDto dto)
+    public async Task<ConflitoTituloAnimeDto?> BuscarConflitoDeTituloAsync(
+        AdicionaAnimeDto dto,
+        CancellationToken cancellationToken = default)
     {
-        var content = SerializarJson(dto);
-        using var response = await _httpClient.PostAsync("apiLocal/Anime/conflito-titulo", content);
+        using var response = await SendJsonAsync(
+            HttpMethod.Post,
+            "apiLocal/Anime/conflito-titulo",
+            dto,
+            requiresAuthentication: true,
+            cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NoContent)
             return null;
 
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<ConflitoTituloAnimeDto>(json, _jsonOptions);
+        return await response.Content.ReadFromJsonAsync<ConflitoTituloAnimeDto>(_jsonOptions, cancellationToken);
     }
 
-    public async Task AtualizarAnimeAsync(int malId, AtualizaAnimeDto dto)
+    public async Task AtualizarAnimeAsync(
+        int malId,
+        AtualizaAnimeDto dto,
+        CancellationToken cancellationToken = default)
     {
-        var content = SerializarJson(dto);
-        using var response = await _httpClient.PutAsync($"apiLocal/Anime/{malId}", content);
+        using var response = await SendJsonAsync(
+            HttpMethod.Put,
+            $"apiLocal/Anime/{malId}",
+            dto,
+            requiresAuthentication: true,
+            cancellationToken);
         response.EnsureSuccessStatusCode();
     }
 
-    public async Task RemoverAnimeAsync(int malId)
+    public async Task RemoverAnimeAsync(int malId, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.DeleteAsync($"apiLocal/Anime/{malId}");
+        using var response = await SendAsync(
+            HttpMethod.Delete,
+            $"apiLocal/Anime/{malId}",
+            contentFactory: null,
+            requiresAuthentication: true,
+            cancellationToken);
         response.EnsureSuccessStatusCode();
     }
 
@@ -275,22 +339,53 @@ public class ApiMyAnimesService
             .ToList();
     }
 
-    private static StringContent SerializarJson<T>(T dto)
+    private async Task<HttpResponseMessage> SendJsonAsync<T>(
+        HttpMethod method,
+        string path,
+        T payload,
+        bool requiresAuthentication,
+        CancellationToken cancellationToken)
     {
-        return new StringContent(
-            JsonSerializer.Serialize(dto),
-            Encoding.UTF8,
-            "application/json");
+        var json = JsonSerializer.Serialize(payload);
+        return await SendAsync(
+            method,
+            path,
+            () => new StringContent(json, Encoding.UTF8, "application/json"),
+            requiresAuthentication,
+            cancellationToken);
     }
 
-    private static int? ExtrairIdMyAnime(HttpResponseMessage response)
+    private async Task<HttpResponseMessage> SendAsync(
+        HttpMethod method,
+        string path,
+        Func<HttpContent?>? contentFactory,
+        bool requiresAuthentication,
+        CancellationToken cancellationToken)
     {
-        var location = response.Headers.Location;
-        if (location is null)
-            return null;
+        if (requiresAuthentication)
+        {
+            if (_authenticationService is null)
+                throw new WinAppAuthenticationException("A sessao administrativa do WinApp nao esta configurada.");
 
-        var ultimoSegmento = location.Segments.LastOrDefault()?.Trim('/');
-        return int.TryParse(ultimoSegmento, out var id) ? id : null;
+            return await _authenticationService.SendAuthenticatedAsync(
+                _httpClient,
+                _ => CreateRequest(method, path, contentFactory),
+                cancellationToken);
+        }
+
+        using var request = CreateRequest(method, path, contentFactory);
+        return await _httpClient.SendAsync(request, cancellationToken);
+    }
+
+    private static HttpRequestMessage CreateRequest(
+        HttpMethod method,
+        string path,
+        Func<HttpContent?>? contentFactory)
+    {
+        return new HttpRequestMessage(method, path)
+        {
+            Content = contentFactory?.Invoke()
+        };
     }
 
     public async Task<ObterMyAnimeDto?> ObterMyAnimePorTituloAsync(string titulo)

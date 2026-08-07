@@ -1,86 +1,121 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react';
+import {
+    BffRequestError,
+    buildBffUrl,
+    getSafeReturnPath,
+    requestBff,
+} from '../services/bffClient';
 
-const API_AUTH_BASE_URL = (
-    import.meta.env.VITE_API_AUTH_BASE_URL
-    || import.meta.env.VITE_API_LOCAL_MYANIMES_BASE_URL
-    || 'https://localhost:63980/'
-).replace(/\/$/, '')
+const SESSION_EXPIRED_MESSAGE = 'Sua sessao expirou ou foi revogada.';
+const SESSION_CHECK_ERROR = 'Nao foi possivel verificar a sessao.';
 
-const AUTH_USER_KEY = 'auth_user'
-const AUTH_TOKEN_KEY = 'auth_token'
+function isAuthorizationFailure(error) {
+    return error instanceof BffRequestError
+        && (error.status === 401 || error.status === 403);
+}
 
-const requestJson = async (path, payload) => {
-    const response = await fetch(`${API_AUTH_BASE_URL}${path}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    })
-
-    const data = await response.json().catch(() => null)
-    if (!response.ok || !data?.success) {
-        throw new Error(data?.message || 'Falha na autenticacao')
-    }
-
-    return data
+function getErrorMessage(error, fallback) {
+    return error instanceof Error && error.message ? error.message : fallback;
 }
 
 export const useAuth = () => {
-    const [user, setUser] = useState(() => {
-        const storedUser = localStorage.getItem(AUTH_USER_KEY)
-        if (storedUser) {
-            try {
-                return JSON.parse(storedUser)
-            } catch (error) {
-                console.error('Erro ao carregar usuario do localStorage:', error)
-                localStorage.removeItem(AUTH_USER_KEY)
-                localStorage.removeItem(AUTH_TOKEN_KEY)
+    const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const refreshSession = useCallback(async (signal) => {
+        try {
+            const session = await requestBff('/bff/me', { signal });
+            const nextUser = session?.authenticated && session.user ? session.user : null;
+            setUser(nextUser);
+            setError(null);
+            return nextUser;
+        } catch (requestError) {
+            if (requestError.name === 'AbortError') {
+                throw requestError;
+            }
+
+            setUser(null);
+            if (isAuthorizationFailure(requestError)) {
+                setError(null);
+            } else {
+                setError(SESSION_CHECK_ERROR);
+            }
+            return null;
+        } finally {
+            if (!signal?.aborted) {
+                setIsLoading(false);
             }
         }
-        return null
-    })
+    }, []);
 
-    const persistAuth = (authResponse) => {
-        setUser(authResponse.user)
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authResponse.user))
-        if (authResponse.token) {
-            localStorage.setItem(AUTH_TOKEN_KEY, authResponse.token)
-        }
-    }
+    useEffect(() => {
+        const controller = new AbortController();
+        refreshSession(controller.signal).catch(() => undefined);
 
-    const register = async (name, email, password) => {
+        return () => controller.abort();
+    }, [refreshSession]);
+
+    useEffect(() => {
+        const handleSessionExpired = () => {
+            setUser(null);
+            setError(SESSION_EXPIRED_MESSAGE);
+        };
+
+        window.addEventListener('dtudo:bff-session-expired', handleSessionExpired);
+        return () => window.removeEventListener('dtudo:bff-session-expired', handleSessionExpired);
+    }, []);
+
+    const login = useCallback((returnUrl = '/') => {
+        const safeReturnPath = getSafeReturnPath(returnUrl);
+        window.location.assign(buildBffUrl(
+            `/bff/login?returnUrl=${encodeURIComponent(safeReturnPath)}`,
+        ));
+    }, []);
+
+    const logout = useCallback(async (returnUrl = '/auth/login') => {
+        setIsLoading(true);
+        setError(null);
+
         try {
-            const response = await requestJson('/apiLocal/Auth/register', { name, email, password })
-            persistAuth(response)
-            return { success: true, user: response.user }
-        } catch (error) {
-            return { success: false, error: error.message }
-        }
-    }
+            const antiforgery = await requestBff('/bff/antiforgery');
+            if (!antiforgery?.token) {
+                throw new Error('Protecao contra requisicoes falsificadas indisponivel.');
+            }
 
-    const login = async (email, password) => {
-        try {
-            const response = await requestJson('/apiLocal/Auth/login', { login: email, password })
-            persistAuth(response)
-            return { success: true, user: response.user }
-        } catch (error) {
-            return { success: false, error: error.message }
-        }
-    }
+            await requestBff(
+                `/bff/logout?returnUrl=${encodeURIComponent(getSafeReturnPath(returnUrl))}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': antiforgery.token,
+                    },
+                },
+            );
+            setUser(null);
+            return { success: true };
+        } catch (requestError) {
+            if (isAuthorizationFailure(requestError)) {
+                setUser(null);
+                setError(null);
+                return { success: true };
+            }
 
-    const logout = () => {
-        setUser(null)
-        localStorage.removeItem(AUTH_USER_KEY)
-        localStorage.removeItem(AUTH_TOKEN_KEY)
-    }
+            const message = getErrorMessage(requestError, 'Nao foi possivel encerrar a sessao.');
+            setError(message);
+            return { success: false, error: message };
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
     return {
         user,
-        isLoading: false,
+        isLoading,
+        error,
         isAuthenticated: !!user,
-        register,
         login,
-        logout
-    }
-}
+        logout,
+        refreshSession,
+    };
+};

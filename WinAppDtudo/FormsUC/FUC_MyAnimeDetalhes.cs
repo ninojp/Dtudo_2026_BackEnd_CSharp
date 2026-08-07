@@ -11,8 +11,9 @@ public class FUC_MyAnimeDetalhes : UserControl
     public event EventHandler<int>? EditarMyAnimeSolicitado;
 
     private readonly int _myAnimeId;
-    private readonly ApiMyAnimesService _apiMyAnimesService = new();
-    private readonly CriadorDeEstruturas _criadorDeEstruturas = new();
+    private readonly ApiMyAnimesService _apiMyAnimesService;
+    private readonly IFileStorageApiClient _fileStorageApiClient;
+    private readonly CriadorDeEstruturas _criadorDeEstruturas;
 
     private readonly Label _lblTitulo;
     private readonly Label _lblResumo;
@@ -20,15 +21,19 @@ public class FUC_MyAnimeDetalhes : UserControl
     private readonly TextBox _txtMyAnimeId;
     private readonly Label _lblStatus;
     private readonly Button _btnSalvarEstrutura;
+    private readonly Button _btnExcluirEstrutura;
     private readonly Button _btnEditarMyAnime;
     private readonly FlowLayoutPanel _flpCards;
 
     private ObterMyAnimeDto? _myAnimeAtual;
     private List<ObterAnimeDto> _animesAtuais = [];
 
-    public FUC_MyAnimeDetalhes(int myAnimeId)
+    public FUC_MyAnimeDetalhes(int myAnimeId, ApiMyAnimesService? apiMyAnimesService = null)
     {
         _myAnimeId = myAnimeId;
+        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService();
+        _fileStorageApiClient = new FileStorageApiClient();
+        _criadorDeEstruturas = new CriadorDeEstruturas(_fileStorageApiClient);
 
         var tlpMain = new TableLayoutPanel
         {
@@ -104,7 +109,12 @@ public class FUC_MyAnimeDetalhes : UserControl
 
         _btnSalvarEstrutura = new Button
         {
-            Text = "💾 Salvar em Disco"
+            Text = "Exportar para ApiFileStorage"
+        };
+
+        _btnExcluirEstrutura = new Button
+        {
+            Text = "Excluir capas da ApiFileStorage"
         };
 
         _btnEditarMyAnime = new Button
@@ -124,11 +134,13 @@ public class FUC_MyAnimeDetalhes : UserControl
         };
 
         ConfigurarBotaoAcao(_btnSalvarEstrutura);
+        ConfigurarBotaoAcao(_btnExcluirEstrutura);
         ConfigurarBotaoAcao(_btnEditarMyAnime);
         flpAcoes.Controls.AddRange([
             _lblMyAnimeId,
             _txtMyAnimeId,
             _btnSalvarEstrutura,
+            _btnExcluirEstrutura,
             _btnEditarMyAnime
         ]);
 
@@ -163,6 +175,7 @@ public class FUC_MyAnimeDetalhes : UserControl
 
         Load += async (_, _) => await CarregarDadosAsync();
         _btnSalvarEstrutura.Click += BtnSalvarEstrutura_Click;
+        _btnExcluirEstrutura.Click += BtnExcluirEstrutura_Click;
         _btnEditarMyAnime.Click += (_, _) => EditarMyAnimeSolicitado?.Invoke(this, _myAnimeId);
         _lblMyAnimeId.Click += (_, _) => CopiarMyAnimeId();
         _txtMyAnimeId.Click += (_, _) => CopiarMyAnimeId();
@@ -188,6 +201,7 @@ public class FUC_MyAnimeDetalhes : UserControl
         {
             _lblStatus.Text = "⏳ Carregando detalhes do MyAnime...";
             _btnSalvarEstrutura.Enabled = false;
+            _btnExcluirEstrutura.Enabled = false;
             _btnEditarMyAnime.Enabled = false;
             _txtMyAnimeId.Text = _myAnimeId.ToString();
 
@@ -233,6 +247,7 @@ public class FUC_MyAnimeDetalhes : UserControl
                 : "✅ Coleção carregada.";
 
             _btnSalvarEstrutura.Enabled = _animesAtuais.Count > 0;
+            _btnExcluirEstrutura.Enabled = _animesAtuais.Count > 0;
             _btnEditarMyAnime.Enabled = true;
         }
         catch (HttpRequestException ex)
@@ -316,41 +331,29 @@ public class FUC_MyAnimeDetalhes : UserControl
             return;
         }
 
-        using var dialog = new FolderBrowserDialog
-        {
-            Description = "Selecione o diretório onde a estrutura do MyAnime será salva.",
-            UseDescriptionForTitle = true,
-            ShowNewFolderButton = true
-        };
-
-        if (dialog.ShowDialog() != DialogResult.OK || string.IsNullOrWhiteSpace(dialog.SelectedPath))
-            return;
-
-        var pastaRaiz = CriadorDeEstruturas.ObterCaminhoPastaRaiz(_myAnimeAtual, dialog.SelectedPath);
-        if (Directory.Exists(pastaRaiz))
-        {
-            WinAppDtudo.Services.DarkMessageBox.Show(
-                $"A pasta já existe e não será sobrescrita:\n\n{pastaRaiz}",
-                "Exportação interrompida",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
-            return;
-        }
-
         _btnSalvarEstrutura.Enabled = false;
-        _lblStatus.Text = "⏳ Criando estrutura de pastas e baixando imagens...";
+        _lblStatus.Text = "Preparando exportação segura na ApiFileStorage...";
 
         try
         {
-            var resultado = await _criadorDeEstruturas.CriarEstruturaAsync(_myAnimeAtual, _animesAtuais, dialog.SelectedPath);
+            var progresso = new Progress<ProgressoExportacao>(atualizacao =>
+            {
+                _lblStatus.Text = $"{atualizacao.PercentualConcluido}% - {atualizacao.Mensagem}";
+            });
+            var resultado = await _criadorDeEstruturas.CriarEstruturaAsync(
+                _myAnimeAtual,
+                _animesAtuais,
+                progresso);
 
-            _lblStatus.Text = $"✅ Estrutura criada em: {resultado.PastaRaiz}";
+            _lblStatus.Text = "Exportação concluída na ApiFileStorage.";
 
             var mensagem =
-                $"Estrutura criada com sucesso.\n\n" +
-                $"Pasta raiz: {resultado.PastaRaiz}\n" +
-                $"Pastas criadas: {resultado.TotalPastasCriadas}\n" +
+                $"Exportação concluída com segurança.\n\n" +
+                $"Destinos lógicos preparados: {resultado.TotalPastasCriadas}\n" +
                 $"Imagens salvas: {resultado.TotalImagensSalvas}";
+
+            if (resultado.TotalImagensRepetidas > 0)
+                mensagem += $"\nImagens reconciliadas: {resultado.TotalImagensRepetidas}";
 
             if (resultado.Erros.Count > 0)
             {
@@ -363,13 +366,97 @@ public class FUC_MyAnimeDetalhes : UserControl
         }
         catch (Exception ex)
         {
-            _lblStatus.Text = "❌ Erro ao criar estrutura em disco.";
-            WinAppDtudo.Services.DarkMessageBox.Show($"Falha ao criar estrutura:\n\n{ex.Message}",
+            _lblStatus.Text = "Falha na exportação para a ApiFileStorage.";
+            WinAppDtudo.Services.DarkMessageBox.Show($"Falha ao exportar estrutura:\n\n{ex.Message}",
                 "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
             _btnSalvarEstrutura.Enabled = _animesAtuais.Count > 0;
+            _btnExcluirEstrutura.Enabled = _animesAtuais.Count > 0;
+        }
+    }
+
+    private async void BtnExcluirEstrutura_Click(object? sender, EventArgs e)
+    {
+        if (_myAnimeAtual is null || _animesAtuais.Count == 0)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show(
+                "Não há capas associadas para excluir.",
+                "Aviso",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
+        _btnSalvarEstrutura.Enabled = false;
+        _btnExcluirEstrutura.Enabled = false;
+        _lblStatus.Text = "Preparando prévia de exclusão segura...";
+
+        try
+        {
+            var plano = await _fileStorageApiClient.PrepareExportAsync(
+                _myAnimeAtual.Id,
+                _animesAtuais.Select(anime => anime.MalId).ToArray());
+            var previa = await _fileStorageApiClient.PreviewDeleteAsync(
+                plano.Items.Select(item => item.ObjectId).ToArray());
+            var tamanhoTotal = previa.Items.Sum(item => item.Length);
+
+            var confirmacao = WinAppDtudo.Services.DarkMessageBox.Show(
+                $"Prévia de exclusão:\n\n" +
+                $"Arquivos: {previa.Items.Count}\n" +
+                $"Tamanho: {tamanhoTotal:N0} bytes\n\n" +
+                "Os arquivos serão movidos para a lixeira da ApiFileStorage e poderão ser purgados após sete dias.\n\n" +
+                "Deseja continuar?",
+                "Confirmar exclusão em massa",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+            if (confirmacao != DialogResult.Yes)
+            {
+                _lblStatus.Text = "Exclusão cancelada após a prévia.";
+                return;
+            }
+
+            var totp = DarkInputDialog.Show(
+                "Informe o código TOTP para autorizar esta exclusão em massa.",
+                "Step-up MFA");
+            if (string.IsNullOrWhiteSpace(totp))
+            {
+                _lblStatus.Text = "Exclusão cancelada: step-up não informado.";
+                return;
+            }
+
+            _lblStatus.Text = "Validando step-up e movendo arquivos para a lixeira...";
+            await _fileStorageApiClient.GrantDeleteStepUpAsync(totp.Trim());
+            var resultado = await _fileStorageApiClient.DeleteBatchAsync(previa.PreviewId);
+            var excluidos = resultado.Items.Count(item => item.Status is "deleted" or "replayed");
+            var falhas = resultado.Items.Count - excluidos;
+
+            _lblStatus.Text = falhas == 0
+                ? $"Exclusão concluída: {excluidos} arquivo(s) na lixeira."
+                : $"Exclusão concluída com ocorrências: {excluidos} concluído(s), {falhas} falha(s).";
+            WinAppDtudo.Services.DarkMessageBox.Show(
+                $"Exclusão em massa finalizada.\n\n" +
+                $"Movidos para a lixeira: {excluidos}\n" +
+                $"Com falha ou ausentes: {falhas}\n" +
+                "A purga automática respeitará a janela de sete dias.",
+                "Exclusão de capas",
+                MessageBoxButtons.OK,
+                falhas == 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+        }
+        catch (Exception ex)
+        {
+            _lblStatus.Text = "Falha na exclusão em massa.";
+            WinAppDtudo.Services.DarkMessageBox.Show(
+                $"Falha ao excluir capas pela ApiFileStorage:\n\n{ex.Message}",
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        finally
+        {
+            _btnSalvarEstrutura.Enabled = _animesAtuais.Count > 0;
+            _btnExcluirEstrutura.Enabled = _animesAtuais.Count > 0;
         }
     }
 

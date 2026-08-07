@@ -8,14 +8,16 @@ namespace WinAppDtudo;
 public partial class Frm_MyAnimes : CustomFormNoBorder
 {
     private const int CloseButtonSize = 24;
-    private readonly ApiMyAnimesService _apiMyAnimesService = new();
+    private readonly ApiMyAnimesService _apiMyAnimesService;
     private readonly AnalizadorDeEstruturas _analizadorDeEstruturas = new();
-    private readonly ImportadorAnimesMyAnimeService _importadorAnimesMyAnimeService = new();
+    private readonly ImportadorAnimesMyAnimeService _importadorAnimesMyAnimeService;
     private AnaliseEstruturas? _ultimaAnaliseEstruturas;
     public int _tabIndexMascaras = 0;
     public int _tabIndexApiMyAnimeListPorNome = 0;
-    public Frm_MyAnimes()
+    public Frm_MyAnimes(WinAppAuthenticationService? authenticationService = null)
     {
+        _apiMyAnimesService = new ApiMyAnimesService(authenticationService);
+        _importadorAnimesMyAnimeService = new ImportadorAnimesMyAnimeService(_apiMyAnimesService);
         InitializeComponent();
         MnI_ApiMyAnimeListBuscarNome.Click += MnI_ApiMyAnimeListBuscarNome_Click;
         MnI_DBLocalBuscarAnime.Click += MnI_DBLocalBuscarAnime_Click;
@@ -30,7 +32,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
 
     private void MnI_DBLocalBuscarAnime_Click(object? sender, EventArgs e)
     {
-        var ucBuscaLocal = new FUC_DBLocalBuscarAnime
+        var ucBuscaLocal = new FUC_DBLocalBuscarAnime(_apiMyAnimesService)
         {
             Dock = DockStyle.Fill
         };
@@ -352,7 +354,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             return;
         }
 
-        var ucDetalhes = new FUC_DetalhesAnime(malId, consultaLocal)
+        var ucDetalhes = new FUC_DetalhesAnime(malId, consultaLocal, _apiMyAnimesService)
         {
             Dock = DockStyle.Fill
         };
@@ -391,7 +393,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             return;
         }
 
-        var ucEditar = new FUC_EditarAnime(malId)
+        var ucEditar = new FUC_EditarAnime(malId, _apiMyAnimesService)
         {
             Dock = DockStyle.Fill
         };
@@ -431,7 +433,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             return;
         }
 
-        var ucEditar = new FUC_EditarMyAnime(myAnimeId)
+        var ucEditar = new FUC_EditarMyAnime(myAnimeId, _apiMyAnimesService)
         {
             Dock = DockStyle.Fill
         };
@@ -484,7 +486,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             return;
         }
 
-        var ucDetalhes = new FUC_MyAnimeDetalhes(myAnimeId)
+        var ucDetalhes = new FUC_MyAnimeDetalhes(myAnimeId, _apiMyAnimesService)
         {
             Dock = DockStyle.Fill
         };
@@ -584,7 +586,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
                 MessageBoxIcon.Question);
 
             if (desejaImportarAnimes == DialogResult.Yes && myAnimesCriados.Count > 0)
-                await ImportarAnimesDosMyAnimesCriadosAsync(analise.DiretorioRaiz, myAnimesCriados, errosDetalhados);
+                await ImportarAnimesDosMyAnimesCriadosAsync(myAnimesCriados, errosDetalhados);
 
             if (myAnimesCriados.Count > 0)
             {
@@ -635,15 +637,21 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             var myAnime = analise.MyAnimesParaPersistir[indice];
             try
             {
-                var myAnimeId = await _apiMyAnimesService.AdicionarMyAnimeAsync(myAnime);
-                if (!myAnimeId.HasValue || myAnimeId.Value <= 0)
+                var colecao = await _apiMyAnimesService.GarantirMyAnimeColecaoAsync(myAnime);
+                if (colecao.Id <= 0)
                 {
                     errosDetalhados.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] MyAnime '{myAnime.Titulo}' não retornou ID após criação.");
                     resultado.Falhas++;
                 }
                 else
                 {
-                    resultado.Criados.Add(new MyAnimeCriadoInfo(myAnimeId.Value, myAnime.Titulo, myAnime.AnimesMalId));
+                    if (!colecao.Created)
+                        resultado.Ignorados++;
+
+                    if (!resultado.Criados.Any(c => c.Id == colecao.Id))
+                    {
+                        resultado.Criados.Add(new MyAnimeCriadoInfo(colecao.Id, colecao.Titulo, myAnime.AnimesMalId));
+                    }
                 }
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
@@ -672,7 +680,6 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     }
 
     private async Task ImportarAnimesDosMyAnimesCriadosAsync(
-        string diretorioRaizAnalise,
         List<MyAnimeCriadoInfo> myAnimesCriados,
         List<string> errosDetalhados)
     {

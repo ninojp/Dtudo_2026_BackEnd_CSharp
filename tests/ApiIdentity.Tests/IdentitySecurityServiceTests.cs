@@ -532,6 +532,108 @@ public sealed class IdentitySecurityServiceTests
     }
 
     [Fact]
+    public async Task OidcAccessTokenBindingFollowsSessionRevocationWithoutPersistingClearToken()
+    {
+        await WithTemporaryDatabaseAsync(async (services, _) =>
+        {
+            var accountId = await CreateAccountAsync(services, "oidc-binding-user");
+            var session = await CreateSessionAsync(services, accountId, "oidc-browser-device");
+            var accessToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhY2NvdW50In0.signature";
+            var context = SecurityContextFactory.FromIds(session.SessionId, session.DeviceId);
+
+            await using (var scope = services.CreateAsyncScope())
+            {
+                var tokens = scope.ServiceProvider.GetRequiredService<SecurityTokenService>();
+                Assert.True(await tokens.BindAccessTokenAsync(
+                    accountId,
+                    accessToken,
+                    session.SessionId,
+                    session.DeviceId,
+                    InitialTime.AddMinutes(5),
+                    accountId));
+                Assert.NotNull(await tokens.IntrospectAccessTokenAsync(accessToken));
+
+                var database = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+                var persisted = await database.SecurityTokens
+                    .SingleAsync(token => token.SessionId == session.SessionId);
+                Assert.DoesNotContain(accessToken, persisted.TokenHash, StringComparison.Ordinal);
+            }
+
+            await using (var scope = services.CreateAsyncScope())
+            {
+                Assert.True(await scope.ServiceProvider
+                    .GetRequiredService<SecuritySessionService>()
+                    .RevokeSessionAsync(accountId, session.SessionId, accountId));
+            }
+
+            await using (var scope = services.CreateAsyncScope())
+            {
+                Assert.Null(await scope.ServiceProvider
+                    .GetRequiredService<SecurityTokenService>()
+                    .IntrospectAccessTokenAsync(accessToken));
+                Assert.False(await scope.ServiceProvider
+                    .GetRequiredService<SecuritySessionService>()
+                    .IsActiveBindingAsync(accountId, context));
+            }
+        });
+    }
+
+    [Fact]
+    public async Task AdministrationRequiresPermissionStepUpAndActiveBinding()
+    {
+        await WithTemporaryDatabaseAsync(async (services, _) =>
+        {
+            var accountId = await CreateAccountAsync(services, "administration-user");
+            await using (var scope = services.CreateAsyncScope())
+            {
+                var provisioning = scope.ServiceProvider.GetRequiredService<AccountProvisioningService>();
+                var bootstrap = await provisioning.BootstrapAsync(
+                    new BootstrapAccountRequest("bootstrap-user", "bootstrap@example.test"));
+                Assert.True(bootstrap.Succeeded);
+            }
+
+            var session = await CreateSessionAsync(services, accountId, "administration-device");
+            var context = SecurityContextFactory.FromIds(session.SessionId, session.DeviceId);
+            var request = new IdentityAdminProvisionRequest(
+                "provisioned-user",
+                "provisioned@example.test",
+                AuthorizationCatalog.Roles.SiteUser,
+                context.SessionId,
+                context.DeviceId);
+            var withoutPermission = CreatePrincipal(accountId);
+            var withPermission = CreatePrincipal(accountId, includeProvisionPermission: true);
+
+            await using (var scope = services.CreateAsyncScope())
+            {
+                var administration = scope.ServiceProvider.GetRequiredService<IdentityAdministrationService>();
+                Assert.False((await administration.ProvisionAsync(
+                    withoutPermission,
+                    request)).Succeeded);
+                Assert.False((await administration.ProvisionAsync(
+                    withPermission,
+                    request)).Succeeded);
+
+                var stepUp = scope.ServiceProvider.GetRequiredService<StepUpService>();
+                Assert.NotNull(await stepUp.GrantAsync(
+                    withPermission,
+                    AuthorizationCatalog.Permissions.IdentityProvision,
+                    IdentityMfaMethods.Totp,
+                    context));
+                Assert.True((await administration.ProvisionAsync(
+                    withPermission,
+                    request)).Succeeded);
+
+                Assert.True(await scope.ServiceProvider
+                    .GetRequiredService<SecuritySessionService>()
+                    .RevokeSessionAsync(accountId, session.SessionId, accountId));
+                Assert.False((await administration.ProvisionAsync(
+                    withPermission,
+                    request)).Succeeded);
+            }
+        });
+    }
+
+    [Fact]
     public async Task TotpSetupVerificationRecoveryCodeAndResetInvalidateSecurityState()
     {
         await WithTemporaryDatabaseAsync(async (services, _) =>
@@ -1223,8 +1325,16 @@ public sealed class IdentitySecurityServiceTests
                 RefreshTokenLifetimeDays = 30,
                 TokenEntropyBytes = 32
             }));
+        services.AddSingleton<IOptions<LocalProvisioningOptions>>(
+            Options.Create(new LocalProvisioningOptions
+            {
+                AdministrationSecret = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(
+                    RandomNumberGenerator.GetBytes(32)),
+                InitialSecretLifetimeMinutes = 60
+            }));
         services.AddScoped<IdentityProvisioningAuditWriter>();
         services.AddScoped<IdentitySecurityAuditWriter>();
+        services.AddScoped<AccountProvisioningService>();
         services.AddScoped<SecuritySessionService>();
         services.AddScoped<SecurityTokenService>();
         services.AddScoped<IdentitySecurityChallengeService>();
@@ -1233,6 +1343,7 @@ public sealed class IdentitySecurityServiceTests
         services.AddScoped<PasskeyMfaService>();
         services.AddScoped<LocalRecoveryService>();
         services.AddScoped<SecuritySnapshotService>();
+        services.AddScoped<IdentityAdministrationService>();
         services.AddSingleton<IFido2>(_ => new Fido2(new Fido2Configuration
         {
             ServerDomain = "localhost",

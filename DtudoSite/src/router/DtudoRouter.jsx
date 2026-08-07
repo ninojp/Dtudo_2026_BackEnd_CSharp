@@ -3,7 +3,6 @@ import IndexLayout from "../layouts/IndexLayout/IndexLayout";
 import NinoTIPageLayout from "../layouts/NinoTIPageLayout/NinoTIPageLayout";
 import MyMusicxObjsListProvider from "../context_api/MyMusicxObjsListContext/MyMusicxObjsListProvider";
 import MyMusicXDetalhesProvider from "../context_api/MyMusicXDetalhesContext/MyMusicXDetalhesProvider";
-import Register from "../pages/Register/Register";
 import Login from "../pages/Login/Login";
 import Logout from "../pages/Logout/Logout";
 import NotFound from "../pages/NotFound/NotFound";
@@ -89,7 +88,6 @@ export default function DtudoRouter() {
                     </Route>
 
                     <Route path='/auth'>
-                        <Route path='register' element={<Register />} />
                         <Route path='login' element={<Login />} />
                         <Route path='logout' element={<Logout />} />
                     </Route>

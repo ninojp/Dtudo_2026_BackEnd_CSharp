@@ -23,8 +23,6 @@ C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_CadastrarUsuario.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_DetalhesAnime.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.FormsUC.FUC_Mascaras.resources
-C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.Forms.Frm_CadastrarUsuario.resources
-C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.Forms.Frm_Login.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.Frm_MyAnimes.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.Forms.Frm_MyMusicX.resources
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\obj\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.Forms.Frm_NinoTI.resources
@@ -61,3 +59,4 @@ C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Core.xml
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.WinForms.xml
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Wpf.xml
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\Serilog.dll

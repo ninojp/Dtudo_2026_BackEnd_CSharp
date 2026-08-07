@@ -20,8 +20,6 @@ export default function MyMusicXBuscar() {
     const [error, setError] = useState(null);
     const [results, setResults] = useState(null);
 
-    // Lê o token do Discogs a partir da variável de ambiente Vite
-    const discogsToken = typeof import.meta !== 'undefined' ? import.meta.env.VITE_DISCOGS_TOKEN : undefined;
     const discogsProxyBaseUrl = (typeof import.meta !== 'undefined' ? import.meta.env.VITE_DISCOGS_PROXY_URL : undefined) || 'http://localhost:4010';
 
     const handleArtistSearch = async (q) => {
@@ -67,7 +65,7 @@ export default function MyMusicXBuscar() {
             setResults(searchResp.data); // Use single state
         } catch (err) {
             console.error('Erro ao buscar discografia no Discogs: ', err);
-            setError('Erro ao buscar no Discogs. Verifique o token ou a rede. ');
+            setError('Erro ao buscar no Discogs. Verifique o proxy ou a rede. ');
         } finally {
             setIsLoading(false);
         }
@@ -158,11 +156,6 @@ export default function MyMusicXBuscar() {
                         )}
                     </FieldsetPadrao>
                 </form>
-                {!discogsToken && (<p style={{ color: 'red' }}>
-                    Atenção: nenhum token encontrado. Requisições sem autenticação são limitadas.
-                </p>
-                )}
-
                 {isLoading && <Spinner />}
                 {error && <p style={{ color: 'red' }}>{error}</p>}
                 {!results && !selectedArtist && <img className={styles.imgPgMusicx} src={notaFireMusical} alt='Imagem nota musical em chamas' />}

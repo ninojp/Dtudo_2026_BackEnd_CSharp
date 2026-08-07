@@ -64,5 +64,29 @@
         <member name="M:ApiIdentity.Migrations.AddSessionTokens.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:ApiIdentity.Migrations.AddPersonalDataPrivacy">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddPersonalDataPrivacy.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddPersonalDataPrivacy.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddPersonalDataPrivacy.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ApiIdentity.Migrations.AddPersonalPrivacyPermissions">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddPersonalPrivacyPermissions.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddPersonalPrivacyPermissions.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddPersonalPrivacyPermissions.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

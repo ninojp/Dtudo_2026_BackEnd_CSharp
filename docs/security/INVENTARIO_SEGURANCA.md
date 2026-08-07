@@ -14,9 +14,11 @@ Foram usados como evidencias principais:
 
 Artefatos `bin/`, `obj/`, saidas de build, dados de teste e conteudo de arquivos de usuarios nao foram usados como fonte de inventario. Nenhum valor de segredo foi copiado para este documento.
 
+> Atualizacao pos-Etapa 20: este documento preserva a coleta historica da Etapa 01. As referencias ao login JSON, `AuthController`, `LocalAuthService`, `App_Data/auth-users*.json`, `localStorage` de tokens e chamadas diretas do site sao evidencias do estado anterior, nao superficies ativas. O estado vigente e registrado na secao 12.
+
 ## 2. Resumo da topologia observada
 
-O estado atual e uma composicao local sem `DtudoGateway`, `ApiIdentity`, `ApiFileStorage` ou IIS/gateway observados nos pontos lidos. O navegador acessa diretamente a `ApiMyAnimes` para o catalogo e para o fluxo de autenticacao local. O `WinAppDtudo` tambem acessa diretamente as duas APIs, pode iniciar a `ApiMyAnimeList` e o stack do site e inicia a instancia LocalDB quando a verificacao de saude da API local falha.
+O registro original era uma composicao local sem `DtudoGateway`, `ApiIdentity`, `ApiFileStorage` ou IIS/gateway observados nos pontos lidos. O navegador acessava diretamente a `ApiMyAnimes` para o catalogo e para o fluxo de autenticacao local. O `WinAppDtudo` tambem acessava diretamente as duas APIs, podia iniciar a `ApiMyAnimeList` e o stack do site e iniciava a instancia LocalDB quando a verificacao de saude da API local falhava.
 
 Fluxo principal observado:
 
@@ -41,11 +43,11 @@ O diagrama registra dependencias observadas, nao uma arquitetura de producao apr
 | ID | Ativo | Proprietario atual | Dados ou capacidade | Exposicao observada | Classificacao inicial |
 | --- | --- | --- | --- | --- | --- |
 | A-01 | `DtudoSite` React/Vite | DtudoSite | Catalogo, navegacao, estado de autenticacao no navegador e chamadas HTTP | Porta local de desenvolvimento; acessa APIs diretamente | Publico com credenciais de sessao no cliente |
-| A-02 | `ApiMyAnimes` | ApiMyAnimes | CRUD de `Anime` e `MyAnime`, busca local, autenticacao JSON e health do DB_Local | HTTPS `localhost:63980`; HTTP `localhost:63981` no perfil de desenvolvimento | Servico proprietario com dados de catalogo e credenciais locais |
+| A-02 | `ApiMyAnimes` | ApiMyAnimes | CRUD de `Anime` e `MyAnime`, busca local e health do DB_Local | HTTPS `localhost:63980`; HTTP `localhost:63981` no perfil de desenvolvimento | Servico proprietario com dados de catalogo; identidade pertence a `ApiIdentity` |
 | A-03 | `ApiMyAnimeList` | ApiMyAnimeList | Adaptacao de busca, detalhes e relacoes do MyAnimeList | HTTPS `localhost:7146` no perfil de desenvolvimento | Servico de integracao externa |
 | A-04 | `WinAppDtudo` | WinAppDtudo | Cliente administrativo, importacao, exportacao de imagens, inicializacao do stack e chamadas de escrita | Aplicacao desktop; sem listener HTTP proprio observado | Operador local e acesso a recursos do host |
 | A-05 | Banco `Dtudo2026Db` em SQL Server LocalDB | ApiMyAnimes / processo com autenticacao integrada | Tabelas `MyAnimes` e `Animes`, incluindo metadados e URLs | Nao ha porta TCP de banco observada; conexao configurada para LocalDB | Dados persistentes locais |
-| A-06 | Arquivo de usuarios locais | `LocalAuthService` da ApiMyAnimes | Nome, e-mail, hash de senha, datas de criacao/login | Caminho configuravel em `Auth:UsersFilePath`; padrao relativo a `App_Data` | Credencial e dado pessoal |
+| A-06 | Arquivo de usuarios locais (historico, removido na Etapa 20) | `LocalAuthService` da ApiMyAnimes | Nome, e-mail, hash de senha, datas de criacao/login | Caminho historico em `Auth:UsersFilePath`; nenhum arquivo ativo | Evidencia historica de credencial e dado pessoal |
 | A-07 | Raizes de midia escolhidas no WinApp | WinAppDtudo / usuario do Windows | Pastas de colecoes, subpastas, imagens e IDs MAL derivados dos nomes | Caminho escolhido por `FolderBrowserDialog`; leitura e escrita direta | Conteudo local e metadados de colecao |
 | A-08 | Logs locais de importacao | `ImportadorAnimesMyAnimeService` | Falhas, IDs, titulos, colecao e caminho do log | `LogsImportacao` sob `AppDomain.CurrentDomain.BaseDirectory` | Log operacional potencialmente sensivel |
 | A-09 | API oficial MyAnimeList | ApiMyAnimeList | Dados externos de anime, busca, detalhes, imagens e relacoes | Egress HTTPS para `api.myanimelist.net/v2/` | Dependencia externa |
@@ -66,8 +68,8 @@ O diagrama registra dependencias observadas, nao uma arquitetura de producao apr
 | --- | --- | --- | --- |
 | Catalogo de anime | `MalId`, titulo, titulos alternativos, episodios, score, genero, sinopse, estudio, URLs de imagem e relacoes | SQL LocalDB, respostas JSON, cache em memoria da ApiMyAnimeList e estado do cliente | Planejado como catalogo publico, mas mutacoes atuais nao estao protegidas |
 | Colecoes internas | `MyAnime.Id`, titulo e lista de `AnimesMalId` | SQL LocalDB e respostas do WinApp/site | Colecao interna DB_Local; nao confundir com relacoes oficiais externas |
-| Identidade local legada | Nome, e-mail, hash de senha, datas de criacao/login | Arquivo JSON sob `App_Data` | Dado pessoal e material de autenticacao; o valor do arquivo nao foi lido |
-| Sessao legada | `AuthResponse.Token`, `auth_user` e `auth_token` | Resposta HTTP e `localStorage` do navegador | Credencial de sessao disponivel ao JavaScript; valor nao foi coletado |
+| Identidade local legada (historica; removida na Etapa 20) | Nome, e-mail, hash de senha, datas de criacao/login | Arquivo JSON sob `App_Data` no estado inventariado | Dado pessoal e material de autenticacao historico; o valor do arquivo nao foi lido |
+| Sessao legada (historica; removida na Etapa 20) | `AuthResponse.Token`, `auth_user` e `auth_token` | Resposta HTTP e `localStorage` do navegador no estado inventariado | Credencial de sessao historica disponivel ao JavaScript; valor nao foi coletado |
 | Configuracao | URLs de APIs, origens CORS, nome de instancia LocalDB, caminhos e flags de certificado | `appsettings*.json`, variaveis de ambiente e memoria do processo | Nao registrar segredos; `MyAnimeList:ClientId` aparece vazio no arquivo-fonte |
 | Arquivos de midia | Imagens baixadas, extensoes, IDs numericos e nomes de pastas | Raiz selecionada pelo operador | Conteudo local; validacoes de tamanho, magic bytes, quarentena e reparse nao foram observadas nesta coleta |
 | Logs | Mensagens de erro de importacao, IDs, titulos, colecoes e caminhos | `LogsImportacao` local | Pode conter dados operacionais e caminhos do host; nao ha redacao/correlacao observada |
@@ -104,9 +106,9 @@ Base comum: `apiLocal`.
 | `AnimeController` | `/apiLocal/Anime/{id}` | `GET`, `PUT`, `PATCH`, `DELETE` | Le, atualiza total/parcialmente ou remove por `MalId` |
 | `MyAnimeController` | `/apiLocal/MyAnime` | `GET`, `POST` | Lista ou cria colecao |
 | `MyAnimeController` | `/apiLocal/MyAnime/{id}` | `GET`, `PUT`, `PATCH`, `DELETE` | Le, atualiza total/parcialmente ou remove colecao |
-| `AuthController` | `/apiLocal/Auth/register` | `POST` | Cadastra usuario no arquivo local |
-| `AuthController` | `/apiLocal/Auth/login` | `POST` | Valida credencial local e retorna resposta com token |
-| `AuthController` | `/apiLocal/Auth/me/{id}` | `GET` | Consulta usuario por ID sem exigir sessao observada |
+| `AuthController` (historico; removido na Etapa 20) | `/apiLocal/Auth/register` | `POST` | Rota removida; retorna `404` |
+| `AuthController` (historico; removido na Etapa 20) | `/apiLocal/Auth/login` | `POST` | Rota removida; retorna `404` |
+| `AuthController` (historico; removido na Etapa 20) | `/apiLocal/Auth/me/{id}` | `GET` | Rota removida; retorna `404` |
 
 Os controllers usam `UseCors`, `UseHttpsRedirection`, `UseAuthorization` e `MapControllers`. A coleta nao encontrou `AddAuthentication`, politicas, `[Authorize]` ou `[AllowAnonymous]`; portanto o middleware de autorizacao nao demonstra uma barreira efetiva.
 
@@ -125,7 +127,7 @@ O cliente externo usa `MyAnimeList:BaseUrl`, `ClientId`, timeout, cache e tentat
 
 - `DtudoSite` monta rotas publicas para `/animes`, `/ninoti`, `/mymusicx` e `/auth/*`, incluindo registro, login e logout no cliente.
 - O cliente JavaScript da API local chama leitura de `Anime` e `MyAnime` diretamente no host configurado por `VITE_API_LOCAL_MYANIMES_BASE_URL`.
-- O hook `useAuth` envia credenciais diretamente a `/apiLocal/Auth/register` e `/apiLocal/Auth/login`, persiste usuario e token em `localStorage` e remove ambos no logout.
+- O hook `useAuth` que enviava credenciais diretamente a `/apiLocal/Auth/register` e `/apiLocal/Auth/login`, persistia usuario e token em `localStorage` e removia ambos no logout e uma evidencia historica da Etapa 01; esse fluxo foi removido na Etapa 20.
 - `WinAppDtudo` usa `ApiMyAnimesService`, `MyAnimeListApiService` e `AuthApiService` sem cabecalho de autenticacao observado.
 - `WinAppDtudo` aceita uma pasta raiz via `FolderBrowserDialog`, analisa subpastas e imagens, cria pastas e salva capas localmente.
 - `DtudoSiteStartupService` pode executar `sqllocaldb.exe`, `npm run serv`, `dotnet run` para a API local externa e abrir o Chrome.
@@ -197,6 +199,15 @@ Estas lacunas sao fatos ausentes na evidencia coletada, nao afirmacoes de inexis
 
 O inventario e considerado consistente quando cada componente citado possui ao menos um ponto de entrada ou proprietario observado, cada porta possui fonte identificada, cada fluxo possui origem e destino, e valores desconhecidos estao marcados como lacunas. O confronto final com controllers, clientes e configuracoes e registrado no status da etapa.
 
-## 12. Fora do escopo
+## 12. Estado apos a Etapa 20
 
-Nao foram implementados controles, alterados endpoints, migrados clientes, removidos tokens, alterados arquivos de configuracao ou iniciadas etapas posteriores. `ApiNode` permanece fora da analise detalhada, com a excecao documental da dependencia Discogs demonstrada pelo frontend e pelo script de desenvolvimento.
+- `ApiIdentity` e o proprietario de contas, provisionamento, MFA, sessoes, tokens, revogacao e privacidade.
+- O site usa `DtudoGateway` com OIDC Code + PKCE, cookie `__Host-dtudo-bff`, ticket server-side e antiforgery; o React nao recebe access token ou refresh token.
+- O `WinAppDtudo` usa navegador do sistema, PKCE, callback loopback e armazenamento protegido por DPAPI; a tela administrativa exige permissao, binding de sessao/dispositivo e step-up.
+- `ApiMyAnimes` nao registra, autentica ou consulta usuarios locais. As tres rotas historicas de `/apiLocal/Auth` permanecem sem mapeamento e foram verificadas com resposta `404`.
+- O fluxo interno `ApiMyAnimes` -> `ApiMyAnimeList` usa Client Credentials, mTLS, EKU de autenticacao de cliente, `service.mal.read`, audience dedicado e overlap de rotacao.
+- Evidencias reexecutadas para o gate: `ApiIdentity.Tests` `57/57`, `ApiMyAnimes.Tests` completo `18/18` (incluindo auth/startup/auditoria `10/10`), endpoints mTLS `10/10`, `DtudoGateway.Tests` `10/10`, `WinAppDtudo.Tests` `10/10`, `ApiMyAnimeList.Tests` `13/13` e `LibDtudo.Shared.Tests` `24/24`.
+
+## 13. Fora do escopo historico
+
+Na coleta original nao foram implementados controles, alterados endpoints, migrados clientes ou removidos tokens. `ApiNode` permanece fora da analise detalhada, com a excecao documental da dependencia Discogs demonstrada pelo frontend e pelo script de desenvolvimento. A Etapa 21 nao foi iniciada neste gate.

@@ -5,11 +5,16 @@ using ApiIdentity.Models;
 using ApiIdentity.Authorization;
 using ApiIdentity.Mfa;
 using ApiIdentity.Provisioning;
+using ApiIdentity.Privacy;
 using ApiIdentity;
 using LibDtudo.Shared.Security;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -17,15 +22,18 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
+using OpenIddict.Validation.AspNetCore;
 using Fido2NetLib;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using System.Security.Claims;
+using System.Text;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+var browserCookieScheme = IdentityConstants.ApplicationScheme;
 
 var configuredServiceAuthentication = builder.Configuration
     .GetSection(ServiceTokenIssuerOptions.SectionName)
@@ -70,6 +78,13 @@ builder.Services.AddOptions<OpenIddictServerConfigurationOptions>()
     .Validate(options => Uri.TryCreate(options.Issuer, UriKind.Absolute, out var issuer)
         && issuer.Scheme == Uri.UriSchemeHttps,
         "OpenIddict:Issuer deve ser uma URL HTTPS absoluta.")
+    .Validate(options => !string.IsNullOrWhiteSpace(options.WinApp.ClientId),
+        "OpenIddict:WinApp:ClientId nao configurado.")
+    .Validate(options => WinAppOpenIddictOptions.IsValidLoopbackRedirectUri(options.WinApp.RedirectUri),
+        "OpenIddict:WinApp:RedirectUri deve ser um callback HTTP fixo em 127.0.0.1 sem query ou fragmento.")
+    .Validate(options => options.WinApp.Scopes is { Length: > 0 }
+        && options.WinApp.Scopes.Distinct(StringComparer.Ordinal).Count() == options.WinApp.Scopes.Length,
+        "OpenIddict:WinApp:Scopes deve conter escopos exclusivos.")
     .ValidateOnStart();
 
 builder.Services.AddOptions<LocalProvisioningOptions>()
@@ -168,11 +183,30 @@ builder.Services.AddIdentityCore<IdentityAccount>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredUniqueChars = 4;
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<IdentityDbContext>()
     .AddUserStore<ProtectedIdentityUserStore>()
+    .AddSignInManager()
     .AddDefaultTokenProviders();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+})
+    .AddCookie(browserCookieScheme, options =>
+    {
+        options.Cookie.Name = "__Host-DtudoIdentity";
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.LoginPath = "/account/login";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = false;
+    });
+builder.Services.AddAntiforgery();
 builder.Services.AddSingleton<IFido2>(serviceProvider =>
 {
     var options = serviceProvider.GetRequiredService<IOptions<IdentityMfaOptions>>().Value;
@@ -197,6 +231,7 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IdentityProvisioningAuditWriter>();
+builder.Services.AddScoped<IdentityPrivacyService>();
 builder.Services.AddScoped<AccountProvisioningService>();
 builder.Services.AddScoped<IdentitySecurityAuditWriter>();
 builder.Services.AddScoped<SecuritySessionService>();
@@ -207,6 +242,9 @@ builder.Services.AddScoped<TotpMfaService>();
 builder.Services.AddScoped<PasskeyMfaService>();
 builder.Services.AddScoped<LocalRecoveryService>();
 builder.Services.AddScoped<SecuritySnapshotService>();
+builder.Services.AddScoped<OpenIddictAuthorizationPrincipalFactory>();
+builder.Services.AddScoped<OpenIddictConfigurationSeeder>();
+builder.Services.AddScoped<IdentityAdministrationService>();
 builder.Services.AddSingleton<ServiceCertificateValidator>();
 builder.Services.AddSingleton<ServiceTokenRequestValidator>();
 builder.Services.AddSingleton<ServiceCertificateStore>();
@@ -257,10 +295,23 @@ builder.Services.AddOpenIddict()
         options.SetJsonWebKeySetEndpointUris("/.well-known/jwks");
         options.SetAuthorizationEndpointUris("/connect/authorize");
         options.SetTokenEndpointUris("/connect/token");
+        options.SetRevocationEndpointUris("/connect/revocation");
         options.AllowAuthorizationCodeFlow();
+        options.AllowRefreshTokenFlow();
         options.AllowClientCredentialsFlow();
+        options.RequireProofKeyForCodeExchange();
+        options.RegisterScopes(
+            OpenIddictConstants.Scopes.Profile,
+            "identity.login",
+            "identity.provision");
         options.AddDevelopmentEncryptionCertificate();
         options.AddDevelopmentSigningCertificate();
+        options.UseAspNetCore()
+            .EnableAuthorizationEndpointPassthrough();
+    })
+    .AddValidation(options =>
+    {
+        options.UseLocalServer();
         options.UseAspNetCore();
     });
 
@@ -269,6 +320,13 @@ builder.Services.AddHealthChecks()
     .AddDbContextCheck<IdentityDbContext>("identity-db", tags: ["ready"]);
 
 var app = builder.Build();
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    await scope.ServiceProvider
+        .GetRequiredService<OpenIddictConfigurationSeeder>()
+        .SeedAsync();
+}
 
 app.UseHttpsRedirection();
 app.UseRateLimiter();
@@ -286,7 +344,118 @@ app.Use(async (context, next) =>
     await next();
 });
 app.UseAuthentication();
+app.Use(async (context, next) =>
+{
+    var protectedPath = context.Request.Path.StartsWithSegments("/identity/security")
+        || context.Request.Path.StartsWithSegments("/identity/admin")
+        || context.Request.Path.StartsWithSegments("/identity/me");
+    var bindingExempt = context.Request.Method == HttpMethods.Post
+        && (context.Request.Path.Equals("/identity/security/sessions", StringComparison.OrdinalIgnoreCase)
+            || IsSessionTokenBindingPath(context.Request.Path));
+    var accessToken = GetBearerToken(context);
+    if (protectedPath
+        && !bindingExempt
+        && accessToken is not null
+        && context.User.Identity?.IsAuthenticated == true)
+    {
+        var tokenService = context.RequestServices.GetRequiredService<SecurityTokenService>();
+        var tokenInfo = await tokenService.IntrospectAccessTokenAsync(accessToken, context.RequestAborted);
+        if (tokenInfo is null)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+    }
+
+    await next();
+});
 app.UseAuthorization();
+
+app.MapGet("/account/login", async (
+    HttpContext context,
+    IAntiforgery antiforgery) =>
+{
+    var returnUrl = GetSafeReturnUrl(context.Request.Query["returnUrl"]);
+    var tokens = antiforgery.GetAndStoreTokens(context);
+    return Results.Content(
+        BuildLoginPage(returnUrl, tokens.RequestToken),
+        "text/html; charset=utf-8");
+});
+
+app.MapPost("/account/login", async (
+    HttpContext context,
+    IAntiforgery antiforgery,
+    UserManager<IdentityAccount> userManager,
+    SignInManager<IdentityAccount> signInManager,
+    [FromForm] string? userName,
+    [FromForm] string? password,
+    [FromForm] string? returnUrl) =>
+{
+    await antiforgery.ValidateRequestAsync(context);
+    var safeReturnUrl = GetSafeReturnUrl(returnUrl);
+    var normalizedUserName = userName?.Trim() ?? string.Empty;
+    var account = await userManager.FindByNameAsync(normalizedUserName)
+        ?? await userManager.FindByEmailAsync(normalizedUserName);
+    if (account is not null)
+    {
+        var result = await signInManager.CheckPasswordSignInAsync(
+            account,
+            password ?? string.Empty,
+            lockoutOnFailure: true);
+        if (result.Succeeded)
+        {
+            await signInManager.SignInAsync(account, isPersistent: false);
+            return Results.Redirect(safeReturnUrl);
+        }
+    }
+
+    return Results.Content(
+        BuildLoginPage(safeReturnUrl, antiforgery.GetAndStoreTokens(context).RequestToken, "Credenciais invalidas ou conta indisponivel."),
+        "text/html; charset=utf-8",
+        Encoding.UTF8,
+        StatusCodes.Status401Unauthorized);
+});
+
+app.MapMethods("/connect/authorize", [HttpMethods.Get, HttpMethods.Post], async (
+    HttpContext context,
+    OpenIddictAuthorizationPrincipalFactory principalFactory,
+    CancellationToken cancellationToken) =>
+{
+    var request = Microsoft.AspNetCore.OpenIddictServerAspNetCoreHelpers
+        .GetOpenIddictServerRequest(context);
+    if (request is null)
+    {
+        return Results.BadRequest();
+    }
+
+    var browserAuthentication = await context.AuthenticateAsync(browserCookieScheme);
+    if (!browserAuthentication.Succeeded || browserAuthentication.Principal is null)
+    {
+        var returnUrl = context.Request.PathBase + context.Request.Path + context.Request.QueryString;
+        return Results.Challenge(
+            new AuthenticationProperties { RedirectUri = returnUrl },
+            [browserCookieScheme]);
+    }
+
+    var principal = await principalFactory.CreateAsync(
+        browserAuthentication.Principal,
+        request,
+        cancellationToken);
+    if (principal is null)
+    {
+        await context.SignOutAsync(browserCookieScheme);
+        return Results.Challenge(
+            new AuthenticationProperties
+            {
+                RedirectUri = context.Request.PathBase + context.Request.Path + context.Request.QueryString
+            },
+            [browserCookieScheme]);
+    }
+
+    return Results.SignIn(
+        principal,
+        authenticationScheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+});
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
@@ -328,7 +497,7 @@ localProvisioning.MapPost("/accounts", async (
         return Results.NotFound();
     }
 
-    var result = await service.ProvisionAsync(request, cancellationToken);
+    var result = await service.ProvisionAsync(request, cancellationToken: cancellationToken);
     return result.Succeeded ? Results.Ok(result.Delivery) : Results.BadRequest();
 });
 
@@ -344,7 +513,7 @@ localProvisioning.MapPost("/activation-secrets/{activationId:guid}/revoke", asyn
         return Results.NotFound();
     }
 
-    return await service.RevokeInitialSecretAsync(activationId, cancellationToken)
+    return await service.RevokeInitialSecretAsync(activationId, cancellationToken: cancellationToken)
         ? Results.NoContent()
         : Results.NotFound();
 });
@@ -370,6 +539,7 @@ app.MapPost("/identity/security/tokens/refresh", async (
         : Results.Unauthorized();
 });
 
+var identityProvisionPolicy = AuthorizationCatalog.PolicyName(AuthorizationCatalog.Permissions.IdentityProvision);
 var security = app.MapGroup("/identity/security")
     .RequireAuthorization();
 
@@ -377,6 +547,7 @@ security.MapPost("/sessions", async (
     SecuritySessionCreateRequest request,
     HttpContext httpContext,
     SecuritySessionService service,
+    SecurityTokenService tokenService,
     CancellationToken cancellationToken) =>
 {
     var accountId = GetPrincipalAccountId(httpContext.User);
@@ -390,7 +561,57 @@ security.MapPost("/sessions", async (
         request.Name,
         accountId,
         cancellationToken);
-    return result is null ? Results.BadRequest() : Results.Ok(result);
+    if (result is null)
+    {
+        return Results.BadRequest();
+    }
+
+    var accessToken = GetBearerToken(httpContext);
+    var accessTokenExpiresAtUtc = GetAccessTokenExpiry(httpContext.User);
+    if (accessToken is null
+        || accessTokenExpiresAtUtc is not { } expiresAtUtc
+        || !await tokenService.BindAccessTokenAsync(
+            accountId,
+            accessToken,
+            result.SessionId,
+            result.DeviceId,
+            expiresAtUtc,
+            accountId,
+            cancellationToken))
+    {
+        await service.RevokeSessionAsync(accountId, result.SessionId, accountId, cancellationToken);
+        return Results.Unauthorized();
+    }
+
+    return Results.Ok(result);
+});
+
+security.MapPost("/sessions/{sessionId:guid}/token", async (
+    Guid sessionId,
+    SecuritySessionTokenBindingRequest request,
+    HttpContext httpContext,
+    SecurityTokenService tokenService,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    var accessToken = GetBearerToken(httpContext);
+    var accessTokenExpiresAtUtc = GetAccessTokenExpiry(httpContext.User);
+    if (accountId is null
+        || accessToken is null
+        || accessTokenExpiresAtUtc is not { } expiresAtUtc
+        || !await tokenService.BindAccessTokenAsync(
+            accountId,
+            accessToken,
+            sessionId,
+            request.DeviceId,
+            expiresAtUtc,
+            accountId,
+            cancellationToken))
+    {
+        return Results.Unauthorized();
+    }
+
+    return Results.NoContent();
 });
 
 security.MapPost("/sessions/tokens", async (
@@ -464,6 +685,163 @@ security.MapDelete("/devices/{deviceId:guid}", async (
             ? Results.NoContent()
             : Results.NotFound();
 });
+
+var administration = app.MapGroup("/identity/admin")
+    .RequireAuthorization(identityProvisionPolicy);
+
+administration.MapGet("/accounts", async (
+    string? sessionId,
+    string? deviceId,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+{
+    if (!await service.IsActiveSessionAsync(
+        httpContext.User,
+        new SecurityContext(sessionId, deviceId),
+        cancellationToken))
+    {
+        return Results.Forbid();
+    }
+
+    return Results.Ok(await service.GetAccountsAsync(cancellationToken));
+});
+
+administration.MapGet("/roles", async (
+    string? sessionId,
+    string? deviceId,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+{
+    if (!await service.IsActiveSessionAsync(
+        httpContext.User,
+        new SecurityContext(sessionId, deviceId),
+        cancellationToken))
+    {
+        return Results.Forbid();
+    }
+
+    return Results.Ok(service.GetRoles());
+});
+
+administration.MapGet("/permissions", async (
+    string? sessionId,
+    string? deviceId,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+{
+    if (!await service.IsActiveSessionAsync(
+        httpContext.User,
+        new SecurityContext(sessionId, deviceId),
+        cancellationToken))
+    {
+        return Results.Forbid();
+    }
+
+    return Results.Ok(service.GetPermissions());
+});
+
+administration.MapGet("/devices", async (
+    bool includeRevoked,
+    string? sessionId,
+    string? deviceId,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+{
+    if (!await service.IsActiveSessionAsync(
+        httpContext.User,
+        new SecurityContext(sessionId, deviceId),
+        cancellationToken))
+    {
+        return Results.Forbid();
+    }
+
+    return Results.Ok(await service.GetDevicesAsync(includeRevoked, cancellationToken));
+});
+
+administration.MapGet("/sessions", async (
+    bool includeRevoked,
+    string? sessionId,
+    string? deviceId,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+{
+    if (!await service.IsActiveSessionAsync(
+        httpContext.User,
+        new SecurityContext(sessionId, deviceId),
+        cancellationToken))
+    {
+        return Results.Forbid();
+    }
+
+    return Results.Ok(await service.GetSessionsAsync(includeRevoked, cancellationToken));
+});
+
+administration.MapPost("/accounts", async (
+    IdentityAdminProvisionRequest request,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+{
+    var result = await service.ProvisionAsync(httpContext.User, request, cancellationToken);
+    return result.Succeeded ? Results.Ok(result) : Results.BadRequest();
+});
+
+administration.MapPost("/accounts/{accountId}/roles", async (
+    string accountId,
+    IdentityAdminRoleAssignmentRequest request,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+    await service.AssignRoleAsync(httpContext.User, accountId, request, cancellationToken)
+        ? Results.NoContent()
+        : Results.BadRequest());
+
+administration.MapPost("/accounts/{accountId}/lock", async (
+    string accountId,
+    IdentityAdminLockRequest request,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+    await service.SetLockAsync(httpContext.User, accountId, request, cancellationToken)
+        ? Results.NoContent()
+        : Results.BadRequest());
+
+administration.MapDelete("/sessions/{sessionId:guid}", async (
+    Guid sessionId,
+    string? requestSessionId,
+    string? requestDeviceId,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+    await service.RevokeSessionAsync(
+        httpContext.User,
+        sessionId,
+        requestSessionId,
+        requestDeviceId,
+        cancellationToken)
+        ? Results.NoContent()
+        : Results.NotFound());
+
+administration.MapDelete("/devices/{deviceId:guid}", async (
+    Guid deviceId,
+    string? requestSessionId,
+    string? requestDeviceId,
+    HttpContext httpContext,
+    IdentityAdministrationService service,
+    CancellationToken cancellationToken) =>
+    await service.RevokeDeviceAsync(
+        httpContext.User,
+        deviceId,
+        requestSessionId,
+        requestDeviceId,
+        cancellationToken)
+        ? Results.NoContent()
+        : Results.NotFound());
 
 security.MapPost("/sessions/revoke-all", async (
     HttpContext httpContext,
@@ -751,6 +1129,253 @@ app.MapPost("/identity/recover/local", async (
         : Results.BadRequest())
     .RequireRateLimiting("local-recovery");
 
+var personal = app.MapGroup("/identity/me")
+    .RequireAuthorization();
+var personalReadPolicy = AuthorizationCatalog.PolicyName(AuthorizationCatalog.Permissions.PersonalRead);
+var personalWritePolicy = AuthorizationCatalog.PolicyName(AuthorizationCatalog.Permissions.PersonalWrite);
+var privacyExportPolicy = AuthorizationCatalog.PolicyName(AuthorizationCatalog.Permissions.PrivacyExport);
+var privacyDeletePolicy = AuthorizationCatalog.PolicyName(AuthorizationCatalog.Permissions.PrivacyDelete);
+
+personal.MapGet("/age-confirmation", async (
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    if (accountId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var result = await service.GetAdultAgeConfirmationAsync(accountId, cancellationToken);
+    return result is null ? Results.NotFound() : Results.Ok(result);
+}).RequireAuthorization(personalReadPolicy);
+
+personal.MapPost("/age-confirmation", async (
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    if (accountId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var result = await service.ConfirmAdultAgeAsync(accountId, cancellationToken);
+    return result is null ? Results.NotFound() : Results.Ok(result);
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapGet("/terms/{documentType}/current", async (
+    string documentType,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var result = await service.GetActiveTermsAsync(documentType, cancellationToken);
+    return result is null ? Results.NotFound() : Results.Ok(result);
+}).RequireAuthorization(personalReadPolicy);
+
+personal.MapPost("/terms/{termsDocumentId:guid}/accept", async (
+    Guid termsDocumentId,
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    if (accountId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var result = await service.AcceptTermsAsync(accountId, termsDocumentId, cancellationToken);
+    return result is null ? Results.BadRequest() : Results.Ok(result);
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapGet("/favorites", async (
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    return accountId is null
+        ? Results.Unauthorized()
+        : Results.Ok(await service.GetFavoritesAsync(accountId, cancellationToken));
+}).RequireAuthorization(personalReadPolicy);
+
+personal.MapPost("/favorites", async (
+    PersonalResourceRequest request,
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    if (accountId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var result = await service.AddFavoriteAsync(accountId, request, cancellationToken);
+    return result is null ? Results.BadRequest() : Results.Ok(result);
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapDelete("/favorites/{favoriteId:guid}", async (
+    Guid favoriteId,
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    return accountId is null
+        ? Results.Unauthorized()
+        : await service.RemoveFavoriteAsync(accountId, favoriteId, cancellationToken)
+            ? Results.NoContent()
+            : Results.NotFound();
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapGet("/preferences", async (
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    return accountId is null
+        ? Results.Unauthorized()
+        : Results.Ok(await service.GetPreferencesAsync(accountId, cancellationToken));
+}).RequireAuthorization(personalReadPolicy);
+
+personal.MapPut("/preferences", async (
+    PersonalPreferenceRequest request,
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    if (accountId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var result = await service.SetPreferenceAsync(accountId, request, cancellationToken);
+    return result is null ? Results.BadRequest() : Results.Ok(result);
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapDelete("/preferences/{key}", async (
+    string key,
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    return accountId is null
+        ? Results.Unauthorized()
+        : await service.RemovePreferenceAsync(accountId, key, cancellationToken)
+            ? Results.NoContent()
+            : Results.NotFound();
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapGet("/lists", async (
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    return accountId is null
+        ? Results.Unauthorized()
+        : Results.Ok(await service.GetListsAsync(accountId, cancellationToken));
+}).RequireAuthorization(personalReadPolicy);
+
+personal.MapPost("/lists", async (
+    PersonalListRequest request,
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    if (accountId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var result = await service.CreateListAsync(accountId, request, cancellationToken);
+    return result is null ? Results.BadRequest() : Results.Ok(result);
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapDelete("/lists/{listId:guid}", async (
+    Guid listId,
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    return accountId is null
+        ? Results.Unauthorized()
+        : await service.RemoveListAsync(accountId, listId, cancellationToken)
+            ? Results.NoContent()
+            : Results.NotFound();
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapPost("/lists/{listId:guid}/items", async (
+    Guid listId,
+    PersonalListItemRequest request,
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    if (accountId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var result = await service.AddListItemAsync(accountId, listId, request, cancellationToken);
+    return result is null ? Results.BadRequest() : Results.Ok(result);
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapDelete("/lists/{listId:guid}/items/{listItemId:guid}", async (
+    Guid listId,
+    Guid listItemId,
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    return accountId is null
+        ? Results.Unauthorized()
+        : await service.RemoveListItemAsync(accountId, listId, listItemId, cancellationToken)
+            ? Results.NoContent()
+            : Results.NotFound();
+}).RequireAuthorization(personalWritePolicy);
+
+personal.MapPost("/data-export", async (
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    if (accountId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var result = await service.ExportAsync(accountId, cancellationToken);
+    return result is null ? Results.NotFound() : Results.Ok(result);
+}).RequireAuthorization(privacyExportPolicy);
+
+personal.MapPost("/deletion-request", async (
+    HttpContext httpContext,
+    IdentityPrivacyService service,
+    CancellationToken cancellationToken) =>
+{
+    var accountId = GetPrincipalAccountId(httpContext.User);
+    if (accountId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    var result = await service.RequestDeletionAsync(accountId, cancellationToken);
+    return result is null ? Results.Conflict() : Results.Ok(result);
+}).RequireAuthorization(privacyDeletePolicy);
+
 app.Run();
 
 static bool UsesConfiguredDatabase(IdentityDatabaseOptions options)
@@ -778,5 +1403,67 @@ static string? GetPrincipalAccountId(ClaimsPrincipal principal) =>
         ? principal.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? principal.FindFirstValue("sub")
         : null;
+
+static string? GetBearerToken(HttpContext context)
+{
+    var authorization = context.Request.Headers.Authorization.ToString();
+    const string prefix = "Bearer ";
+    return authorization.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+        ? authorization[prefix.Length..].Trim()
+        : null;
+}
+
+    static bool IsSessionTokenBindingPath(PathString path)
+    {
+        var segments = path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return segments is { Length: 5 }
+        && string.Equals(segments[0], "identity", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(segments[1], "security", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(segments[2], "sessions", StringComparison.OrdinalIgnoreCase)
+        && Guid.TryParse(segments[3], out _)
+        && string.Equals(segments[4], "token", StringComparison.OrdinalIgnoreCase);
+    }
+
+static DateTimeOffset? GetAccessTokenExpiry(ClaimsPrincipal principal)
+{
+    var expiration = principal.FindFirst("exp")?.Value
+        ?? principal.FindFirst(ClaimTypes.Expiration)?.Value;
+    return long.TryParse(expiration, out var seconds)
+        ? DateTimeOffset.FromUnixTimeSeconds(seconds)
+        : DateTimeOffset.TryParse(expiration, out var parsed) ? parsed : null;
+}
+
+static string GetSafeReturnUrl(string? returnUrl)
+{
+    if (string.IsNullOrWhiteSpace(returnUrl)
+        || !Uri.TryCreate(returnUrl, UriKind.Relative, out var uri)
+        || !returnUrl.StartsWith("/", StringComparison.Ordinal)
+        || returnUrl.StartsWith("//", StringComparison.Ordinal)
+        || uri.IsAbsoluteUri)
+    {
+        return "/";
+    }
+
+    return returnUrl;
+}
+
+static string BuildLoginPage(string returnUrl, string? requestVerificationToken, string? error = null)
+{
+    var encodedReturnUrl = WebUtility.HtmlEncode(returnUrl);
+    var encodedToken = WebUtility.HtmlEncode(requestVerificationToken ?? string.Empty);
+    var encodedError = string.IsNullOrWhiteSpace(error)
+        ? string.Empty
+        : $"<p role=\"alert\">{WebUtility.HtmlEncode(error)}</p>";
+    return "<!doctype html><html lang=\"pt-BR\"><head><meta charset=\"utf-8\"><title>Entrar no Dtudo</title>"
+        + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"></head><body>"
+        + "<main><h1>Entrar no Dtudo</h1>"
+        + encodedError
+        + "<form method=\"post\" action=\"/account/login\">"
+        + $"<input type=\"hidden\" name=\"returnUrl\" value=\"{encodedReturnUrl}\">"
+        + $"<input type=\"hidden\" name=\"__RequestVerificationToken\" value=\"{encodedToken}\">"
+        + "<label>Usuario ou email<input name=\"userName\" autocomplete=\"username\" required></label>"
+        + "<label>Senha<input type=\"password\" name=\"password\" autocomplete=\"current-password\" required></label>"
+        + "<button type=\"submit\">Entrar</button></form></main></body></html>";
+}
 
 public partial class Program;

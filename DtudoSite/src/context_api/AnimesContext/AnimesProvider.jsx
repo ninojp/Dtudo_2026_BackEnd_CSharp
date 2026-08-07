@@ -23,8 +23,8 @@ export default function AnimesProvider({ children }) {
             } catch (erro) {
                 if (erro.code === 'ERR_CANCELED' || !ativo) return;
 
-                console.error('Erro ao buscar animes da ApiMyAnimes:', erro);
-                setError('Nao foi possivel carregar os animes. Verifique a ApiMyAnimes e tente novamente.');
+                console.error('Erro ao buscar catalogo de animes pelo gateway:', erro);
+                setError('Nao foi possivel carregar os animes. Verifique o gateway e tente novamente.');
             } finally {
                 if (ativo) setIsLoading(false);
             }

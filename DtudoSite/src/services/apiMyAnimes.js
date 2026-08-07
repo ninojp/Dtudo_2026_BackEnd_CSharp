@@ -1,15 +1,15 @@
-import { axiosHttpApiLocalMyAnimes } from "../api_conect/conectApiLocal";
+import { axiosHttpBffCatalog } from "../api_conect/conectApiLocal";
 
 const TAMANHO_PAGINA_API_LOCAL = 500;
 const MAX_RESULTADOS_BUSCA_LOCAL = 100;
 
 export async function buscarTodosAnimesDaApiLocal(signal) {
-    const cliente = axiosHttpApiLocalMyAnimes();
+    const cliente = axiosHttpBffCatalog();
     let skip = 0;
     let todosOsAnimes = [];
 
     while (true) {
-        const response = await cliente.get('/apiLocal/Anime', {
+        const response = await cliente.get('/api/catalog/animes', {
             params: { skip, take: TAMANHO_PAGINA_API_LOCAL },
             signal,
         });
@@ -29,12 +29,12 @@ export async function buscarTodosAnimesDaApiLocal(signal) {
 }
 
 export async function buscarAnimePorMalId(malId, signal) {
-    const response = await axiosHttpApiLocalMyAnimes().get(`/apiLocal/Anime/${malId}`, { signal });
+    const response = await axiosHttpBffCatalog().get(`/api/catalog/animes/${malId}`, { signal });
     return response.data;
 }
 
 export async function buscarAnimesDaApiLocalPorTermo(termo, signal) {
-    const response = await axiosHttpApiLocalMyAnimes().get('/apiLocal/Anime/buscar', {
+    const response = await axiosHttpBffCatalog().get('/api/catalog/animes/search', {
         params: { termo, take: MAX_RESULTADOS_BUSCA_LOCAL },
         signal,
     });
@@ -47,12 +47,12 @@ export async function buscarAnimesDaApiLocalPorTermo(termo, signal) {
 }
 
 export async function buscarTodasColecoesMyAnimeDaApiLocal(signal) {
-    const cliente = axiosHttpApiLocalMyAnimes();
+    const cliente = axiosHttpBffCatalog();
     let skip = 0;
     let colecoes = [];
 
     while (true) {
-        const response = await cliente.get('/apiLocal/MyAnime', {
+        const response = await cliente.get('/api/catalog/collections', {
             params: { skip, take: TAMANHO_PAGINA_API_LOCAL },
             signal,
         });

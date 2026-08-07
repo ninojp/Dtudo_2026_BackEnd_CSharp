@@ -17,6 +17,16 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
 
     public DbSet<TermsAcceptance> TermsAcceptances => Set<TermsAcceptance>();
 
+    public DbSet<PersonalFavorite> PersonalFavorites => Set<PersonalFavorite>();
+
+    public DbSet<PersonalPreference> PersonalPreferences => Set<PersonalPreference>();
+
+    public DbSet<PersonalList> PersonalLists => Set<PersonalList>();
+
+    public DbSet<PersonalListItem> PersonalListItems => Set<PersonalListItem>();
+
+    public DbSet<PersonalDataDeletionRequest> PersonalDataDeletionRequests => Set<PersonalDataDeletionRequest>();
+
     public DbSet<InitialAccountSecret> InitialAccountSecrets => Set<InitialAccountSecret>();
 
     public DbSet<IdentityBootstrapState> BootstrapStates => Set<IdentityBootstrapState>();
@@ -57,6 +67,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         ConfigureIdentityAccount(builder);
         ConfigurePermissionCatalog(builder);
         ConfigureTerms(builder);
+        ConfigurePersonalData(builder);
         ConfigureAccountProvisioning(builder);
         ConfigureMfa(builder);
         builder.UseOpenIddict();
@@ -185,6 +196,157 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
                 .WithMany(document => document.Acceptances)
                 .HasForeignKey(item => item.TermsDocumentId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigurePersonalData(ModelBuilder builder)
+    {
+        builder.Entity<PersonalFavorite>(favorite =>
+        {
+            favorite.ToTable("IdentityPersonalFavorites", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalFavorites_ResourceType",
+                    "LEN(LTRIM(RTRIM([ResourceType]))) > 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalFavorites_ResourceKey",
+                    "LEN(LTRIM(RTRIM([ResourceKey]))) > 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalFavorites_CreatedAtUtc",
+                    "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+            });
+            favorite.HasKey(item => item.Id);
+            favorite.Property(item => item.AccountId).HasMaxLength(450).IsRequired();
+            favorite.Property(item => item.ResourceType).HasMaxLength(40).IsRequired();
+            favorite.Property(item => item.ResourceKey).HasMaxLength(200).IsRequired();
+            favorite.Property(item => item.CreatedAtUtc).HasColumnType("datetimeoffset");
+            favorite.HasIndex(item => new { item.AccountId, item.ResourceType, item.ResourceKey })
+                .IsUnique()
+                .HasDatabaseName("UX_IdentityPersonalFavorites_Account_Resource");
+            favorite.HasIndex(item => new { item.AccountId, item.CreatedAtUtc });
+            favorite.HasOne(item => item.Account)
+                .WithMany()
+                .HasForeignKey(item => item.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<PersonalPreference>(preference =>
+        {
+            preference.ToTable("IdentityPersonalPreferences", table =>
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalPreferences_Key",
+                    "LEN(LTRIM(RTRIM([Key]))) > 0"));
+            preference.HasKey(item => new { item.AccountId, item.Key });
+            preference.Property(item => item.AccountId).HasMaxLength(450).IsRequired();
+            preference.Property(item => item.Key).HasMaxLength(80).IsRequired();
+            preference.Property(item => item.Value).HasMaxLength(2000).IsRequired();
+            preference.Property(item => item.UpdatedAtUtc).HasColumnType("datetimeoffset");
+            preference.HasIndex(item => item.AccountId);
+            preference.HasOne(item => item.Account)
+                .WithMany()
+                .HasForeignKey(item => item.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<PersonalList>(list =>
+        {
+            list.ToTable("IdentityPersonalLists", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalLists_Name",
+                    "LEN(LTRIM(RTRIM([Name]))) > 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalLists_CreatedAtUtc",
+                    "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalLists_UpdatedAtUtc",
+                    "DATEPART(TZOFFSET, [UpdatedAtUtc]) = 0");
+            });
+            list.HasKey(item => item.Id);
+            list.Property(item => item.AccountId).HasMaxLength(450).IsRequired();
+            list.Property(item => item.Name).HasMaxLength(120).IsRequired();
+            list.Property(item => item.CreatedAtUtc).HasColumnType("datetimeoffset");
+            list.Property(item => item.UpdatedAtUtc).HasColumnType("datetimeoffset");
+            list.HasAlternateKey(item => new { item.AccountId, item.Id });
+            list.HasIndex(item => new { item.AccountId, item.UpdatedAtUtc });
+            list.HasOne(item => item.Account)
+                .WithMany()
+                .HasForeignKey(item => item.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<PersonalListItem>(item =>
+        {
+            item.ToTable("IdentityPersonalListItems", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalListItems_ResourceType",
+                    "LEN(LTRIM(RTRIM([ResourceType]))) > 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalListItems_ResourceKey",
+                    "LEN(LTRIM(RTRIM([ResourceKey]))) > 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalListItems_Position",
+                    "[Position] >= 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalListItems_AddedAtUtc",
+                    "DATEPART(TZOFFSET, [AddedAtUtc]) = 0");
+            });
+            item.HasKey(listItem => listItem.Id);
+            item.Property(listItem => listItem.AccountId).HasMaxLength(450).IsRequired();
+            item.Property(listItem => listItem.ResourceType).HasMaxLength(40).IsRequired();
+            item.Property(listItem => listItem.ResourceKey).HasMaxLength(200).IsRequired();
+            item.Property(listItem => listItem.AddedAtUtc).HasColumnType("datetimeoffset");
+            item.HasIndex(listItem => new
+            {
+                listItem.ListId,
+                listItem.ResourceType,
+                listItem.ResourceKey
+            })
+                .IsUnique()
+                .HasDatabaseName("UX_IdentityPersonalListItems_List_Resource");
+            item.HasIndex(listItem => new { listItem.AccountId, listItem.ListId });
+            item.HasOne(listItem => listItem.Account)
+                .WithMany()
+                .HasForeignKey(listItem => listItem.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+            item.HasOne(listItem => listItem.List)
+                .WithMany(list => list.Items)
+                .HasForeignKey(listItem => new { listItem.AccountId, listItem.ListId })
+                .HasPrincipalKey(list => new { list.AccountId, list.Id })
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<PersonalDataDeletionRequest>(request =>
+        {
+            request.ToTable("IdentityPersonalDataDeletionRequests", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalDataDeletionRequests_Status",
+                    "[Status] IN ('Pending', 'Completed')");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalDataDeletionRequests_Schedule",
+                    "[ScheduledForUtc] > [RequestedAtUtc] AND DATEPART(TZOFFSET, [RequestedAtUtc]) = 0 AND DATEPART(TZOFFSET, [ScheduledForUtc]) = 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalDataDeletionRequests_ProcessedAtUtc",
+                    "[ProcessedAtUtc] IS NULL OR DATEPART(TZOFFSET, [ProcessedAtUtc]) = 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalDataDeletionRequests_RetentionUntilUtc",
+                    "[RetentionUntilUtc] IS NULL OR DATEPART(TZOFFSET, [RetentionUntilUtc]) = 0");
+            });
+            request.HasKey(item => item.Id);
+            request.Property(item => item.AccountId).HasMaxLength(450).IsRequired();
+            request.Property(item => item.Status).HasMaxLength(32).IsRequired();
+            request.Property(item => item.RequestedAtUtc).HasColumnType("datetimeoffset");
+            request.Property(item => item.ScheduledForUtc).HasColumnType("datetimeoffset");
+            request.Property(item => item.ProcessedAtUtc).HasColumnType("datetimeoffset");
+            request.Property(item => item.RetentionUntilUtc).HasColumnType("datetimeoffset");
+            request.Property(item => item.RowVersion).IsRowVersion();
+            request.HasIndex(item => new { item.AccountId, item.Status });
+            request.HasIndex(item => item.AccountId)
+                .IsUnique()
+                .HasFilter("[Status] = 'Pending'")
+                .HasDatabaseName("UX_IdentityPersonalDataDeletionRequests_PendingAccount");
         });
     }
 

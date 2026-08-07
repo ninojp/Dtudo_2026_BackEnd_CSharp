@@ -157,6 +157,8 @@ public sealed record StepUpVerificationRequest(
 
 public sealed record SecuritySessionCreateRequest(string Name);
 
+public sealed record SecuritySessionTokenBindingRequest(Guid DeviceId);
+
 public sealed record SecurityTokenRefreshRequest(string RefreshToken);
 
 public sealed record SecurityTokenIntrospectionRequest(string AccessToken);

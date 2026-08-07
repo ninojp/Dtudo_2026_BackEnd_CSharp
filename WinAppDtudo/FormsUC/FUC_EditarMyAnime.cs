@@ -9,7 +9,7 @@ public sealed class FUC_EditarMyAnime : UserControl
     public event EventHandler<MyAnimeEditSavedEventArgs>? MyAnimeSalvo;
     public event EventHandler<MyAnimeRemovedEventArgs>? MyAnimeRemovido;
 
-    private readonly ApiMyAnimesService _apiMyAnimesService = new();
+    private readonly ApiMyAnimesService _apiMyAnimesService;
     private readonly MyAnimeEditFieldSet _fields = new();
     private readonly int _myAnimeId;
 
@@ -24,9 +24,10 @@ public sealed class FUC_EditarMyAnime : UserControl
     private ObterMyAnimeDto? _myAnimeAtual;
     private bool _hasChanges;
 
-    public FUC_EditarMyAnime(int myAnimeId)
+    public FUC_EditarMyAnime(int myAnimeId, ApiMyAnimesService? apiMyAnimesService = null)
     {
         _myAnimeId = myAnimeId;
+        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService();
         InitializeLayout();
         _fields.Changed += (_, _) => SetDirty(true);
         Load += async (_, _) => await CarregarAsync(confirmarPerdaAlteracoes: false);

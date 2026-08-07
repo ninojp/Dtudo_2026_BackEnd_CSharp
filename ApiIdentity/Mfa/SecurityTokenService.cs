@@ -303,6 +303,96 @@ public sealed class SecurityTokenService
             : null;
     }
 
+    public async Task<bool> BindAccessTokenAsync(
+        string accountId,
+        string accessToken,
+        Guid sessionId,
+        Guid deviceId,
+        DateTimeOffset accessTokenExpiresAtUtc,
+        string actor,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(accountId)
+            || !IsCandidateToken(accessToken)
+            || sessionId == Guid.Empty
+            || deviceId == Guid.Empty)
+        {
+            return false;
+        }
+
+        var now = _timeProvider.GetUtcNow();
+        if (accessTokenExpiresAtUtc <= now)
+        {
+            return false;
+        }
+
+        if (!await _sessionService.IsActiveBindingAsync(
+            accountId,
+            SecurityContextFactory.FromIds(sessionId, deviceId),
+            cancellationToken))
+        {
+            return false;
+        }
+
+        var session = await _context.SecuritySessions
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                item => item.Id == sessionId
+                    && item.AccountId == accountId
+                    && item.DeviceId == deviceId,
+                cancellationToken);
+        if (session is null)
+        {
+            return false;
+        }
+
+        var tokenHash = HashToken(accessToken);
+        var alreadyBound = await _context.SecurityTokens.AnyAsync(
+            item => item.TokenHash == tokenHash
+                && item.TokenType == IdentitySecurityTokenTypes.Access
+                && item.AccountId == accountId
+                && item.SessionId == sessionId
+                && item.DeviceId == deviceId
+                && item.RevokedAtUtc == null,
+            cancellationToken);
+        if (alreadyBound)
+        {
+            return true;
+        }
+
+        await _context.SecurityTokens
+            .Where(item => item.AccountId == accountId
+                && item.SessionId == sessionId
+                && item.DeviceId == deviceId
+                && item.TokenType == IdentitySecurityTokenTypes.Access
+                && item.RevokedAtUtc == null)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(item => item.RevokedAtUtc, now),
+                cancellationToken);
+
+        _context.SecurityTokens.Add(new IdentitySecurityToken
+        {
+            Id = Guid.NewGuid(),
+            AccountId = accountId,
+            SessionId = sessionId,
+            DeviceId = deviceId,
+            FamilyId = Guid.NewGuid(),
+            TokenHash = tokenHash,
+            TokenType = IdentitySecurityTokenTypes.Access,
+            CreatedAtUtc = now,
+            ExpiresAtUtc = Min(accessTokenExpiresAtUtc, session.ExpiresAtUtc)
+        });
+        _auditWriter.Record(
+            string.IsNullOrWhiteSpace(actor) ? accountId : actor,
+            "identity.security.access-token.bound",
+            $"session:{sessionId:D}",
+            "succeeded",
+            deviceId.ToString("D"),
+            "oidc-access-token-bound-to-security-session");
+        await _context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     private async Task RevokeFamilyAsync(
         IdentitySecurityToken token,
         string actor,
@@ -399,7 +489,7 @@ public sealed class SecurityTokenService
 
     private static bool IsCandidateToken(string? token) =>
         !string.IsNullOrWhiteSpace(token)
-        && token.Length is >= 20 and <= 512;
+        && token.Length is >= 20 and <= 4096;
 
     private static string HashToken(string token) => Convert.ToHexString(
         SHA256.HashData(Encoding.UTF8.GetBytes(token)));

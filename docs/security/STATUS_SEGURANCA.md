@@ -2,9 +2,9 @@
 
 ## Estado geral
 
-- Etapa atual: 16 (Concluida no escopo de implementacao e validacao local Development)
-- Ultima etapa concluida: 16
-- Proxima etapa permitida: 17 (abrir novo chat para executar exclusivamente a Etapa 17). A Etapa 17 nao foi iniciada neste chat.
+- Etapa atual: 25 (Concluida no Development local)
+- Ultima etapa concluida: 25
+- Proxima etapa permitida: 26; ela nao foi iniciada neste chat.
 - Bloqueios globais: a implementacao local esta validada, mas a publicacao continua bloqueada ate provisionar certificados reais, contas de servico e issuer/discovery no host alvo. O repositorio e pessoal, somente o proprietario faz commits, e regras administrativas do GitHub, data/dominio e promocao para servidor Windows proprio continuam diferidas.
 
 ## Etapas
@@ -27,36 +27,51 @@
 | 14 | Concluida | Bearer issuer/audience, fallback deny-by-default, politicas de escopo/permissao, classificacao de endpoints, Swagger/OpenAPI restritos e testes positivos/negativos das duas APIs | 2026-08-06 |
 | 15 | Concluida | Client Credentials + mTLS, binding por client ID/certificado/escopo, Certificate Store, ACL com snapshot/rollback, overlap de rotacao e negativos; suites 102/102 | 2026-08-07 |
 | 16 | Concluida | `DtudoGateway` com YARP, OIDC Code + PKCE, cookie server-side, antiforgery, allowlist, rotas explicitas e 10 testes focados aprovados | 2026-08-07 |
-| 17 | Pendente | - | - |
-| 18 | Pendente | - | - |
-| 19 | Pendente | - | - |
-| 20 | Pendente | - | - |
-| 21 | Pendente | - | - |
-| 22 | Pendente | - | - |
-| 23 | Pendente | - | - |
-| 24 | Pendente | - | - |
-| 25 | Pendente | - | - |
+| 17 | Concluida | `docs/security/ETAPA_17_DTUDOSITE_BFF.md`; lint/build do frontend; scan de tokens; gateway 10/10 | 2026-08-07 |
+| 18 | Concluida | `docs/security/ETAPA_18_RECURSOS_PESSOAIS_LGPD.md`; owner authorization, privacidade LGPD, migrations e suite ApiIdentity 55/55 | 2026-08-07 |
+| 19 | Implementada; homologacao externa pendente | `docs/security/ETAPA_19_IDENTIDADE_WINAPP.md`; `IdentitySecurityServiceTests` `19/19` (incluindo binding OIDC e administracao) e WinApp `10/10` aprovados; os bancos fixos ausentes na execucao original foram preparados e revalidados no gate 20 | 2026-08-07 |
+| 20 | Concluida no Development local | `docs/security/ETAPA_20_GATE_IDENTIDADE.md`; remocao do login legado; `ApiIdentity.Tests` `57/57`; mTLS `10/10`; APIs, Gateway, Site, LGPD e WinApp revalidados | 2026-08-07 |
+| 21 | Concluida | `docs/security/ETAPA_21_API_FILE_STORAGE.md`; suite `ApiFileStorage.Tests` 29 total, 29 aprovados, 0 ignorados, 0 falhas, incluindo symlink real e ACL | 2026-08-07 |
+| 22 | Concluida | `docs/security/ETAPA_22_QUARENTENA_ARQUIVOS.md`; quarentena, limites, hash, scanner fail-closed, promocao, idempotencia, lixeira/reconciliacao; ciclo focado 9/9 e suite 31/31 | 2026-08-07 |
+| 23 | Concluida | matriz de migracao, contratos minimos, autorizacao e testes de ApiMyAnimes/ApiFileStorage | 2026-08-07 |
+| 24 | Concluida no Development local | `docs/security/ETAPA_24_REMOCAO_SQL_WINAPP.md`; cliente autenticado, comandos idempotentes, remocao do LocalDB e varredura SQL/EF negativa | 2026-08-07 |
+| 25 | Concluida no Development local | `docs/security/ETAPA_25_REMOCAO_ARQUIVOS_WINAPP.md`; exportacao por ObjectId, feedback, previa/step-up/lixeira, suites 33/33 e 16/16, varredura negativa de caminhos/ACL | 2026-08-07 |
 | 26 | Pendente | - | - |
 | 27 | Pendente | - | - |
 | 28 | Pendente | - | - |
 | 29 | Pendente | - | - |
 | 30 | Pendente | - | - |
 
-## Ultima execucao
+### Ultima execucao
 
-- Objetivo: concluir exclusivamente a Etapa 16 com `DtudoGateway`, YARP, OIDC Authorization Code + PKCE, cookie BFF server-side, antiforgery, allowlist de redirects e exposicao minima de rotas.
-- Arquivos alterados/atualizados: `DtudoGateway/DtudoGateway.csproj`, `DtudoGateway/Program.cs`, `DtudoGateway/appsettings.json`, `DtudoGateway/Configuration/GatewayOptions.cs`, `DtudoGateway/Configuration/RedirectAllowlist.cs`, `DtudoGateway/Infrastructure/GatewayRouteConfiguration.cs`, `DtudoGateway/Infrastructure/ServerSideTicketStore.cs`, `tests/DtudoGateway.Tests/DtudoGateway.Tests.csproj`, `tests/DtudoGateway.Tests/DtudoGatewayTests.cs`, `Dtudo2026.slnx`, `docs/security/ETAPA_16_GATEWAY_BFF.md`, `docs/security/MATRIZ_ACESSO.md` e este status.
-- Testes executados: `dotnet test .\tests\DtudoGateway.Tests\DtudoGateway.Tests.csproj --no-restore`.
-- Resultado: `10/10` testes aprovados, `0` falhas e `0` ignorados; `get_errors` nao encontrou erros no gateway ou nos testes.
-- Evidencia: redirects externos, userinfo e rotas nao allowlisted sao recusados; origem configurada, code + PKCE/S256 e callbacks no host do gateway sao aceitos.
-- Evidencia: cookie `__Host-dtudo-bff` e `HttpOnly`/`Secure`/`SameSite=Lax`; correlation/nonce sao seguros; antiforgery usa `__Host-dtudo-xsrf`, `SameSite=Strict` e header `X-CSRF-TOKEN`.
-- Evidencia: tokens salvos pelo handler ficam no `IDistributedCache` server-side; `/bff/me` nao retorna access token ou refresh token; catalogo remove headers de sessao e autorizacao no proxy.
-- Evidencia: YARP possui somente cinco leituras de catalogo e os dois endpoints OIDC publicos necessarios; mutacao retorna `405`, API interna, token endpoint e Swagger retornam `404`.
-- Decisoes: o browser nao e redirecionado diretamente para a porta da `ApiIdentity`; authorize/logout sao alcancados pelo gateway, enquanto discovery/token permanecem server-side. O secret do client OIDC e obrigatorio, externo e ausente do `appsettings.json`.
-- Riscos residuais: o provider live, registro do client, handler de login/logout da `ApiIdentity`, certificados/issuer/discovery reais e substituicao do cache de memoria por armazenamento distribuido persistente ainda exigem validacao manual antes da promocao.
-- Acoes manuais: registrar `dtudo-gateway` com redirect `/signin-oidc`, callback de logout, PKCE e segredo fora do repositorio; configurar `OpenIdConnect:ClientSecret` e destinos HTTPS por User Secrets/ambiente; executar fluxo live e revisar a protecao das chaves.
-- Rollback: remover o projeto/testes, entradas da solucao e rotas do gateway, retirar `docs/security/ETAPA_16_GATEWAY_BFF.md` e restaurar o status/matriz para a pendencia anterior. Nao ha migration nem alteracao de banco.
-- Proxima etapa: a Etapa 17 e a unica proxima etapa permitida. Ela nao foi iniciada neste chat.
+- Objetivo: executar exclusivamente a Etapa 25, migrando exportacao e exclusao de midia do WinApp para a ApiFileStorage por IDs/comandos.
+- Evidencia principal: `docs/security/ETAPA_25_REMOCAO_ARQUIVOS_WINAPP.md`, `ApiFileStorage/Controllers/FileStorageController.cs`, `WinAppDtudo/Services/FileStorageApiClient.cs` e `WinAppDtudo/Services/CriadorDeEstruturas.cs`.
+- Arquivos alterados neste checkpoint: contratos, options, controller e servicos da ApiFileStorage; cliente/configuracao/tela do WinApp; configuracao de escopo da ApiIdentity; testes focados e documentos de seguranca. Nenhum banco, migration, raiz operacional ou ACL foi alterado.
+- Migracao: `export/plan` recebe `MyAnimeId`/`MalIds` e devolve `ObjectId`; upload usa multipart, bearer, sessao/dispositivo e `Idempotency-Key`; o WinApp nao envia caminho nem grava imagem local.
+- Feedback e exclusao: a tela informa preparacao/download/envio/replay; exclusao em massa mostra previa, exige confirmacao e TOTP, valida o grant `filesystem.command` na ApiIdentity e move itens para a lixeira por sete dias.
+- Testes: `ApiFileStorage.Tests` passou `33/33`; `WinAppDtudo.Tests` passou `16/16`; `ApiIdentity.Tests` passou `57/57` apos o novo escopo; builds de ApiFileStorage e WinApp aprovados; testes focados de comandos 2/2, cliente 2/2 e criador 1/1.
+- Varredura: zero `Directory`, `File`, `Path`, `FolderBrowserDialog` ou APIs de ACL nos arquivos migrados; nenhum `FileSystemAccessRule`, `DirectorySecurity`, `FileSecurity`, `GetAccessControl` ou `SetAccessControl` no WinApp.
+- Resultado: a Etapa 25 esta concluida no Development local. A analise da origem, configuracao, DPAPI, descoberta de ferramentas e log diagnostico permanecem locais conforme a matriz; a raiz protegida de exportacao nao e acessada pelo WinApp.
+- Riscos residuais: homologacao ainda precisa configurar raiz/ACL minima da ApiFileStorage, Defender/AMSI real, audience/issuer, client/scopes e exercicio integrado de TOTP/step-up; catalogo e arquivos continuam sem transacao distribuida.
+- Rollback: parar ApiFileStorage, preservar diarios de quarentena/lixeira, restaurar codigo/configuracao/testes/documentos e nao apagar raiz, payload, banco ou ACL automaticamente.
+- Acoes manuais: em homologacao, configurar `FileStorage:Roots`, identidade do processo, scanner real, client `dtudo-winapp` com `filesystem.command` e executar exportacao, previa, TOTP, lote, reconciliacao e purge controlados.
+- Proxima etapa: Etapa 26; nao iniciar neste chat.
+
+### Execucao anterior (Etapa 18)
+
+- Objetivo: concluir exclusivamente a Etapa 18 com owner authorization para favoritos, preferencias e listas, maioridade minimizada, termos versionados, exportacao e exclusao com retencao/auditoria.
+- Arquivos alterados/atualizados: modelos e `IdentityDbContext` de recursos pessoais, `ApiIdentity/Privacy/IdentityPrivacyContracts.cs`, `ApiIdentity/Privacy/IdentityPrivacyService.cs`, `ApiIdentity/Authorization/AuthorizationCatalog.cs`, `ApiIdentity/Program.cs`, `ApiIdentity/ApiIdentity.csproj`, as migrations `20260807051638_AddPersonalDataPrivacy` e `20260807051857_AddPersonalPrivacyPermissions`, `tests/ApiIdentity.Tests/IdentityPrivacyServiceTests.cs`, `tests/ApiIdentity.Tests/ApiIdentityStartupTests.cs`, `docs/security/ETAPA_18_RECURSOS_PESSOAIS_LGPD.md`, `docs/security/MATRIZ_ACESSO.md` e este status.
+- Testes executados: `dotnet test .\tests\ApiIdentity.Tests\ApiIdentity.Tests.csproj --no-restore --filter FullyQualifiedName~IdentityPrivacyServiceTests`, teste de startup filtrado para `StartsAndPublishesOpenIdDiscoveryWithoutPublicRegistration`, `dotnet test .\tests\ApiIdentity.Tests\ApiIdentity.Tests.csproj --no-restore`, `dotnet build .\ApiIdentity\ApiIdentity.csproj --no-restore` e `get_errors` nos arquivos tocados.
+- Resultado: `IdentityPrivacyServiceTests` passou `6/6`; startup passou `1/1`; a suite completa `ApiIdentity.Tests` passou `55/55`, com `0` falhas e `0` ignorados; o build explicito da `ApiIdentity` passou.
+- Evidencia de autorizacao: o `AccountId` e derivado de `NameIdentifier`/`sub`; os endpoints `/identity/me` nao aceitam proprietario no payload. O OpenIddict Validation local e o esquema padrao de autenticacao/desafio, e rota pessoal anonima retorna `401`.
+- Evidencia de minimizacao: maioridade usa somente booleano e instante UTC; termos usam documento, versao, conteudo e SHA-256; allowlists rejeitam payloads de recurso/preferencia fora do contrato.
+- Evidencia de privacidade: exportacao inclui os dados pessoais da conta e omite `PasswordHash`, `SecretHash`, `ProtectedPayload`, `TokenHash`, sessoes, dispositivos, challenges, grants, recovery tickets e tokens.
+- Evidencia de exclusao: pedido idempotente com janela de sete dias; processamento remove dados pessoais e material de autenticacao, conserva pedido concluido e auditoria minima por doze meses; rollback da migration para `20260807020126_AddSessionTokens` passou.
+- Decisoes: a conta inicial de bootstrap nao pode ser excluida pelo fluxo self-service; nenhum nascimento completo ou segredo real foi criado; a retencao e marcada por timestamps UTC e deve ser aplicada pelo worker operacional antes da publicacao.
+- Riscos residuais: OIDC live, provisionamento de certificados/contas de servico e scheduler de processamento/purge continuam dependentes do ambiente externo; a implementacao validada permanece local Development.
+- Acoes manuais: antes de homologacao/producao, configurar o provider OIDC, iniciar um worker autorizado para pedidos devidos e purge apos `RetentionUntilUtc`, e exercitar login, expiracao, revogacao e exclusao com dados de ambiente controlado.
+- Rollback: migrar para `20260807020126_AddSessionTokens`, remover as migrations/rotas/modelos/permissoes da Etapa 18, retirar os testes especificos e restaurar as evidencias/status correspondentes. O rollback foi testado em LocalDB temporario.
+- Proxima etapa registrada naquele momento: a Etapa 19 era a unica proxima etapa permitida. Ela nao foi iniciada naquele registro historico.
 
 ## Decisoes posteriores ao plano
 

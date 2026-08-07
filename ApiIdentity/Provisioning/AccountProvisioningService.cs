@@ -111,6 +111,7 @@ public sealed class AccountProvisioningService
 
     public async Task<ProvisionAccountResult> ProvisionAsync(
         ProvisionAccountRequest request,
+        string actor = LocalAdministratorActor,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -132,7 +133,7 @@ public sealed class AccountProvisioningService
 
         var delivery = IssueInitialSecret(account);
         RecordAudit(
-            LocalAdministratorActor,
+            actor,
             "identity.account.provisioned",
             $"account:{account.Id}",
             "succeeded",
@@ -145,6 +146,7 @@ public sealed class AccountProvisioningService
 
     public async Task<bool> RevokeInitialSecretAsync(
         Guid activationId,
+        string actor = LocalAdministratorActor,
         CancellationToken cancellationToken = default)
     {
         var secret = await _context.InitialAccountSecrets
@@ -156,7 +158,7 @@ public sealed class AccountProvisioningService
 
         secret.RevokedAtUtc = _timeProvider.GetUtcNow();
         RecordAudit(
-            LocalAdministratorActor,
+            actor,
             "identity.initial-secret.revoked",
             $"activation:{activationId}",
             "succeeded",

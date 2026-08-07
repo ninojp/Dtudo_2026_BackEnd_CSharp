@@ -11,14 +11,14 @@ Nenhum segredo de ambiente ou de producao e armazenado em `appsettings*.json`, n
 | Client ID da API MyAnimeList | `MyAnimeList:ClientId` | Development: .NET User Secrets; homologacao/producao: configurar futuramente no provedor seguro do ambiente | Revogar no MyAnimeList, emitir novo Client ID, atualizar a fonte do ambiente e reiniciar o servico quando o ambiente estiver em uso; fazer imediatamente sob suspeita |
 | Conexao do banco local | `ConnectionStrings:LocalDbConnection` | Development: .NET User Secrets; homologacao/producao: configurar futuramente na fonte protegida do host | Trocar a conta de servico ou senha no banco e atualizar a fonte do ambiente quando o ambiente estiver em uso; validar conectividade sem registrar a connection string |
 | Certificado de cliente mTLS | `ServiceAuthentication:Clients:*:CertificateThumbprints` | Certificate Store `My`; Development em `CurrentUser`, homologacao/producao em `LocalMachine`; thumbprints e datas entram somente na configuracao protegida do ambiente | Instalar o novo certificado com chave privada, conceder ACL explicita de leitura ao principal do servico, configurar ativo + anterior com `PreviousCertificateAcceptedUntilUtc`, validar e retirar o anterior somente depois do overlap |
-| Hashes de senha da autenticacao legada | `App_Data/auth-users*.json` | Arquivo local ignorado pelo Git, com ACL restrita ao servico | Recriar ou redefinir as contas afetadas; apagar o arquivo antigo com procedimento operacional; a migracao para identidade esta prevista em etapa posterior |
+| Material de autenticacao local legado | `App_Data/auth-users*.json` | Removido na Etapa 20; nao existe fonte ativa de hashes locais | Sem rotacao pendente; contas e segredos pertencem a `ApiIdentity`, com provisionamento, MFA, sessoes e revogacao auditaveis |
 
 ## Evidencia da varredura
 
 - Conteudo versionado: os candidatos nao vazios encontrados estao limitados a fixtures sinteticos de testes, documentacao e nomes de propriedades; nenhum segredo de ambiente ou de producao foi identificado.
 - Historico Git: 30 literais candidatos foram classificados como fixtures de teste/exemplo; nenhum literal fora de testes foi encontrado na varredura redigida do escopo ativo.
 - Foram encontrados valores de connection string de LocalDB em configuracoes e artefatos versionados. Eles nao continham senha, mas foram removidos para que a configuracao de banco venha de fonte externa ao repositorio.
-- `App_Data/*.json`, arquivos `.env` e materiais de certificado nao estao versionados no escopo atual.
+- `App_Data/*.json` de autenticacao local, arquivos `.env` e materiais de certificado nao estao versionados no escopo atual; o arquivo de usuarios legado foi removido na Etapa 20.
 - `ApiNode` foi mantida fora da etapa conforme o plano.
 
 ## Acoes futuras, fora do escopo atual
@@ -28,3 +28,7 @@ Nenhum segredo de ambiente ou de producao e armazenado em `appsettings*.json`, n
 3. Quando producao for autorizada: configurar as mesmas chaves no provedor seguro do host; usar Windows Authentication e a conta de servico autorizada para o SQL.
 4. Antes da primeira promocao: confirmar no provedor MyAnimeList se existe algum Client ID antigo fora do repositorio e revoga-lo caso a origem nao seja conhecida.
 5. Antes da primeira promocao: restringir a leitura das fontes de segredo as contas dos servicos e registrar a rotacao operacionalmente, sem incluir valores em logs ou tickets.
+
+## Atualizacao apos a Etapa 20
+
+Nao ha hashes de senha locais ou arquivo JSON de usuarios para rotacionar. O gate confirmou provisionamento de contas, MFA, sessoes, revogacao e mTLS; continuam pendentes apenas a configuracao operacional de certificados, contas de servico e fontes de segredo nos ambientes fora de Development.

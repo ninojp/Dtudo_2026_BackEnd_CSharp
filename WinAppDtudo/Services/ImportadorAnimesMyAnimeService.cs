@@ -9,8 +9,13 @@ public class ImportadorAnimesMyAnimeService
     private const int MaxTentativasApiMyAnimeList = 3;
     private static readonly TimeSpan DelayTentativaApiMyAnimeList = TimeSpan.FromSeconds(2);
 
-    private readonly ApiMyAnimesService _apiMyAnimesService = new();
+    private readonly ApiMyAnimesService _apiMyAnimesService;
     private readonly MyAnimeListApiService _myAnimeListApiService = new();
+
+    public ImportadorAnimesMyAnimeService(ApiMyAnimesService? apiMyAnimesService = null)
+    {
+        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService();
+    }
 
     public async Task<ResultadoImportacaoAnimes> ImportarAsync(
         int myAnimeId,
@@ -49,7 +54,12 @@ public class ImportadorAnimesMyAnimeService
             var detalhes = await BuscarAnimeComRetryAsync(tituloMyAnime, malId, resultado.ErrosDetalhados, cancellationToken);
             if (detalhes is null)
             {
-                var salvouFallback = await TentarSalvarModoDegradacaoAsync(myAnimeId, tituloMyAnime, malId, resultado);
+                var salvouFallback = await TentarSalvarModoDegradacaoAsync(
+                    myAnimeId,
+                    tituloMyAnime,
+                    malId,
+                    resultado,
+                    cancellationToken);
                 if (!salvouFallback)
                     resultado.AnimesComFalha++;
 
@@ -61,22 +71,8 @@ public class ImportadorAnimesMyAnimeService
 
             try
             {
-                await _apiMyAnimesService.AdicionarAnimeAsync(dtoAnime);
+                await GarantirAnimeNaColecaoAsync(dtoAnime, myAnimeId, cancellationToken);
                 resultado.AnimesSalvos++;
-            }
-            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
-            {
-                try
-                {
-                    await _apiMyAnimesService.AssociarAnimeAoMyAnimeAsync(malId, myAnimeId);
-                    resultado.AnimesSalvos++;
-                }
-                catch (Exception exAssociacao)
-                {
-                    resultado.AnimesIgnorados++;
-                    resultado.ErrosDetalhados.Add(
-                        $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha ao associar MalId {malId} à coleção '{tituloMyAnime}': {exAssociacao.Message}");
-                }
             }
             catch (Exception ex)
             {
@@ -104,7 +100,8 @@ public class ImportadorAnimesMyAnimeService
         int myAnimeId,
         string tituloMyAnime,
         int malId,
-        ResultadoImportacaoAnimes resultado)
+        ResultadoImportacaoAnimes resultado,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -118,16 +115,19 @@ public class ImportadorAnimesMyAnimeService
                 Synopsis = $"Registro em modo de degradação. Falha ao consultar detalhes na ApiMyAnimeList para a coleção '{tituloMyAnime}'."
             };
 
-            await _apiMyAnimesService.AdicionarAnimeAsync(dtoFallback);
-            resultado.AnimesSalvosModoDegradacao++;
+            var animeFoiCriado = await GarantirAnimeNaColecaoAsync(dtoFallback, myAnimeId, cancellationToken);
+            if (animeFoiCriado)
+            {
+                resultado.AnimesSalvosModoDegradacao++;
+            }
+            else
+            {
+                resultado.AnimesIgnorados++;
+                return true;
+            }
 
             resultado.ErrosDetalhados.Add(
                 $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Modo de degradação aplicado para MalId {malId} da coleção '{tituloMyAnime}'. Anime salvo com dados mínimos.");
-            return true;
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
-        {
-            resultado.AnimesIgnorados++;
             return true;
         }
         catch (Exception ex)
@@ -170,6 +170,28 @@ public class ImportadorAnimesMyAnimeService
         errosDetalhados.Add(
             $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha ao consultar ApiMyAnimeList para MalId {malId} (coleção '{tituloMyAnime}') após {MaxTentativasApiMyAnimeList} tentativas. Detalhes: {string.Join(" | ", errosTentativas)}");
         return null;
+    }
+
+    private async Task<bool> GarantirAnimeNaColecaoAsync(
+        AdicionaAnimeDto dto,
+        int myAnimeId,
+        CancellationToken cancellationToken)
+    {
+        var animeFoiCriado = true;
+        try
+        {
+            await _apiMyAnimesService.AdicionarAnimeAsync(dto, cancellationToken);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+        {
+            animeFoiCriado = false;
+        }
+
+        await _apiMyAnimesService.AssociarAnimeAoMyAnimeAsync(
+            dto.MalId,
+            myAnimeId,
+            cancellationToken);
+        return animeFoiCriado;
     }
 
     public static string SalvarLogErros(string prefixoArquivo, IEnumerable<string> errosDetalhados)

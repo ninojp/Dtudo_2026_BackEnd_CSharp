@@ -14,54 +14,6 @@
             DTO para atualizar informações de um anime.
             </summary>
         </member>
-        <member name="T:LibDtudo.Shared.Dtos.Auth.RegisterUserRequest">
-            <summary>Requisicao para cadastro de usuario.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.RegisterUserRequest.Name">
-            <summary>Nome de exibicao do usuario.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.RegisterUserRequest.Email">
-            <summary>E-mail utilizado para login.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.RegisterUserRequest.Password">
-            <summary>Senha em texto puro recebida somente na requisicao.</summary>
-        </member>
-        <member name="T:LibDtudo.Shared.Dtos.Auth.LoginRequest">
-            <summary>Requisicao para login.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.LoginRequest.Login">
-            <summary>E-mail ou nome de usuario.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.LoginRequest.Password">
-            <summary>Senha em texto puro recebida somente na requisicao.</summary>
-        </member>
-        <member name="T:LibDtudo.Shared.Dtos.Auth.AuthUserDto">
-            <summary>Usuario autenticado sem dados sensiveis.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthUserDto.Id">
-            <summary>ID do usuario.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthUserDto.Name">
-            <summary>Nome de exibicao.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthUserDto.Email">
-            <summary>E-mail.</summary>
-        </member>
-        <member name="T:LibDtudo.Shared.Dtos.Auth.AuthResponse">
-            <summary>Resposta de autenticacao.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthResponse.Success">
-            <summary>Indica sucesso da operacao.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthResponse.Message">
-            <summary>Mensagem de erro ou status.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthResponse.User">
-            <summary>Usuario autenticado.</summary>
-        </member>
-        <member name="P:LibDtudo.Shared.Dtos.Auth.AuthResponse.Token">
-            <summary>Token de sessao local.</summary>
-        </member>
         <member name="T:LibDtudo.Shared.Dtos.ConflitoTituloAnimeDto">
             <summary>
             Identifica um anime local que possui um título equivalente ao anime consultado.
@@ -339,14 +291,6 @@
         </member>
         <member name="M:LibDtudo.Shared.Utils.PasswordHasher.VerifyPassword(System.String,System.String)">
             <summary>Valida uma senha contra um hash armazenado.</summary>
-        </member>
-        <member name="T:LibDtudo.Shared.Utils.ValidaSenhaLogin">
-            <summary>
-            Utilitario legado para validar senha a partir de um hash armazenado.
-            </summary>
-        </member>
-        <member name="M:LibDtudo.Shared.Utils.ValidaSenhaLogin.ValidarSenhaDoLogin(System.String,System.String)">
-            <summary>Valida a senha informada contra um hash PBKDF2.</summary>
         </member>
     </members>
 </doc>

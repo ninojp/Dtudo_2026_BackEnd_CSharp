@@ -2,146 +2,162 @@ using LibDtudo.Shared.Dtos;
 
 namespace WinAppDtudo.Services;
 
+public interface IAnimeCoverDownloader
+{
+    Task<byte[]?> DownloadJpegAsync(
+        string? primaryUrl,
+        int malId,
+        CancellationToken cancellationToken = default);
+}
+
+public sealed class AnimeCoverDownloader : IAnimeCoverDownloader
+{
+    public Task<byte[]?> DownloadJpegAsync(
+        string? primaryUrl,
+        int malId,
+        CancellationToken cancellationToken = default)
+        => ImageLoaderService.DownloadAnimeCoverJpegAsync(primaryUrl, malId, cancellationToken);
+}
+
 public class CriadorDeEstruturas
 {
+    private readonly IFileStorageApiClient _fileStorageApiClient;
+    private readonly IAnimeCoverDownloader _coverDownloader;
+
+    public CriadorDeEstruturas(
+        IFileStorageApiClient? fileStorageApiClient = null,
+        IAnimeCoverDownloader? coverDownloader = null)
+    {
+        _fileStorageApiClient = fileStorageApiClient ?? new FileStorageApiClient();
+        _coverDownloader = coverDownloader ?? new AnimeCoverDownloader();
+    }
+
     public async Task<CriacaoEstruturaResultado> CriarEstruturaAsync(
         ObterMyAnimeDto myAnime,
         IReadOnlyCollection<ObterAnimeDto> animes,
-        string diretorioBase,
+        IProgress<ProgressoExportacao>? progresso = null,
         CancellationToken cancellationToken = default)
     {
-        if (myAnime is null) throw new ArgumentNullException(nameof(myAnime));
-        if (animes is null) throw new ArgumentNullException(nameof(animes));
-        if (string.IsNullOrWhiteSpace(diretorioBase)) throw new ArgumentException("Diretório inválido.", nameof(diretorioBase));
+        ArgumentNullException.ThrowIfNull(myAnime);
+        ArgumentNullException.ThrowIfNull(animes);
 
-        var pastaRaiz = ObterCaminhoPastaRaiz(myAnime, diretorioBase);
-        if (Directory.Exists(pastaRaiz))
-            throw new InvalidOperationException($"A pasta já existe e não pode ser sobrescrita: {pastaRaiz}");
+        var animesOrdenados = animes
+            .Where(anime => anime.MalId > 0)
+            .GroupBy(anime => anime.MalId)
+            .Select(grupo => grupo.First())
+            .OrderBy(anime => anime.Year ?? int.MaxValue)
+            .ThenBy(anime => anime.Titulo)
+            .ToList();
 
-        Directory.CreateDirectory(pastaRaiz);
+        if (myAnime.Id <= 0 || animesOrdenados.Count == 0)
+            throw new ArgumentException("A coleção e os animes devem possuir IDs válidos.");
 
+        progresso?.Report(new ProgressoExportacao
+        {
+            PercentualConcluido = 0,
+            Mensagem = "Preparando destinos lógicos na ApiFileStorage..."
+        });
+
+        var plano = await _fileStorageApiClient.PrepareExportAsync(
+            myAnime.Id,
+            animesOrdenados.Select(anime => anime.MalId).ToArray(),
+            cancellationToken);
+        var objetosPorMalId = plano.Items.ToDictionary(item => item.MalId);
         var resultado = new CriacaoEstruturaResultado
         {
-            PastaRaiz = pastaRaiz
+            TotalPastasCriadas = plano.Items.Count
         };
 
-        var nomesPastasUsados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var anime in animes.OrderBy(a => a.Year ?? int.MaxValue).ThenBy(a => a.Titulo))
+        for (var indice = 0; indice < animesOrdenados.Count; indice++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var anime = animesOrdenados[indice];
+            var percentual = (int)Math.Round(
+                ((indice + 1) / (double)animesOrdenados.Count) * 100,
+                MidpointRounding.AwayFromZero);
 
-            var nomePastaAnime = MontarNomePastaUnico(anime, nomesPastasUsados);
-            var pastaAnime = Path.Combine(pastaRaiz, nomePastaAnime);
-            Directory.CreateDirectory(pastaAnime);
-            resultado.TotalPastasCriadas++;
-
-            var caminhoImagem = Path.Combine(pastaAnime, $"{anime.MalId}.jpg");
-            var imagemSalva = await TentarSalvarImagemAsync(anime, caminhoImagem, cancellationToken);
-            if (imagemSalva)
+            if (!objetosPorMalId.TryGetValue(anime.MalId, out var destino))
             {
-                resultado.TotalImagensSalvas++;
+                resultado.Erros.Add($"Destino lógico não preparado para o anime {anime.MalId} - {anime.Titulo}.");
+                Reportar(progresso, percentual, $"Destino ausente para {anime.MalId}: {anime.Titulo}");
+                continue;
             }
-            else
+
+            Reportar(progresso, Math.Max(0, percentual - 1), $"Baixando capa {indice + 1}/{animesOrdenados.Count}: {anime.Titulo}");
+            var imagem = await _coverDownloader.DownloadJpegAsync(
+                anime.ImagensUrlMal.FirstOrDefault(),
+                anime.MalId,
+                cancellationToken);
+            if (imagem is null)
             {
                 resultado.Erros.Add($"Não foi possível baixar imagem para o anime {anime.MalId} - {anime.Titulo}.");
+                Reportar(progresso, percentual, $"Capa indisponível para {anime.MalId}: {anime.Titulo}");
+                continue;
+            }
+
+            try
+            {
+                Reportar(progresso, Math.Max(0, percentual - 1), $"Enviando capa {indice + 1}/{animesOrdenados.Count}: {anime.Titulo}");
+                var importacao = await _fileStorageApiClient.ImportAsync(
+                    destino.ObjectId,
+                    $"{anime.MalId}.jpg",
+                    "image/jpeg",
+                    imagem,
+                    $"export-{myAnime.Id}-{anime.MalId}",
+                    cancellationToken);
+                resultado.TotalImagensSalvas++;
+                if (importacao.Replayed)
+                    resultado.TotalImagensRepetidas++;
+
+                Reportar(
+                    progresso,
+                    percentual,
+                    importacao.Replayed
+                        ? $"Capa já existente, operação reconciliada: {anime.Titulo}"
+                        : $"Capa salva com segurança: {anime.Titulo}");
+            }
+            catch (Exception exception) when (exception is HttpRequestException or InvalidOperationException)
+            {
+                resultado.Erros.Add($"Falha ao enviar imagem do anime {anime.MalId} - {anime.Titulo}: {exception.Message}");
+                Reportar(progresso, percentual, $"Falha no envio de {anime.MalId}: {anime.Titulo}");
             }
         }
 
+        progresso?.Report(new ProgressoExportacao
+        {
+            PercentualConcluido = 100,
+            Mensagem = resultado.Erros.Count == 0
+                ? "Exportação finalizada na ApiFileStorage."
+                : $"Exportação finalizada com {resultado.Erros.Count} ocorrência(s)."
+        });
         return resultado;
     }
 
-    public static string ObterCaminhoPastaRaiz(ObterMyAnimeDto myAnime, string diretorioBase)
-    {
-        if (myAnime is null) throw new ArgumentNullException(nameof(myAnime));
-        if (string.IsNullOrWhiteSpace(diretorioBase)) throw new ArgumentException("Diretório inválido.", nameof(diretorioBase));
-
-        return Path.Combine(diretorioBase, SanitizarNome(myAnime.Titulo));
-    }
-
-    private async Task<bool> TentarSalvarImagemAsync(ObterAnimeDto anime, string caminhoImagem, CancellationToken cancellationToken)
-    {
-        var imagem = await ImageLoaderService.DownloadAnimeCoverAsync(
-            anime.ImagensUrlMal.FirstOrDefault(),
-            anime.MalId,
-            cancellationToken);
-
-        if (imagem is null)
-            return false;
-
-        using (imagem)
+    private static void Reportar(
+        IProgress<ProgressoExportacao>? progresso,
+        int percentual,
+        string mensagem)
+        => progresso?.Report(new ProgressoExportacao
         {
-            imagem.Save(caminhoImagem, System.Drawing.Imaging.ImageFormat.Jpeg);
-        }
-
-        return true;
-    }
-
-    private static string MontarNomePastaUnico(ObterAnimeDto anime, HashSet<string> nomesUsados)
-    {
-        var nomeBase = MontarNomePastaAnime(anime);
-        var nome = nomeBase;
-        var sufixo = 2;
-
-        while (!nomesUsados.Add(nome))
-        {
-            var textoSufixo = $" ({sufixo++})";
-            nome = SanitizarNomeComLimite(nomeBase, 255 - textoSufixo.Length) + textoSufixo;
-        }
-
-        return nome;
-    }
-
-    private static string MontarNomePastaAnime(ObterAnimeDto anime)
-    {
-        var ano = anime.Year?.ToString() ?? "0000";
-        var titulo = !string.IsNullOrWhiteSpace(anime.Titulo)
-            ? anime.Titulo
-            : !string.IsNullOrWhiteSpace(anime.Title)
-                ? anime.Title
-                : $"Anime_{anime.MalId}";
-        var tipo = !string.IsNullOrWhiteSpace(anime.Type) ? anime.Type : "TipoDesconhecido";
-
-        return SanitizarNome($"{ano} {titulo} - {tipo}");
-    }
-
-    private static string SanitizarNome(string nome)
-    {
-        var nomeLimpo = SanitizarNomeComLimite(nome, 255);
-
-        var nomeSemExtensao = Path.GetFileNameWithoutExtension(nomeLimpo);
-        if (NomesReservadosWindows.Contains(nomeSemExtensao))
-            nomeLimpo = $"_{nomeLimpo}";
-
-        return string.IsNullOrWhiteSpace(nomeLimpo) ? "SemNome" : nomeLimpo;
-    }
-
-    private static string SanitizarNomeComLimite(string nome, int limite)
-    {
-        var nomeLimpo = nome.Trim();
-
-        foreach (var c in Path.GetInvalidFileNameChars())
-            nomeLimpo = nomeLimpo.Replace(c, ' ');
-
-        while (nomeLimpo.Contains("  "))
-            nomeLimpo = nomeLimpo.Replace("  ", " ");
-
-        nomeLimpo = nomeLimpo.Trim().TrimEnd('.', ' ');
-        return nomeLimpo.Length <= limite ? nomeLimpo : nomeLimpo[..limite].TrimEnd('.', ' ');
-    }
-
-    private static readonly HashSet<string> NomesReservadosWindows = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "CON", "PRN", "AUX", "NUL",
-        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
-    };
+            PercentualConcluido = Math.Clamp(percentual, 0, 100),
+            Mensagem = mensagem
+        });
 }
 
 public class CriacaoEstruturaResultado
 {
-    public string PastaRaiz { get; set; } = string.Empty;
     public int TotalPastasCriadas { get; set; }
+
     public int TotalImagensSalvas { get; set; }
+
+    public int TotalImagensRepetidas { get; set; }
+
     public List<string> Erros { get; set; } = [];
+}
+
+public class ProgressoExportacao
+{
+    public int PercentualConcluido { get; init; }
+
+    public string Mensagem { get; init; } = string.Empty;
 }

@@ -129,6 +129,23 @@ public static class ImageLoaderService
         return null;
     }
 
+    public static async Task<byte[]?> DownloadAnimeCoverJpegAsync(
+        string? primaryUrl,
+        int malId,
+        CancellationToken cancellationToken = default)
+    {
+        var image = await DownloadAnimeCoverAsync(primaryUrl, malId, cancellationToken);
+        if (image is null)
+            return null;
+
+        using (image)
+        using (var jpeg = new MemoryStream())
+        {
+            image.Save(jpeg, System.Drawing.Imaging.ImageFormat.Jpeg);
+            return jpeg.ToArray();
+        }
+    }
+
     /// <summary>Carrega a imagem diretamente num PictureBox, marshaling para a thread UI.</summary>
     public static async Task CarregarEmPictureBoxAsync(PictureBox pbx, string? url)
     {

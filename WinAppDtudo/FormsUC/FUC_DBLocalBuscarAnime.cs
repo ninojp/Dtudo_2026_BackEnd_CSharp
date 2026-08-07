@@ -9,7 +9,7 @@ public class FUC_DBLocalBuscarAnime : UserControl
 {
     public event EventHandler<int>? AnimeLocalSelecionado;
 
-    private readonly ApiMyAnimesService _apiMyAnimesService = new();
+    private readonly ApiMyAnimesService _apiMyAnimesService;
 
     private readonly TextBox _txbBusca;
     private readonly Button _btnBuscar;
@@ -23,8 +23,9 @@ public class FUC_DBLocalBuscarAnime : UserControl
     private string _consultaAtual = string.Empty;
     private bool _carregando;
 
-    public FUC_DBLocalBuscarAnime()
+    public FUC_DBLocalBuscarAnime(ApiMyAnimesService? apiMyAnimesService = null)
     {
+        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService();
         var lblTitulo = new Label
         {
             AutoSize = true,

@@ -2,7 +2,7 @@
 
 ## 1. Escopo e premissas
 
-Este modelo atende exclusivamente a Etapa 01. Ele descreve ameacas verificaveis a partir das superficies lidas, usando STRIDE e riscos complementares de arquivos, egress e dependencias externas. Nenhuma mitigacao foi implementada neste trabalho.
+Este modelo atende exclusivamente a Etapa 01 como baseline historico. Ele descreve ameacas verificaveis a partir das superficies lidas, usando STRIDE e riscos complementares de arquivos, egress e dependencias externas. A situacao das ameacas do login legado apos a Etapa 20 esta registrada ao final deste documento.
 
 Premissas do modelo:
 
@@ -65,10 +65,10 @@ As classificacoes `Critico`, `Alto`, `Medio` e `Baixo` sao priorizacao inicial p
 | --- | --- | --- | --- | --- | --- |
 | T-01 | Spoofing | Controllers das duas APIs sem `AddAuthentication`, politicas ou `[Authorize]` | Um chamador anonimo se apresenta como operador ou servico porque a API nao demonstra identidade verificavel | Alteracao de catalogo, acesso a autenticacao e movimento entre servicos | Critico |
 | T-02 | Tampering | `POST`, `PUT`, `PATCH` e `DELETE` de `Anime` e `MyAnime` | Qualquer cliente que alcance a rota pode criar, alterar ou remover dados | Corrupcao ou perda do DB_Local | Critico |
-| T-03 | Tampering | `AuthController` e `LocalAuthService` | Registro publico cria identidades fora do provisionamento administrativo; `me/{id}` aceita identificador fornecido pelo cliente | Contas indevidas e enumeracao de dados pessoais | Alto |
+| T-03 | Tampering | `AuthController` e `LocalAuthService` (historico; removidos na Etapa 20) | Registro publico criava identidades fora do provisionamento administrativo; `me/{id}` aceitava identificador fornecido pelo cliente | Contas indevidas e enumeracao de dados pessoais; rotas legadas agora retornam `404` | Fechado |
 | T-04 | Repudiation | `Console.WriteLine`, logs locais de importacao e ausencia de auditoria/correlacao observada | Acoes de alteracao nao possuem ator confiavel, motivo ou trilha append-only | Investigacao e responsabilizacao fracas | Alto |
-| T-05 | Information disclosure | `useAuth.js` e DTO `AuthResponse` | Token de sessao fica acessivel ao JavaScript e a qualquer script com acesso ao contexto do site | Sequestro de sessao legada | Critico |
-| T-06 | Information disclosure | `AuthController.Me`, dados publicos e mensagens de erro | Consulta por ID sem sessao e respostas de erro podem expor existencia, nomes ou caminhos | Exposicao de PII e topologia local | Alto |
+| T-05 | Information disclosure | `useAuth.js` e DTO `AuthResponse` (historico; removidos) | Token de sessao ficava acessivel ao JavaScript | Sequestro de sessao legada; o BFF atual mantem tokens no servidor | Fechado |
+| T-06 | Information disclosure | `AuthController.Me` (historico; removido), dados publicos e mensagens de erro | Consulta por ID sem sessao podia expor existencia, nomes ou caminhos | Exposicao de PII e topologia local; a rota legada agora retorna `404` | Fechado |
 | T-07 | Information disclosure | Swagger/OpenAPI em desenvolvimento e CORS direto | Superficies tecnicas e APIs internas ficam acessiveis diretamente no ambiente local | Facilita enumeracao e abuso quando a porta e exposta | Alto |
 | T-08 | Denial of service | Paginacao controlada pelo cliente, cargas de JSON, retries e importacao por pastas | Consumir CPU, memoria, banco, disco ou cota externa com chamadas repetidas | Indisponibilidade de APIs, host ou MAL | Alto |
 | T-09 | Denial of service | `ImageLoaderService`, `ImageSharp` e `CriadorDeEstruturas` | Conteudo de imagem grande, malformado ou em grande volume consome recursos durante download/decodificacao | Travamento, disco cheio ou processo degradado | Alto |
@@ -76,7 +76,7 @@ As classificacoes `Critico`, `Alto`, `Medio` e `Baixo` sao priorizacao inicial p
 | T-11 | Elevation of privilege | `DtudoSiteStartupService` e `WinAppDtudo` | Processo desktop inicia LocalDB, `dotnet`, `npm` e acessa caminhos descobertos/configurados | Execucao de processo e acesso lateral no host | Alto |
 | T-12 | Tampering / Information disclosure | `AppConfigurationService` e flag `AllowInvalidCertificates` em `DEBUG` | URL de API ou confianca TLS alterada desvia chamadas ou aceita endpoint impostor | Interceptacao e adulteracao de dados locais | Alto |
 | T-13 | SSRF/egress | URLs de imagem recebidas em `Anime` e `ImageLoaderService` aceita HTTP/HTTPS | URL controlada por dado local ou externo pode induzir requisicoes a destinos nao previstos | Acesso a rede interna ou exfiltracao | Alto |
-| T-14 | Tampering | `Auth:UsersFilePath` aceita caminho absoluto e `LocalAuthService` grava arquivo | Configuracao ou processo comprometido direciona credenciais para outro local ou sobrescreve arquivo | Perda/exposicao de credenciais | Alto |
+| T-14 | Tampering | `Auth:UsersFilePath` e `LocalAuthService` (historicos; removidos) | Configuracao ou processo comprometido podia direcionar credenciais para outro local ou sobrescrever arquivo | Perda/exposicao de credenciais; nao ha arquivo de usuarios ativo | Fechado |
 | T-15 | Tampering / Path traversal | Analise/exportacao em raizes escolhidas pelo WinApp | Caminhos, links, junctions ou reparse points podem atravessar a fronteira esperada | Leitura, sobrescrita ou criacao fora da raiz pretendida | Alto |
 | T-16 | Information disclosure | Logs em `LogsImportacao` e mensagens apresentadas ao operador | Erros persistidos incluem IDs, titulos, colecoes e caminhos; podem ser copiados ou expostos | Vazamento de metadados e estrutura do host | Medio |
 | T-17 | Spoofing / Tampering | `ApiMyAnimes` chama `ApiMyAnimeList` em URL local sem client credentials/mTLS observados | Outro processo local ou rota exposta imita o servico ou intercepta a chamada | Dados externos adulterados e movimento lateral | Alto |
@@ -94,6 +94,8 @@ As classificacoes `Critico`, `Alto`, `Medio` e `Baixo` sao priorizacao inicial p
 Ativos: A-02 e A-05. Categorias: Spoofing, Tampering e Elevation. Condicao de publicacao relacionada: endpoint mutavel sem autorizacao explicita.
 
 ### C-02: sequestro da sessao legada no navegador
+
+Este cenario e historico e foi fechado na Etapa 20: as rotas/DTOs legados foram removidos e o site usa sessao server-side no BFF.
 
 1. Um script executado no contexto do site le `localStorage`.
 2. Recupera `auth_token` retornado por `AuthResponse`.
@@ -140,3 +142,9 @@ Os itens abaixo sao observacoes, nao controles novos:
 ## 8. Decisao da Etapa 01
 
 O modelo de ameacas esta produzido e vinculado a ativos, fronteiras, endpoints e condicoes de bloqueio do plano. Nenhuma ameaca foi usada para alterar codigo nesta etapa. A remediacao deve ocorrer somente nas etapas posteriores correspondentes; este documento nao autoriza a publicacao do estado atual.
+
+## 9. Atualizacao apos a Etapa 20
+
+- T-03, T-05, T-06 e T-14 foram mitigadas pela remocao do `AuthController`, `LocalAuthService`, DTOs locais, configuracao `Auth:UsersFilePath` e arquivo JSON de usuarios.
+- O catalogo de autorizacao, MFA, sessoes, revogacao, Client Credentials/mTLS, BFF, LGPD e WinApp foram revalidados no gate; os resultados estao em `docs/security/ETAPA_20_GATE_IDENTIDADE.md`.
+- Permanecem riscos de ambiente e publicacao: certificados reais, contas de servico, issuer/discovery, firewall, worker de retencao LGPD e homologacao. A Etapa 21 nao foi iniciada.

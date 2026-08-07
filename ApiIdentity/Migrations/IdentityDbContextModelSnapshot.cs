@@ -721,6 +721,26 @@ namespace ApiIdentity.Migrations
                         },
                         new
                         {
+                            Key = "personal.read",
+                            Description = "Leitura dos recursos pessoais do proprio usuario."
+                        },
+                        new
+                        {
+                            Key = "personal.write",
+                            Description = "Alteracao dos recursos pessoais do proprio usuario."
+                        },
+                        new
+                        {
+                            Key = "privacy.export",
+                            Description = "Exportacao dos dados pessoais do proprio usuario."
+                        },
+                        new
+                        {
+                            Key = "privacy.delete",
+                            Description = "Solicitacao de exclusao dos dados do proprio usuario."
+                        },
+                        new
+                        {
                             Key = "health.read",
                             Description = "Leitura do health minimo restrito."
                         },
@@ -733,6 +753,217 @@ namespace ApiIdentity.Migrations
                         {
                             Key = "filesystem.command",
                             Description = "Operacao de arquivos por ID e comando autorizado."
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.PersonalDataDeletionRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset?>("ProcessedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("RequestedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("RetentionUntilUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("ScheduledForUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_IdentityPersonalDataDeletionRequests_PendingAccount")
+                        .HasFilter("[Status] = 'Pending'");
+
+                    b.HasIndex("AccountId", "Status");
+
+                    b.ToTable("IdentityPersonalDataDeletionRequests", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentityPersonalDataDeletionRequests_ProcessedAtUtc", "[ProcessedAtUtc] IS NULL OR DATEPART(TZOFFSET, [ProcessedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalDataDeletionRequests_RetentionUntilUtc", "[RetentionUntilUtc] IS NULL OR DATEPART(TZOFFSET, [RetentionUntilUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalDataDeletionRequests_Schedule", "[ScheduledForUtc] > [RequestedAtUtc] AND DATEPART(TZOFFSET, [RequestedAtUtc]) = 0 AND DATEPART(TZOFFSET, [ScheduledForUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalDataDeletionRequests_Status", "[Status] IN ('Pending', 'Completed')");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.PersonalFavorite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ResourceKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ResourceType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "CreatedAtUtc");
+
+                    b.HasIndex("AccountId", "ResourceType", "ResourceKey")
+                        .IsUnique()
+                        .HasDatabaseName("UX_IdentityPersonalFavorites_Account_Resource");
+
+                    b.ToTable("IdentityPersonalFavorites", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentityPersonalFavorites_CreatedAtUtc", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalFavorites_ResourceKey", "LEN(LTRIM(RTRIM([ResourceKey]))) > 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalFavorites_ResourceType", "LEN(LTRIM(RTRIM([ResourceType]))) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.PersonalList", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "UpdatedAtUtc");
+
+                    b.ToTable("IdentityPersonalLists", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentityPersonalLists_CreatedAtUtc", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalLists_Name", "LEN(LTRIM(RTRIM([Name]))) > 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalLists_UpdatedAtUtc", "DATEPART(TZOFFSET, [UpdatedAtUtc]) = 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.PersonalListItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("AddedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ListId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ResourceKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ResourceType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "ListId");
+
+                    b.HasIndex("ListId", "ResourceType", "ResourceKey")
+                        .IsUnique()
+                        .HasDatabaseName("UX_IdentityPersonalListItems_List_Resource");
+
+                    b.ToTable("IdentityPersonalListItems", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentityPersonalListItems_AddedAtUtc", "DATEPART(TZOFFSET, [AddedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalListItems_Position", "[Position] >= 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalListItems_ResourceKey", "LEN(LTRIM(RTRIM([ResourceKey]))) > 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalListItems_ResourceType", "LEN(LTRIM(RTRIM([ResourceType]))) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.PersonalPreference", b =>
+                {
+                    b.Property<string>("AccountId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Key")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.HasKey("AccountId", "Key");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("IdentityPersonalPreferences", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentityPersonalPreferences_Key", "LEN(LTRIM(RTRIM([Key]))) > 0");
                         });
                 });
 
@@ -781,6 +1012,26 @@ namespace ApiIdentity.Migrations
                         new
                         {
                             RoleId = "bb9c24e5-6b8a-4464-a420-11db01021681",
+                            PermissionKey = "personal.read"
+                        },
+                        new
+                        {
+                            RoleId = "bb9c24e5-6b8a-4464-a420-11db01021681",
+                            PermissionKey = "personal.write"
+                        },
+                        new
+                        {
+                            RoleId = "bb9c24e5-6b8a-4464-a420-11db01021681",
+                            PermissionKey = "privacy.export"
+                        },
+                        new
+                        {
+                            RoleId = "bb9c24e5-6b8a-4464-a420-11db01021681",
+                            PermissionKey = "privacy.delete"
+                        },
+                        new
+                        {
+                            RoleId = "bb9c24e5-6b8a-4464-a420-11db01021681",
                             PermissionKey = "health.read"
                         },
                         new
@@ -797,6 +1048,26 @@ namespace ApiIdentity.Migrations
                         {
                             RoleId = "206268dd-529c-49f9-973f-030ddcbba450",
                             PermissionKey = "identity.self.read"
+                        },
+                        new
+                        {
+                            RoleId = "206268dd-529c-49f9-973f-030ddcbba450",
+                            PermissionKey = "personal.read"
+                        },
+                        new
+                        {
+                            RoleId = "206268dd-529c-49f9-973f-030ddcbba450",
+                            PermissionKey = "personal.write"
+                        },
+                        new
+                        {
+                            RoleId = "206268dd-529c-49f9-973f-030ddcbba450",
+                            PermissionKey = "privacy.export"
+                        },
+                        new
+                        {
+                            RoleId = "206268dd-529c-49f9-973f-030ddcbba450",
+                            PermissionKey = "privacy.delete"
                         });
                 });
 
@@ -1376,6 +1647,59 @@ namespace ApiIdentity.Migrations
                     b.Navigation("Account");
                 });
 
+            modelBuilder.Entity("ApiIdentity.Models.PersonalFavorite", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.PersonalList", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.PersonalListItem", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ApiIdentity.Models.PersonalList", "List")
+                        .WithMany("Items")
+                        .HasForeignKey("AccountId", "ListId")
+                        .HasPrincipalKey("AccountId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("List");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.PersonalPreference", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("ApiIdentity.Models.RolePermission", b =>
                 {
                     b.HasOne("ApiIdentity.Models.PermissionDefinition", "Permission")
@@ -1543,6 +1867,11 @@ namespace ApiIdentity.Migrations
             modelBuilder.Entity("ApiIdentity.Models.PermissionDefinition", b =>
                 {
                     b.Navigation("RolePermissions");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.PersonalList", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("ApiIdentity.Models.TermsDocument", b =>

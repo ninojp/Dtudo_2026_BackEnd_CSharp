@@ -24,13 +24,6 @@ public sealed class DtudoSiteStartupService(ApiMyAnimesHealthCheckService apiHea
         if (apiHealth.IsAvailable && siteIsAvailable)
             return DtudoSiteStartupResult.Ready();
 
-        if (!apiHealth.IsAvailable)
-        {
-            var localDbStart = await StartLocalDbAsync(cancellationToken);
-            if (!localDbStart.Succeeded)
-                return localDbStart;
-        }
-
         var npmCheck = await CheckNpmAvailabilityAsync(cancellationToken);
         if (!npmCheck.Succeeded)
             return npmCheck;
@@ -102,7 +95,7 @@ public sealed class DtudoSiteStartupService(ApiMyAnimesHealthCheckService apiHea
         var siteAddress = siteUri.GetLeftPart(UriPartial.Authority);
         return DtudoSiteStartupResult.Failed(
             $"Os servicos nao ficaram prontos em {AppConfigurationService.DtudoSiteStartupTimeout.TotalSeconds:0} segundos. " +
-            $"ApiMyAnimes/DB_Local: {latestApiHealth.Message} Vite: {siteAddress} nao respondeu.");
+            $"ApiMyAnimes: {latestApiHealth.Message} Vite: {siteAddress} nao respondeu.");
     }
 
     private static async Task<bool> IsSiteAvailableAsync(Uri siteUri, CancellationToken cancellationToken)
@@ -129,55 +122,6 @@ public sealed class DtudoSiteStartupService(ApiMyAnimesHealthCheckService apiHea
         catch (OperationCanceledException)
         {
             return false;
-        }
-    }
-
-    private async Task<DtudoSiteStartupResult> StartLocalDbAsync(CancellationToken cancellationToken)
-    {
-        var localDbInstanceName = AppConfigurationService.DtudoLocalDbInstanceName;
-        if (string.IsNullOrWhiteSpace(localDbInstanceName))
-            return DtudoSiteStartupResult.Failed("A instancia do SQL Server LocalDB nao esta configurada.");
-
-        try
-        {
-            var command = new ProcessStartInfo
-            {
-                FileName = "sqllocaldb.exe",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
-            };
-            command.ArgumentList.Add("start");
-            command.ArgumentList.Add(localDbInstanceName);
-
-            using var process = Process.Start(command);
-            if (process is null)
-                return DtudoSiteStartupResult.Failed("Nao foi possivel iniciar o SQL Server LocalDB.");
-
-            var standardOutput = process.StandardOutput.ReadToEndAsync(cancellationToken);
-            var standardError = process.StandardError.ReadToEndAsync(cancellationToken);
-            await process.WaitForExitAsync(cancellationToken).WaitAsync(CommandTimeout, cancellationToken);
-            var output = (await standardError).Trim();
-            if (string.IsNullOrWhiteSpace(output))
-                output = (await standardOutput).Trim();
-
-            return process.ExitCode == 0
-                ? DtudoSiteStartupResult.Ready()
-                : DtudoSiteStartupResult.Failed(
-                    $"Nao foi possivel iniciar a instancia LocalDB '{localDbInstanceName}'. {output}".Trim());
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (TimeoutException)
-        {
-            return DtudoSiteStartupResult.Failed("O SQL Server LocalDB excedeu o tempo para iniciar.");
-        }
-        catch (System.ComponentModel.Win32Exception exception)
-        {
-            return DtudoSiteStartupResult.Failed($"sqllocaldb.exe nao foi encontrado: {exception.Message}");
         }
     }
 

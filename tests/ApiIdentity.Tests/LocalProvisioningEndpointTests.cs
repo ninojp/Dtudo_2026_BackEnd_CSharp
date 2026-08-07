@@ -1,8 +1,11 @@
 using ApiIdentity.Configuration;
 using ApiIdentity.Data;
+using ApiIdentity.Identity;
+using ApiIdentity.Models;
 using ApiIdentity.Provisioning;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +45,22 @@ public sealed class LocalProvisioningEndpointTests
     public async Task ActivationEndpointUsesGenericFailureAndRateLimitsAttempts()
     {
         var databaseName = $"DtudoIdentity.Stage11EndpointTests.{Guid.NewGuid():N}";
+        var connectionString = CreateConnectionString(databaseName);
+        var migrationServices = new ServiceCollection();
+        migrationServices.AddDbContext<IdentityDbContext>(options =>
+            options.UseSqlServer(connectionString, sqlServerOptions =>
+                sqlServerOptions.MigrationsAssembly(typeof(Program).Assembly.FullName)));
+        migrationServices.AddIdentityCore<IdentityAccount>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        });
+        await using (var migrationProvider = migrationServices.BuildServiceProvider())
+        await using (var migrationScope = migrationProvider.CreateAsyncScope())
+        {
+            var databaseContext = migrationScope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+            await databaseContext.Database.MigrateAsync();
+        }
+
         using var factory = CreateFactory(databaseName);
         try
         {
@@ -49,8 +68,6 @@ public sealed class LocalProvisioningEndpointTests
             await using (var setupScope = factory.Services.CreateAsyncScope())
             {
                 var context = setupScope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-                await context.Database.MigrateAsync();
-
                 var service = setupScope.ServiceProvider.GetRequiredService<AccountProvisioningService>();
                 var bootstrap = await service.BootstrapAsync(new BootstrapAccountRequest(
                     "endpoint-admin",
@@ -95,14 +112,7 @@ public sealed class LocalProvisioningEndpointTests
 
     private static WebApplicationFactory<Program> CreateFactory(string databaseName)
     {
-        var connectionString = new SqlConnectionStringBuilder
-        {
-            DataSource = "(localdb)\\MSSQLLocalDB",
-            InitialCatalog = databaseName,
-            IntegratedSecurity = true,
-            Encrypt = false,
-            TrustServerCertificate = true
-        }.ConnectionString;
+        var connectionString = CreateConnectionString(databaseName);
 
         return new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -119,4 +129,14 @@ public sealed class LocalProvisioningEndpointTests
                 });
             });
     }
+
+    private static string CreateConnectionString(string databaseName) =>
+        new SqlConnectionStringBuilder
+        {
+            DataSource = "(localdb)\\MSSQLLocalDB",
+            InitialCatalog = databaseName,
+            IntegratedSecurity = true,
+            Encrypt = false,
+            TrustServerCertificate = true
+        }.ConnectionString;
 }

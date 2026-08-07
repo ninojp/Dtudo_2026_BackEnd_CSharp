@@ -5010,7 +5010,8 @@
       "Microsoft.EntityFrameworkCore.Tools >= 10.0.9",
       "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore >= 10.0.9",
       "OpenIddict.AspNetCore >= 7.2.0",
-      "OpenIddict.EntityFrameworkCore >= 7.2.0"
+      "OpenIddict.EntityFrameworkCore >= 7.2.0",
+      "OpenIddict.Validation.AspNetCore >= 7.2.0"
     ]
   },
   "packageFolders": {
@@ -5102,6 +5103,10 @@
             "version": "[7.2.0, )"
           },
           "OpenIddict.EntityFrameworkCore": {
+            "target": "Package",
+            "version": "[7.2.0, )"
+          },
+          "OpenIddict.Validation.AspNetCore": {
             "target": "Package",
             "version": "[7.2.0, )"
           }

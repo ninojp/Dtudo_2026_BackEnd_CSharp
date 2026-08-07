@@ -86,6 +86,21 @@ public sealed class ApiAuthorizationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("/apiLocal/Auth/register")]
+    [InlineData("/apiLocal/Auth/login")]
+    [InlineData("/apiLocal/Auth/me/legacy")]
+    public async Task LegacyAuthenticationEndpoints_AreNotMapped(string path)
+    {
+        await using var app = CreateApp();
+        var client = app.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Claims", "sub=legacy-negative");
+
+        using var response = await client.GetAsync(path);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     private static WebApplicationFactory<Program> CreateApp()
         => new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -96,7 +111,6 @@ public sealed class ApiAuthorizationTests
                     {
                         ["Authentication:Issuer"] = "https://identity.test",
                         ["Authentication:Audience"] = "api-my-animes",
-                        ["Auth:UsersFilePath"] = Path.Combine(Path.GetTempPath(), $"dtudo-auth-{Guid.NewGuid():N}.json"),
                         ["ConnectionStrings:LocalDbConnection"] = "Server=(localdb)\\MSSQLLocalDB;Database=Dtudo2026Tests;Trusted_Connection=True;TrustServerCertificate=True",
                         ["Seq:Url"] = string.Empty
                     });

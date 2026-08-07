@@ -29,10 +29,12 @@ public sealed class ApiIdentityStartupTests
         var healthResponse = await client.GetAsync("/health/live");
         var discoveryResponse = await client.GetAsync("/.well-known/openid-configuration");
         var registrationResponse = await client.PostAsync("/register", content: null);
+        var personalResponse = await client.GetAsync("/identity/me/favorites");
 
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
         Assert.Equal(HttpStatusCode.OK, discoveryResponse.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, registrationResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, personalResponse.StatusCode);
     }
 
     [Fact]
@@ -72,6 +74,7 @@ public sealed class ApiIdentityStartupTests
     {
         var connectionString = new SqlConnectionStringBuilder
         {
+            DataSource = "(localdb)\\MSSQLLocalDB",
             InitialCatalog = TestDatabaseName
         }.ConnectionString;
         using var factory = new WebApplicationFactory<Program>()
@@ -169,6 +172,7 @@ public sealed class ApiIdentityStartupTests
     {
         var connectionString = new SqlConnectionStringBuilder
         {
+            DataSource = "(localdb)\\MSSQLLocalDB",
             InitialCatalog = TestDatabaseName
         }.ConnectionString;
 

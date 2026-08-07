@@ -18,6 +18,10 @@ public static class AuthorizationCatalog
         public const string IdentityProvision = "identity.provision";
         public const string IdentityLogin = "identity.login";
         public const string IdentitySelfRead = "identity.self.read";
+        public const string PersonalRead = "personal.read";
+        public const string PersonalWrite = "personal.write";
+        public const string PrivacyExport = "privacy.export";
+        public const string PrivacyDelete = "privacy.delete";
         public const string HealthRead = "health.read";
         public const string ServiceMalRead = "service.mal.read";
         public const string FilesystemCommand = "filesystem.command";
@@ -31,6 +35,10 @@ public static class AuthorizationCatalog
         new(Permissions.IdentityProvision, "Bootstrap e provisionamento administrativo de contas."),
         new(Permissions.IdentityLogin, "Autenticacao no servico de identidade."),
         new(Permissions.IdentitySelfRead, "Leitura do proprio perfil de identidade."),
+        new(Permissions.PersonalRead, "Leitura dos recursos pessoais do proprio usuario."),
+        new(Permissions.PersonalWrite, "Alteracao dos recursos pessoais do proprio usuario."),
+        new(Permissions.PrivacyExport, "Exportacao dos dados pessoais do proprio usuario."),
+        new(Permissions.PrivacyDelete, "Solicitacao de exclusao dos dados do proprio usuario."),
         new(Permissions.HealthRead, "Leitura do health minimo restrito."),
         new(Permissions.ServiceMalRead, "Chamada interna autorizada a dados MyAnimeList."),
         new(Permissions.FilesystemCommand, "Operacao de arquivos por ID e comando autorizado.")
@@ -47,6 +55,10 @@ public static class AuthorizationCatalog
                 Permissions.CatalogDelete,
                 Permissions.IdentityProvision,
                 Permissions.IdentitySelfRead,
+                Permissions.PersonalRead,
+                Permissions.PersonalWrite,
+                Permissions.PrivacyExport,
+                Permissions.PrivacyDelete,
                 Permissions.HealthRead,
                 Permissions.FilesystemCommand
             ]),
@@ -55,7 +67,11 @@ public static class AuthorizationCatalog
             Roles.SiteUser,
             [
                 Permissions.CatalogRead,
-                Permissions.IdentitySelfRead
+                Permissions.IdentitySelfRead,
+                Permissions.PersonalRead,
+                Permissions.PersonalWrite,
+                Permissions.PrivacyExport,
+                Permissions.PrivacyDelete
             ])
     ];
 

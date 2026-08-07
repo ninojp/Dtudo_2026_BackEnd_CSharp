@@ -100,11 +100,6 @@ builder.Services.AddTransient<CorrelationIdDelegatingHandler>();
 builder.Services.AddScoped<AnimeBuscaLocalService>();
 builder.Services.AddScoped<AnimeTitleConflictService>();
 builder.Services.AddScoped<ISecurityAuditWriter, SecurityAuditWriter>();
-builder.Services.AddSingleton<LocalAuthService>();
-builder.Services.AddOptions<AuthOptions>()
-    .Bind(builder.Configuration.GetSection(AuthOptions.SectionName))
-    .Validate(options => !string.IsNullOrWhiteSpace(options.UsersFilePath), "Auth:UsersFilePath nao configurado.")
-    .ValidateOnStart();
 
 builder.Services.AddOptions<ApiMyAnimeListOptions>()
     .Bind(builder.Configuration.GetSection(ApiMyAnimeListOptions.SectionName))

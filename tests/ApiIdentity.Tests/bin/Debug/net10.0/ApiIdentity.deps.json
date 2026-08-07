@@ -15,7 +15,8 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.9",
           "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": "10.0.9",
           "OpenIddict.AspNetCore": "7.2.0",
-          "OpenIddict.EntityFrameworkCore": "7.2.0"
+          "OpenIddict.EntityFrameworkCore": "7.2.0",
+          "OpenIddict.Validation.AspNetCore": "7.2.0"
         },
         "runtime": {
           "ApiIdentity.dll": {}

@@ -470,7 +470,6 @@ C:\2026MeusProjetos\Dtudo2026\tests\ApiMyAnimes.Tests\obj\Debug\net10.0\refint\A
 C:\2026MeusProjetos\Dtudo2026\tests\ApiMyAnimes.Tests\obj\Debug\net10.0\ApiMyAnimes.Tests.pdb
 C:\2026MeusProjetos\Dtudo2026\tests\ApiMyAnimes.Tests\obj\Debug\net10.0\ApiMyAnimes.Tests.genruntimeconfig.cache
 C:\2026MeusProjetos\Dtudo2026\tests\ApiMyAnimes.Tests\obj\Debug\net10.0\ref\ApiMyAnimes.Tests.dll
-C:\2026MeusProjetos\Dtudo2026\tests\ApiMyAnimes.Tests\bin\Debug\net10.0\App_Data\auth-users.Development.json
 C:\2026MeusProjetos\Dtudo2026\tests\ApiMyAnimes.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.InMemory.dll
 C:\2026MeusProjetos\Dtudo2026\tests\ApiMyAnimes.Tests\bin\Debug\net10.0\Serilog.dll
 C:\2026MeusProjetos\Dtudo2026\tests\ApiMyAnimes.Tests\bin\Debug\net10.0\Serilog.AspNetCore.dll

@@ -36,6 +36,15 @@ public sealed class IdentityProvisioningAuditWriter
             occurredAtUtc.AddMonths(IdentityProvisioningAuditEvent.RetentionMonths)));
     }
 
+    public void Record(
+        string actor,
+        string action,
+        string target,
+        string result,
+        string deviceId,
+        string reason) =>
+        Record(actor, action, target, result, deviceId, "identity-privacy", reason);
+
     private static string Require(string value, string parameterName, int maxLength)
     {
         if (string.IsNullOrWhiteSpace(value))

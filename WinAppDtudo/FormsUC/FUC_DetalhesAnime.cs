@@ -23,7 +23,7 @@ public partial class FUC_DetalhesAnime : UserControl
     public event EventHandler<int>? EditarAnimeSolicitado;
 
     private readonly MyAnimeListApiService _myAnimeListService = new();
-    private readonly ApiMyAnimesService _apiMyAnimesService = new();
+    private readonly ApiMyAnimesService _apiMyAnimesService;
     private readonly int _malId;
     private readonly bool _consultaLocal;
     private int _yOffset;
@@ -35,15 +35,19 @@ public partial class FUC_DetalhesAnime : UserControl
     private List<AnimeRelationEntry> _animesRelacionados = [];
 
     public FUC_DetalhesAnime(int malId)
-        : this(malId, consultaLocal: false)
+        : this(malId, consultaLocal: false, apiMyAnimesService: null)
     {
     }
 
-    public FUC_DetalhesAnime(int malId, bool consultaLocal)
+    public FUC_DetalhesAnime(
+        int malId,
+        bool consultaLocal,
+        ApiMyAnimesService? apiMyAnimesService = null)
     {
         InitializeComponent();
         _malId = malId;
         _consultaLocal = consultaLocal;
+        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService();
         ConfigurarColunaDeDetalhes();
         Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
         Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
@@ -877,9 +881,18 @@ public partial class FUC_DetalhesAnime : UserControl
                 AnimesMalId = malIdsRelacionados
             };
 
-            var myAnimeId = await AdicionarMyAnimeComRetornoDeIdAsync(dto);
+            var colecao = await _apiMyAnimesService.GarantirMyAnimeColecaoAsync(dto);
+            if (!colecao.Created)
+            {
+                var colecaoExistente = await _apiMyAnimesService.ObterMyAnimePorIdAsync(colecao.Id);
+                if (colecaoExistente is not null)
+                    MostrarMyAnimeExistente(colecaoExistente);
+                return;
+            }
 
-            var importacao = await new ImportadorAnimesMyAnimeService().ImportarAsync(
+            var myAnimeId = colecao.Id;
+
+            var importacao = await new ImportadorAnimesMyAnimeService(_apiMyAnimesService).ImportarAsync(
                 myAnimeId,
                 tituloMyAnime,
                 malIdsRelacionados);
@@ -975,6 +988,8 @@ public partial class FUC_DetalhesAnime : UserControl
             {
                 await _apiMyAnimesService.AdicionarAnimeAsync(dtoAnime);
             }
+
+            await _apiMyAnimesService.AssociarAnimeAoMyAnimeAsync(_animeAtual.MalId, myAnimeId);
 
             var malIdsAtualizados = myAnimeExistente.AnimesMalId
                 .Concat(ObterMalIdsRelacionados())
@@ -1171,19 +1186,6 @@ public partial class FUC_DetalhesAnime : UserControl
             : !string.IsNullOrWhiteSpace(anime.TitleEnglish)
                 ? anime.TitleEnglish
                 : $"Anime_{anime.MalId}";
-    }
-
-    private async Task<int> AdicionarMyAnimeComRetornoDeIdAsync(AdicionaMyAnimeDto dto)
-    {
-        var idRetornado = await _apiMyAnimesService.AdicionarMyAnimeAsync(dto);
-        if (idRetornado.HasValue && idRetornado.Value > 0)
-            return idRetornado.Value;
-
-        var myAnimeCriado = await _apiMyAnimesService.ObterMyAnimePorTituloAsync(dto.Titulo);
-        if (myAnimeCriado is not null && myAnimeCriado.Id > 0)
-            return myAnimeCriado.Id;
-
-        throw new InvalidOperationException("MyAnime criado, mas o ID não pôde ser recuperado para cadastrar o anime automaticamente.");
     }
 
     private List<int> ObterMalIdsRelacionados()
