@@ -28,5 +28,41 @@
         <member name="M:ApiIdentity.Migrations.AddIdentityGovernance.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:ApiIdentity.Migrations.AddAccountProvisioning">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddAccountProvisioning.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddAccountProvisioning.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddAccountProvisioning.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ApiIdentity.Migrations.AddIdentitySecurity">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddIdentitySecurity.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddIdentitySecurity.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddIdentitySecurity.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ApiIdentity.Migrations.AddSessionTokens">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddSessionTokens.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddSessionTokens.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiIdentity.Migrations.AddSessionTokens.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

@@ -1,4 +1,5 @@
 using ApiMyAnimes.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,6 +7,7 @@ namespace ApiMyAnimes.Controllers;
 
 [ApiController]
 [Route("apiLocal/[controller]")]
+[Authorize(Policy = "permission:health.read")]
 public sealed class HealthController(
     MyAnimesContext context,
     ILogger<HealthController> logger) : ControllerBase

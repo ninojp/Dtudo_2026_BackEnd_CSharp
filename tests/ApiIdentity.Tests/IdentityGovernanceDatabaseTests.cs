@@ -1,10 +1,12 @@
 using ApiIdentity.Authorization;
 using ApiIdentity.Data;
 using ApiIdentity.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ApiIdentity.Tests;
 
@@ -138,18 +140,26 @@ public sealed class IdentityGovernanceDatabaseTests
             Encrypt = false,
             TrustServerCertificate = true
         }.ConnectionString;
-        var options = new DbContextOptionsBuilder<IdentityDbContext>()
-            .UseSqlServer(connectionString)
-            .Options;
+        var services = new ServiceCollection();
+        services.AddDbContext<IdentityDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddIdentityCore<IdentityAccount>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        })
+            .AddEntityFrameworkStores<IdentityDbContext>();
 
-        await using var context = new IdentityDbContext(options);
+        await using var serviceProvider = services.BuildServiceProvider();
         try
         {
+            await using var scope = serviceProvider.CreateAsyncScope();
+            var context = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
             await context.Database.MigrateAsync();
             await test(context);
         }
         finally
         {
+            await using var scope = serviceProvider.CreateAsyncScope();
+            var context = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
             await context.Database.EnsureDeletedAsync();
         }
     }

@@ -3,6 +3,7 @@ using LibDtudo.Shared.Models;
 using ApiMyAnimes.Data;
 using ApiMyAnimes.Services;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Net;
@@ -21,6 +22,7 @@ namespace ApiMyAnimes.Controllers;
 /// <param name="logger"></param>
 [ApiController]
 [Route("apiLocal/[controller]")]
+[Authorize]
 public class AnimeController(
     MyAnimesContext context,
     MyAnimeListImportClient myAnimeListImportClient,
@@ -47,6 +49,7 @@ public class AnimeController(
     /// ou <c>502 BadGateway</c> quando a ApiMyAnimeList está indisponível.
     /// </returns>
     [HttpPost]
+    [Authorize(Policy = "permission:catalog.write")]
     [ProducesResponseType(typeof(ObterAnimeDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -210,6 +213,7 @@ public class AnimeController(
     /// ou <c>400 BadRequest</c> quando parâmetros de paginação são inválidos.
     /// </returns>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<ObterAnimeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<List<ObterAnimeDto>> ObterAnimes([FromQuery] int skip = 0, [FromQuery] int take = 10)
@@ -234,6 +238,7 @@ public class AnimeController(
     /// <param name="termo">Texto pesquisado pelo usuario.</param>
     /// <param name="take">Quantidade maxima de animes retornados.</param>
     [HttpGet("buscar")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<ObterAnimeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<List<ObterAnimeDto>>> BuscarAnimes([FromQuery] string? termo, [FromQuery] int take = 100)
@@ -250,6 +255,7 @@ public class AnimeController(
     /// A comparação é exata após normalização de acentos, entidades HTML, pontuação e espaços.
     /// </summary>
     [HttpPost("conflito-titulo")]
+    [Authorize(Policy = "permission:catalog.write")]
     [ProducesResponseType(typeof(ConflitoTituloAnimeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -285,6 +291,7 @@ public class AnimeController(
     /// ou <c>404 NotFound</c> quando o registro não existe.
     /// </returns>
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ObterAnimeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -309,6 +316,7 @@ public class AnimeController(
     /// ou <c>404 NotFound</c> quando o anime não existe.
     /// </returns>
     [HttpPut("{id:int}")]
+    [Authorize(Policy = "permission:catalog.write")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -374,6 +382,7 @@ public class AnimeController(
     /// ou <c>404 NotFound</c> quando o anime não existe.
     /// </returns>
     [HttpPatch("{id:int}")]
+    [Authorize(Policy = "permission:catalog.write")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -492,6 +501,7 @@ public class AnimeController(
     /// ou <c>404 NotFound</c> quando o anime não existe.
     /// </returns>
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = "permission:catalog.delete")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

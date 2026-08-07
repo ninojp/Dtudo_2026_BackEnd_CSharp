@@ -39,6 +39,20 @@
             Accounts = @(
                 @{ Role = 'InteractiveUser'; LocalName = 'CURRENT_USER'; SqlPrincipal = 'CURRENT_USER' }
             )
+            ServiceCertificates = @(
+                @{
+                    ClientId = 'api-my-animes'
+                    ServiceRole = 'ApiMyAnimes'
+                    StoreName = 'My'
+                    StoreLocation = 'CurrentUser'
+                    PrivateKeyPrincipal = 'CURRENT_USER'
+                    CertificateThumbprint = ''
+                    PreviousCertificateThumbprint = ''
+                    PreviousCertificateAcceptedUntilUtc = ''
+                    AllowedScopes = @('service.mal.read')
+                    AllowedAudiences = @('urn:dtudo:api-my-animelist')
+                }
+            )
             DatabaseAccess = @(
                 @{ AccountRole = 'InteractiveUser'; Database = 'MyAnimesDatabase'; Roles = @('ExistingLocalDbOwner') }
             )
@@ -89,6 +103,20 @@
                 @{ Role = 'Gateway'; LocalName = 'DtudoHomGateway'; SqlPrincipal = '.\DtudoHomGateway' }
                 @{ Role = 'FileStorage'; LocalName = 'DtudoHomFiles'; SqlPrincipal = '.\DtudoHomFiles' }
                 @{ Role = 'Backup'; LocalName = 'DtudoHomBackup'; SqlPrincipal = '.\DtudoHomBackup' }
+            )
+            ServiceCertificates = @(
+                @{
+                    ClientId = 'api-my-animes'
+                    ServiceRole = 'ApiMyAnimes'
+                    StoreName = 'My'
+                    StoreLocation = 'LocalMachine'
+                    PrivateKeyPrincipal = '.\DtudoHomAnimes'
+                    CertificateThumbprint = ''
+                    PreviousCertificateThumbprint = ''
+                    PreviousCertificateAcceptedUntilUtc = ''
+                    AllowedScopes = @('service.mal.read')
+                    AllowedAudiences = @('urn:dtudo:api-my-animelist')
+                }
             )
             DatabaseAccess = @(
                 @{ AccountRole = 'ApiMyAnimes'; Database = 'MyAnimesDatabase'; Roles = @('db_datareader', 'db_datawriter') }
@@ -142,6 +170,20 @@
                 @{ Role = 'Gateway'; LocalName = 'DtudoProdGateway'; SqlPrincipal = '.\DtudoProdGateway' }
                 @{ Role = 'FileStorage'; LocalName = 'DtudoProdFiles'; SqlPrincipal = '.\DtudoProdFiles' }
                 @{ Role = 'Backup'; LocalName = 'DtudoProdBackup'; SqlPrincipal = '.\DtudoProdBackup' }
+            )
+            ServiceCertificates = @(
+                @{
+                    ClientId = 'api-my-animes'
+                    ServiceRole = 'ApiMyAnimes'
+                    StoreName = 'My'
+                    StoreLocation = 'LocalMachine'
+                    PrivateKeyPrincipal = '.\DtudoProdAnimes'
+                    CertificateThumbprint = ''
+                    PreviousCertificateThumbprint = ''
+                    PreviousCertificateAcceptedUntilUtc = ''
+                    AllowedScopes = @('service.mal.read')
+                    AllowedAudiences = @('urn:dtudo:api-my-animelist')
+                }
             )
             DatabaseAccess = @(
                 @{ AccountRole = 'ApiMyAnimes'; Database = 'MyAnimesDatabase'; Roles = @('db_datareader', 'db_datawriter') }

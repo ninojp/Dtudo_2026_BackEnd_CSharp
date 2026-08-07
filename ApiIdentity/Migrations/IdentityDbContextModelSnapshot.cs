@@ -30,6 +30,9 @@ namespace ApiIdentity.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<DateTimeOffset?>("ActivatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<DateTimeOffset?>("AdultAgeConfirmedAtUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -45,6 +48,9 @@ namespace ApiIdentity.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("HasConfirmedAdultAge")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActivationCompleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
@@ -65,7 +71,8 @@ namespace ApiIdentity.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
@@ -92,7 +99,577 @@ namespace ApiIdentity.Migrations
 
                     b.ToTable("AspNetUsers", null, t =>
                         {
+                            t.HasCheckConstraint("CK_AspNetUsers_ActivationState", "([IsActivationCompleted] = 0 AND [ActivatedAtUtc] IS NULL) OR ([IsActivationCompleted] = 1 AND [ActivatedAtUtc] IS NOT NULL AND DATEPART(TZOFFSET, [ActivatedAtUtc]) = 0)");
+
                             t.HasCheckConstraint("CK_AspNetUsers_AdultAgeConfirmation", "([HasConfirmedAdultAge] = 0 AND [AdultAgeConfirmedAtUtc] IS NULL) OR ([HasConfirmedAdultAge] = 1 AND [AdultAgeConfirmedAtUtc] IS NOT NULL AND DATEPART(TZOFFSET, [AdultAgeConfirmedAtUtc]) = 0)");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentityBootstrapState", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BootstrappedAccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CompletedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BootstrappedAccountId");
+
+                    b.ToTable("IdentityBootstrapState", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentityBootstrapState_CompletedAtUtc", "DATEPART(TZOFFSET, [CompletedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityBootstrapState_Singleton", "[Id] = 1");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentityProvisioningAuditEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset>("RetentionUntilUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RetentionUntilUtc");
+
+                    b.HasIndex("OccurredAtUtc", "Id");
+
+                    b.ToTable("IdentityProvisioningAuditEvents", (string)null);
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentityRecoveryTicket", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("IssuedBy")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset?>("RevokedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("SecretHash")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<DateTimeOffset?>("UsedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_IdentityRecoveryTickets_ActiveAccount")
+                        .HasFilter("[UsedAtUtc] IS NULL AND [RevokedAtUtc] IS NULL");
+
+                    b.HasIndex("AccountId", "ExpiresAtUtc");
+
+                    b.ToTable("IdentityRecoveryTickets", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentityRecoveryTickets_CreatedAtUtc", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityRecoveryTickets_ExpiresAtUtc", "DATEPART(TZOFFSET, [ExpiresAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityRecoveryTickets_Expiry", "[ExpiresAtUtc] > [CreatedAtUtc]");
+
+                            t.HasCheckConstraint("CK_IdentityRecoveryTickets_RevokedAtUtc", "[RevokedAtUtc] IS NULL OR DATEPART(TZOFFSET, [RevokedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityRecoveryTickets_UsedAtUtc", "[UsedAtUtc] IS NULL OR DATEPART(TZOFFSET, [UsedAtUtc]) = 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecurityChallenge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset?>("ConsumedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeviceId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("ProtectedPayload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("RevokedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "Kind", "ExpiresAtUtc");
+
+                    b.ToTable("IdentitySecurityChallenges", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentitySecurityChallenges_ConsumedAtUtc", "[ConsumedAtUtc] IS NULL OR DATEPART(TZOFFSET, [ConsumedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityChallenges_CreatedAtUtc", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityChallenges_ExpiresAtUtc", "DATEPART(TZOFFSET, [ExpiresAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityChallenges_Expiry", "[ExpiresAtUtc] > [CreatedAtUtc]");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityChallenges_RevokedAtUtc", "[RevokedAtUtc] IS NULL OR DATEPART(TZOFFSET, [RevokedAtUtc]) = 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecurityDevice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("LastSeenAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTimeOffset?>("RevokedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("TrustedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("TrustedUntilUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "RevokedAtUtc");
+
+                    b.ToTable("IdentitySecurityDevices", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentitySecurityDevices_CreatedAtUtc", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityDevices_LastSeenAtUtc", "DATEPART(TZOFFSET, [LastSeenAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityDevices_RevokedAtUtc", "[RevokedAtUtc] IS NULL OR DATEPART(TZOFFSET, [RevokedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityDevices_TrustedAtUtc", "DATEPART(TZOFFSET, [TrustedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityDevices_TrustedUntilUtc", "[TrustedUntilUtc] > [TrustedAtUtc] AND DATEPART(TZOFFSET, [TrustedUntilUtc]) = 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecuritySession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("LastSeenAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("RevokedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "DeviceId");
+
+                    b.HasIndex("AccountId", "RevokedAtUtc");
+
+                    b.ToTable("IdentitySecuritySessions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentitySecuritySessions_CreatedAtUtc", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecuritySessions_ExpiresAtUtc", "[ExpiresAtUtc] > [CreatedAtUtc] AND DATEPART(TZOFFSET, [ExpiresAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecuritySessions_LastSeenAtUtc", "DATEPART(TZOFFSET, [LastSeenAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecuritySessions_RevokedAtUtc", "[RevokedAtUtc] IS NULL OR DATEPART(TZOFFSET, [RevokedAtUtc]) = 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecuritySnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ProtectedPayload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("RestoredAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("RestoredBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset?>("RevokedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "CreatedAtUtc");
+
+                    b.ToTable("IdentitySecuritySnapshots", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentitySecuritySnapshots_CreatedAtUtc", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecuritySnapshots_ExpiresAtUtc", "DATEPART(TZOFFSET, [ExpiresAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecuritySnapshots_Expiry", "[ExpiresAtUtc] > [CreatedAtUtc]");
+
+                            t.HasCheckConstraint("CK_IdentitySecuritySnapshots_RestoredAtUtc", "[RestoredAtUtc] IS NULL OR DATEPART(TZOFFSET, [RestoredAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecuritySnapshots_RevokedAtUtc", "[RevokedAtUtc] IS NULL OR DATEPART(TZOFFSET, [RevokedAtUtc]) = 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecurityToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ReplacedByTokenId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("RevokedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("TokenType")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTimeOffset?>("UsedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("UX_IdentitySecurityTokens_TokenHash");
+
+                    b.HasIndex("AccountId", "ExpiresAtUtc");
+
+                    b.HasIndex("FamilyId", "RevokedAtUtc");
+
+                    b.HasIndex("SessionId", "RevokedAtUtc");
+
+                    b.ToTable("IdentitySecurityTokens", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentitySecurityTokens_CreatedAtUtc", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityTokens_ExpiresAtUtc", "DATEPART(TZOFFSET, [ExpiresAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityTokens_Expiry", "[ExpiresAtUtc] > [CreatedAtUtc]");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityTokens_RevokedAtUtc", "[RevokedAtUtc] IS NULL OR DATEPART(TZOFFSET, [RevokedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityTokens_TokenType", "[TokenType] IN ('access', 'refresh')");
+
+                            t.HasCheckConstraint("CK_IdentitySecurityTokens_UsedAtUtc", "[UsedAtUtc] IS NULL OR DATEPART(TZOFFSET, [UsedAtUtc]) = 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentityStepUpGrant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("DeviceId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("GrantedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTimeOffset?>("RevokedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "Action", "ExpiresAtUtc");
+
+                    b.ToTable("IdentityStepUpGrants", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentityStepUpGrants_ExpiresAtUtc", "DATEPART(TZOFFSET, [ExpiresAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityStepUpGrants_Expiry", "[ExpiresAtUtc] > [GrantedAtUtc]");
+
+                            t.HasCheckConstraint("CK_IdentityStepUpGrants_GrantedAtUtc", "DATEPART(TZOFFSET, [GrantedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityStepUpGrants_RevokedAtUtc", "[RevokedAtUtc] IS NULL OR DATEPART(TZOFFSET, [RevokedAtUtc]) = 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.InitialAccountSecret", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("RevokedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("SecretHash")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<DateTimeOffset?>("UsedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_IdentityInitialAccountSecrets_ActiveAccount")
+                        .HasFilter("[UsedAtUtc] IS NULL AND [RevokedAtUtc] IS NULL");
+
+                    b.ToTable("IdentityInitialAccountSecrets", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_IdentityInitialAccountSecrets_CreatedAtUtc", "DATEPART(TZOFFSET, [CreatedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityInitialAccountSecrets_ExpiresAtUtc", "DATEPART(TZOFFSET, [ExpiresAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityInitialAccountSecrets_Expiry", "[ExpiresAtUtc] > [CreatedAtUtc]");
+
+                            t.HasCheckConstraint("CK_IdentityInitialAccountSecrets_RevokedAtUtc", "[RevokedAtUtc] IS NULL OR DATEPART(TZOFFSET, [RevokedAtUtc]) = 0");
+
+                            t.HasCheckConstraint("CK_IdentityInitialAccountSecrets_UsedAtUtc", "[UsedAtUtc] IS NULL OR DATEPART(TZOFFSET, [UsedAtUtc]) = 0");
                         });
                 });
 
@@ -406,10 +983,12 @@ namespace ApiIdentity.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -423,6 +1002,23 @@ namespace ApiIdentity.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserPasskey<string>", b =>
+                {
+                    b.Property<byte[]>("CredentialId")
+                        .HasMaxLength(1024)
+                        .HasColumnType("varbinary(1024)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("CredentialId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserPasskeys", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -446,10 +1042,12 @@ namespace ApiIdentity.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -670,6 +1268,114 @@ namespace ApiIdentity.Migrations
                     b.ToTable("OpenIddictTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ApiIdentity.Models.IdentityBootstrapState", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "BootstrappedAccount")
+                        .WithMany()
+                        .HasForeignKey("BootstrappedAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BootstrappedAccount");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentityRecoveryTicket", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecurityChallenge", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecurityDevice", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecuritySession", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ApiIdentity.Models.IdentitySecurityDevice", "Device")
+                        .WithMany()
+                        .HasForeignKey("AccountId", "DeviceId")
+                        .HasPrincipalKey("AccountId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Device");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecuritySnapshot", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentitySecurityToken", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.IdentityStepUpGrant", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("ApiIdentity.Models.InitialAccountSecret", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("ApiIdentity.Models.RolePermission", b =>
                 {
                     b.HasOne("ApiIdentity.Models.PermissionDefinition", "Permission")
@@ -732,6 +1438,57 @@ namespace ApiIdentity.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserPasskey<string>", b =>
+                {
+                    b.HasOne("ApiIdentity.Models.IdentityAccount", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Microsoft.AspNetCore.Identity.IdentityPasskeyData", "Data", b1 =>
+                        {
+                            b1.Property<byte[]>("IdentityUserPasskeyCredentialId");
+
+                            b1.Property<byte[]>("AttestationObject")
+                                .IsRequired();
+
+                            b1.Property<byte[]>("ClientDataJson")
+                                .IsRequired();
+
+                            b1.Property<DateTimeOffset>("CreatedAt");
+
+                            b1.Property<bool>("IsBackedUp");
+
+                            b1.Property<bool>("IsBackupEligible");
+
+                            b1.Property<bool>("IsUserVerified");
+
+                            b1.Property<string>("Name");
+
+                            b1.Property<byte[]>("PublicKey")
+                                .IsRequired();
+
+                            b1.Property<long>("SignCount");
+
+                            b1.PrimitiveCollection<string>("Transports");
+
+                            b1.HasKey("IdentityUserPasskeyCredentialId");
+
+                            b1.ToTable("AspNetUserPasskeys");
+
+                            b1
+                                .ToJson("Data")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.WithOwner()
+                                .HasForeignKey("IdentityUserPasskeyCredentialId");
+                        });
+
+                    b.Navigation("Data")
                         .IsRequired();
                 });
 

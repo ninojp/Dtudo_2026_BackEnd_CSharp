@@ -1,5 +1,6 @@
 using ApiMyAnimes.Services;
 using LibDtudo.Shared.Dtos.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiMyAnimes.Controllers;
@@ -7,10 +8,12 @@ namespace ApiMyAnimes.Controllers;
 /// <summary>Endpoints de autenticacao local para Dtudo2026.</summary>
 [ApiController]
 [Route("apiLocal/[controller]")]
+[Authorize]
 public sealed class AuthController(LocalAuthService authService) : ControllerBase
 {
     /// <summary>Cadastra um usuario local com senha hasheada.</summary>
     [HttpPost("register")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status409Conflict)]
@@ -30,6 +33,7 @@ public sealed class AuthController(LocalAuthService authService) : ControllerBas
 
     /// <summary>Realiza login local.</summary>
     [HttpPost("login")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
@@ -40,6 +44,7 @@ public sealed class AuthController(LocalAuthService authService) : ControllerBas
 
     /// <summary>Obtem usuario por ID sem dados sensiveis.</summary>
     [HttpGet("me/{id}")]
+    [Authorize(Policy = "permission:identity.self.read")]
     [ProducesResponseType(typeof(AuthUserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AuthUserDto>> Me(string id, CancellationToken cancellationToken)

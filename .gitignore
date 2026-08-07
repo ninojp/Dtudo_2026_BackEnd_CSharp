@@ -15,6 +15,10 @@ dist
 dist-ssr
 *.local
 
+# .NET build outputs
+**/bin/
+**/obj/
+
 # Local runtime data and secrets
 **/App_Data/*.json
 

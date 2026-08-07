@@ -2,6 +2,7 @@ using ApiMyAnimes.Data;
 using LibDtudo.Shared.Dtos;
 using LibDtudo.Shared.Models;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiMyAnimes.Controllers;
@@ -13,6 +14,7 @@ namespace ApiMyAnimes.Controllers;
 /// <param name="context">Contexto do banco para operações CRUD na tabela MyAnimes.</param>
 [ApiController]
 [Route("apiLocal/[controller]")]
+[Authorize]
 public class MyAnimeController(MyAnimesContext context) : ControllerBase
 {
     /// <summary>
@@ -24,6 +26,7 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     /// ou <c>400 BadRequest</c> quando o corpo da requisição é inválido.
     /// </returns>
     [HttpPost]
+    [Authorize(Policy = "permission:catalog.write")]
     [ProducesResponseType(typeof(ObterMyAnimeDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -59,6 +62,7 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     /// ou <c>400 BadRequest</c> para parâmetros inválidos.
     /// </returns>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<ObterMyAnimeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<List<ObterMyAnimeDto>> ObterMyAnimes([FromQuery] int skip = 0, [FromQuery] int take = 5)
@@ -85,6 +89,7 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     /// ou <c>404 NotFound</c> quando não encontrada.
     /// </returns>
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ObterMyAnimeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -109,6 +114,7 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     /// ou <c>404 NotFound</c> quando não encontrada.
     /// </returns>
     [HttpPut("{id:int}")]
+    [Authorize(Policy = "permission:catalog.write")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -149,6 +155,7 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     /// ou <c>404 NotFound</c> quando não encontrada.
     /// </returns>
     [HttpPatch("{id:int}")]
+    [Authorize(Policy = "permission:catalog.write")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -205,6 +212,7 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     /// ou <c>404 NotFound</c> quando não encontrada.
     /// </returns>
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = "permission:catalog.delete")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

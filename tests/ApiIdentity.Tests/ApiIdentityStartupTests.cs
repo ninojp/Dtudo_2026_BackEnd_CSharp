@@ -56,7 +56,8 @@ public sealed class ApiIdentityStartupTests
                 {
                     configuration.AddInMemoryCollection(new Dictionary<string, string?>
                     {
-                        ["ConnectionStrings:IdentityDb"] = string.Empty
+                        ["ConnectionStrings:IdentityDb"] = string.Empty,
+                        ["LocalProvisioning:AdministrationSecret"] = CreateAdministrationSecret()
                     });
                 });
             });
@@ -64,6 +65,85 @@ public sealed class ApiIdentityStartupTests
         var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
 
         Assert.Contains("ConnectionStrings:IdentityDb", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FailsClosedWhenTheLocalProvisioningSecretIsMissing()
+    {
+        var connectionString = new SqlConnectionStringBuilder
+        {
+            InitialCatalog = TestDatabaseName
+        }.ConnectionString;
+        using var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Development");
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                {
+                    configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        ["IdentityDatabase:DatabaseName"] = TestDatabaseName,
+                        ["ConnectionStrings:IdentityDb"] = connectionString,
+                        ["LocalProvisioning:AdministrationSecret"] = string.Empty
+                    });
+                });
+            });
+
+        var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains("LocalProvisioning:AdministrationSecret", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FailsClosedWhenTheMfaSnapshotLifetimeIsOutsideTheAllowedRange()
+    {
+        using var factory = CreateFactory(new Dictionary<string, string?>
+        {
+            ["IdentityMfa:SnapshotLifetimeHours"] = "169"
+        });
+
+        var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains("IdentityMfa", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FailsClosedWhenTheFido2TimeoutIsOutsideTheAllowedRange()
+    {
+        using var factory = CreateFactory(new Dictionary<string, string?>
+        {
+            ["IdentityMfa:Fido2TimeoutMilliseconds"] = "9999"
+        });
+
+        var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains("IdentityMfa", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FailsClosedWhenTheSessionLifetimeExceedsThirtyDays()
+    {
+        using var factory = CreateFactory(new Dictionary<string, string?>
+        {
+            ["IdentitySessions:LifetimeDays"] = "31"
+        });
+
+        var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains("IdentitySessions", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void FailsClosedWhenAnMfaOriginIsNotHttps()
+    {
+        using var factory = CreateFactory(new Dictionary<string, string?>
+        {
+            ["IdentityMfa:Origins:0"] = "http://localhost"
+        });
+
+        var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains("IdentityMfa:Origins", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -84,7 +164,8 @@ public sealed class ApiIdentityStartupTests
         }
     }
 
-    private static WebApplicationFactory<Program> CreateFactory()
+    private static WebApplicationFactory<Program> CreateFactory(
+        IReadOnlyDictionary<string, string?>? overrides = null)
     {
         var connectionString = new SqlConnectionStringBuilder
         {
@@ -97,12 +178,26 @@ public sealed class ApiIdentityStartupTests
                 builder.UseEnvironment("Development");
                 builder.ConfigureAppConfiguration((_, configuration) =>
                 {
-                    configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                    var settings = new Dictionary<string, string?>
                     {
                         ["IdentityDatabase:DatabaseName"] = TestDatabaseName,
-                        ["ConnectionStrings:IdentityDb"] = connectionString
-                    });
+                        ["ConnectionStrings:IdentityDb"] = connectionString,
+                        ["LocalProvisioning:AdministrationSecret"] = CreateAdministrationSecret()
+                    };
+                    if (overrides is not null)
+                    {
+                        foreach (var item in overrides)
+                        {
+                            settings[item.Key] = item.Value;
+                        }
+                    }
+
+                    configuration.AddInMemoryCollection(settings);
                 });
             });
     }
+
+    private static string CreateAdministrationSecret() =>
+        Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(
+            System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
 }

@@ -15,6 +15,13 @@ param(
     [switch]$ConfigureIis,
     [switch]$EnableTlsRegistryChanges,
     [switch]$RollbackSql,
+    [switch]$ConfigureCertificateAcl,
+    [string]$CertificateThumbprint,
+    [ValidateSet('My')]
+    [string]$CertificateStoreName = 'My',
+    [ValidateSet('CurrentUser', 'LocalMachine')]
+    [string]$CertificateStoreLocation = 'CurrentUser',
+    [string]$CertificatePrincipal,
     [switch]$Json,
     [switch]$FailOnBlocked
 )
@@ -119,7 +126,7 @@ function Assert-Baseline {
     $ports = New-Object 'System.Collections.Generic.List[object]'
     $protectedRoots = New-Object 'System.Collections.Generic.List[string]'
     foreach ($currentEnvironment in $Environments) {
-        foreach ($requiredProperty in @('Provisioning', 'Root', 'ApplicationRoot', 'DataRoot', 'SecretsRoot', 'BackupRoot', 'Network', 'Sql', 'Accounts', 'DatabaseAccess', 'Iis')) {
+        foreach ($requiredProperty in @('Provisioning', 'Root', 'ApplicationRoot', 'DataRoot', 'SecretsRoot', 'BackupRoot', 'Network', 'Sql', 'Accounts', 'ServiceCertificates', 'DatabaseAccess', 'Iis')) {
             if (-not $currentEnvironment.ContainsKey($requiredProperty)) {
                 throw "Propriedade obrigatoria ausente no ambiente $($currentEnvironment.Name): $requiredProperty."
             }
@@ -157,6 +164,35 @@ function Assert-Baseline {
             $publicPorts = @($currentEnvironment.Network.PublicPorts)
             if ($publicPorts.Count -ne 1 -or [int]$publicPorts[0] -ne [int]$currentEnvironment.Network.GatewayHttpsPort) {
                 throw "A exposicao publica do ambiente $($currentEnvironment.Name) deve ser somente o gateway."
+            }
+        }
+        $serviceClientIds = @($currentEnvironment.ServiceCertificates | ForEach-Object { $_.ClientId })
+        Assert-UniqueValues -Values $serviceClientIds -Description "client IDs de servico do ambiente $($currentEnvironment.Name)"
+        foreach ($certificateBinding in @($currentEnvironment.ServiceCertificates)) {
+            foreach ($requiredCertificateProperty in @('ClientId', 'ServiceRole', 'StoreName', 'StoreLocation', 'PrivateKeyPrincipal', 'CertificateThumbprint', 'PreviousCertificateThumbprint', 'PreviousCertificateAcceptedUntilUtc', 'AllowedScopes', 'AllowedAudiences')) {
+                if (-not $certificateBinding.ContainsKey($requiredCertificateProperty)) {
+                    throw "Binding de certificado incompleto no ambiente $($currentEnvironment.Name): $requiredCertificateProperty."
+                }
+            }
+            if ($certificateBinding.StoreName -ne 'My' -or $certificateBinding.StoreLocation -notin @('CurrentUser', 'LocalMachine')) {
+                throw "Store de certificado invalido no ambiente $($currentEnvironment.Name)."
+            }
+            foreach ($thumbprint in @($certificateBinding.CertificateThumbprint, $certificateBinding.PreviousCertificateThumbprint)) {
+                if (-not [string]::IsNullOrWhiteSpace($thumbprint) -and $thumbprint -notmatch '^[A-Fa-f0-9]{40}$') {
+                    throw "Thumbprint de certificado invalido no ambiente $($currentEnvironment.Name)."
+                }
+            }
+            if ([string]::IsNullOrWhiteSpace($certificateBinding.PrivateKeyPrincipal)) {
+                throw "Principal ACL ausente no ambiente $($currentEnvironment.Name)."
+            }
+            if (@($certificateBinding.AllowedScopes).Count -eq 0 -or @($certificateBinding.AllowedAudiences).Count -eq 0) {
+                throw "Scopes/audiences ausentes no binding de certificado do ambiente $($currentEnvironment.Name)."
+            }
+            foreach ($audience in @($certificateBinding.AllowedAudiences)) {
+                $parsedAudience = $null
+                if (-not [Uri]::TryCreate([string]$audience, [UriKind]::Absolute, [ref]$parsedAudience)) {
+                    throw "Audience de certificado invalido no ambiente $($currentEnvironment.Name)."
+                }
             }
         }
         if ($currentEnvironment.Sql.TcpEnabled) {
@@ -291,6 +327,7 @@ function New-HardeningState {
         RegistryValues = @()
         IisBackups = @()
         SqlLoginsCreated = @()
+        CertificateKeyAcls = @()
     }
 }
 
@@ -492,6 +529,315 @@ function Set-DirectoryAcl {
             $acl.SetAccessRule($desiredRule)
         }
         Set-Acl -LiteralPath $Path -AclObject $acl
+    }
+}
+
+function Normalize-CertificateThumbprint {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Thumbprint
+    )
+
+    return $Thumbprint.Replace(' ', '').Replace(':', '').ToUpperInvariant()
+}
+
+function Assert-CertificateAclParameters {
+    if (-not $ConfigureCertificateAcl) {
+        return
+    }
+    $thumbprintInput = if ($null -eq $CertificateThumbprint) { '' } else { $CertificateThumbprint }
+    $normalizedThumbprint = Normalize-CertificateThumbprint -Thumbprint $thumbprintInput
+    if ([string]::IsNullOrWhiteSpace($CertificateThumbprint) -or ($normalizedThumbprint -notmatch '^[A-F0-9]{40}$')) {
+        throw 'Informe um thumbprint hexadecimal de 40 caracteres para o certificado de cliente.'
+    }
+    if ([string]::IsNullOrWhiteSpace($CertificatePrincipal)) {
+        throw 'Informe o principal Windows que executara o servico para configurar a ACL da chave privada.'
+    }
+    if ($CertificateStoreLocation -eq 'LocalMachine' -and -not (Test-IsAdministrator)) {
+        throw 'A ACL de chave privada em LocalMachine exige uma sessao elevada de administrador.'
+    }
+}
+
+function Get-CertificatePrivateKeyPath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate
+    )
+
+    $rsa = $null
+    try {
+        $rsa = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($Certificate)
+        if ($rsa -is [System.Security.Cryptography.RSACng]) {
+            $key = $rsa.Key
+            if (-not $key.IsEphemeral -and -not [string]::IsNullOrWhiteSpace($key.UniqueName)) {
+                $root = if ($key.IsMachineKey) {
+                    Join-Path $env:ProgramData 'Microsoft\Crypto\Keys'
+                } else {
+                    Join-Path $env:APPDATA 'Microsoft\Crypto\Keys'
+                }
+                return Join-Path $root $key.UniqueName
+            }
+        } elseif ($rsa -is [System.Security.Cryptography.RSACryptoServiceProvider]) {
+            $container = $rsa.CspKeyContainerInfo
+            if (-not [string]::IsNullOrWhiteSpace($container.UniqueKeyContainerName)) {
+                $root = if ($container.MachineKeyStore) {
+                    Join-Path $env:ProgramData 'Microsoft\Crypto\RSA\MachineKeys'
+                } else {
+                    $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+                    Join-Path (Join-Path $env:APPDATA 'Microsoft\Crypto\RSA') $sid
+                }
+                return Join-Path $root $container.UniqueKeyContainerName
+            }
+        }
+    } catch {
+    } finally {
+        if ($null -ne $rsa) {
+            $rsa.Dispose()
+        }
+    }
+
+    $ecdsa = $null
+    try {
+        $ecdsa = [System.Security.Cryptography.X509Certificates.ECDsaCertificateExtensions]::GetECDsaPrivateKey($Certificate)
+        if ($ecdsa -is [System.Security.Cryptography.ECDsaCng]) {
+            $key = $ecdsa.Key
+            if (-not $key.IsEphemeral -and -not [string]::IsNullOrWhiteSpace($key.UniqueName)) {
+                $root = if ($key.IsMachineKey) {
+                    Join-Path $env:ProgramData 'Microsoft\Crypto\Keys'
+                } else {
+                    Join-Path $env:APPDATA 'Microsoft\Crypto\Keys'
+                }
+                return Join-Path $root $key.UniqueName
+            }
+        }
+    } catch {
+    } finally {
+        if ($null -ne $ecdsa) {
+            $ecdsa.Dispose()
+        }
+    }
+
+    throw 'Nao foi possivel resolver a chave privada do certificado para um arquivo ACLavel suportado.'
+}
+
+function Get-CertificateKeyContext {
+    $thumbprint = Normalize-CertificateThumbprint -Thumbprint $CertificateThumbprint
+    if ($thumbprint -notmatch '^[A-F0-9]{40}$') {
+        throw 'Thumbprint de certificado invalido.'
+    }
+
+    $storeLocation = [System.Security.Cryptography.X509Certificates.StoreLocation]::$CertificateStoreLocation
+    $store = New-Object System.Security.Cryptography.X509Certificates.X509Store (
+        $CertificateStoreName,
+        $storeLocation)
+    $certificate = $null
+    try {
+        $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadOnly)
+        $certificate = @($store.Certificates.Find(
+                [System.Security.Cryptography.X509Certificates.X509FindType]::FindByThumbprint,
+                $thumbprint,
+                $false)) | Select-Object -First 1
+        if ($null -eq $certificate) {
+            throw 'Certificado nao encontrado no Certificate Store informado.'
+        }
+        if (-not $certificate.HasPrivateKey) {
+            throw 'O certificado localizado nao possui chave privada.'
+        }
+
+        $path = Get-CertificatePrivateKeyPath -Certificate $certificate
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            throw 'O arquivo da chave privada do certificado nao foi encontrado.'
+        }
+
+        $principal = Resolve-AccountPrincipal -Principal $CertificatePrincipal
+        if (-not (Test-WindowsPrincipal -Principal $CertificatePrincipal)) {
+            throw 'O principal Windows informado para a ACL nao foi resolvido.'
+        }
+
+        return [pscustomobject]@{
+            Path = $path
+            Principal = $principal
+            StoreName = $CertificateStoreName
+            StoreLocation = $CertificateStoreLocation
+        }
+    } finally {
+        if ($null -ne $certificate) {
+            $certificate.Dispose()
+        }
+        $store.Dispose()
+    }
+}
+
+function Set-DaclFromSddl {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [Parameter(Mandatory = $true)]
+        [string]$Sddl
+    )
+
+    if ($null -eq ('DtudoInfrastructureNativeSecurity' -as [type])) {
+        Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+
+public static class DtudoInfrastructureNativeSecurity
+{
+    public enum SeObjectType { SeFileObject = 1 }
+
+    [Flags]
+    public enum SecurityInformation : uint { Dacl = 0x00000004 }
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern uint SetNamedSecurityInfo(
+        string objectName,
+        SeObjectType objectType,
+        SecurityInformation securityInformation,
+        IntPtr owner,
+        IntPtr group,
+        IntPtr dacl,
+        IntPtr sacl);
+
+    public static void SetDacl(string path, byte[] dacl)
+    {
+        GCHandle handle = new GCHandle();
+        try
+        {
+            IntPtr daclPointer = IntPtr.Zero;
+            if (dacl != null)
+            {
+                handle = GCHandle.Alloc(dacl, GCHandleType.Pinned);
+                daclPointer = handle.AddrOfPinnedObject();
+            }
+
+            uint result = SetNamedSecurityInfo(
+                path,
+                SeObjectType.SeFileObject,
+                SecurityInformation.Dacl,
+                IntPtr.Zero,
+                IntPtr.Zero,
+                daclPointer,
+                IntPtr.Zero);
+            if (result != 0)
+            {
+                throw new Win32Exception((int)result);
+            }
+        }
+        finally
+        {
+            if (handle.IsAllocated)
+            {
+                handle.Free();
+            }
+        }
+    }
+}
+'@
+    }
+
+    $descriptor = New-Object System.Security.AccessControl.RawSecurityDescriptor($Sddl)
+    $dacl = $descriptor.DiscretionaryAcl
+    $daclBytes = $null
+    if ($null -ne $dacl) {
+        $daclBytes = New-Object byte[] $dacl.BinaryLength
+        $dacl.GetBinaryForm($daclBytes, 0)
+    }
+    [DtudoInfrastructureNativeSecurity]::SetDacl($Path, $daclBytes)
+}
+
+function Test-CertificateKeyReadAcl {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$Context
+    )
+
+    $acl = Get-Acl -LiteralPath $Context.Path
+    $readRights = [System.Security.AccessControl.FileSystemRights]::Read
+    $readWithSynchronizeRights = $readRights -bor [System.Security.AccessControl.FileSystemRights]::Synchronize
+    $explicitRules = @($acl.Access | Where-Object {
+            -not $_.IsInherited -and
+            $_.IdentityReference.Value.Equals($Context.Principal, [System.StringComparison]::OrdinalIgnoreCase) -and
+            $_.AccessControlType -in @(
+                [System.Security.AccessControl.AccessControlType]::Allow,
+                [System.Security.AccessControl.AccessControlType]::Deny)
+        })
+    $readRules = @($explicitRules | Where-Object {
+            $_.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow -and
+            ($_.FileSystemRights -eq $readRights -or $_.FileSystemRights -eq $readWithSynchronizeRights) -and
+            $_.InheritanceFlags -eq [System.Security.AccessControl.InheritanceFlags]::None -and
+            $_.PropagationFlags -eq [System.Security.AccessControl.PropagationFlags]::None
+        })
+    return $readRules.Count -eq 1 -and $explicitRules.Count -eq 1
+}
+
+function Save-CertificateKeyAclSnapshot {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$State,
+        [Parameter(Mandatory = $true)]
+        [object]$Context
+    )
+
+    if (-not ($State.PSObject.Properties.Name -contains 'CertificateKeyAcls')) {
+        $State | Add-Member -MemberType NoteProperty -Name CertificateKeyAcls -Value @()
+    }
+    if (@($State.CertificateKeyAcls | Where-Object {
+                $_.Path -eq $Context.Path -and $_.Principal -eq $Context.Principal
+            }).Count -eq 0) {
+        $acl = Get-Acl -LiteralPath $Context.Path
+        Add-StateEntry -State $State -Property 'CertificateKeyAcls' -UniqueProperty 'Path' -Entry ([ordered]@{
+                Path = $Context.Path
+                Principal = $Context.Principal
+                Sddl = $acl.Sddl
+            })
+    }
+}
+
+function Invoke-CertificateKeyAclValidation {
+    try {
+        $context = Get-CertificateKeyContext
+        if (Test-CertificateKeyReadAcl -Context $context) {
+            Add-Result -Check 'ACL da chave privada do certificado' -Status Passed -Detail 'Principal do servico possui somente a regra explicita de leitura esperada.'
+        } else {
+            Add-Result -Check 'ACL da chave privada do certificado' -Status Failed -Detail 'A regra explicita de leitura para o principal do servico esta ausente.'
+        }
+    } catch {
+        Add-Result -Check 'ACL da chave privada do certificado' -Status Blocked -Detail $_.Exception.Message
+    }
+}
+
+function Invoke-CertificateKeyAclApply {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$State
+    )
+
+    $context = Get-CertificateKeyContext
+    if (Test-CertificateKeyReadAcl -Context $context) {
+        Add-Result -Check 'ACL da chave privada do certificado' -Status Passed -Detail 'ACL ja estava aplicada; nenhuma alteracao foi necessaria.'
+        return
+    }
+
+    Save-CertificateKeyAclSnapshot -State $State -Context $context
+    $acl = Get-Acl -LiteralPath $context.Path
+    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule (
+        $context.Principal,
+        [System.Security.AccessControl.FileSystemRights]::Read,
+        [System.Security.AccessControl.InheritanceFlags]::None,
+        [System.Security.AccessControl.PropagationFlags]::None,
+        [System.Security.AccessControl.AccessControlType]::Allow
+    )
+    if ($PSCmdlet.ShouldProcess($context.Path, 'conceder somente leitura da chave privada ao servico')) {
+        foreach ($existingRule in @($acl.Access | Where-Object {
+                    -not $_.IsInherited -and
+                    $_.IdentityReference.Value.Equals($context.Principal, [System.StringComparison]::OrdinalIgnoreCase)
+                })) {
+            $acl.RemoveAccessRuleSpecific($existingRule)
+        }
+        $acl.SetAccessRule($rule)
+        Set-Acl -LiteralPath $context.Path -AclObject $acl
+        Add-Result -Check 'ACL da chave privada do certificado' -Status Passed -Detail 'Leitura explicita concedida ao principal do servico; snapshot salvo para rollback.'
     }
 }
 
@@ -977,6 +1323,12 @@ function Invoke-HostValidation {
         Add-Result -Check 'Sessao administrativa' -Status Blocked -Detail 'Execute Apply/Rollback em PowerShell elevado no servidor alvo.'
     }
 
+    if ($ConfigureCertificateAcl) {
+        Invoke-CertificateKeyAclValidation
+    } else {
+        Add-Result -Check 'ACL da chave privada do certificado' -Status NotChecked -Detail 'Use -ConfigureCertificateAcl com thumbprint e principal Windows para validar a chave do servico.'
+    }
+
     foreach ($commandName in @('sqlcmd', 'Get-NetFirewallProfile', 'Get-NetTCPConnection')) {
         if (Get-Command $commandName -ErrorAction SilentlyContinue) {
             Add-Result -Check "Comando: $commandName" -Status Passed -Detail 'Disponivel.'
@@ -1136,6 +1488,13 @@ function Invoke-Apply {
     $state = if (Test-Path -LiteralPath $statePath -PathType Leaf) { Read-HardeningState -Path $statePath } else { New-HardeningState }
     Save-HardeningState -State $state -Path $statePath
 
+    if ($ConfigureCertificateAcl) {
+        Invoke-CertificateKeyAclApply -State $state
+        Save-HardeningState -State $state -Path $statePath
+    } else {
+        Add-Result -Check 'ACL da chave privada do certificado' -Status NotChecked -Detail 'Use -ConfigureCertificateAcl com thumbprint e principal Windows para aplicar a ACL da chave do servico.'
+    }
+
     foreach ($currentEnvironment in $Environments) {
         foreach ($path in @(Get-EnvironmentPaths -CurrentEnvironment $currentEnvironment)) {
             Ensure-Directory -Path $path -State $state
@@ -1224,6 +1583,24 @@ function Invoke-Rollback {
         Add-Result -Check 'Rollback SQL' -Status NotChecked -Detail 'Logins criados pela etapa permanecem; use -RollbackSql apos confirmar dependencias.'
     }
 
+    if ($state.PSObject.Properties.Name -contains 'CertificateKeyAcls') {
+        foreach ($snapshot in @($state.CertificateKeyAcls)) {
+            if (-not (Test-Path -LiteralPath $snapshot.Path -PathType Leaf)) {
+                throw "Arquivo de chave privada ausente para rollback: $($snapshot.Path)."
+            }
+            if ($PSCmdlet.ShouldProcess($snapshot.Path, 'restaurar ACL anterior da chave privada')) {
+                Set-DaclFromSddl -Path $snapshot.Path -Sddl $snapshot.Sddl
+            }
+        }
+        if (@($state.CertificateKeyAcls).Count -gt 0) {
+            Add-Result -Check 'Rollback ACL da chave privada' -Status Passed -Detail 'ACLs de chave privada restauradas a partir dos snapshots sem armazenar certificados ou chaves.'
+        } else {
+            Add-Result -Check 'Rollback ACL da chave privada' -Status NotChecked -Detail 'Nenhum snapshot de ACL de chave privada foi registrado.'
+        }
+    } else {
+        Add-Result -Check 'Rollback ACL da chave privada' -Status NotChecked -Detail 'Estado anterior a Etapa 15 nao possui snapshots de ACL de chave privada.'
+    }
+
     foreach ($ruleName in @($state.CreatedFirewallRules)) {
         if ($PSCmdlet.ShouldProcess($ruleName, 'remover regra de firewall criada pela Etapa 07')) {
             Remove-NetFirewallRule -Name $ruleName -ErrorAction SilentlyContinue
@@ -1256,9 +1633,7 @@ function Invoke-Rollback {
     }
     foreach ($aclSnapshot in @($state.Acls)) {
         if ($PSCmdlet.ShouldProcess($aclSnapshot.Path, 'restaurar ACL anterior')) {
-            $acl = New-Object System.Security.AccessControl.DirectorySecurity
-            $acl.SetSecurityDescriptorSddlForm($aclSnapshot.Sddl)
-            Set-Acl -LiteralPath $aclSnapshot.Path -AclObject $acl
+            Set-DaclFromSddl -Path $aclSnapshot.Path -Sddl $aclSnapshot.Sddl
         }
     }
     foreach ($directory in @($state.CreatedDirectories | Sort-Object Length -Descending)) {
@@ -1280,6 +1655,7 @@ try {
     $allEnvironments = @($baseline.Environments)
     $selectedEnvironments = @(Get-SelectedEnvironments -AllEnvironments $allEnvironments -Names $Environment)
     Assert-Baseline -Baseline $baseline -Environments $allEnvironments
+    Assert-CertificateAclParameters
     if ([string]::IsNullOrWhiteSpace($StateRoot)) {
         $workstationOnly = @($selectedEnvironments | Where-Object { $_.Provisioning.Mode -eq 'Workstation' }).Count -eq $selectedEnvironments.Count
         $effectiveStateRoot = if ($workstationOnly -and $baseline.ContainsKey('WorkstationStateRoot')) {

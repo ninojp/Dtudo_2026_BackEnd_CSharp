@@ -3,6 +3,7 @@ using LibDtudo.Shared.Dtos.MyAnimeList;
 using ApiMyAnimeList.Dtos;
 using ApiMyAnimeList.Mappers;
 using ApiMyAnimeList.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiMyAnimeList.Controllers;
@@ -13,13 +14,16 @@ namespace ApiMyAnimeList.Controllers;
 /// <param name="logger">Logger para registrar informações e erros.</param>
 [ApiController]
 [Route("ApiMyAnimeList")]
+[Authorize]
 public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAnimeListController> logger) : ControllerBase
 {
     [HttpGet("health")]
+    [Authorize(Policy = "permission:health.read")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult Health() => Ok(new { status = "ok", service = "ApiMyAnimeList" });
 
     [HttpGet("search")]
+    [Authorize(Policy = "permission:service.mal.read")]
     [ProducesResponseType(typeof(AnimeSearchResult), StatusCodes.Status200OK)]
     public async Task<ActionResult<AnimeSearchResult>> Search([FromQuery] string? q, [FromQuery] int page = 1, CancellationToken cancellationToken = default)
     {
@@ -32,6 +36,7 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Policy = "permission:service.mal.read")]
     [ProducesResponseType(typeof(AnimeDetails), StatusCodes.Status200OK)]
     public async Task<ActionResult<AnimeDetails>> Get(int id, CancellationToken cancellationToken = default)
     {
@@ -47,6 +52,7 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
     }
 
     [HttpGet("{id:int}/relations")]
+    [Authorize(Policy = "permission:service.mal.read")]
     [ProducesResponseType(typeof(List<AnimeRelationGroup>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<AnimeRelationGroup>>> Relations(int id, CancellationToken cancellationToken = default)
     {

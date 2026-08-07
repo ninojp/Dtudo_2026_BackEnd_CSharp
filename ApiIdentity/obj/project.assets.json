@@ -38,6 +38,43 @@
           }
         }
       },
+      "Fido2/4.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Fido2.Models": "4.0.1",
+          "Microsoft.IdentityModel.JsonWebTokens": "8.2.0",
+          "NSec.Cryptography": "25.4.0"
+        },
+        "compile": {
+          "lib/net8.0/Fido2.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Fido2.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "build": {
+          "build/fido2.targets": {}
+        }
+      },
+      "Fido2.Models/4.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Bcl.Memory": "9.0.14"
+        },
+        "compile": {
+          "lib/net8.0/Fido2.Models.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Fido2.Models.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "Humanizer.Core/2.14.1": {
         "type": "package",
         "compile": {
@@ -48,6 +85,71 @@
         "runtime": {
           "lib/net6.0/Humanizer.dll": {
             "related": ".xml"
+          }
+        }
+      },
+      "libsodium/1.0.20.1": {
+        "type": "package",
+        "runtimeTargets": {
+          "runtimes/ios-arm64/native/libsodium.a": {
+            "assetType": "native",
+            "rid": "ios-arm64"
+          },
+          "runtimes/linux-arm/native/libsodium.so": {
+            "assetType": "native",
+            "rid": "linux-arm"
+          },
+          "runtimes/linux-arm64/native/libsodium.so": {
+            "assetType": "native",
+            "rid": "linux-arm64"
+          },
+          "runtimes/linux-musl-arm/native/libsodium.so": {
+            "assetType": "native",
+            "rid": "linux-musl-arm"
+          },
+          "runtimes/linux-musl-arm64/native/libsodium.so": {
+            "assetType": "native",
+            "rid": "linux-musl-arm64"
+          },
+          "runtimes/linux-musl-x64/native/libsodium.so": {
+            "assetType": "native",
+            "rid": "linux-musl-x64"
+          },
+          "runtimes/linux-x64/native/libsodium.so": {
+            "assetType": "native",
+            "rid": "linux-x64"
+          },
+          "runtimes/maccatalyst-arm64/native/libsodium.a": {
+            "assetType": "native",
+            "rid": "maccatalyst-arm64"
+          },
+          "runtimes/maccatalyst-x64/native/libsodium.a": {
+            "assetType": "native",
+            "rid": "maccatalyst-x64"
+          },
+          "runtimes/osx-arm64/native/libsodium.dylib": {
+            "assetType": "native",
+            "rid": "osx-arm64"
+          },
+          "runtimes/osx-x64/native/libsodium.dylib": {
+            "assetType": "native",
+            "rid": "osx-x64"
+          },
+          "runtimes/tvos-arm64/native/libsodium.a": {
+            "assetType": "native",
+            "rid": "tvos-arm64"
+          },
+          "runtimes/win-arm64/native/libsodium.dll": {
+            "assetType": "native",
+            "rid": "win-arm64"
+          },
+          "runtimes/win-x64/native/libsodium.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x86/native/libsodium.dll": {
+            "assetType": "native",
+            "rid": "win-x86"
           }
         }
       },
@@ -89,6 +191,22 @@
         },
         "runtime": {
           "lib/net9.0/Microsoft.Bcl.Cryptography.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Bcl.Memory/9.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Bcl.Memory.dll": {
             "related": ".xml"
           }
         },
@@ -1015,6 +1133,18 @@
           }
         }
       },
+      "NSec.Cryptography/25.4.0": {
+        "type": "package",
+        "dependencies": {
+          "libsodium": "[1.0.20.1, 1.0.21)"
+        },
+        "compile": {
+          "lib/net8.0/NSec.Cryptography.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/NSec.Cryptography.dll": {}
+        }
+      },
       "OpenIddict/7.2.0": {
         "type": "package",
         "dependencies": {
@@ -1444,6 +1574,22 @@
           }
         }
       },
+      "Serilog/4.3.0": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Serilog.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Serilog.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/_._": {}
+        }
+      },
       "System.ClientModel/1.5.1": {
         "type": "package",
         "dependencies": {
@@ -1675,6 +1821,20 @@
         "build": {
           "buildTransitive/net8.0/_._": {}
         }
+      },
+      "LibDtudo.Shared/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.9",
+          "Serilog": "4.3.0"
+        },
+        "compile": {
+          "bin/placeholder/LibDtudo.Shared.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/LibDtudo.Shared.dll": {}
+        }
       }
     }
   },
@@ -1719,6 +1879,35 @@
         "lib/netstandard2.0/Azure.Identity.xml"
       ]
     },
+    "Fido2/4.0.1": {
+      "sha512": "k/+JLt4J4k4zccYwtV1yiRMZEphwj+GacQeVj1p7foEp787a8vJFkHtLnyzSRsnbf9JDYEh7SF8VBWlTTbdsdQ==",
+      "type": "package",
+      "path": "fido2/4.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "build/fido2.targets",
+        "fido2.4.0.1.nupkg.sha512",
+        "fido2.nuspec",
+        "lib/net8.0/Fido2.dll",
+        "lib/net8.0/Fido2.pdb",
+        "lib/net8.0/Fido2.xml"
+      ]
+    },
+    "Fido2.Models/4.0.1": {
+      "sha512": "SepPhuYlDEWFwObg39xea9e5Ck5a7qpUP0vjIWzkEOCXDWsKQaW9sdN+m+h9phiCzb0r3w1yauypnHN11CozIw==",
+      "type": "package",
+      "path": "fido2.models/4.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "fido2.models.4.0.1.nupkg.sha512",
+        "fido2.models.nuspec",
+        "lib/net8.0/Fido2.Models.dll",
+        "lib/net8.0/Fido2.Models.pdb",
+        "lib/net8.0/Fido2.Models.xml"
+      ]
+    },
     "Humanizer.Core/2.14.1": {
       "sha512": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw==",
       "type": "package",
@@ -1735,6 +1924,35 @@
         "lib/netstandard2.0/Humanizer.dll",
         "lib/netstandard2.0/Humanizer.xml",
         "logo.png"
+      ]
+    },
+    "libsodium/1.0.20.1": {
+      "sha512": "pkiceEqJDQFHjbga3k/oPfTVX9g+GKJZ1VrkuiLhaymt9YNw1Dr7cX9hNuZuNaWcr9WD0moW55k4pMwzQ7JaZQ==",
+      "type": "package",
+      "path": "libsodium/1.0.20.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "AUTHORS",
+        "ChangeLog",
+        "LICENSE",
+        "libsodium.1.0.20.1.nupkg.sha512",
+        "libsodium.nuspec",
+        "runtimes/ios-arm64/native/libsodium.a",
+        "runtimes/linux-arm/native/libsodium.so",
+        "runtimes/linux-arm64/native/libsodium.so",
+        "runtimes/linux-musl-arm/native/libsodium.so",
+        "runtimes/linux-musl-arm64/native/libsodium.so",
+        "runtimes/linux-musl-x64/native/libsodium.so",
+        "runtimes/linux-x64/native/libsodium.so",
+        "runtimes/maccatalyst-arm64/native/libsodium.a",
+        "runtimes/maccatalyst-x64/native/libsodium.a",
+        "runtimes/osx-arm64/native/libsodium.dylib",
+        "runtimes/osx-x64/native/libsodium.dylib",
+        "runtimes/tvos-arm64/native/libsodium.a",
+        "runtimes/win-arm64/native/libsodium.dll",
+        "runtimes/win-x64/native/libsodium.dll",
+        "runtimes/win-x86/native/libsodium.dll"
       ]
     },
     "Microsoft.AspNetCore.Identity.EntityFrameworkCore/10.0.9": {
@@ -1802,6 +2020,36 @@
         "lib/netstandard2.0/Microsoft.Bcl.Cryptography.xml",
         "microsoft.bcl.cryptography.9.0.4.nupkg.sha512",
         "microsoft.bcl.cryptography.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.Bcl.Memory/9.0.14": {
+      "sha512": "laQCcjTM2FnbyznkAu9hwBuQh3z2/OtJKwjGkJOUevylFpFXZIUVq/+MU2jM0HQm1n5wsjjwtLIDOiWJ6Nai3A==",
+      "type": "package",
+      "path": "microsoft.bcl.memory/9.0.14",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/Microsoft.Bcl.Memory.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/Microsoft.Bcl.Memory.targets",
+        "lib/net462/Microsoft.Bcl.Memory.dll",
+        "lib/net462/Microsoft.Bcl.Memory.xml",
+        "lib/net8.0/Microsoft.Bcl.Memory.dll",
+        "lib/net8.0/Microsoft.Bcl.Memory.xml",
+        "lib/net9.0/Microsoft.Bcl.Memory.dll",
+        "lib/net9.0/Microsoft.Bcl.Memory.xml",
+        "lib/netstandard2.0/Microsoft.Bcl.Memory.dll",
+        "lib/netstandard2.0/Microsoft.Bcl.Memory.xml",
+        "lib/netstandard2.1/Microsoft.Bcl.Memory.dll",
+        "lib/netstandard2.1/Microsoft.Bcl.Memory.xml",
+        "microsoft.bcl.memory.9.0.14.nupkg.sha512",
+        "microsoft.bcl.memory.nuspec",
         "useSharedDesignerContext.txt"
       ]
     },
@@ -3649,6 +3897,25 @@
         "packageIcon.png"
       ]
     },
+    "NSec.Cryptography/25.4.0": {
+      "sha512": "Z3wPpG0xefMLmhn9T+Ka/EzAmMQPT0THL/5E4lf9cXI/N9rbGH0G23ZFpRcPnD0ast2k7ieG6QSVNIjmfPCXBQ==",
+      "type": "package",
+      "path": "nsec.cryptography/25.4.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "NOTICE",
+        "README.md",
+        "lib/net8.0-ios18.0/NSec.Cryptography.dll",
+        "lib/net8.0-maccatalyst18.0/NSec.Cryptography.dll",
+        "lib/net8.0-tvos18.0/NSec.Cryptography.dll",
+        "lib/net8.0/NSec.Cryptography.dll",
+        "nsec.cryptography.25.4.0.nupkg.sha512",
+        "nsec.cryptography.nuspec",
+        "nsec.png"
+      ]
+    },
     "OpenIddict/7.2.0": {
       "sha512": "mZecydAF6cXoMMr2Ergk8y08+L6YHAtg5YfrjHSs/ETfTTT56oBY0GfK7ijc4ijrv6idmClcDtf3qUlAY35dGA==",
       "type": "package",
@@ -4348,6 +4615,32 @@
         "polly.ratelimiting.nuspec"
       ]
     },
+    "Serilog/4.3.0": {
+      "sha512": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ==",
+      "type": "package",
+      "path": "serilog/4.3.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "build/Serilog.targets",
+        "icon.png",
+        "lib/net462/Serilog.dll",
+        "lib/net462/Serilog.xml",
+        "lib/net471/Serilog.dll",
+        "lib/net471/Serilog.xml",
+        "lib/net6.0/Serilog.dll",
+        "lib/net6.0/Serilog.xml",
+        "lib/net8.0/Serilog.dll",
+        "lib/net8.0/Serilog.xml",
+        "lib/net9.0/Serilog.dll",
+        "lib/net9.0/Serilog.xml",
+        "lib/netstandard2.0/Serilog.dll",
+        "lib/netstandard2.0/Serilog.xml",
+        "serilog.4.3.0.nupkg.sha512",
+        "serilog.nuspec"
+      ]
+    },
     "System.ClientModel/1.5.1": {
       "sha512": "k2jKSO0X45IqhVOT9iQB4xralNN9foRQsRvXBTyRpAVxyzCJlG895T9qYrQWbcJ6OQXxOouJQ37x5nZH5XKK+A==",
       "type": "package",
@@ -4700,10 +4993,17 @@
         "system.security.cryptography.protecteddata.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "LibDtudo.Shared/1.0.0": {
+      "type": "project",
+      "path": "../LibDtudo.Shared/LibDtudo.Shared.csproj",
+      "msbuildProject": "../LibDtudo.Shared/LibDtudo.Shared.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
+      "Fido2 >= 4.0.1",
+      "LibDtudo.Shared >= 1.0.0",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 10.0.9",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.9",
       "Microsoft.EntityFrameworkCore.SqlServer >= 10.0.9",
@@ -4745,7 +5045,11 @@
         "net10.0": {
           "framework": "net10.0",
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\2026MeusProjetos\\Dtudo2026\\LibDtudo.Shared\\LibDtudo.Shared.csproj": {
+              "projectPath": "C:\\2026MeusProjetos\\Dtudo2026\\LibDtudo.Shared\\LibDtudo.Shared.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -4765,6 +5069,10 @@
         "framework": "net10.0",
         "targetAlias": "net10.0",
         "dependencies": {
+          "Fido2": {
+            "target": "Package",
+            "version": "[4.0.1, )"
+          },
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
             "target": "Package",
             "version": "[10.0.9, )"
