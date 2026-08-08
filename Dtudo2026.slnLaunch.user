@@ -3,6 +3,10 @@
     "Name": "IniciaTudo",
     "Projects": [
       {
+        "Path": "ApiIdentity\\ApiIdentity.csproj",
+        "Action": "Start"
+      },
+      {
         "Path": "ApiMyAnimes\\ApiMyAnimes.csproj",
         "Action": "Start"
       },

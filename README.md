@@ -17,11 +17,14 @@ Stack atual:
 
 - `LibDtudo.Shared`: `C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared`
 
-Comando principal, para iniciar a solução localmente:
+Comando principal, para iniciar a solução localmente (a partir da raiz do repositorio):
 
 ```powershell
+Set-Location .\DtudoSite
 npm run serv
 ```
+
+Tambem e possivel executar `npm run serv` diretamente na raiz; o wrapper local encaminha o comando para `DtudoSite`.
 
 Os scripts das APIs verificam os respectivos health checks antes de executar `dotnet run`.
 Se uma API ja estiver aberta, por exemplo pelo Visual Studio ou pelo WinApp, o script reaproveita a instancia existente e evita erro de porta ocupada.
@@ -32,6 +35,7 @@ Health checks locais:
 
 - `GET https://localhost:63980/apiLocal/Health`
 - `GET https://localhost:7146/ApiMyAnimeList/health`
+- `GET https://localhost:51376/health/live` (gateway catalog-only)
 
 ## Segredos Locais
 
@@ -62,7 +66,6 @@ O WinApp le `WinAppDtudo/appsettings.json` e tambem aceita variaveis:
 - `DtudoGateway` atende o site com OIDC Code + PKCE e sessao por cookie server-side; o React nao recebe tokens.
 - `WinAppDtudo` usa o navegador do sistema com PKCE, callback loopback e armazenamento local protegido por DPAPI.
 - `ApiMyAnimes` nao expoe mais cadastro, login ou consulta de usuarios locais; o catalogo usa as politicas e identidades da arquitetura nova.
-
 
 Finalmente após anos de estudo e dedicação contínua. Agora vou começar a colocar em prática um projeto que já teve varias caras e dessa vez está ficando do jeito que quero e tenho capacidade de executar.  
 Depois eu crio uma descrição descente...

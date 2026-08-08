@@ -1,4 +1,5 @@
 using ApiMyAnimes.Data;
+using ApiMyAnimes.Services;
 using LibDtudo.Shared.Dtos;
 using LibDtudo.Shared.Models;
 using Microsoft.AspNetCore.JsonPatch;
@@ -17,6 +18,50 @@ namespace ApiMyAnimes.Controllers;
 [Authorize]
 public class MyAnimeController(MyAnimesContext context) : ControllerBase
 {
+    /// <summary>
+    /// Obtém as coleções públicas, removendo IDs de animes adultos.
+    /// </summary>
+    /// <param name="skip">Quantidade de coleções a ignorar.</param>
+    /// <param name="take">Quantidade máxima de coleções retornadas.</param>
+    [HttpGet("public")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<ObterMyAnimeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public ActionResult<List<ObterMyAnimeDto>> ObterColecoesPublicas([FromQuery] int skip = 0, [FromQuery] int take = 5)
+    {
+        if (skip < 0 || take <= 0) return BadRequest("Parâmetros de paginação inválidos.");
+
+        var limite = Math.Min(take, 500);
+        var colecoes = context.MyAnimes
+            .OrderBy(colecao => colecao.Id)
+            .ToList()
+            .Skip(skip)
+            .Take(limite)
+            .Select(ParaObterMyAnimeDtoPublico)
+            .ToList();
+
+        return Ok(colecoes);
+    }
+
+    /// <summary>
+    /// Obtém uma coleção pública pelo identificador, removendo IDs de animes adultos.
+    /// </summary>
+    /// <param name="id">Identificador da coleção.</param>
+    [HttpGet("public/{id:int}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ObterMyAnimeDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<ObterMyAnimeDto> ObterColecaoPublicaPorId(int id)
+    {
+        if (id <= 0) return BadRequest("ID deve ser um número positivo.");
+
+        var colecao = context.MyAnimes.FirstOrDefault(item => item.Id == id);
+        if (colecao is null) return NotFound($"Coleção com ID {id} não encontrada.");
+
+        return Ok(ParaObterMyAnimeDtoPublico(colecao));
+    }
+
     /// <summary>
     /// Adiciona uma nova coleção MyAnime.
     /// </summary>
@@ -236,6 +281,25 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
             Id = myAnime.Id,
             Titulo = myAnime.Titulo,
             AnimesMalId = myAnime.AnimesMalId,
+            HoraDaConsulta = DateTime.Now
+        };
+    }
+
+    private ObterMyAnimeDto ParaObterMyAnimeDtoPublico(MyAnime myAnime)
+    {
+        var ids = myAnime.AnimesMalId.Distinct().ToArray();
+        var idsAdultos = context.Animes
+            .Where(anime => ids.Contains(anime.MalId))
+            .ToList()
+            .Where(PublicCatalogPolicy.IsAdult)
+            .Select(anime => anime.MalId)
+            .ToHashSet();
+
+        return new ObterMyAnimeDto
+        {
+            Id = myAnime.Id,
+            Titulo = myAnime.Titulo,
+            AnimesMalId = ids.Where(id => !idsAdultos.Contains(id)).ToList(),
             HoraDaConsulta = DateTime.Now
         };
     }

@@ -1,0 +1,242 @@
+name: WinApp MSIX Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Operacao protegida do WinApp
+        required: true
+        default: update
+        type: choice
+        options:
+          - update
+          - rollback
+      version:
+        description: Versao MSIX com quatro componentes; obrigatoria para update manual
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: dtudo-msix-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    name: Validate release source
+    if: >-
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: windows-2025
+    timeout-minutes: 10
+    outputs:
+      operation: ${{ steps.metadata.outputs.operation }}
+      version: ${{ steps.metadata.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate event and version
+        id: metadata
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          GITHUB_REF_VALUE: ${{ github.ref }}
+          INPUT_OPERATION: ${{ inputs.operation }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          $operation = if ([string]::IsNullOrWhiteSpace($env:INPUT_OPERATION)) { 'update' } else { $env:INPUT_OPERATION }
+          if ($env:EVENT_NAME -eq 'workflow_dispatch' -and $env:GITHUB_REF_VALUE -ne 'refs/heads/main') {
+            throw 'Despacho manual permitido somente a partir de main.'
+          }
+          if ($env:EVENT_NAME -eq 'push' -and $operation -ne 'update') {
+            throw 'Tags de release executam somente update.'
+          }
+          if ($operation -notin @('update', 'rollback')) {
+            throw 'Operacao de release invalida.'
+          }
+          $version = ''
+          if ($operation -eq 'update') {
+            if ($env:EVENT_NAME -eq 'push') {
+              if ($env:REF_NAME -notmatch '^v(\d+\.\d+\.\d+)(?:\.(\d+))?$') {
+                throw 'A tag deve usar o formato vMAJOR.MINOR.PATCH ou vMAJOR.MINOR.PATCH.BUILD.'
+              }
+              $version = $env:REF_NAME.Substring(1)
+              if ($version.Split('.').Count -eq 3) {
+                $version += '.0'
+              }
+            } else {
+              $version = $env:INPUT_VERSION
+            }
+            if ($version -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+              throw 'A versao MSIX deve conter quatro componentes numericos.'
+            }
+          }
+          "operation=$operation" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+  prepare:
+    name: Prepare immutable input
+    needs: guard
+    if: needs.guard.outputs.operation == 'update'
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish and prepare payload
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ needs.guard.outputs.version }}
+        run: |
+          $outputRoot = Join-Path $env:RUNNER_TEMP 'dtudo-msix-input'
+          & .\scripts\Invoke-DtudoMsixPackage.ps1 -Mode Prepare -Version $env:PACKAGE_VERSION -OutputRoot $outputRoot -Force -Json
+
+      - name: Upload immutable input artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dtudo-msix-input-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/dtudo-msix-input/**/*.zip
+            ${{ runner.temp }}/dtudo-msix-input/**/*.sha256
+          if-no-files-found: error
+          overwrite: false
+          retention-days: 7
+
+  deploy-update:
+    name: Sign and deploy MSIX
+    needs:
+      - guard
+      - prepare
+    if: needs.guard.outputs.operation == 'update' && needs.prepare.result == 'success'
+    environment:
+      name: dtudo-msix-release
+    runs-on: [self-hosted, windows, dtudo-release]
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    env:
+      DTUDO_MSIX_STATE_ROOT: ${{ vars.DTUDO_MSIX_STATE_ROOT }}
+      DTUDO_RELEASE_RUNNER_ROOT: ${{ vars.DTUDO_RELEASE_RUNNER_ROOT }}
+      DTUDO_RELEASE_RUNNER_ACCOUNT: ${{ vars.DTUDO_RELEASE_RUNNER_ACCOUNT }}
+      DTUDO_MSIX_PUBLISHER: ${{ vars.DTUDO_MSIX_PUBLISHER }}
+      DTUDO_MSIX_SIGNING_THUMBPRINT: ${{ secrets.DTUDO_MSIX_SIGNING_THUMBPRINT }}
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download immutable input artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: dtudo-msix-input-${{ github.run_id }}-${{ github.sha }}
+          path: ${{ runner.temp }}/dtudo-msix-input
+
+      - name: Validate runner and input hash
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ needs.guard.outputs.version }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:DTUDO_RELEASE_RUNNER_ROOT) -or [string]::IsNullOrWhiteSpace($env:DTUDO_RELEASE_RUNNER_ACCOUNT)) {
+            throw 'As variaveis do runner protegido nao estao configuradas.'
+          }
+          & .\scripts\Invoke-DtudoReleaseRunnerHardening.ps1 -Mode Validate -RunnerRoot $env:DTUDO_RELEASE_RUNNER_ROOT -RunnerAccount $env:DTUDO_RELEASE_RUNNER_ACCOUNT -FailOnBlocked
+          $archive = Get-ChildItem -Path (Join-Path $env:RUNNER_TEMP 'dtudo-msix-input') -Filter '*.zip' -Recurse | Select-Object -First 1
+          if ($null -eq $archive) {
+            throw 'Artefato de entrada ausente.'
+          }
+          $sidecar = "$($archive.FullName).sha256"
+          $match = [regex]::Match((Get-Content -LiteralPath $sidecar -Raw), '(?im)^\s*([A-Fa-f0-9]{64})(?:\s|$)')
+          if (-not $match.Success -or (Get-FileHash -LiteralPath $archive.FullName -Algorithm SHA256).Hash -ne $match.Groups[1].Value) {
+            throw 'Hash do artefato de entrada invalido.'
+          }
+
+      - name: Package and sign from Certificate Store
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ needs.guard.outputs.version }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:DTUDO_MSIX_SIGNING_THUMBPRINT)) {
+            throw 'Thumbprint do certificado de assinatura nao configurado no environment protegido.'
+          }
+          $publisher = if ([string]::IsNullOrWhiteSpace($env:DTUDO_MSIX_PUBLISHER)) { 'CN=Dtudo Internal' } else { $env:DTUDO_MSIX_PUBLISHER }
+          $archive = Get-ChildItem -Path (Join-Path $env:RUNNER_TEMP 'dtudo-msix-input') -Filter '*.zip' -Recurse | Select-Object -First 1
+          $outputRoot = Join-Path $env:RUNNER_TEMP 'dtudo-msix-output'
+          & .\scripts\Invoke-DtudoMsixPackage.ps1 -Mode Package -PayloadPath $archive.FullName -Version $env:PACKAGE_VERSION -Publisher $publisher -CertificateThumbprint $env:DTUDO_MSIX_SIGNING_THUMBPRINT -CertificateStoreLocation LocalMachine -OutputRoot $outputRoot -Sign -Force -Json
+          $package = Join-Path $outputRoot ("WinAppDtudo-{0}.msix" -f $env:PACKAGE_VERSION)
+          & .\scripts\Invoke-DtudoMsixPackage.ps1 -Mode Validate -PackagePath $package -Version $env:PACKAGE_VERSION -Publisher $publisher -RequireSignature -Json
+
+      - name: Deploy update with verified rollback state
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ needs.guard.outputs.version }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:DTUDO_MSIX_STATE_ROOT)) {
+            throw 'DTUDO_MSIX_STATE_ROOT nao configurado; o estado nao pode ficar no workspace.'
+          }
+          $package = Join-Path $env:RUNNER_TEMP ('dtudo-msix-output\WinAppDtudo-{0}.msix' -f $env:PACKAGE_VERSION)
+          $hash = (Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash
+          & .\scripts\Invoke-DtudoMsixDeployment.ps1 -Mode Update -PackagePath $package -Version $env:PACKAGE_VERSION -ExpectedSha256 $hash -StateRoot $env:DTUDO_MSIX_STATE_ROOT -Json
+
+      - name: Upload signed immutable artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dtudo-msix-signed-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/dtudo-msix-output/*.msix
+            ${{ runner.temp }}/dtudo-msix-output/*.sha256
+          if-no-files-found: error
+          overwrite: false
+          retention-days: 30
+
+  rollback:
+    name: Roll back MSIX
+    needs: guard
+    if: needs.guard.outputs.operation == 'rollback'
+    environment:
+      name: dtudo-msix-release
+    runs-on: [self-hosted, windows, dtudo-release]
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      DTUDO_MSIX_STATE_ROOT: ${{ vars.DTUDO_MSIX_STATE_ROOT }}
+      DTUDO_RELEASE_RUNNER_ROOT: ${{ vars.DTUDO_RELEASE_RUNNER_ROOT }}
+      DTUDO_RELEASE_RUNNER_ACCOUNT: ${{ vars.DTUDO_RELEASE_RUNNER_ACCOUNT }}
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate runner
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:DTUDO_MSIX_STATE_ROOT) -or [string]::IsNullOrWhiteSpace($env:DTUDO_RELEASE_RUNNER_ROOT) -or [string]::IsNullOrWhiteSpace($env:DTUDO_RELEASE_RUNNER_ACCOUNT)) {
+            throw 'Configuracao de rollback protegida incompleta.'
+          }
+          & .\scripts\Invoke-DtudoReleaseRunnerHardening.ps1 -Mode Validate -RunnerRoot $env:DTUDO_RELEASE_RUNNER_ROOT -RunnerAccount $env:DTUDO_RELEASE_RUNNER_ACCOUNT -FailOnBlocked
+
+      - name: Execute verified rollback
+        shell: pwsh
+        run: |
+          & .\scripts\Invoke-DtudoMsixDeployment.ps1 -Mode Rollback -StateRoot $env:DTUDO_MSIX_STATE_ROOT -Json

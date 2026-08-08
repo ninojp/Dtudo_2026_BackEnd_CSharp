@@ -17,6 +17,7 @@ public sealed class WinAppPkceBrowserClient
     private readonly Uri _identityBaseUri;
     private readonly string _clientId;
     private readonly IReadOnlyList<string> _scopes;
+    private readonly IReadOnlyList<string> _resources;
     private readonly Uri _redirectUri;
     private readonly Func<Uri, Task> _browserLauncher;
     private readonly TimeSpan _timeout;
@@ -28,7 +29,8 @@ public sealed class WinAppPkceBrowserClient
         IReadOnlyList<string>? scopes = null,
         TimeSpan? timeout = null,
         Uri? redirectUri = null,
-        Func<Uri, Task>? browserLauncher = null)
+        Func<Uri, Task>? browserLauncher = null,
+        IReadOnlyList<string>? resources = null)
     {
         _httpClient = httpClient ?? new HttpClient(AppConfigurationService.CreateHttpClientHandler());
         _httpClient.Timeout = TimeSpan.FromSeconds(30);
@@ -40,6 +42,9 @@ public sealed class WinAppPkceBrowserClient
         _scopes = scopes is { Count: > 0 }
             ? scopes
             : AppConfigurationService.IdentityScopes;
+        _resources = resources is { Count: > 0 }
+            ? resources
+            : AppConfigurationService.IdentityResources;
         _redirectUri = redirectUri ?? AppConfigurationService.IdentityRedirectUri;
         _browserLauncher = browserLauncher ?? (uri =>
         {
@@ -90,16 +95,17 @@ public sealed class WinAppPkceBrowserClient
 
     private Uri BuildAuthorizationUri(Uri redirectUri, string state, string challenge)
     {
-        var query = new Dictionary<string, string>
+        var query = new List<KeyValuePair<string, string>>
         {
-            ["client_id"] = _clientId,
-            ["response_type"] = "code",
-            ["redirect_uri"] = redirectUri.ToString(),
-            ["scope"] = string.Join(' ', _scopes),
-            ["state"] = state,
-            ["code_challenge"] = challenge,
-            ["code_challenge_method"] = "S256"
+            new("client_id", _clientId),
+            new("response_type", "code"),
+            new("redirect_uri", redirectUri.ToString()),
+            new("scope", string.Join(' ', _scopes)),
+            new("state", state),
+            new("code_challenge", challenge),
+            new("code_challenge_method", "S256")
         };
+        query.AddRange(_resources.Select(resource => new KeyValuePair<string, string>("resource", resource)));
         return new Uri(
             new Uri(_identityBaseUri, "connect/authorize")
                 + "?"

@@ -19,6 +19,7 @@ public sealed class WinAppAuthenticationService : IDisposable
     private readonly HttpClient _httpClient;
     private readonly ProtectedTokenStore _tokenStore;
     private readonly WinAppPkceBrowserClient _browserClient;
+    private readonly IApiIdentityStartupService? _identityStartupService;
     private readonly SemaphoreSlim _sessionGate = new(1, 1);
     private WinAppTokenSet? _tokenSet;
     private bool _disposed;
@@ -26,13 +27,16 @@ public sealed class WinAppAuthenticationService : IDisposable
     public WinAppAuthenticationService(
         ProtectedTokenStore? tokenStore = null,
         WinAppPkceBrowserClient? browserClient = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        IApiIdentityStartupService? identityStartupService = null)
     {
         _tokenStore = tokenStore ?? new ProtectedTokenStore();
         _httpClient = httpClient ?? new HttpClient(AppConfigurationService.CreateHttpClientHandler());
         _httpClient.BaseAddress = new Uri(AppConfigurationService.ApiIdentityBaseUrl.TrimEnd('/') + "/", UriKind.Absolute);
         _httpClient.Timeout = TimeSpan.FromSeconds(30);
         _browserClient = browserClient ?? new WinAppPkceBrowserClient();
+        _identityStartupService = identityStartupService
+            ?? (httpClient is null ? new ApiIdentityStartupService() : null);
     }
 
     public bool IsAuthenticated => _tokenSet is not null;
@@ -52,13 +56,20 @@ public sealed class WinAppAuthenticationService : IDisposable
         {
             ThrowIfDisposed();
             var stored = _tokenSet ?? await _tokenStore.LoadAsync(cancellationToken);
-            if (IsSessionUsable(stored))
+            if (IsSessionUsable(stored) && HasConfiguredResources(stored!.AccessToken))
             {
                 _tokenSet = stored;
                 return CurrentSession!;
             }
 
-            if (stored is not null && !string.IsNullOrWhiteSpace(stored.RefreshToken))
+            if (_identityStartupService is not null)
+            {
+                await _identityStartupService.EnsureReadyAsync(cancellationToken);
+            }
+
+            if (stored is not null
+                && HasConfiguredResources(stored.AccessToken)
+                && !string.IsNullOrWhiteSpace(stored.RefreshToken))
             {
                 var refreshed = await RefreshCoreAsync(stored, cancellationToken);
                 if (refreshed is not null)
@@ -104,6 +115,7 @@ public sealed class WinAppAuthenticationService : IDisposable
                 throw new WinAppAuthenticationException("A sessao administrativa expirou.");
             }
 
+            _tokenSet = stored;
             var refreshed = await RefreshCoreAsync(stored, cancellationToken);
             if (refreshed is null)
             {
@@ -159,43 +171,94 @@ public sealed class WinAppAuthenticationService : IDisposable
         try
         {
             ThrowIfDisposed();
-            var current = _tokenSet ?? await _tokenStore.LoadAsync(cancellationToken);
-            var hadLocalState = current is not null;
-            if (current is not null
-                && current.SessionId != Guid.Empty
-                && !IsAccessTokenUsable(current)
-                && !string.IsNullOrWhiteSpace(current.RefreshToken))
+            using var remoteCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            remoteCancellation.CancelAfter(TimeSpan.FromSeconds(8));
+            var remoteCancellationToken = remoteCancellation.Token;
+            try
             {
-                var refreshed = await RefreshCoreAsync(current, cancellationToken);
-                if (refreshed is not null)
+                var current = _tokenSet ?? await _tokenStore.LoadAsync(cancellationToken);
+                var hadLocalState = current is not null;
+                if (current is not null
+                    && current.SessionId != Guid.Empty
+                    && !IsAccessTokenUsable(current)
+                    && !string.IsNullOrWhiteSpace(current.RefreshToken))
                 {
-                    current = refreshed;
-                    _tokenSet = refreshed;
+                    try
+                    {
+                        var refreshed = await RefreshCoreAsync(current, remoteCancellationToken);
+                        if (refreshed is not null)
+                        {
+                            current = refreshed;
+                            _tokenSet = refreshed;
+                        }
+                    }
+                    catch (HttpRequestException)
+                    {
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                    }
                 }
-            }
 
-            var oidcRevoked = current is null || string.IsNullOrWhiteSpace(current.RefreshToken);
-            if (current is not null && !string.IsNullOrWhiteSpace(current.RefreshToken))
+                var oidcRevoked = current is null || string.IsNullOrWhiteSpace(current.RefreshToken);
+                if (current is not null && !string.IsNullOrWhiteSpace(current.RefreshToken))
+                {
+                    try
+                    {
+                        oidcRevoked = await RevokeRefreshTokenAsync(current.RefreshToken, remoteCancellationToken);
+                    }
+                    catch (HttpRequestException)
+                    {
+                        oidcRevoked = false;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        oidcRevoked = false;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        oidcRevoked = false;
+                    }
+                }
+
+                var sessionRevoked = current is null || current.SessionId == Guid.Empty;
+                if (current is not null
+                    && current.SessionId != Guid.Empty
+                    && IsAccessTokenUsable(current))
+                {
+                    try
+                    {
+                        using var request = new HttpRequestMessage(
+                            HttpMethod.Delete,
+                            $"identity/security/sessions/{current.SessionId:D}");
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", current.AccessToken);
+                        using var response = await _httpClient.SendAsync(request, remoteCancellationToken);
+                        sessionRevoked = response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound;
+                    }
+                    catch (HttpRequestException)
+                    {
+                        sessionRevoked = false;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        sessionRevoked = false;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        sessionRevoked = false;
+                    }
+                }
+
+                return hadLocalState && oidcRevoked && sessionRevoked;
+            }
+            finally
             {
-                oidcRevoked = await RevokeRefreshTokenAsync(current.RefreshToken, cancellationToken);
+                _tokenSet = null;
+                await _tokenStore.ClearAsync();
             }
-
-            var sessionRevoked = current is null || current.SessionId == Guid.Empty;
-            if (current is not null
-                && current.SessionId != Guid.Empty
-                && IsAccessTokenUsable(current))
-            {
-                using var request = new HttpRequestMessage(
-                    HttpMethod.Delete,
-                    $"identity/security/sessions/{current.SessionId:D}");
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", current.AccessToken);
-                using var response = await _httpClient.SendAsync(request, cancellationToken);
-                sessionRevoked = response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound;
-            }
-
-            _tokenSet = null;
-            await _tokenStore.ClearAsync();
-            return hadLocalState && oidcRevoked && sessionRevoked;
         }
         finally
         {
@@ -350,6 +413,51 @@ public sealed class WinAppAuthenticationService : IDisposable
         IsSessionUsable(tokenSet)
         && tokenSet!.AccessTokenExpiresAtUtc > DateTimeOffset.UtcNow.AddSeconds(30);
 
+    private static bool HasConfiguredResources(string accessToken)
+    {
+        if (string.IsNullOrWhiteSpace(accessToken))
+        {
+            return false;
+        }
+
+        var segments = accessToken.Split('.');
+        if (segments.Length != 3)
+        {
+            return true;
+        }
+
+        try
+        {
+            var payload = segments[1].Replace('-', '+').Replace('_', '/');
+            payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+            using var document = JsonDocument.Parse(Convert.FromBase64String(payload));
+            if (!document.RootElement.TryGetProperty("aud", out var audienceElement))
+            {
+                return false;
+            }
+
+            var audiences = audienceElement.ValueKind == JsonValueKind.Array
+                ? audienceElement.EnumerateArray()
+                    .Where(element => element.ValueKind == JsonValueKind.String)
+                    .Select(element => element.GetString()!)
+                    .ToHashSet(StringComparer.Ordinal)
+                : audienceElement.ValueKind == JsonValueKind.String
+                    ? [audienceElement.GetString()!]
+                    : [];
+
+            return AppConfigurationService.IdentityResources
+                .All(resource => audiences.Contains(resource));
+        }
+        catch (FormatException)
+        {
+            return true;
+        }
+        catch (JsonException)
+        {
+            return true;
+        }
+    }
+
     private void ThrowIfDisposed()
     {
         if (_disposed)
@@ -366,7 +474,6 @@ public sealed class WinAppAuthenticationService : IDisposable
         }
 
         _disposed = true;
-        _sessionGate.Dispose();
         _httpClient.Dispose();
     }
 

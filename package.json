@@ -1,0 +1,7 @@
+{
+  "name": "dtudo-workspace",
+  "private": true,
+  "scripts": {
+    "serv": "npm --prefix DtudoSite run serv"
+  }
+}

@@ -6,6 +6,12 @@ namespace WinAppDtudo.Services;
 public sealed class ApiMyAnimesHealthCheckService
 {
     private static readonly TimeSpan HealthCheckTimeout = TimeSpan.FromSeconds(8);
+    private readonly WinAppAuthenticationService? _authenticationService;
+
+    public ApiMyAnimesHealthCheckService(WinAppAuthenticationService? authenticationService = null)
+    {
+        _authenticationService = authenticationService;
+    }
 
     public async Task<ApiMyAnimesHealthStatus> CheckAsync(CancellationToken cancellationToken)
     {
@@ -24,10 +30,15 @@ public sealed class ApiMyAnimesHealthCheckService
             {
                 Timeout = HealthCheckTimeout
             };
-            using var response = await client.GetAsync(
-                healthEndpoint,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
+            using var response = _authenticationService is null
+                ? await client.GetAsync(
+                    healthEndpoint,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken)
+                : await _authenticationService.SendAuthenticatedAsync(
+                    client,
+                    _ => new HttpRequestMessage(HttpMethod.Get, healthEndpoint),
+                    cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
             {

@@ -300,10 +300,15 @@ builder.Services.AddOpenIddict()
         options.AllowRefreshTokenFlow();
         options.AllowClientCredentialsFlow();
         options.RequireProofKeyForCodeExchange();
+        options.DisableAccessTokenEncryption();
         options.RegisterScopes(
             OpenIddictConstants.Scopes.Profile,
             "identity.login",
             "identity.provision");
+        options.RegisterResources(
+            "urn:dtudo:api-my-animes",
+            "urn:dtudo:api-my-animelist",
+            "urn:dtudo:api-file-storage");
         options.AddDevelopmentEncryptionCertificate();
         options.AddDevelopmentSigningCertificate();
         options.UseAspNetCore()
@@ -370,6 +375,7 @@ app.Use(async (context, next) =>
     await next();
 });
 app.UseAuthorization();
+app.UseAntiforgery();
 
 app.MapGet("/account/login", async (
     HttpContext context,
@@ -517,6 +523,56 @@ localProvisioning.MapPost("/activation-secrets/{activationId:guid}/revoke", asyn
         ? Results.NoContent()
         : Results.NotFound();
 });
+
+if (app.Environment.IsDevelopment())
+{
+    localProvisioning.MapPost("/development/reset-password", async (
+        DevelopmentPasswordResetRequest request,
+        HttpContext context,
+        LocalProvisioningRequestGuard guard,
+        UserManager<IdentityAccount> userManager,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken) =>
+    {
+        if (!guard.IsAuthorized(context))
+        {
+            return Results.NotFound();
+        }
+
+        var account = await userManager.FindByNameAsync(request.UserName.Trim());
+        if (account is null)
+        {
+            return Results.NotFound();
+        }
+
+        if (account.PasswordHash is not null)
+        {
+            var removePassword = await userManager.RemovePasswordAsync(account);
+            if (!removePassword.Succeeded)
+            {
+                return Results.BadRequest();
+            }
+        }
+
+        var addPassword = await userManager.AddPasswordAsync(account, request.Password);
+        if (!addPassword.Succeeded)
+        {
+            return Results.BadRequest(new { error = "invalid_password" });
+        }
+
+        account.IsActivationCompleted = true;
+        account.ActivatedAtUtc = timeProvider.GetUtcNow();
+        account.LockoutEnd = null;
+        account.AccessFailedCount = 0;
+
+        await userManager.SetLockoutEndDateAsync(account, null);
+        await userManager.ResetAccessFailedCountAsync(account);
+        await userManager.UpdateSecurityStampAsync(account);
+        var update = await userManager.UpdateAsync(account);
+
+        return update.Succeeded ? Results.NoContent() : Results.BadRequest();
+    });
+}
 
 app.MapPost("/identity/activate-initial-account", async (
     InitialAccountActivationRequest request,
@@ -1465,5 +1521,7 @@ static string BuildLoginPage(string returnUrl, string? requestVerificationToken,
         + "<label>Senha<input type=\"password\" name=\"password\" autocomplete=\"current-password\" required></label>"
         + "<button type=\"submit\">Entrar</button></form></main></body></html>";
 }
+
+    public sealed record DevelopmentPasswordResetRequest(string UserName, string Password);
 
 public partial class Program;

@@ -25,7 +25,7 @@
     {
       "code": "NU1510",
       "level": "Warning",
-      "message": "PackageReference System.Security.Cryptography.ProtectedData will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
+      "message": "PackageReference System.Security.Cryptography.ProtectedData não será removido. Este pacote está disponível automaticamente e não precisa ser referenciado explicitamente. Remova o item PackageReference.",
       "projectPath": "C:\\2026MeusProjetos\\Dtudo2026\\WinAppDtudo\\WinAppDtudo.csproj",
       "warningLevel": 1,
       "filePath": "C:\\2026MeusProjetos\\Dtudo2026\\WinAppDtudo\\WinAppDtudo.csproj",

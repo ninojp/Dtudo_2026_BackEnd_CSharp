@@ -23,11 +23,20 @@ public static class AppConfigurationService
     public static IReadOnlyList<string> IdentityScopes =>
         Settings.Value.Identity.Scopes;
 
+    public static IReadOnlyList<string> IdentityResources =>
+        Settings.Value.Identity.Resources;
+
     public static Uri IdentityRedirectUri =>
         new(Settings.Value.Identity.RedirectUri, UriKind.Absolute);
 
     public static TimeSpan IdentityAuthenticationTimeout =>
         TimeSpan.FromSeconds(Math.Clamp(Settings.Value.Identity.AuthenticationTimeoutSeconds, 30, 600));
+
+    public static TimeSpan HealthProbeTimeout =>
+        TimeSpan.FromSeconds(Math.Clamp(Settings.Value.Monitoring.HealthProbeTimeoutSeconds, 1, 30));
+
+    public static string? BackupRoot =>
+        GetEnvironmentValue("DTUDO_BACKUP_ROOT") ?? Settings.Value.Monitoring.BackupRoot;
 
     public static string IdentitySessionStorePath =>
         GetEnvironmentValue("DTUDO_IDENTITY_SESSION_STORE")
@@ -131,6 +140,7 @@ public static class AppConfigurationService
         public IdentitySettings Identity { get; set; } = new();
         public DtudoSiteSettings DtudoSite { get; set; } = new();
         public HttpSettings Http { get; set; } = new();
+        public MonitoringSettings Monitoring { get; set; } = new();
     }
 
     private sealed class ApiSettings(string baseUrl)
@@ -143,7 +153,8 @@ public static class AppConfigurationService
     {
         public string ClientId { get; set; } = "dtudo-winapp";
         public string RedirectUri { get; set; } = "http://127.0.0.1:49173/callback/";
-        public string[] Scopes { get; set; } = ["openid", "profile", "offline_access", "identity.login", "identity.provision", "catalog.write", "catalog.delete"];
+        public string[] Scopes { get; set; } = ["openid", "profile", "offline_access", "identity.login", "identity.provision", "catalog.write", "catalog.delete", "health.read"];
+        public string[] Resources { get; set; } = ["urn:dtudo:api-my-animes", "urn:dtudo:api-my-animelist"];
         public int AuthenticationTimeoutSeconds { get; set; } = 300;
     }
 
@@ -159,5 +170,11 @@ public static class AppConfigurationService
     private sealed class HttpSettings
     {
         public bool AllowInvalidCertificates { get; set; } = true;
+    }
+
+    private sealed class MonitoringSettings
+    {
+        public int HealthProbeTimeoutSeconds { get; set; } = 5;
+        public string? BackupRoot { get; set; }
     }
 }

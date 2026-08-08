@@ -25,15 +25,15 @@ async function requestHealth(url) {
       },
       (response) => {
         response.resume();
-        response.on("end", () => resolve(response.statusCode >= 200 && response.statusCode < 300));
+        response.on("end", () => resolve({ reachable: true, statusCode: response.statusCode }));
       },
     );
 
     request.on("timeout", () => {
       request.destroy();
-      resolve(false);
+      resolve({ reachable: false, statusCode: null });
     });
-    request.on("error", () => resolve(false));
+    request.on("error", () => resolve({ reachable: false, statusCode: null }));
     request.end();
   });
 }
@@ -60,8 +60,9 @@ function keepProcessAlive(message) {
   setInterval(() => {}, 2_147_483_647);
 }
 
-if (await requestHealth(healthUrl)) {
-  keepProcessAlive(`[dtudo] ${healthUrl} ja esta rodando. Mantendo este processo ativo para o concurrently.`);
+const health = await requestHealth(healthUrl);
+if (health.reachable) {
+  keepProcessAlive(`[dtudo] ${healthUrl} ja esta acessivel (HTTP ${health.statusCode}). Mantendo este processo ativo para o concurrently.`);
 } else if (await hasOpenPort(healthUrl)) {
   console.error(`[dtudo] A porta de ${healthUrl} esta ocupada, mas o health check nao respondeu OK.`);
   console.error("[dtudo] Feche o processo nessa porta ou ajuste a URL configurada antes de iniciar a stack.");

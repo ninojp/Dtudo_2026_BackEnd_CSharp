@@ -10,8 +10,10 @@ import FiltrarPorGenero from '../../FiltrarPorGenero/FiltrarPorGenero';
 import FiltrarPorLetra from '../../FiltrarPorLetra/FiltrarPorLetra';
 import FiltrarPorAno from '../../FiltrarPorAno/FiltrarPorAno';
 import CardAnime from '../CardAnime/CardAnime';
-import { ehAnimeAdulto, obterAnoAnime, obterGenerosAnime, obterIdAnime, obterTituloAnime } from '../../../utils/animeContentUtils';
+import { ehAnimeAdulto, obterAnoAnime, obterGenerosAnime, obterIdAnime, obterTituloAnime } from '@dtudo-anime-content';
 import { buscarAnimesDaApiLocalPorTermo } from '../../../services/apiMyAnimes';
+
+const PUBLIC_CATALOG_ONLY = import.meta.env.MODE === 'homologation';
 
 export default function CardsAnimesList() {
     const { listObjsDetalhesAnimes, isLoading, error, recarregarAnimes } = useContext(AnimesContext);
@@ -69,6 +71,8 @@ export default function CardsAnimesList() {
     const animesBase = searchTerm ? searchResults : listObjsDetalhesAnimes;
 
     const animesPermitidos = useMemo(() => {
+        if (PUBLIC_CATALOG_ONLY) return animesBase;
+
         if (isAuthenticated && mostrarAdultos) {
             return animesBase.filter(ehAnimeAdulto);
         }
@@ -149,7 +153,7 @@ export default function CardsAnimesList() {
                     <FiltrarPorLetra letraSelecionada={letraSelecionada} setLetraSelecionada={atualizarFiltro(setLetraSelecionada)} exibirNumericos />
                     <FiltrarPorGenero generoSelecionado={generoSelecionado} setGeneroSelecionado={atualizarFiltro(setGeneroSelecionado)} animes={animesPermitidos} />
                     <FiltrarPorAno anoSelecionado={anoSelecionado} setAnoSelecionado={atualizarFiltro(setAnoSelecionado)} animes={animesPermitidos} />
-                    {isAuthenticated && (
+                    {!PUBLIC_CATALOG_ONLY && isAuthenticated && (
                         <button
                             type='button'
                             className={styles.btnConteudoAdulto}
@@ -167,7 +171,7 @@ export default function CardsAnimesList() {
                 />
             </div>
             <div>
-                {(searchTerm || generoSelecionado || letraSelecionada || anoSelecionado || mostrarAdultos) && (
+                {(searchTerm || generoSelecionado || letraSelecionada || anoSelecionado || (!PUBLIC_CATALOG_ONLY && mostrarAdultos)) && (
                     <span className={styles.spanTotalAnimes}>
                         <strong className={styles.strongTotalAnimes}>{filteredItems.length}</strong> Animes encontrados
                     </span>

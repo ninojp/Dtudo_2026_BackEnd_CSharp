@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using LibDtudo.Shared.Security;
+using Microsoft.Extensions.Http.Resilience;
 using Serilog;
 using Serilog.Events;
 using System.Security.Claims;
@@ -128,29 +129,49 @@ builder.Services.AddAuthorization(options =>
     ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:catalog.delete", "catalog.delete", "catalog.delete");
     ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:health.read", "health.read", "health.read");
     ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:service.mal.read", "service.mal.read", "service.mal.read");
+    ApiAuthorizationPolicies.AddExternalCatalogReadPolicy(options);
 });
 
 builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
 builder.Services.AddTransient<CorrelationIdDelegatingHandler>();
+builder.Services.AddTransient<MyAnimeListEgressHandler>();
 builder.Services.AddOptions<MyAnimeListOptions>()
     .Bind(builder.Configuration.GetSection(MyAnimeListOptions.SectionName))
     .Validate(options => Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out var uri)
         && uri.Scheme == Uri.UriSchemeHttps, "MyAnimeList:BaseUrl deve ser uma URL HTTPS absoluta.")
     .Validate(options => !string.IsNullOrWhiteSpace(options.ClientId), "MyAnimeList:ClientId não configurado.")
+    .Validate(MyAnimeListEgressHandler.IsValidConfiguration, "MyAnimeList:BaseUrl, AllowedHosts e AllowedPathPrefix devem formar uma allowlist HTTPS valida.")
     .Validate(options => options.TimeoutSeconds is >= 1 and <= 300, "MyAnimeList:TimeoutSeconds deve estar entre 1 e 300.")
     .Validate(options => options.MaxRetries is >= 0 and <= 10, "MyAnimeList:MaxRetries deve estar entre 0 e 10.")
+    .Validate(options => options.RetryDelayMilliseconds is >= 1 and <= 5000, "MyAnimeList:RetryDelayMilliseconds deve estar entre 1 e 5000.")
     .Validate(options => options.CacheMinutes is >= 1 and <= 1440, "MyAnimeList:CacheMinutes deve estar entre 1 e 1440.")
+    .Validate(options => options.TotalTimeoutSeconds is >= 1 and <= 900
+        && options.TotalTimeoutSeconds >= options.TimeoutSeconds,
+        "MyAnimeList:TotalTimeoutSeconds deve ser maior ou igual ao timeout por tentativa e estar entre 1 e 900.")
+    .Validate(options => options.CircuitBreakerFailureRatio is > 0 and <= 1, "MyAnimeList:CircuitBreakerFailureRatio deve estar entre 0 e 1.")
+    .Validate(options => options.CircuitBreakerMinimumThroughput is >= 2 and <= 1000, "MyAnimeList:CircuitBreakerMinimumThroughput deve estar entre 2 e 1000.")
+    .Validate(options => options.CircuitBreakerSamplingSeconds is >= 1 and <= 3600, "MyAnimeList:CircuitBreakerSamplingSeconds deve estar entre 1 e 3600.")
+    .Validate(options => options.CircuitBreakerBreakSeconds is >= 1 and <= 3600, "MyAnimeList:CircuitBreakerBreakSeconds deve estar entre 1 e 3600.")
     .ValidateOnStart();
 
 builder.Services.AddHttpClient<MyAnimeListClient>((serviceProvider, client) =>
 {
     var options = serviceProvider.GetRequiredService<IOptions<MyAnimeListOptions>>().Value;
     client.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
-    client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+    client.Timeout = Timeout.InfiniteTimeSpan;
     client.DefaultRequestHeaders.Add("X-MAL-CLIENT-ID", options.ClientId);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Dtudo-ApiMyAnimeList/1.0");
-}).AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
+})
+.ConfigurePrimaryHttpMessageHandler(serviceProvider =>
+    MyAnimeListEgressHandler.CreatePrimaryHandler(
+        serviceProvider.GetRequiredService<IOptions<MyAnimeListOptions>>().Value))
+.AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
+.AddHttpMessageHandler<MyAnimeListEgressHandler>()
+.AddResilienceHandler("myanimelist", (pipeline, context) =>
+    MyAnimeListResilience.Configure(
+        pipeline,
+        context.ServiceProvider.GetRequiredService<IOptions<MyAnimeListOptions>>().Value));
 
 var dtudoSiteOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
@@ -206,6 +227,8 @@ internal sealed class ApiAuthorizationOptions
 
 internal static class ApiAuthorizationPolicies
 {
+    private const string ExternalCatalogReadPolicy = "permission:catalog.external.read";
+
     public static void AddPermissionPolicy(
         AuthorizationOptions options,
         string policyName,
@@ -217,6 +240,17 @@ internal static class ApiAuthorizationPolicies
             policy.RequireAuthenticatedUser();
             policy.RequireAssertion(context =>
                 HasPermission(context.User, permission) && HasScope(context.User, scope));
+        });
+    }
+
+    public static void AddExternalCatalogReadPolicy(AuthorizationOptions options)
+    {
+        options.AddPolicy(ExternalCatalogReadPolicy, policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireAssertion(context =>
+                (HasPermission(context.User, "catalog.read") && HasScope(context.User, "catalog.read"))
+                || (HasPermission(context.User, "service.mal.read") && HasScope(context.User, "service.mal.read")));
         });
     }
 

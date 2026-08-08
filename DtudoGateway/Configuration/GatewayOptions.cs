@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace DtudoGateway.Configuration;
 
 public sealed class GatewayOptions
@@ -8,9 +10,21 @@ public sealed class GatewayOptions
 
     public string[] AllowedRedirectOrigins { get; set; } = [];
 
+    public string[] AllowedCorsOrigins { get; set; } = [];
+
+    public string[] TrustedProxyAddresses { get; set; } = [];
+
     public string ApiMyAnimesBaseUrl { get; set; } = string.Empty;
 
     public string ApiIdentityBaseUrl { get; set; } = string.Empty;
+
+    public bool PublicCatalogOnly { get; set; }
+
+    public long MaxRequestBodyBytes { get; set; } = 1_048_576;
+
+    public int RateLimitPermitLimit { get; set; } = 60;
+
+    public int RateLimitWindowSeconds { get; set; } = 60;
 }
 
 public sealed class GatewayOpenIdConnectOptions
@@ -33,12 +47,20 @@ public static class GatewayOptionsValidator
         if (!IsHttpsOrigin(options.PublicOrigin)
             || options.AllowedRedirectOrigins.Length == 0
             || !options.AllowedRedirectOrigins.All(IsHttpsOrigin)
-            || !options.AllowedRedirectOrigins.Any(origin => SameOrigin(origin, options.PublicOrigin)))
+            || !options.AllowedRedirectOrigins.Any(origin => SameOrigin(origin, options.PublicOrigin))
+            || options.AllowedCorsOrigins.Length == 0
+            || !options.AllowedCorsOrigins.All(IsHttpsOrigin)
+            || options.PublicCatalogOnly && options.AllowedCorsOrigins.Any(origin => !SameOrigin(origin, options.PublicOrigin))
+            || options.TrustedProxyAddresses.Length == 0
+            || options.TrustedProxyAddresses.Any(address => !IPAddress.TryParse(address, out _)))
         {
             return false;
         }
 
-        return IsHttpsBaseUrl(options.ApiMyAnimesBaseUrl)
+        return options.MaxRequestBodyBytes is >= 1_024 and <= 10_485_760
+            && options.RateLimitPermitLimit is >= 1 and <= 10_000
+            && options.RateLimitWindowSeconds is >= 1 and <= 3_600
+            && IsHttpsBaseUrl(options.ApiMyAnimesBaseUrl)
             && IsHttpsBaseUrl(options.ApiIdentityBaseUrl);
     }
 

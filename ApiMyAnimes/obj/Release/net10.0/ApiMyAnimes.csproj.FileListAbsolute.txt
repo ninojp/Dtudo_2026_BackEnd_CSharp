@@ -168,7 +168,6 @@ C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\obj\Release\net10.0\ref\ApiMyAnimes.dl
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\LibDtudo.Shared.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\LibDtudo.Shared.pdb
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\LibDtudo.Shared.xml
-C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\App_Data\auth-users.Development.json
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\Serilog.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\Serilog.AspNetCore.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\Serilog.Extensions.Hosting.dll
@@ -179,3 +178,5 @@ C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\Serilog.Sinks.Cons
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\Serilog.Sinks.Debug.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\Serilog.Sinks.File.dll
 C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\Serilog.Sinks.Seq.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\bin\Release\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimes\obj\Release\net10.0\staticwebassets.upToDateCheck.txt

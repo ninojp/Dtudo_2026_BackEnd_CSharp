@@ -202,6 +202,75 @@ public class AnimeController(
 
         return null;
     }
+
+    /// <summary>
+    /// Obtém somente os registros permitidos no catálogo público, sem conteúdo adulto.
+    /// </summary>
+    /// <param name="skip">Quantidade de registros públicos a ignorar.</param>
+    /// <param name="take">Quantidade máxima de registros públicos retornados.</param>
+    [HttpGet("public")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<ObterAnimeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public ActionResult<List<ObterAnimeDto>> ObterCatalogoPublico([FromQuery] int skip = 0, [FromQuery] int take = 10)
+    {
+        if (skip < 0 || take <= 0) return BadRequest("Parâmetros de paginação inválidos.");
+
+        var limite = Math.Min(take, 500);
+        var animesDto = context.Animes
+            .OrderBy(anime => anime.MalId)
+            .ToList()
+            .Where(anime => !PublicCatalogPolicy.IsAdult(anime))
+            .Skip(skip)
+            .Take(limite)
+            .Select(ParaObterAnimeDto)
+            .ToList();
+
+        return Ok(animesDto);
+    }
+
+    /// <summary>
+    /// Busca somente no catálogo público, excluindo conteúdo adulto antes da resposta.
+    /// </summary>
+    /// <param name="termo">Texto normalizado de busca.</param>
+    /// <param name="take">Quantidade máxima de resultados públicos retornados.</param>
+    [HttpGet("public/buscar")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<ObterAnimeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<List<ObterAnimeDto>>> BuscarCatalogoPublico([FromQuery] string? termo, [FromQuery] int take = 100)
+    {
+        if (string.IsNullOrWhiteSpace(termo)) return BadRequest("Informe um termo de busca.");
+        if (take <= 0) return BadRequest("O parametro take deve ser positivo.");
+
+        var limite = Math.Min(take, 500);
+        var animesEncontrados = await _animeBuscaLocalService.BuscarAsync(termo, limite, HttpContext.RequestAborted);
+        return Ok(animesEncontrados
+            .Where(anime => !PublicCatalogPolicy.IsAdult(anime))
+            .Take(limite)
+            .Select(ParaObterAnimeDto)
+            .ToList());
+    }
+
+    /// <summary>
+    /// Obtém um anime público pelo identificador, recusando registros adultos.
+    /// </summary>
+    /// <param name="id">Identificador do anime no MyAnimeList.</param>
+    [HttpGet("public/{id:int}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ObterAnimeDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<ObterAnimeDto> ObterAnimePublicoPorId(int id)
+    {
+        if (id <= 0) return BadRequest("ID deve ser um número positivo.");
+
+        var anime = context.Animes.FirstOrDefault(anime => anime.MalId == id);
+        if (anime is null || PublicCatalogPolicy.IsAdult(anime))
+            return NotFound($"Anime com MalId {id} não encontrado.");
+
+        return Ok(ParaObterAnimeDto(anime));
+    }
     //================================================================
     /// <summary>
     /// Obtém uma lista paginada de animes cadastrados no banco local.

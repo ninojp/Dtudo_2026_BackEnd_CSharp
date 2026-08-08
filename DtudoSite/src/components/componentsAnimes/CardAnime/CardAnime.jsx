@@ -9,7 +9,7 @@ import {
     obterTipoAnime,
     obterTituloAlternativoAnime,
     obterTituloAnime
-} from '../../../utils/animeContentUtils';
+} from '@dtudo-anime-content';
 
 export default function CardAnime({ anime }) {
     const titulo = obterTituloAnime(anime);

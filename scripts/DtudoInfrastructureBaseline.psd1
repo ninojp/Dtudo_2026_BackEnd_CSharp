@@ -80,12 +80,12 @@
             SecretsRoot = 'C:\ProgramData\Dtudo2026\Homologation\Secrets'
             BackupRoot = 'D:\Dtudo2026-Backups\Homologation'
             Network = @{
-                Exposure = 'Loopback'
+                Exposure = 'PublicGatewayOnly'
                 ConfigureFirewall = $true
                 GatewayHttpsPort = 16443
                 InternalPorts = @(16080, 16081, 15341)
                 AllowedRemoteAddresses = @('127.0.0.1', '::1')
-                PublicPorts = @()
+                PublicPorts = @(16443)
             }
             Sql = @{
                 Server = '.\SQLEXPRESS'
@@ -126,7 +126,7 @@
             Iis = @{
                 Enabled = $true
                 SiteName = 'DtudoGateway-Homologation'
-                HostName = 'homologacao.dtudo.local'
+                HostName = 'catalog-homologation.example.invalid'
                 CertificateStore = 'LocalMachine\My'
                 CertificateThumbprint = ''
                 EnableHsts = $true

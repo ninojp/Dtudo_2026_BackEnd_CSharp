@@ -1,4 +1,4 @@
-import { axiosHttpBffCatalog } from "../api_conect/conectApiLocal";
+import { axiosHttpBffCatalog } from "../api_conect/conectApiCatalog";
 
 const TAMANHO_PAGINA_API_LOCAL = 500;
 const MAX_RESULTADOS_BUSCA_LOCAL = 100;

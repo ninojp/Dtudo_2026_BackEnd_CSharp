@@ -99,6 +99,90 @@ public sealed class WinAppAuthenticationServiceTests
         }
     }
 
+    [Fact]
+    public async Task SignOutClearsLocalStateWhenIdentityIsUnavailable()
+    {
+        var filePath = Path.Combine(
+            Path.GetTempPath(),
+            "Dtudo2026",
+            "WinAppAuthenticationServiceTests",
+            Guid.NewGuid().ToString("N"),
+            "session.bin");
+        var store = new ProtectedTokenStore(filePath);
+        await store.SaveAsync(new WinAppTokenSet(
+            "expired-access-token",
+            "active-refresh-token",
+            DateTimeOffset.UtcNow.AddMinutes(-1),
+            DateTimeOffset.UtcNow.AddHours(1),
+            Guid.NewGuid(),
+            Guid.NewGuid()));
+
+        try
+        {
+            using var httpClient = new HttpClient(new UnavailableHandler());
+            using var service = new WinAppAuthenticationService(
+                store,
+                httpClient: httpClient);
+
+            Assert.False(await service.SignOutAsync());
+            Assert.False(File.Exists(filePath));
+            Assert.False(service.IsAuthenticated);
+        }
+        finally
+        {
+            if (Directory.Exists(Path.GetDirectoryName(filePath)))
+            {
+                Directory.Delete(Path.GetDirectoryName(filePath)!, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task DisposeWhileSignOutIsInFlightDoesNotBreakSessionGateRelease()
+    {
+        var filePath = Path.Combine(
+            Path.GetTempPath(),
+            "Dtudo2026",
+            "WinAppAuthenticationServiceTests",
+            Guid.NewGuid().ToString("N"),
+            "session.bin");
+        var store = new ProtectedTokenStore(filePath);
+        await store.SaveAsync(new WinAppTokenSet(
+            "active-access-token",
+            "active-refresh-token",
+            DateTimeOffset.UtcNow.AddMinutes(5),
+            DateTimeOffset.UtcNow.AddHours(1),
+            Guid.NewGuid(),
+            Guid.NewGuid()));
+
+        using var requestStarted = new ManualResetEventSlim();
+        using var httpClient = new HttpClient(new BlockingHandler(requestStarted));
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var service = new WinAppAuthenticationService(
+            store,
+            httpClient: httpClient);
+
+        try
+        {
+            var signOutTask = service.SignOutAsync(cancellationTokenSource.Token);
+            Assert.True(requestStarted.Wait(TimeSpan.FromSeconds(2)));
+
+            service.Dispose();
+            cancellationTokenSource.Cancel();
+
+            await signOutTask;
+            Assert.False(File.Exists(filePath));
+        }
+        finally
+        {
+            service.Dispose();
+            if (Directory.Exists(Path.GetDirectoryName(filePath)))
+            {
+                Directory.Delete(Path.GetDirectoryName(filePath)!, recursive: true);
+            }
+        }
+    }
+
     private sealed class RefreshHandler(Guid sessionId) : HttpMessageHandler
     {
         public bool RefreshCalled { get; private set; }
@@ -172,6 +256,26 @@ public sealed class WinAppAuthenticationServiceTests
             return value is null
                 ? null
                 : Uri.UnescapeDataString(value.Split('=', 2)[1]);
+        }
+    }
+
+    private sealed class UnavailableHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken) =>
+            throw new HttpRequestException("Identity unavailable.");
+    }
+
+    private sealed class BlockingHandler(ManualResetEventSlim requestStarted) : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            requestStarted.Set();
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 }

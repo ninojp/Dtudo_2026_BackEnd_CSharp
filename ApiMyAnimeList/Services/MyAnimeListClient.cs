@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ApiMyAnimeList.Configuration;
@@ -34,43 +33,25 @@ public sealed class MyAnimeListClient(
 
     private async Task<T> GetAsync<T>(string relativeUrl, CancellationToken cancellationToken)
     {
-        for (var attempt = 0; ; attempt++)
+        using var response = await _httpClient.GetAsync(relativeUrl, cancellationToken);
+        if (!response.IsSuccessStatusCode)
         {
-            using var response = await _httpClient.GetAsync(relativeUrl, cancellationToken);
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<T>(JsonOptions, cancellationToken);
-                return result ?? throw new InvalidOperationException("A API MyAnimeList retornou uma resposta vazia.");
-            }
-
-            var transient = response.StatusCode == HttpStatusCode.TooManyRequests || (int)response.StatusCode >= 500;
-            if (!transient || attempt >= _options.MaxRetries)
-            {
-                throw new HttpRequestException(
-                    $"MyAnimeList retornou {(int)response.StatusCode} no endpoint {GetEndpoint(relativeUrl)}.",
-                    null,
-                    response.StatusCode);
-            }
-
-            var delay = RetryDelay(response, attempt);
             _logger.LogWarning(
-                "Falha transitória da MAL ({StatusCode}) no endpoint {Endpoint}; tentativa {Attempt}. Aguardando {Delay}ms.",
+                "Falha final da MAL ({StatusCode}) no endpoint {Endpoint} após a política de resiliência.",
                 (int)response.StatusCode,
-                GetEndpoint(relativeUrl),
-                attempt + 1,
-                delay.TotalMilliseconds);
-            await Task.Delay(delay, cancellationToken);
+                GetEndpoint(relativeUrl));
+            throw new HttpRequestException(
+                $"MyAnimeList retornou {(int)response.StatusCode} no endpoint {GetEndpoint(relativeUrl)}.",
+                null,
+                response.StatusCode);
         }
+
+        var result = await response.Content.ReadFromJsonAsync<T>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("A API MyAnimeList retornou uma resposta vazia.");
     }
 
     private static string GetEndpoint(string relativeUrl)
         => relativeUrl.Split('?', 2)[0];
-
-    private static TimeSpan RetryDelay(HttpResponseMessage response, int attempt)
-    {
-        if (response.Headers.RetryAfter?.Delta is { } delta && delta > TimeSpan.Zero) return delta > TimeSpan.FromSeconds(30) ? TimeSpan.FromSeconds(30) : delta;
-        return TimeSpan.FromMilliseconds(Math.Min(8000, 500 * Math.Pow(2, attempt)) + Random.Shared.Next(50, 250));
-    }
 
     private const string SearchFields = "id,title,main_picture,alternative_titles,start_season,media_type,status,num_episodes,mean,genres";
     private const string DetailsFields = "id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,media_type,status,genres,num_episodes,average_episode_duration,start_season,source,rating,background,studios,related_anime{node{id,title,main_picture,media_type},relation_type}";

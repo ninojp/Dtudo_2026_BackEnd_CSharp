@@ -42,6 +42,26 @@
             ou <c>502 BadGateway</c> quando a ApiMyAnimeList está indisponível.
             </returns>
         </member>
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.ObterCatalogoPublico(System.Int32,System.Int32)">
+            <summary>
+            Obtém somente os registros permitidos no catálogo público, sem conteúdo adulto.
+            </summary>
+            <param name="skip">Quantidade de registros públicos a ignorar.</param>
+            <param name="take">Quantidade máxima de registros públicos retornados.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.BuscarCatalogoPublico(System.String,System.Int32)">
+            <summary>
+            Busca somente no catálogo público, excluindo conteúdo adulto antes da resposta.
+            </summary>
+            <param name="termo">Texto normalizado de busca.</param>
+            <param name="take">Quantidade máxima de resultados públicos retornados.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.ObterAnimePublicoPorId(System.Int32)">
+            <summary>
+            Obtém um anime público pelo identificador, recusando registros adultos.
+            </summary>
+            <param name="id">Identificador do anime no MyAnimeList.</param>
+        </member>
         <member name="M:ApiMyAnimes.Controllers.AnimeController.ObterAnimes(System.Int32,System.Int32)">
             <summary>
             Obtém uma lista paginada de animes cadastrados no banco local.
@@ -153,6 +173,19 @@
             Disponibiliza operações de criação, consulta, atualização e remoção.
             </summary>
             <param name="context">Contexto do banco para operações CRUD na tabela MyAnimes.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.MyAnimeController.ObterColecoesPublicas(System.Int32,System.Int32)">
+            <summary>
+            Obtém as coleções públicas, removendo IDs de animes adultos.
+            </summary>
+            <param name="skip">Quantidade de coleções a ignorar.</param>
+            <param name="take">Quantidade máxima de coleções retornadas.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.MyAnimeController.ObterColecaoPublicaPorId(System.Int32)">
+            <summary>
+            Obtém uma coleção pública pelo identificador, removendo IDs de animes adultos.
+            </summary>
+            <param name="id">Identificador da coleção.</param>
         </member>
         <member name="M:ApiMyAnimes.Controllers.MyAnimeController.AdicionarMyAnime(LibDtudo.Shared.Dtos.AdicionaMyAnimeDto)">
             <summary>

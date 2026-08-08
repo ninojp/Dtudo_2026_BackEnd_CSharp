@@ -6,12 +6,16 @@
   "scripts": {
     "proxy": "node ../ApiNode/mymusicx/discogsProxy.js",
     "dev": "vite",
+    "dev:catalog": "vite --mode homologation",
     "api:myanimes:run": "dotnet run --project ../ApiMyAnimes/ApiMyAnimes.csproj --launch-profile ApiMyAnimes",
     "api:myanimelist:run": "dotnet run --project ../ApiMyAnimeList/ApiMyAnimeList.csproj --launch-profile https",
     "api:myanimes": "node ../scripts/run-if-down.js https://localhost:63980/apiLocal/Health -- npm run api:myanimes:run",
     "api:myanimelist": "node ../scripts/run-if-down.js https://localhost:7146/ApiMyAnimeList/health -- npm run api:myanimelist:run",
-    "serv": "concurrently \"npm run api:myanimes\" \"npm run api:myanimelist\" \"npm run proxy\" \"npm run dev\" ",
+    "gateway:catalog:run": "dotnet run --project ../DtudoGateway/DtudoGateway.csproj --launch-profile DtudoGatewayCatalog",
+    "gateway:catalog": "node ../scripts/run-if-down.js https://localhost:51376/health/live -- npm run gateway:catalog:run",
+    "serv": "concurrently \"npm run api:myanimes\" \"npm run api:myanimelist\" \"npm run gateway:catalog\" \"npm run proxy\" \"npm run dev:catalog\" ",
     "build": "vite build",
+    "build:homologation": "vite build --mode homologation",
     "preview": "vite preview",
     "discografia": "node ../ApiNode/DiscografiaPastas.js",
     "lint": "eslint ."

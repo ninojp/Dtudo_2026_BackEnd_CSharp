@@ -15,6 +15,12 @@ public sealed class MyAnimeListApiService
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private static readonly SemaphoreSlim ApiStartupLock = new(1, 1);
     private static bool _apiStartupAttempted;
+    private readonly WinAppAuthenticationService _authenticationService;
+
+    public MyAnimeListApiService(WinAppAuthenticationService? authenticationService = null)
+    {
+        _authenticationService = authenticationService ?? new WinAppAuthenticationService();
+    }
 
     public static string ApiBase => AppConfigurationService.ApiMyAnimeListBaseUrl;
 
@@ -35,12 +41,12 @@ public sealed class MyAnimeListApiService
         HttpResponseMessage response;
         try
         {
-            response = await HttpClient.GetAsync(url, cancellationToken);
+            response = await SendAuthenticatedGetAsync(url, cancellationToken);
         }
         catch (HttpRequestException ex) when (EhConexaoRecusada(ex))
         {
             await IniciarApiLocalAsync(cancellationToken);
-            response = await HttpClient.GetAsync(url, cancellationToken);
+            response = await SendAuthenticatedGetAsync(url, cancellationToken);
         }
 
         using (response)
@@ -58,17 +64,17 @@ public sealed class MyAnimeListApiService
     public async Task<List<AnimeRelationGroup>> BuscarRelacoesAsync(int malId, CancellationToken cancellationToken = default)
         => await GetAsync<List<AnimeRelationGroup>>($"ApiMyAnimeList/{malId}/relations", cancellationToken) ?? [];
 
-    private static async Task<T?> GetAsync<T>(string url, CancellationToken cancellationToken)
+    private async Task<T?> GetAsync<T>(string url, CancellationToken cancellationToken)
     {
         HttpResponseMessage response;
         try
         {
-            response = await HttpClient.GetAsync(url, cancellationToken);
+            response = await SendAuthenticatedGetAsync(url, cancellationToken);
         }
         catch (HttpRequestException ex) when (EhConexaoRecusada(ex))
         {
             await IniciarApiLocalAsync(cancellationToken);
-            response = await HttpClient.GetAsync(url, cancellationToken);
+            response = await SendAuthenticatedGetAsync(url, cancellationToken);
         }
 
         using (response)
@@ -78,6 +84,14 @@ public sealed class MyAnimeListApiService
             return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
     }
+
+    private Task<HttpResponseMessage> SendAuthenticatedGetAsync(
+        string url,
+        CancellationToken cancellationToken) =>
+        _authenticationService.SendAuthenticatedAsync(
+            HttpClient,
+            _ => new HttpRequestMessage(HttpMethod.Get, url),
+            cancellationToken);
 
     private static bool EhConexaoRecusada(HttpRequestException exception)
         => exception.InnerException is SocketException socketException

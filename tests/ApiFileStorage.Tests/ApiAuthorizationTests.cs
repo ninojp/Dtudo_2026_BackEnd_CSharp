@@ -30,6 +30,44 @@ public sealed class ApiAuthorizationTests : IDisposable
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
+    [Fact]
+    public async Task AnonymousHealth_IsRejected()
+    {
+        await using var app = CreateApp();
+
+        using var response = await app.CreateClient().GetAsync("/api/file-storage/health");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task HealthRequiresDedicatedPermissionAndScope()
+    {
+        await using var app = CreateApp();
+        var client = app.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Claims", "scope=filesystem.command;permission=filesystem.command");
+
+        using var response = await client.GetAsync("/api/file-storage/health");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AuthorizedHealthReturnsOperationalDataWithoutPhysicalPaths()
+    {
+        await using var app = CreateApp();
+        var client = app.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Claims", "scope=health.read;permission=health.read");
+
+        using var response = await client.GetAsync("/api/file-storage/health");
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("roots", body, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("quarantine", body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(_temporaryDirectory, body, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Theory]
     [InlineData("scope=filesystem.command")]
     [InlineData("permission=filesystem.command")]

@@ -215,6 +215,65 @@ public sealed class DtudoGatewayTests
         });
     }
 
+    [Fact]
+    public void PublicCatalogModeDoesNotRegisterIdentityRoutesOrInternalPaths()
+    {
+        var routes = GatewayRouteConfiguration.CreateRoutes(publicCatalogOnly: true);
+
+        Assert.Equal(5, routes.Count);
+        Assert.All(routes, route =>
+        {
+            Assert.Equal(GatewayRouteConfiguration.AnonymousPolicy, route.AuthorizationPolicy);
+            Assert.Equal([HttpMethod.Get.Method], route.Match.Methods);
+            Assert.DoesNotContain("identity", route.RouteId, StringComparison.OrdinalIgnoreCase);
+            var backendPaths = (route.Transforms ?? [])
+                .SelectMany(transform => transform.Values)
+                .Where(value => value.StartsWith("/apiLocal/", StringComparison.Ordinal));
+            Assert.All(backendPaths, path => Assert.Contains("/public", path, StringComparison.Ordinal));
+        });
+    }
+
+    [Fact]
+    public async Task HomologationCatalogOnlyRejectsPrivateSurfacesAndAddsEdgeHeaders()
+    {
+        await using var factory = CreateFactory("Homologation", publicCatalogOnly: true);
+        using var client = CreateClient(factory);
+
+        using var liveResponse = await client.GetAsync("/health/live");
+        Assert.Equal(HttpStatusCode.OK, liveResponse.StatusCode);
+        Assert.Equal("max-age=31536000; includeSubDomains", liveResponse.Headers.GetValues("Strict-Transport-Security").Single());
+        Assert.Equal("nosniff", liveResponse.Headers.GetValues("X-Content-Type-Options").Single());
+        Assert.Equal("DENY", liveResponse.Headers.GetValues("X-Frame-Options").Single());
+        Assert.Equal("no-referrer", liveResponse.Headers.GetValues("Referrer-Policy").Single());
+        Assert.Contains("default-src 'self'", liveResponse.Headers.GetValues("Content-Security-Policy").Single(), StringComparison.Ordinal);
+
+        using var corsRequest = new HttpRequestMessage(HttpMethod.Get, "/health/live");
+        corsRequest.Headers.TryAddWithoutValidation("Origin", "https://evil.example.invalid");
+        using var corsResponse = await client.SendAsync(corsRequest);
+        Assert.False(corsResponse.Headers.Contains("Access-Control-Allow-Origin"));
+
+        foreach (var path in new[]
+        {
+            "/bff/login",
+            "/bff/me",
+            "/identity/connect/authorize",
+            "/identity/connect/token",
+            "/swagger",
+            "/seq",
+            "/health/ready",
+            "/auth/login"
+        })
+        {
+            using var response = await client.GetAsync(path);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        using var writeResponse = await client.PostAsync(
+            "/api/catalog/animes",
+            new StringContent("{}", System.Text.Encoding.UTF8, "application/json"));
+        Assert.Equal(HttpStatusCode.NotFound, writeResponse.StatusCode);
+    }
+
     private static HttpClient CreateClient(WebApplicationFactory<Program> factory) =>
         factory.CreateClient(new WebApplicationFactoryClientOptions
         {
@@ -223,11 +282,13 @@ public sealed class DtudoGatewayTests
             HandleCookies = false
         });
 
-    private static WebApplicationFactory<Program> CreateFactory() =>
+    private static WebApplicationFactory<Program> CreateFactory(
+        string environment = "Development",
+        bool publicCatalogOnly = false) =>
         new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
-                builder.UseEnvironment("Development");
+                builder.UseEnvironment(environment);
                 builder.UseSetting("Gateway:PublicOrigin", PublicOrigin);
                 builder.UseSetting("Gateway:AllowedRedirectOrigins:0", PublicOrigin);
                 builder.UseSetting("Gateway:ApiMyAnimesBaseUrl", "https://127.0.0.1:1/");
@@ -243,8 +304,15 @@ public sealed class DtudoGatewayTests
                     {
                         ["Gateway:PublicOrigin"] = PublicOrigin,
                         ["Gateway:AllowedRedirectOrigins:0"] = PublicOrigin,
+                        ["Gateway:AllowedCorsOrigins:0"] = PublicOrigin,
+                        ["Gateway:TrustedProxyAddresses:0"] = "127.0.0.1",
+                        ["Gateway:TrustedProxyAddresses:1"] = "::1",
                         ["Gateway:ApiMyAnimesBaseUrl"] = "https://127.0.0.1:1/",
                         ["Gateway:ApiIdentityBaseUrl"] = "https://127.0.0.1:2/",
+                        ["Gateway:PublicCatalogOnly"] = publicCatalogOnly.ToString(),
+                        ["Gateway:MaxRequestBodyBytes"] = "1048576",
+                        ["Gateway:RateLimitPermitLimit"] = "60",
+                        ["Gateway:RateLimitWindowSeconds"] = "60",
                         ["OpenIdConnect:Authority"] = "https://identity.test/",
                         ["OpenIdConnect:ClientId"] = "dtudo-gateway-test",
                         ["OpenIdConnect:ClientSecret"] = "test-client-secret",
@@ -258,8 +326,14 @@ public sealed class DtudoGatewayTests
                     {
                         options.PublicOrigin = PublicOrigin;
                         options.AllowedRedirectOrigins = [PublicOrigin];
+                        options.AllowedCorsOrigins = [PublicOrigin];
+                        options.TrustedProxyAddresses = ["127.0.0.1", "::1"];
                         options.ApiMyAnimesBaseUrl = "https://127.0.0.1:1/";
                         options.ApiIdentityBaseUrl = "https://127.0.0.1:2/";
+                        options.PublicCatalogOnly = publicCatalogOnly;
+                        options.MaxRequestBodyBytes = 1_048_576;
+                        options.RateLimitPermitLimit = 60;
+                        options.RateLimitWindowSeconds = 60;
                     });
                     services.PostConfigure<GatewayOpenIdConnectOptions>(options =>
                     {
@@ -268,21 +342,24 @@ public sealed class DtudoGatewayTests
                         options.ClientSecret = "test-client-secret";
                         options.Scopes = ["openid", "profile"];
                     });
-                    services.PostConfigure<OpenIdConnectOptions>("oidc", options =>
+                    if (!publicCatalogOnly)
                     {
-                        options.Authority = "https://identity.test/";
-                        options.ClientId = "dtudo-gateway-test";
-                        options.ClientSecret = "test-client-secret";
-                        var configuration = new OpenIdConnectConfiguration
+                        services.PostConfigure<OpenIdConnectOptions>("oidc", options =>
                         {
-                            Issuer = "https://identity.test/",
-                            AuthorizationEndpoint = "https://identity.test/connect/authorize",
-                            TokenEndpoint = "https://identity.test/connect/token",
-                            EndSessionEndpoint = "https://identity.test/connect/logout"
-                        };
-                        options.Configuration = configuration;
-                        options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(configuration);
-                    });
+                            options.Authority = "https://identity.test/";
+                            options.ClientId = "dtudo-gateway-test";
+                            options.ClientSecret = "test-client-secret";
+                            var configuration = new OpenIdConnectConfiguration
+                            {
+                                Issuer = "https://identity.test/",
+                                AuthorizationEndpoint = "https://identity.test/connect/authorize",
+                                TokenEndpoint = "https://identity.test/connect/token",
+                                EndSessionEndpoint = "https://identity.test/connect/logout"
+                            };
+                            options.Configuration = configuration;
+                            options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(configuration);
+                        });
+                    }
                 });
             });
 

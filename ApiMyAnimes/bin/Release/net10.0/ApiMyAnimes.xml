@@ -4,15 +4,6 @@
         <name>ApiMyAnimes</name>
     </assembly>
     <members>
-        <member name="T:ApiMyAnimes.Configuration.AuthOptions">
-            <summary>Configuracao da autenticacao local.</summary>
-        </member>
-        <member name="F:ApiMyAnimes.Configuration.AuthOptions.SectionName">
-            <summary>Nome da secao de configuracao.</summary>
-        </member>
-        <member name="P:ApiMyAnimes.Configuration.AuthOptions.UsersFilePath">
-            <summary>Caminho relativo ou absoluto do arquivo local de usuarios.</summary>
-        </member>
         <member name="T:ApiMyAnimes.Controllers.AnimeController">
             <summary>
             Controlador responsável por gerenciar os registros da entidade <see cref="T:LibDtudo.Shared.Models.Anime"/> em banco local.
@@ -50,6 +41,26 @@
             <c>409 Conflict</c> quando já existe anime com o mesmo <c>MalId</c>,
             ou <c>502 BadGateway</c> quando a ApiMyAnimeList está indisponível.
             </returns>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.ObterCatalogoPublico(System.Int32,System.Int32)">
+            <summary>
+            Obtém somente os registros permitidos no catálogo público, sem conteúdo adulto.
+            </summary>
+            <param name="skip">Quantidade de registros públicos a ignorar.</param>
+            <param name="take">Quantidade máxima de registros públicos retornados.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.BuscarCatalogoPublico(System.String,System.Int32)">
+            <summary>
+            Busca somente no catálogo público, excluindo conteúdo adulto antes da resposta.
+            </summary>
+            <param name="termo">Texto normalizado de busca.</param>
+            <param name="take">Quantidade máxima de resultados públicos retornados.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.AnimeController.ObterAnimePublicoPorId(System.Int32)">
+            <summary>
+            Obtém um anime público pelo identificador, recusando registros adultos.
+            </summary>
+            <param name="id">Identificador do anime no MyAnimeList.</param>
         </member>
         <member name="M:ApiMyAnimes.Controllers.AnimeController.ObterAnimes(System.Int32,System.Int32)">
             <summary>
@@ -123,20 +134,31 @@
             ou <c>404 NotFound</c> quando o anime não existe.
             </returns>
         </member>
-        <member name="T:ApiMyAnimes.Controllers.AuthController">
-            <summary>Endpoints de autenticacao local para Dtudo2026.</summary>
+        <member name="T:ApiMyAnimes.Controllers.CatalogMigrationController">
+            <summary>
+            Expõe comandos pequenos e repetiveis para a migracao do cliente administrativo.
+            Estes comandos nao transferem o acesso ao banco para o cliente.
+            </summary>
+            <param name="context">Contexto proprietario do banco local de catalogo.</param>
         </member>
-        <member name="M:ApiMyAnimes.Controllers.AuthController.#ctor(ApiMyAnimes.Services.LocalAuthService)">
-            <summary>Endpoints de autenticacao local para Dtudo2026.</summary>
+        <member name="M:ApiMyAnimes.Controllers.CatalogMigrationController.#ctor(ApiMyAnimes.Data.MyAnimesContext)">
+            <summary>
+            Expõe comandos pequenos e repetiveis para a migracao do cliente administrativo.
+            Estes comandos nao transferem o acesso ao banco para o cliente.
+            </summary>
+            <param name="context">Contexto proprietario do banco local de catalogo.</param>
         </member>
-        <member name="M:ApiMyAnimes.Controllers.AuthController.Register(LibDtudo.Shared.Dtos.Auth.RegisterUserRequest,System.Threading.CancellationToken)">
-            <summary>Cadastra um usuario local com senha hasheada.</summary>
+        <member name="M:ApiMyAnimes.Controllers.CatalogMigrationController.EnsureMyAnimeCollection(LibDtudo.Shared.Dtos.EnsureMyAnimeCollectionRequest)">
+            <summary>
+            Garante uma colecao pelo titulo normalizado e mescla os MalIds informados sem duplicidade.
+            Repetir o mesmo PUT preserva o mesmo recurso e nao cria uma nova colecao.
+            </summary>
         </member>
-        <member name="M:ApiMyAnimes.Controllers.AuthController.Login(LibDtudo.Shared.Dtos.Auth.LoginRequest,System.Threading.CancellationToken)">
-            <summary>Realiza login local.</summary>
-        </member>
-        <member name="M:ApiMyAnimes.Controllers.AuthController.Me(System.String,System.Threading.CancellationToken)">
-            <summary>Obtem usuario por ID sem dados sensiveis.</summary>
+        <member name="M:ApiMyAnimes.Controllers.CatalogMigrationController.EnsureAnimeAssociation(System.Int32,LibDtudo.Shared.Dtos.EnsureAnimeAssociationRequest)">
+            <summary>
+            Garante a associacao entre um anime e uma colecao local.
+            O comando atualiza somente o vinculo e a lista de MalIds da colecao.
+            </summary>
         </member>
         <member name="T:ApiMyAnimes.Controllers.MyAnimeController">
             <summary>
@@ -151,6 +173,19 @@
             Disponibiliza operações de criação, consulta, atualização e remoção.
             </summary>
             <param name="context">Contexto do banco para operações CRUD na tabela MyAnimes.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.MyAnimeController.ObterColecoesPublicas(System.Int32,System.Int32)">
+            <summary>
+            Obtém as coleções públicas, removendo IDs de animes adultos.
+            </summary>
+            <param name="skip">Quantidade de coleções a ignorar.</param>
+            <param name="take">Quantidade máxima de coleções retornadas.</param>
+        </member>
+        <member name="M:ApiMyAnimes.Controllers.MyAnimeController.ObterColecaoPublicaPorId(System.Int32)">
+            <summary>
+            Obtém uma coleção pública pelo identificador, removendo IDs de animes adultos.
+            </summary>
+            <param name="id">Identificador da coleção.</param>
         </member>
         <member name="M:ApiMyAnimes.Controllers.MyAnimeController.AdicionarMyAnime(LibDtudo.Shared.Dtos.AdicionaMyAnimeDto)">
             <summary>
@@ -317,21 +352,6 @@
             <summary>
             Localiza títulos equivalentes entre um anime candidato e os registros locais.
             </summary>
-        </member>
-        <member name="T:ApiMyAnimes.Services.LocalAuthService">
-            <summary>Servico local de autenticacao com hash de senha e armazenamento em JSON.</summary>
-        </member>
-        <member name="M:ApiMyAnimes.Services.LocalAuthService.#ctor(Microsoft.Extensions.Options.IOptions{ApiMyAnimes.Configuration.AuthOptions},Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
-            <summary>Servico local de autenticacao com hash de senha e armazenamento em JSON.</summary>
-        </member>
-        <member name="M:ApiMyAnimes.Services.LocalAuthService.RegisterAsync(LibDtudo.Shared.Dtos.Auth.RegisterUserRequest,System.Threading.CancellationToken)">
-            <summary>Cadastra um novo usuario local.</summary>
-        </member>
-        <member name="M:ApiMyAnimes.Services.LocalAuthService.LoginAsync(LibDtudo.Shared.Dtos.Auth.LoginRequest,System.Threading.CancellationToken)">
-            <summary>Realiza login de usuario local.</summary>
-        </member>
-        <member name="M:ApiMyAnimes.Services.LocalAuthService.GetUserAsync(System.String,System.Threading.CancellationToken)">
-            <summary>Obtem um usuario pelo ID.</summary>
         </member>
         <member name="T:ApiMyAnimes.Services.MyAnimeListImportClient">
             <summary>

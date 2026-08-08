@@ -5,6 +5,8 @@ using ApiMyAnimeList.Mappers;
 using ApiMyAnimeList.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
 
 namespace ApiMyAnimeList.Controllers;
 /// <summary>
@@ -23,7 +25,7 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
     public IActionResult Health() => Ok(new { status = "ok", service = "ApiMyAnimeList" });
 
     [HttpGet("search")]
-    [Authorize(Policy = "permission:service.mal.read")]
+    [Authorize(Policy = "permission:catalog.external.read")]
     [ProducesResponseType(typeof(AnimeSearchResult), StatusCodes.Status200OK)]
     public async Task<ActionResult<AnimeSearchResult>> Search([FromQuery] string? q, [FromQuery] int page = 1, CancellationToken cancellationToken = default)
     {
@@ -31,12 +33,14 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
         if (page < 1) return BadRequest(new { message = "O número da página deve ser maior que 0." });
         const int limit = 20;
         try { return Ok(MyAnimeListMapper.MapSearch(await client.SearchAsync(q.Trim(), (page - 1) * limit, limit, cancellationToken), page, limit)); }
+        catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante pesquisa"); return StatusCode(503, new { message = "A API MyAnimeList está temporariamente indisponível." }); }
+        catch (TimeoutRejectedException) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
         catch (HttpRequestException ex) { logger.LogError(ex, "Erro ao pesquisar anime na MAL"); return StatusCode((int?)ex.StatusCode is >= 400 and <= 599 ? (int)ex.StatusCode.Value : 502, new { message = "Falha ao comunicar com a API MyAnimeList." }); }
     }
 
     [HttpGet("{id:int}")]
-    [Authorize(Policy = "permission:service.mal.read")]
+    [Authorize(Policy = "permission:catalog.external.read")]
     [ProducesResponseType(typeof(AnimeDetails), StatusCodes.Status200OK)]
     public async Task<ActionResult<AnimeDetails>> Get(int id, CancellationToken cancellationToken = default)
     {
@@ -46,13 +50,15 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
             var anime = await client.GetAnimeAsync(id, cancellationToken);
             return anime is null ? NotFound(new { message = $"Anime com ID {id} não encontrado." }) : Ok(MyAnimeListMapper.MapDetails(anime));
         }
+        catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante consulta do anime {Id}", id); return StatusCode(503, new { message = "A API MyAnimeList está temporariamente indisponível." }); }
+        catch (TimeoutRejectedException) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return NotFound(new { message = $"Anime com ID {id} não encontrado." }); }
         catch (HttpRequestException ex) { logger.LogError(ex, "Erro ao obter anime {Id} na MAL", id); return StatusCode(502, new { message = "Falha ao comunicar com a API MyAnimeList." }); }
     }
 
     [HttpGet("{id:int}/relations")]
-    [Authorize(Policy = "permission:service.mal.read")]
+    [Authorize(Policy = "permission:catalog.external.read")]
     [ProducesResponseType(typeof(List<AnimeRelationGroup>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<AnimeRelationGroup>>> Relations(int id, CancellationToken cancellationToken = default)
     {
@@ -62,6 +68,9 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
             var anime = await client.GetAnimeAsync(id, cancellationToken);
             return anime is null ? NotFound(new { message = $"Anime com ID {id} não encontrado." }) : Ok(MyAnimeListMapper.MapRelations(anime));
         }
+        catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante relações do anime {Id}", id); return StatusCode(503, new { message = "A API MyAnimeList está temporariamente indisponível." }); }
+        catch (TimeoutRejectedException) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
         catch (HttpRequestException ex) { logger.LogError(ex, "Erro ao obter relações do anime {Id} na MAL", id); return StatusCode(502, new { message = "Falha ao comunicar com a API MyAnimeList." }); }
     }
 }

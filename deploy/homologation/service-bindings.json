@@ -1,0 +1,24 @@
+{
+  "environment": "Homologation",
+  "gateway": {
+    "listen": "https://127.0.0.1:16443",
+    "publicHost": "catalog-homologation.example.invalid"
+  },
+  "internalServices": [
+    {
+      "name": "ApiMyAnimes",
+      "listen": "https://127.0.0.1:16080",
+      "public": false
+    },
+    {
+      "name": "ApiMyAnimeList",
+      "listen": "https://127.0.0.1:16081",
+      "public": false
+    },
+    {
+      "name": "Seq",
+      "listen": "http://127.0.0.1:15341",
+      "public": false
+    }
+  ]
+}

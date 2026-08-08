@@ -1,10 +1,16 @@
+using System.Net;
 using System.Security.Claims;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using DtudoGateway.Configuration;
 using DtudoGateway.Infrastructure;
 using Yarp.ReverseProxy;
@@ -20,6 +26,12 @@ var configuredGatewayOptions = builder.Configuration
 var configuredOpenIdConnectOptions = builder.Configuration
     .GetSection(GatewayOpenIdConnectOptions.SectionName)
     .Get<GatewayOpenIdConnectOptions>() ?? new GatewayOpenIdConnectOptions();
+var publicCatalogOnly = configuredGatewayOptions.PublicCatalogOnly;
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = configuredGatewayOptions.MaxRequestBodyBytes;
+});
 
 builder.Services.AddOptions<GatewayOptions>()
     .Bind(builder.Configuration.GetSection(GatewayOptions.SectionName))
@@ -27,8 +39,58 @@ builder.Services.AddOptions<GatewayOptions>()
     .ValidateOnStart();
 builder.Services.AddOptions<GatewayOpenIdConnectOptions>()
     .Bind(builder.Configuration.GetSection(GatewayOpenIdConnectOptions.SectionName))
-    .Validate(GatewayOptionsValidator.IsValid, "OpenIdConnect deve conter authority HTTPS, client id, segredo externo e escopo openid.")
+    .Validate(options => publicCatalogOnly || GatewayOptionsValidator.IsValid(options), "OpenIdConnect deve conter authority HTTPS, client id, segredo externo e escopo openid.")
     .ValidateOnStart();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+    foreach (var address in configuredGatewayOptions.TrustedProxyAddresses)
+    {
+        if (!IPAddress.TryParse(address, out var parsedAddress))
+        {
+            throw new InvalidOperationException("Gateway:TrustedProxyAddresses contem um endereco invalido.");
+        }
+
+        options.KnownProxies.Add(parsedAddress);
+    }
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PublicCatalog", policy =>
+    {
+        policy.WithOrigins(configuredGatewayOptions.AllowedCorsOrigins)
+            .WithMethods(HttpMethods.Get, HttpMethods.Head, HttpMethods.Options)
+            .WithHeaders("Accept", "Content-Type")
+            .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+    });
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = configuredGatewayOptions.RateLimitPermitLimit,
+                Window = TimeSpan.FromSeconds(configuredGatewayOptions.RateLimitWindowSeconds),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.OnRejected = (context, _) =>
+    {
+        context.HttpContext.Response.Headers.RetryAfter = configuredGatewayOptions.RateLimitWindowSeconds.ToString();
+        return ValueTask.CompletedTask;
+    };
+});
+
+builder.Services.AddHealthChecks()
+    .AddCheck("gateway", () => HealthCheckResult.Healthy(), tags: ["live"]);
 
 var dataProtectionKeyDirectory = new DirectoryInfo(Path.Combine(
     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -58,12 +120,12 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.IsEssential = true;
 });
 
-builder.Services.AddAuthentication(options =>
+var authenticationBuilder = builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = CookieScheme;
     options.DefaultSignInScheme = CookieScheme;
-    options.DefaultChallengeScheme = OpenIdConnectScheme;
-    options.DefaultSignOutScheme = OpenIdConnectScheme;
+    options.DefaultChallengeScheme = publicCatalogOnly ? CookieScheme : OpenIdConnectScheme;
+    options.DefaultSignOutScheme = publicCatalogOnly ? CookieScheme : OpenIdConnectScheme;
 })
 .AddCookie(CookieScheme, options =>
 {
@@ -88,91 +150,95 @@ builder.Services.AddAuthentication(options =>
         context.Response.Redirect(context.RedirectUri);
         return Task.CompletedTask;
     };
-})
-.AddOpenIdConnect(OpenIdConnectScheme, options =>
+});
+
+if (!publicCatalogOnly)
 {
-    options.Authority = configuredOpenIdConnectOptions.Authority;
-    options.ClientId = configuredOpenIdConnectOptions.ClientId;
-    options.ClientSecret = configuredOpenIdConnectOptions.ClientSecret;
-    options.SignInScheme = CookieScheme;
-    options.CallbackPath = "/signin-oidc";
-    options.SignedOutCallbackPath = "/signout-callback-oidc";
-    options.ResponseType = "code";
-    options.ResponseMode = "query";
-    options.UsePkce = true;
-    options.SaveTokens = true;
-    options.RequireHttpsMetadata = true;
-    options.GetClaimsFromUserInfoEndpoint = false;
-    options.MapInboundClaims = false;
-    options.Scope.Clear();
-    foreach (var scope in configuredOpenIdConnectOptions.Scopes)
+    authenticationBuilder.AddOpenIdConnect(OpenIdConnectScheme, options =>
     {
-        options.Scope.Add(scope);
-    }
-    options.CorrelationCookie.HttpOnly = true;
-    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.CorrelationCookie.SameSite = SameSiteMode.None;
-    options.CorrelationCookie.IsEssential = true;
-    options.NonceCookie.HttpOnly = true;
-    options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.NonceCookie.SameSite = SameSiteMode.None;
-    options.NonceCookie.IsEssential = true;
-    options.Events.OnRedirectToIdentityProvider = context =>
-    {
-        context.ProtocolMessage.IssuerAddress = BuildPublicUrl(
-            configuredGatewayOptions,
-            "/identity/connect/authorize");
-        context.ProtocolMessage.RedirectUri = BuildPublicUrl(
-            configuredGatewayOptions,
-            context.Options.CallbackPath.Value!);
-        return Task.CompletedTask;
-    };
-    options.Events.OnRedirectToIdentityProviderForSignOut = context =>
-    {
-        if (!RedirectAllowlist.TryGetAllowedRedirect(
-                context.Properties?.RedirectUri,
+        options.Authority = configuredOpenIdConnectOptions.Authority;
+        options.ClientId = configuredOpenIdConnectOptions.ClientId;
+        options.ClientSecret = configuredOpenIdConnectOptions.ClientSecret;
+        options.SignInScheme = CookieScheme;
+        options.CallbackPath = "/signin-oidc";
+        options.SignedOutCallbackPath = "/signout-callback-oidc";
+        options.ResponseType = "code";
+        options.ResponseMode = "query";
+        options.UsePkce = true;
+        options.SaveTokens = true;
+        options.RequireHttpsMetadata = true;
+        options.GetClaimsFromUserInfoEndpoint = false;
+        options.MapInboundClaims = false;
+        options.Scope.Clear();
+        foreach (var scope in configuredOpenIdConnectOptions.Scopes)
+        {
+            options.Scope.Add(scope);
+        }
+        options.CorrelationCookie.HttpOnly = true;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.CorrelationCookie.SameSite = SameSiteMode.None;
+        options.CorrelationCookie.IsEssential = true;
+        options.NonceCookie.HttpOnly = true;
+        options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.NonceCookie.SameSite = SameSiteMode.None;
+        options.NonceCookie.IsEssential = true;
+        options.Events.OnRedirectToIdentityProvider = context =>
+        {
+            context.ProtocolMessage.IssuerAddress = BuildPublicUrl(
                 configuredGatewayOptions,
-                out var finalRedirect))
+                "/identity/connect/authorize");
+            context.ProtocolMessage.RedirectUri = BuildPublicUrl(
+                configuredGatewayOptions,
+                context.Options.CallbackPath.Value!);
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToIdentityProviderForSignOut = context =>
+        {
+            if (!RedirectAllowlist.TryGetAllowedRedirect(
+                    context.Properties?.RedirectUri,
+                    configuredGatewayOptions,
+                    out var finalRedirect))
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return Task.CompletedTask;
+            }
+
+            if (context.Properties is not null)
+            {
+                context.Properties.RedirectUri = finalRedirect;
+            }
+
+            context.ProtocolMessage.IssuerAddress = BuildPublicUrl(
+                configuredGatewayOptions,
+                "/identity/connect/logout");
+            context.ProtocolMessage.PostLogoutRedirectUri = BuildPublicUrl(
+                configuredGatewayOptions,
+                context.Options.SignedOutCallbackPath.Value!);
+            return Task.CompletedTask;
+        };
+        options.Events.OnSignedOutCallbackRedirect = context =>
+        {
+            if (!RedirectAllowlist.TryGetAllowedRedirect(
+                    context.Properties?.RedirectUri,
+                    configuredGatewayOptions,
+                    out var finalRedirect))
+            {
+                finalRedirect = "/";
+            }
+
+            context.Response.Redirect(finalRedirect);
+            context.HandleResponse();
+            return Task.CompletedTask;
+        };
+        options.Events.OnRemoteFailure = context =>
         {
             context.HandleResponse();
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return Task.CompletedTask;
-        }
-
-        if (context.Properties is not null)
-        {
-            context.Properties.RedirectUri = finalRedirect;
-        }
-
-        context.ProtocolMessage.IssuerAddress = BuildPublicUrl(
-            configuredGatewayOptions,
-            "/identity/connect/logout");
-        context.ProtocolMessage.PostLogoutRedirectUri = BuildPublicUrl(
-            configuredGatewayOptions,
-            context.Options.SignedOutCallbackPath.Value!);
-        return Task.CompletedTask;
-    };
-    options.Events.OnSignedOutCallbackRedirect = context =>
-    {
-        if (!RedirectAllowlist.TryGetAllowedRedirect(
-                context.Properties?.RedirectUri,
-                configuredGatewayOptions,
-                out var finalRedirect))
-        {
-            finalRedirect = "/";
-        }
-
-        context.Response.Redirect(finalRedirect);
-        context.HandleResponse();
-        return Task.CompletedTask;
-    };
-    options.Events.OnRemoteFailure = context =>
-    {
-        context.HandleResponse();
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        return context.Response.WriteAsJsonAsync(new { error = "authentication_failed" });
-    };
-});
+            return context.Response.WriteAsJsonAsync(new { error = "authentication_failed" });
+        };
+    });
+}
 
 builder.Services
     .AddOptions<CookieAuthenticationOptions>(CookieScheme)
@@ -186,14 +252,48 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddReverseProxy()
     .LoadFromMemory(
-        GatewayRouteConfiguration.CreateRoutes(),
+        GatewayRouteConfiguration.CreateRoutes(publicCatalogOnly),
         GatewayRouteConfiguration.CreateClusters(
             configuredGatewayOptions.ApiMyAnimesBaseUrl,
             configuredGatewayOptions.ApiIdentityBaseUrl));
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
 app.UseHttpsRedirection();
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        context.Response.Headers["X-Frame-Options"] = "DENY";
+        context.Response.Headers["Referrer-Policy"] = "no-referrer";
+        context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+        context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self' https: data:; connect-src 'self'; style-src 'self'; script-src 'self'; font-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'";
+        if (!app.Environment.IsDevelopment())
+        {
+            context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+        }
+        context.Response.Headers.Remove("Server");
+        return Task.CompletedTask;
+    });
+
+    await next(context);
+});
+if (publicCatalogOnly)
+{
+    var configuredWebRoot = app.Environment.WebRootPath
+        ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+    if (Directory.Exists(configuredWebRoot))
+    {
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+    }
+}
 app.Use(async (context, next) =>
 {
     if (context.Request.Path.StartsWithSegments("/api/catalog"))
@@ -209,74 +309,117 @@ app.Use(async (context, next) =>
 
     await next(context);
 });
+app.UseCors("PublicCatalog");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/bff/login", async (HttpContext context) =>
+app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
-    if (!RedirectAllowlist.TryGetAllowedRedirect(
-            context.Request.Query["returnUrl"].ToString(),
-            configuredGatewayOptions,
-            out var redirect))
+    Predicate = healthCheck => healthCheck.Tags.Contains("live"),
+    ResponseWriter = async (context, report) =>
     {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new { error = "invalid_redirect" });
-        return;
-    }
-
-    await context.ChallengeAsync(
-        OpenIdConnectScheme,
-        new AuthenticationProperties { RedirectUri = redirect });
-}).AllowAnonymous();
-
-app.MapGet("/bff/antiforgery", (HttpContext context, IAntiforgery antiforgery) =>
-{
-    var tokens = antiforgery.GetAndStoreTokens(context);
-    return Results.Ok(new { token = tokens.RequestToken });
-}).AllowAnonymous();
-
-app.MapGet("/bff/me", (HttpContext context) =>
-{
-    var principal = context.User;
-    return Results.Ok(new
-    {
-        authenticated = true,
-        user = new
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new
         {
-            subject = principal.FindFirstValue("sub"),
-            name = principal.FindFirstValue("name") ?? principal.Identity?.Name,
-            email = principal.FindFirstValue("email"),
-            roles = principal.FindAll("role").Select(claim => claim.Value).ToArray()
-        }
-    });
-}).RequireAuthorization();
+            status = report.Status == HealthStatus.Healthy ? "ok" : "unavailable"
+        });
+    }
+}).AllowAnonymous();
 
-app.MapPost("/bff/logout", async (HttpContext context, IAntiforgery antiforgery) =>
+if (!publicCatalogOnly)
 {
-    if (!RedirectAllowlist.TryGetAllowedRedirect(
-            context.Request.Query["returnUrl"].ToString(),
-            configuredGatewayOptions,
-            out var redirect))
+    app.MapGet("/bff/login", async (HttpContext context) =>
     {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new { error = "invalid_redirect" });
-        return;
-    }
+        if (!RedirectAllowlist.TryGetAllowedRedirect(
+                context.Request.Query["returnUrl"].ToString(),
+                configuredGatewayOptions,
+                out var redirect))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new { error = "invalid_redirect" });
+            return;
+        }
 
-    if (!await antiforgery.IsRequestValidAsync(context))
+        await context.ChallengeAsync(
+            OpenIdConnectScheme,
+            new AuthenticationProperties { RedirectUri = redirect });
+    }).AllowAnonymous();
+
+    app.MapGet("/bff/antiforgery", (HttpContext context, IAntiforgery antiforgery) =>
     {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new { error = "invalid_csrf" });
-        return;
-    }
+        var tokens = antiforgery.GetAndStoreTokens(context);
+        return Results.Ok(new { token = tokens.RequestToken });
+    }).AllowAnonymous();
 
-    await context.SignOutAsync(CookieScheme);
-    await context.SignOutAsync(
-        OpenIdConnectScheme,
-        new AuthenticationProperties { RedirectUri = redirect });
-}).RequireAuthorization();
+    app.MapGet("/bff/me", (HttpContext context) =>
+    {
+        var principal = context.User;
+        return Results.Ok(new
+        {
+            authenticated = true,
+            user = new
+            {
+                subject = principal.FindFirstValue("sub"),
+                name = principal.FindFirstValue("name") ?? principal.Identity?.Name,
+                email = principal.FindFirstValue("email"),
+                roles = principal.FindAll("role").Select(claim => claim.Value).ToArray()
+            }
+        });
+    }).RequireAuthorization();
+
+    app.MapPost("/bff/logout", async (HttpContext context, IAntiforgery antiforgery) =>
+    {
+        if (!RedirectAllowlist.TryGetAllowedRedirect(
+                context.Request.Query["returnUrl"].ToString(),
+                configuredGatewayOptions,
+                out var redirect))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new { error = "invalid_redirect" });
+            return;
+        }
+
+        if (!await antiforgery.IsRequestValidAsync(context))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new { error = "invalid_csrf" });
+            return;
+        }
+
+        await context.SignOutAsync(CookieScheme);
+        await context.SignOutAsync(
+            OpenIdConnectScheme,
+            new AuthenticationProperties { RedirectUri = redirect });
+    }).RequireAuthorization();
+}
 
 app.MapReverseProxy();
+
+if (publicCatalogOnly)
+{
+    app.MapFallback(async context =>
+    {
+        if (context.Request.Method != HttpMethod.Get.Method
+            && context.Request.Method != HttpMethod.Head.Method
+            || !(context.Request.Path == "/" || context.Request.Path.StartsWithSegments("/animes")))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        var webRoot = app.Environment.WebRootPath
+            ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+        var indexPath = Path.Combine(webRoot, "index.html");
+        if (!File.Exists(indexPath))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        await context.Response.SendFileAsync(indexPath);
+    });
+}
 
 app.Run();
 

@@ -103,7 +103,8 @@ public sealed class WinAppPkceBrowserClientTests
                 authorizationUri = uri;
                 callbackTask = SendCallbacksAsync(uri, redirectUri.Port);
                 return Task.CompletedTask;
-            });
+            },
+            resources: ["urn:dtudo:api-my-animes", "urn:dtudo:api-my-animelist"]);
 
         var tokenSet = await client.AuthenticateAsync();
         await callbackTask!;
@@ -115,6 +116,9 @@ public sealed class WinAppPkceBrowserClientTests
         Assert.Equal(
             tokenHandler.AuthorizationChallenge,
             WinAppPkceProtocol.CreateCodeChallenge(tokenHandler.CodeVerifier!));
+        Assert.Equal(
+            ["urn:dtudo:api-my-animes", "urn:dtudo:api-my-animelist"],
+            GetQueryValues(authorizationUri!, "resource"));
     }
 
     [Fact]
@@ -179,12 +183,17 @@ public sealed class WinAppPkceBrowserClientTests
 
     private static string GetQueryValue(Uri uri, string name)
     {
-        var encodedValue = uri.Query
+        return GetQueryValues(uri, name).Single();
+    }
+
+    private static IReadOnlyList<string> GetQueryValues(Uri uri, string name)
+    {
+        return uri.Query
             .TrimStart('?')
             .Split('&', StringSplitOptions.RemoveEmptyEntries)
-            .Single(value => value.StartsWith($"{name}=", StringComparison.Ordinal))
-            .Split('=', 2)[1];
-        return Uri.UnescapeDataString(encodedValue.Replace('+', ' '));
+            .Where(value => value.StartsWith($"{name}=", StringComparison.Ordinal))
+            .Select(value => Uri.UnescapeDataString(value.Split('=', 2)[1].Replace('+', ' ')))
+            .ToArray();
     }
 
     private sealed class PkceTokenHandler(Func<Uri?> authorizationUriProvider) : HttpMessageHandler

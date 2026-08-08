@@ -11,22 +11,41 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     private const float DesignWidth = 1272F;
     private const float DesignContentHeight = 652F;
     private readonly WinAppAuthenticationService _identityAuthenticationService = new();
-    private readonly ApiMyAnimesHealthCheckService _apiMyAnimesHealthCheckService = new();
+    private readonly ApiFileStorageStartupService _apiFileStorageStartupService = new();
+    private readonly ApiMyAnimesHealthCheckService _apiMyAnimesHealthCheckService;
+    private readonly WinAppHealthMonitoringService _healthMonitoringService;
     private readonly CancellationTokenSource _formClosingCancellationTokenSource = new();
     private readonly DtudoSiteStartupService _dtudoSiteStartupService;
+    private readonly System.Windows.Forms.Timer _healthRefreshTimer = new() { Interval = 60_000 };
+    private WindowsHealthNotificationService _healthNotificationService = null!;
     private Frm_DtudoSiteBrowser? _dtudoSiteBrowser;
+    private Frm_HealthDashboard? _healthDashboard;
+    private WinAppHealthSnapshot? _lastHealthSnapshot;
     private bool _isApplyingMainLayout;
     private bool _isOpeningDtudoSite;
+    private bool _isRefreshingHealth;
 
     public Frm_WinAppDtudo()
     {
+        StartupDiagnostics.Mark("Frm constructor entered");
+        StartupDiagnostics.Mark("Before InitializeComponent");
         InitializeComponent();
+        StartupDiagnostics.Mark("After InitializeComponent");
+        _apiMyAnimesHealthCheckService = new ApiMyAnimesHealthCheckService(_identityAuthenticationService);
+        _healthMonitoringService = new WinAppHealthMonitoringService(_identityAuthenticationService);
+        _healthNotificationService = new WindowsHealthNotificationService(Icon);
+        _healthNotificationService.OpenRequested += HealthNotificationService_OpenRequested;
+        _healthRefreshTimer.Tick += HealthRefreshTimer_Tick;
         _dtudoSiteStartupService = new DtudoSiteStartupService(_apiMyAnimesHealthCheckService);
+        StartupDiagnostics.Mark("After startup services construction");
         // Aplicar o tema Dark Mode ao formulário e seus componentes
+        StartupDiagnostics.Mark("Before ThemeManager.ApplyDarkModeToForm");
         ThemeManager.ApplyDarkModeToForm(this);
+        StartupDiagnostics.Mark("After ThemeManager.ApplyDarkModeToForm");
         // Inicializa o formulário customizado sem barra de título
         InitializeCustomFormNoBorder(Mnu_Principal);
         AddControlButtonsToMenuStrip(Mnu_Principal);
+        StartupDiagnostics.Mark("After custom form initialization");
 
         //Opções de inicialização do formulário, após a inicialização dos componentes.
         MnI_MyAnimes.Enabled = false;
@@ -34,8 +53,10 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         MnI_NinoTI.Enabled = false;
         MnI_Desconectar.Enabled = false;
         MnI_CadastrarUsuario.Enabled = false;
+        MnI_Saude.Enabled = false;
 
         InitializeMainLayout();
+        StartupDiagnostics.Mark("After main layout initialization");
         FormClosing += Frm_WinAppDtudo_FormClosing;
         FormClosed += Frm_WinAppDtudo_FormClosed;
     }
@@ -79,6 +100,8 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             var session = await _identityAuthenticationService.SignInAsync(
                 _formClosingCancellationTokenSource.Token);
             SetAuthenticatedUi(true);
+            _healthRefreshTimer.Start();
+            await RefreshHealthAsync(notify: true);
             DarkMessageBox.Show(
                 $"Login realizado no navegador do sistema.\nSessao: {session.SessionId:D}",
                 "Identity",
@@ -121,14 +144,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
                 UseWaitCursor = true;
                 var revoked = await _identityAuthenticationService.SignOutAsync(
                     _formClosingCancellationTokenSource.Token);
-                SetAuthenticatedUi(false);
-                foreach (Form form in Application.OpenForms.Cast<Form>().ToList())
-                {
-                    if (form != this)
-                    {
-                        form.Close();
-                    }
-                }
+                ClearAuthenticatedUi();
 
                 DarkMessageBox.Show(
                     revoked
@@ -143,6 +159,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             }
             catch (Exception exception)
             {
+                ClearAuthenticatedUi();
                 DarkMessageBox.Show(
                     $"A sessao local nao pode ser encerrada com seguranca.\n\n{exception.Message}",
                     "Falha ao desconectar",
@@ -166,6 +183,128 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         MnI_MyMusicX.Enabled = isAuthenticated;
         MnI_NinoTI.Enabled = isAuthenticated;
         MnI_Desconectar.Enabled = isAuthenticated;
+        MnI_Saude.Enabled = isAuthenticated;
+    }
+
+    private void ClearAuthenticatedUi()
+    {
+        SetAuthenticatedUi(false);
+        _healthRefreshTimer.Stop();
+        _lastHealthSnapshot = null;
+        _healthNotificationService.Reset();
+        foreach (Form form in Application.OpenForms.Cast<Form>().ToList())
+        {
+            if (form != this)
+            {
+                form.Close();
+            }
+        }
+    }
+
+    private async void MnI_Saude_Click(object? sender, EventArgs e)
+    {
+        await OpenHealthDashboardAsync();
+    }
+
+    private async Task OpenHealthDashboardAsync()
+    {
+        if (!_identityAuthenticationService.IsAuthenticated || IsDisposed)
+        {
+            return;
+        }
+
+        if (_healthDashboard is null || _healthDashboard.IsDisposed)
+        {
+            _healthDashboard = new Frm_HealthDashboard(_healthMonitoringService);
+            _healthDashboard.FormClosed += HealthDashboard_FormClosed;
+            _healthDashboard.Show(this);
+        }
+        else
+        {
+            if (_healthDashboard.WindowState == FormWindowState.Minimized)
+            {
+                _healthDashboard.WindowState = FormWindowState.Normal;
+            }
+
+            _healthDashboard.Activate();
+        }
+
+        if (_lastHealthSnapshot is not null)
+        {
+            _healthDashboard.ApplySnapshot(_lastHealthSnapshot);
+        }
+
+        await _healthDashboard.RefreshAsync(_formClosingCancellationTokenSource.Token);
+    }
+
+    private async void HealthRefreshTimer_Tick(object? sender, EventArgs e)
+    {
+        await RefreshHealthAsync(notify: true);
+    }
+
+    private async Task RefreshHealthAsync(bool notify)
+    {
+        if (_isRefreshingHealth || !_identityAuthenticationService.IsAuthenticated || IsDisposed)
+        {
+            return;
+        }
+
+        _isRefreshingHealth = true;
+        try
+        {
+            var snapshot = await _healthMonitoringService.CheckAsync(
+                _formClosingCancellationTokenSource.Token);
+            _lastHealthSnapshot = snapshot;
+            if (!_identityAuthenticationService.IsAuthenticated)
+            {
+                ClearAuthenticatedUi();
+                return;
+            }
+
+            if (notify)
+            {
+                _healthNotificationService.Notify(snapshot);
+            }
+
+            if (_healthDashboard is not null && !_healthDashboard.IsDisposed)
+            {
+                _healthDashboard.ApplySnapshot(snapshot);
+            }
+        }
+        catch (OperationCanceledException) when (_formClosingCancellationTokenSource.IsCancellationRequested)
+        {
+        }
+        catch (WinAppAuthenticationException)
+        {
+            ClearAuthenticatedUi();
+        }
+        finally
+        {
+            _isRefreshingHealth = false;
+        }
+    }
+
+    private void HealthNotificationService_OpenRequested(object? sender, EventArgs e)
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        BeginInvoke(OpenHealthDashboardFromNotification);
+    }
+
+    private async void OpenHealthDashboardFromNotification()
+    {
+        await OpenHealthDashboardAsync();
+    }
+
+    private void HealthDashboard_FormClosed(object? sender, FormClosedEventArgs e)
+    {
+        if (ReferenceEquals(sender, _healthDashboard))
+        {
+            _healthDashboard = null;
+        }
     }
     //Menu Sair - Fechar a aplicação Toda.
     private void MnI_Sair_Click(object sender, EventArgs e)
@@ -346,6 +485,11 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
 
     private void Frm_WinAppDtudo_FormClosed(object? sender, FormClosedEventArgs e)
     {
+        _healthRefreshTimer.Stop();
+        _healthRefreshTimer.Dispose();
+        _healthDashboard?.Close();
+        _healthNotificationService.Dispose();
+        _healthMonitoringService.Dispose();
         _dtudoSiteStartupService.Dispose();
         _identityAuthenticationService.Dispose();
     }
@@ -402,9 +546,21 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         ApplyMainLayout();
     }
 
-    private void Frm_WinAppDtudo_Shown(object? sender, EventArgs e)
+    private async void Frm_WinAppDtudo_Shown(object? sender, EventArgs e)
     {
         ApplyMainLayout();
+        try
+        {
+            await _apiFileStorageStartupService.EnsureReadyAsync(
+                _formClosingCancellationTokenSource.Token);
+        }
+        catch (OperationCanceledException) when (_formClosingCancellationTokenSource.IsCancellationRequested)
+        {
+        }
+        catch (WinAppAuthenticationException exception)
+        {
+            StartupDiagnostics.Record("ApiFileStorage startup", exception);
+        }
     }
 
     private void ApplyMainLayout()

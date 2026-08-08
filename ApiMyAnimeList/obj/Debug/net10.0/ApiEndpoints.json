@@ -2,7 +2,7 @@
   {
     "ContainingType": "ApiMyAnimeList.Controllers.MyAnimeListController",
     "Method": "Get",
-    "RelativePath": "MyAnimeList/{id}",
+    "RelativePath": "ApiMyAnimeList/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -15,7 +15,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "ApiMyAnimeList.Dtos.CompatibleDetails",
+        "Type": "LibDtudo.Shared.Dtos.MyAnimeList.AnimeDetails",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -28,7 +28,7 @@
   {
     "ContainingType": "ApiMyAnimeList.Controllers.MyAnimeListController",
     "Method": "Relations",
-    "RelativePath": "MyAnimeList/{id}/relations",
+    "RelativePath": "ApiMyAnimeList/{id}/relations",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -41,7 +41,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.List\u00601[[ApiMyAnimeList.Dtos.CompatibleRelationGroup, ApiMyAnimeList, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "System.Collections.Generic.List\u00601[[LibDtudo.Shared.Dtos.MyAnimeList.AnimeRelationGroup, LibDtudo.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -53,8 +53,24 @@
   },
   {
     "ContainingType": "ApiMyAnimeList.Controllers.MyAnimeListController",
+    "Method": "Health",
+    "RelativePath": "ApiMyAnimeList/health",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "ApiMyAnimeList.Controllers.MyAnimeListController",
     "Method": "Search",
-    "RelativePath": "MyAnimeList/search",
+    "RelativePath": "ApiMyAnimeList/search",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -72,7 +88,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "ApiMyAnimeList.Dtos.CompatibleSearchResponse",
+        "Type": "LibDtudo.Shared.Dtos.MyAnimeList.AnimeSearchResult",
         "MediaTypes": [
           "text/plain",
           "application/json",

@@ -5,13 +5,16 @@ import HeaderPage from '../../components/HeaderPage/HeaderPage';
 import styles from './Animes.module.css';
 import { useContext, useMemo } from 'react';
 import AnimesContext from '../../context_api/AnimesContext/AnimesContext';
-import { ehAnimeAdulto } from '../../utils/animeContentUtils';
+import { ehAnimeAdulto } from '@dtudo-anime-content';
 
+const PUBLIC_CATALOG_ONLY = import.meta.env.MODE === 'homologation';
 
 export default function Animes() {
   const { listObjsDetalhesAnimes } = useContext(AnimesContext);
   const totalAnimesExibiveis = useMemo(
-    () => listObjsDetalhesAnimes.filter((anime) => !ehAnimeAdulto(anime)).length,
+    () => PUBLIC_CATALOG_ONLY
+      ? listObjsDetalhesAnimes.length
+      : listObjsDetalhesAnimes.filter((anime) => !ehAnimeAdulto(anime)).length,
     [listObjsDetalhesAnimes]
   );
 

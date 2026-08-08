@@ -34,6 +34,7 @@ partial class Frm_WinAppDtudo
         Mnu_Principal = new MenuStrip();
         MnI_Arquivo = new ToolStripMenuItem();
         MnI_CadastrarUsuario = new ToolStripMenuItem();
+        MnI_Saude = new ToolStripMenuItem();
         MnI_Conectar = new ToolStripMenuItem();
         MnI_Desconectar = new ToolStripMenuItem();
         MnI_Sair = new ToolStripMenuItem();
@@ -101,7 +102,7 @@ partial class Frm_WinAppDtudo
         // MnI_Arquivo
         // 
         MnI_Arquivo.BackColor = Color.Transparent;
-        MnI_Arquivo.DropDownItems.AddRange(new ToolStripItem[] { MnI_CadastrarUsuario, MnI_Conectar, MnI_Desconectar, MnI_Sair });
+        MnI_Arquivo.DropDownItems.AddRange(new ToolStripItem[] { MnI_CadastrarUsuario, MnI_Saude, MnI_Conectar, MnI_Desconectar, MnI_Sair });
         MnI_Arquivo.Image = Properties.Resources.YingYang_HD;
         MnI_Arquivo.Name = "MnI_Arquivo";
         MnI_Arquivo.Size = new Size(115, 36);
@@ -115,7 +116,16 @@ partial class Frm_WinAppDtudo
         MnI_CadastrarUsuario.Size = new Size(231, 38);
         MnI_CadastrarUsuario.Text = "Cadastrar Usuário";
         MnI_CadastrarUsuario.Click += MnI_CadastrarUsuario_Click;
-        // 
+        //
+        // MnI_Saude
+        //
+        MnI_Saude.ForeColor = Color.Gold;
+        MnI_Saude.Image = Properties.Resources.CaveraMetal;
+        MnI_Saude.Name = "MnI_Saude";
+        MnI_Saude.Size = new Size(231, 38);
+        MnI_Saude.Text = "Painel de Saude";
+        MnI_Saude.Click += MnI_Saude_Click;
+        //
         // MnI_Conectar
         // 
         MnI_Conectar.ForeColor = Color.Gold;
@@ -317,6 +327,7 @@ partial class Frm_WinAppDtudo
     private ToolStripMenuItem MnI_MyMusicX;
     private ToolStripMenuItem MnI_NinoTI;
     private ToolStripMenuItem MnI_CadastrarUsuario;
+    private ToolStripMenuItem MnI_Saude;
     private ToolStripMenuItem MnI_Conectar;
     private ToolStripMenuItem MnI_Desconectar;
     private PictureBox pictureBox1;

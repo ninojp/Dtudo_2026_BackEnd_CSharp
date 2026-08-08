@@ -55,6 +55,10 @@ public sealed class OpenIddictConfigurationSeeder
         };
         descriptor.RedirectUris.Add(new Uri(_options.RedirectUri, UriKind.Absolute));
         descriptor.Requirements.Add(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange);
+        descriptor.AddResourcePermissions(
+            "urn:dtudo:api-my-animes",
+            "urn:dtudo:api-my-animelist",
+            "urn:dtudo:api-file-storage");
         descriptor.Permissions.UnionWith(
             new[]
             {

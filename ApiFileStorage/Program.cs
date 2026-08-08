@@ -63,6 +63,7 @@ builder.Services.AddSingleton<IStorageSpaceChecker, StorageSpaceChecker>();
 builder.Services.AddSingleton<IFileScanner, CompositeFileScanner>();
 builder.Services.AddSingleton<IFileStorageLifecycleService, FileStorageLifecycleService>();
 builder.Services.AddSingleton<IFileStorageCommandService, FileStorageCommandService>();
+builder.Services.AddSingleton<FileStorageHealthService>();
 builder.Services.AddSingleton<FileStorageDeletePreviewStore>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IFileStorageStepUpValidator, IdentityFileStorageStepUpValidator>((services, client) =>

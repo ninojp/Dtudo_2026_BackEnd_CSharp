@@ -21,7 +21,7 @@ O runner falha fechado para `Apply` e `Rollback` de ambientes `Server` sem admin
 | Ambiente | Raiz de aplicacao | Banco MyAnimes | Banco Identity declarado | SQL esperado | Exposicao |
 | --- | --- | --- | --- | --- | --- |
 | Development | `%LOCALAPPDATA%\Programs\Dtudo2026\Development` | `Dtudo2026Db` | `Dtudo2026IdentityDb_Development` | LocalDB; banco validado: `Dtudo2026Db` | loopback |
-| Homologation | `C:\Program Files\Dtudo2026\Homologation` | `Dtudo2026Db_Homologation` | `Dtudo2026IdentityDb_Homologation` | SQL Server Express | loopback |
+| Homologation | `C:\Program Files\Dtudo2026\Homologation` | `Dtudo2026Db_Homologation` | `Dtudo2026IdentityDb_Homologation` | SQL Server Express | somente gateway IIS em `16443` |
 | Production | `C:\Program Files\Dtudo2026\Production` | `Dtudo2026Db_Production` | `Dtudo2026IdentityDb_Production` | SQL Server Express | somente gateway IIS |
 
 Cada ambiente tambem possui `Data`, `Secrets` e `Backup` proprios. As raizes de aplicacao, dados e backup de ambientes diferentes nao podem ser iguais nem estar contidas umas nas outras. Os bancos possuem nomes distintos mesmo quando usam a mesma instancia local do host.
@@ -61,7 +61,7 @@ As regras nomeadas com o prefixo `Dtudo2026-Etapa07` sao idempotentes e sao remo
 
 - Bloqueio de entrada TCP `1433` e UDP `1434` para impedir SQL/SQL Browser publico.
 - Portas internas de APIs e Seq bloqueadas para enderecos externos e permitidas somente para loopback, com `OverrideBlockRules`.
-- Gateways de Development e Homologation limitados a loopback.
+- Gateway de Development limitado a loopback; Homologation publica somente o gateway IIS em `16443`.
 - Production permite somente TCP `443` para o gateway IIS; SQL, Seq e APIs continuam internos.
 
 O runner tambem verifica listeners existentes e falha o check se uma porta interna estiver ligada a `0.0.0.0` ou `::`.
