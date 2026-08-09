@@ -10,9 +10,11 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
 {
     private const float DesignWidth = 1272F;
     private const float DesignContentHeight = 652F;
-    private readonly WinAppAuthenticationService _identityAuthenticationService = new();
+    private readonly WinAppAuthenticationService _identityAuthenticationService;
     private readonly ApiFileStorageStartupService _apiFileStorageStartupService = new();
     private readonly ApiMyAnimesHealthCheckService _apiMyAnimesHealthCheckService;
+    private readonly ApiMyAnimesStartupService _apiMyAnimesStartupService;
+    private readonly ApiMyAnimeListStartupService _apiMyAnimeListStartupService = new();
     private readonly WinAppHealthMonitoringService _healthMonitoringService;
     private readonly CancellationTokenSource _formClosingCancellationTokenSource = new();
     private readonly DtudoSiteStartupService _dtudoSiteStartupService;
@@ -31,7 +33,11 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         StartupDiagnostics.Mark("Before InitializeComponent");
         InitializeComponent();
         StartupDiagnostics.Mark("After InitializeComponent");
+        _identityAuthenticationService = new WinAppAuthenticationService(
+            browserClient: new WinAppPkceBrowserClient(
+                browserLauncher: OpenWinAppLoginAsync));
         _apiMyAnimesHealthCheckService = new ApiMyAnimesHealthCheckService(_identityAuthenticationService);
+        _apiMyAnimesStartupService = new ApiMyAnimesStartupService(_apiMyAnimesHealthCheckService);
         _healthMonitoringService = new WinAppHealthMonitoringService(_identityAuthenticationService);
         _healthNotificationService = new WindowsHealthNotificationService(Icon);
         _healthNotificationService.OpenRequested += HealthNotificationService_OpenRequested;
@@ -86,7 +92,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         using var formAdministration = new Frm_IdentityAdministration(_identityAuthenticationService);
         formAdministration.ShowDialog(this);
     }
-    //Menu Conectar - iniciar autenticacao no navegador do sistema.
+    //Menu Conectar - iniciar autenticacao dentro do WinAppDtudo.
     private async void MnI_Conectar_Click(object sender, EventArgs e)
     {
         if (_identityAuthenticationService.IsAuthenticated)
@@ -101,10 +107,11 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
                 _formClosingCancellationTokenSource.Token);
             SetAuthenticatedUi(true);
             _healthRefreshTimer.Start();
+            await EnsureMonitoredServicesReadyAsync(_formClosingCancellationTokenSource.Token);
             await RefreshHealthAsync(notify: true);
             DarkMessageBox.Show(
-                $"Login realizado no navegador do sistema.\nSessao: {session.SessionId:D}",
-                "Identity",
+                $"Login realizado no WinAppDtudo.\nSessao: {session.SessionId:D}",
+                "WinAppDtudo",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
         }
@@ -131,6 +138,21 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         {
             UseWaitCursor = false;
         }
+    }
+
+    private Task OpenWinAppLoginAsync(Uri authorizationUri)
+    {
+        using var loginForm = new Frm_WinAppLogin(
+            authorizationUri,
+            AppConfigurationService.IdentityRedirectUri);
+        var result = loginForm.ShowDialog(this);
+        if (result != DialogResult.OK)
+        {
+            throw new WinAppAuthenticationException(
+                "A autenticacao do WinAppDtudo foi cancelada.");
+        }
+
+        return Task.CompletedTask;
     }
     //Menu Desconectar - revogar a sessao atual e limpar o armazenamento local.
     private async void MnI_Desconectar_Click(object sender, EventArgs e)
@@ -281,6 +303,42 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         finally
         {
             _isRefreshingHealth = false;
+        }
+    }
+
+    private async Task EnsureMonitoredServicesReadyAsync(CancellationToken cancellationToken)
+    {
+        await Task.WhenAll(
+            TryEnsureServiceReadyAsync(
+                "ApiMyAnimes",
+                () => _apiMyAnimesStartupService.EnsureReadyAsync(cancellationToken),
+                cancellationToken),
+            TryEnsureServiceReadyAsync(
+                "ApiMyAnimeList",
+                () => _apiMyAnimeListStartupService.EnsureReadyAsync(cancellationToken),
+                cancellationToken),
+            TryEnsureServiceReadyAsync(
+                "ApiFileStorage",
+                () => _apiFileStorageStartupService.EnsureReadyAsync(cancellationToken),
+                cancellationToken));
+    }
+
+    private static async Task TryEnsureServiceReadyAsync(
+        string serviceName,
+        Func<Task> ensureReady,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await ensureReady();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            StartupDiagnostics.Record($"{serviceName} startup", exception);
         }
     }
 

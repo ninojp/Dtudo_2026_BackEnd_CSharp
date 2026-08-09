@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using ApiIdentity.Configuration;
 using ApiIdentity.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 
@@ -9,10 +11,14 @@ namespace ApiIdentity.Authorization;
 public sealed class OpenIddictAuthorizationPrincipalFactory
 {
     private readonly UserManager<IdentityAccount> _userManager;
+    private readonly OpenIddictServerConfigurationOptions _options;
 
-    public OpenIddictAuthorizationPrincipalFactory(UserManager<IdentityAccount> userManager)
+    public OpenIddictAuthorizationPrincipalFactory(
+        UserManager<IdentityAccount> userManager,
+        IOptions<OpenIddictServerConfigurationOptions> options)
     {
         _userManager = userManager;
+        _options = options.Value;
     }
 
     public async Task<ClaimsPrincipal?> CreateAsync(
@@ -36,6 +42,14 @@ public sealed class OpenIddictAuthorizationPrincipalFactory
         }
 
         var roles = await _userManager.GetRolesAsync(account);
+        if (string.Equals(request.ClientId, _options.WinApp.ClientId, StringComparison.Ordinal)
+            && !roles.Contains(
+                AuthorizationCatalog.Roles.SuperAdministrator,
+                StringComparer.Ordinal))
+        {
+            return null;
+        }
+
         var permissions = AuthorizationCatalog.AllRoles
             .Where(role => roles.Contains(role.Name, StringComparer.Ordinal))
             .SelectMany(role => role.PermissionKeys)

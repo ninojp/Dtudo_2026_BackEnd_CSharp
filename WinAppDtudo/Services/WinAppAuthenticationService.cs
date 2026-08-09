@@ -14,6 +14,9 @@ public sealed record WinAppSessionInfo(
 
 public sealed class WinAppAuthenticationService : IDisposable
 {
+    private const string RequiredWinAppRole = "Superadministrador";
+    private const string RoleClaimName = "role";
+    private const string LegacyRoleClaimName = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly HttpClient _httpClient;
@@ -56,7 +59,9 @@ public sealed class WinAppAuthenticationService : IDisposable
         {
             ThrowIfDisposed();
             var stored = _tokenSet ?? await _tokenStore.LoadAsync(cancellationToken);
-            if (IsSessionUsable(stored) && HasConfiguredResources(stored!.AccessToken))
+            if (IsSessionUsable(stored)
+                && HasConfiguredResources(stored!.AccessToken)
+                && HasRequiredRole(stored.AccessToken))
             {
                 _tokenSet = stored;
                 return CurrentSession!;
@@ -69,10 +74,13 @@ public sealed class WinAppAuthenticationService : IDisposable
 
             if (stored is not null
                 && HasConfiguredResources(stored.AccessToken)
+                && HasRequiredRole(stored.AccessToken)
                 && !string.IsNullOrWhiteSpace(stored.RefreshToken))
             {
                 var refreshed = await RefreshCoreAsync(stored, cancellationToken);
-                if (refreshed is not null)
+                if (refreshed is not null
+                    && HasConfiguredResources(refreshed.AccessToken)
+                    && HasRequiredRole(refreshed.AccessToken))
                 {
                     _tokenSet = refreshed;
                     await _tokenStore.SaveAsync(refreshed, cancellationToken);
@@ -82,6 +90,14 @@ public sealed class WinAppAuthenticationService : IDisposable
 
             await _tokenStore.ClearAsync();
             var fresh = await _browserClient.AuthenticateAsync(cancellationToken);
+            if (!HasConfiguredResources(fresh.AccessToken)
+                || !HasRequiredRole(fresh.AccessToken))
+            {
+                await _tokenStore.ClearAsync();
+                throw new WinAppAuthenticationException(
+                    "O WinAppDtudo aceita somente a conta com a role Superadministrador.");
+            }
+
             var session = await CreateSecuritySessionAsync(fresh, cancellationToken);
             _tokenSet = fresh with
             {
@@ -104,7 +120,8 @@ public sealed class WinAppAuthenticationService : IDisposable
         {
             ThrowIfDisposed();
             var stored = _tokenSet ?? await _tokenStore.LoadAsync(cancellationToken);
-            if (IsAccessTokenUsable(stored))
+            if (IsAccessTokenUsable(stored)
+                && HasRequiredRole(stored!.AccessToken))
             {
                 _tokenSet = stored;
                 return stored!.AccessToken;
@@ -122,6 +139,15 @@ public sealed class WinAppAuthenticationService : IDisposable
                 _tokenSet = null;
                 await _tokenStore.ClearAsync();
                 throw new WinAppAuthenticationException("A sessao administrativa nao pode ser renovada.");
+            }
+
+            if (!HasConfiguredResources(refreshed.AccessToken)
+                || !HasRequiredRole(refreshed.AccessToken))
+            {
+                _tokenSet = null;
+                await _tokenStore.ClearAsync();
+                throw new WinAppAuthenticationException(
+                    "O WinAppDtudo aceita somente a conta com a role Superadministrador.");
             }
 
             _tokenSet = refreshed;
@@ -355,7 +381,9 @@ public sealed class WinAppAuthenticationService : IDisposable
             }
 
             var refreshed = await RefreshCoreAsync(current, cancellationToken);
-            if (refreshed is null)
+            if (refreshed is null
+                || !HasConfiguredResources(refreshed.AccessToken)
+                || !HasRequiredRole(refreshed.AccessToken))
             {
                 _tokenSet = null;
                 await _tokenStore.ClearAsync();
@@ -456,6 +484,65 @@ public sealed class WinAppAuthenticationService : IDisposable
         {
             return true;
         }
+    }
+
+    private static bool HasRequiredRole(string accessToken)
+    {
+        using var document = TryReadJwtPayload(accessToken);
+        if (document is null)
+        {
+            return false;
+        }
+
+        return HasClaimValue(document.RootElement, RoleClaimName, RequiredWinAppRole)
+            || HasClaimValue(document.RootElement, LegacyRoleClaimName, RequiredWinAppRole);
+    }
+
+    private static JsonDocument? TryReadJwtPayload(string accessToken)
+    {
+        var segments = accessToken.Split('.');
+        if (segments.Length != 3)
+        {
+            return null;
+        }
+
+        try
+        {
+            var payload = segments[1].Replace('-', '+').Replace('_', '/');
+            payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+            return JsonDocument.Parse(Convert.FromBase64String(payload));
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static bool HasClaimValue(
+        JsonElement payload,
+        string claimName,
+        string expectedValue)
+    {
+        if (!payload.TryGetProperty(claimName, out var claim))
+        {
+            return false;
+        }
+
+        return claim.ValueKind switch
+        {
+            JsonValueKind.String => string.Equals(
+                claim.GetString(),
+                expectedValue,
+                StringComparison.Ordinal),
+            JsonValueKind.Array => claim.EnumerateArray().Any(item =>
+                item.ValueKind == JsonValueKind.String
+                && string.Equals(item.GetString(), expectedValue, StringComparison.Ordinal)),
+            _ => false
+        };
     }
 
     private void ThrowIfDisposed()

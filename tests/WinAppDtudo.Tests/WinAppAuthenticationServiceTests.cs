@@ -1,11 +1,54 @@
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using WinAppDtudo.Services;
 
 namespace WinAppDtudo.Tests;
 
 public sealed class WinAppAuthenticationServiceTests
 {
+    [Fact]
+    public async Task GetAccessTokenRejectsSavedCommonUserSession()
+    {
+        var filePath = Path.Combine(
+            Path.GetTempPath(),
+            "Dtudo2026",
+            "WinAppAuthenticationServiceTests",
+            Guid.NewGuid().ToString("N"),
+            "session.bin");
+        var sessionId = Guid.NewGuid();
+        var store = new ProtectedTokenStore(filePath);
+        await store.SaveAsync(new WinAppTokenSet(
+            TestTokens.CommonUserAccessToken,
+            "common-refresh-token",
+            DateTimeOffset.UtcNow.AddMinutes(5),
+            DateTimeOffset.UtcNow.AddHours(1),
+            sessionId,
+            Guid.NewGuid()));
+
+        try
+        {
+            using var httpClient = new HttpClient(new RefreshHandler(sessionId, TestTokens.CommonUserAccessToken));
+            using var service = new WinAppAuthenticationService(
+                store,
+                httpClient: httpClient);
+
+            var exception = await Assert.ThrowsAsync<WinAppAuthenticationException>(
+                () => service.GetAccessTokenAsync());
+
+            Assert.Contains("Superadministrador", exception.Message, StringComparison.Ordinal);
+            Assert.False(File.Exists(filePath));
+            Assert.False(service.IsAuthenticated);
+        }
+        finally
+        {
+            if (Directory.Exists(Path.GetDirectoryName(filePath)))
+            {
+                Directory.Delete(Path.GetDirectoryName(filePath)!, recursive: true);
+            }
+        }
+    }
+
     [Fact]
     public async Task SignInRefreshesSnakeCaseOAuthResponseAndRebindsAccessToken()
     {
@@ -19,7 +62,7 @@ public sealed class WinAppAuthenticationServiceTests
         var deviceId = Guid.NewGuid();
         var store = new ProtectedTokenStore(filePath);
         await store.SaveAsync(new WinAppTokenSet(
-            "expired-access-token",
+            TestTokens.SuperAdministratorAccessToken,
             "valid-refresh-token",
             DateTimeOffset.UtcNow.AddMinutes(-1),
             DateTimeOffset.UtcNow.AddHours(1),
@@ -38,10 +81,10 @@ public sealed class WinAppAuthenticationServiceTests
 
             Assert.Equal(sessionId, session.SessionId);
             Assert.Equal(deviceId, session.DeviceId);
-            Assert.Equal("new-access-token", await service.GetAccessTokenAsync());
+            Assert.Equal(TestTokens.SuperAdministratorAccessToken, await service.GetAccessTokenAsync());
             Assert.True(handler.RefreshCalled);
             Assert.True(handler.BindingCalled);
-            Assert.Equal("new-access-token", handler.BoundAccessToken);
+            Assert.Equal(TestTokens.SuperAdministratorAccessToken, handler.BoundAccessToken);
             Assert.Equal("new-refresh-token", (await store.LoadAsync())!.RefreshToken);
         }
         finally
@@ -66,7 +109,7 @@ public sealed class WinAppAuthenticationServiceTests
         var deviceId = Guid.NewGuid();
         var store = new ProtectedTokenStore(filePath);
         await store.SaveAsync(new WinAppTokenSet(
-            "active-access-token",
+            TestTokens.SuperAdministratorAccessToken,
             "active-refresh-token",
             DateTimeOffset.UtcNow.AddMinutes(5),
             DateTimeOffset.UtcNow.AddHours(1),
@@ -110,7 +153,7 @@ public sealed class WinAppAuthenticationServiceTests
             "session.bin");
         var store = new ProtectedTokenStore(filePath);
         await store.SaveAsync(new WinAppTokenSet(
-            "expired-access-token",
+            TestTokens.SuperAdministratorAccessToken,
             "active-refresh-token",
             DateTimeOffset.UtcNow.AddMinutes(-1),
             DateTimeOffset.UtcNow.AddHours(1),
@@ -148,7 +191,7 @@ public sealed class WinAppAuthenticationServiceTests
             "session.bin");
         var store = new ProtectedTokenStore(filePath);
         await store.SaveAsync(new WinAppTokenSet(
-            "active-access-token",
+            TestTokens.SuperAdministratorAccessToken,
             "active-refresh-token",
             DateTimeOffset.UtcNow.AddMinutes(5),
             DateTimeOffset.UtcNow.AddHours(1),
@@ -183,8 +226,17 @@ public sealed class WinAppAuthenticationServiceTests
         }
     }
 
-    private sealed class RefreshHandler(Guid sessionId) : HttpMessageHandler
+    private sealed class RefreshHandler : HttpMessageHandler
     {
+        private readonly Guid _sessionId;
+        private readonly string _accessToken;
+
+        public RefreshHandler(Guid sessionId, string? accessToken = null)
+        {
+            _sessionId = sessionId;
+            _accessToken = accessToken ?? TestTokens.SuperAdministratorAccessToken;
+        }
+
         public bool RefreshCalled { get; private set; }
         public bool BindingCalled { get; private set; }
         public string? BoundAccessToken { get; private set; }
@@ -200,13 +252,19 @@ public sealed class WinAppAuthenticationServiceTests
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent(
-                        "{\"access_token\":\"new-access-token\",\"refresh_token\":\"new-refresh-token\",\"expires_in\":300,\"refresh_expires_in\":3600}",
+                        JsonSerializer.Serialize(new
+                        {
+                            access_token = _accessToken,
+                            refresh_token = "new-refresh-token",
+                            expires_in = 300,
+                            refresh_expires_in = 3600
+                        }),
                         Encoding.UTF8,
                         "application/json")
                 });
             }
 
-            if (path.Equals($"/identity/security/sessions/{sessionId:D}/token", StringComparison.Ordinal))
+            if (path.Equals($"/identity/security/sessions/{_sessionId:D}/token", StringComparison.Ordinal))
             {
                 BindingCalled = true;
                 BoundAccessToken = request.Headers.Authorization?.Parameter;

@@ -26,23 +26,51 @@ export default function Login() {
     };
 
     return (
-        <div className={styles.divContainerLogin}>
-            <h3 className={styles.h3RegisterUser}>Login</h3>
-            <h4 className={styles.h4RegisterUser}>Boas-vindas! Entre pela sessao segura.</h4>
-            {(callbackError || authError) && (
-                <p role="alert">{callbackError || authError}</p>
-            )}
-            <button
-                className={styles.btnRegister}
-                type="button"
-                onClick={iniciarLogin}
-                disabled={isLoading || isRedirecting}
-            >
-                {isRedirecting ? 'Redirecionando...' : 'Entrar'}
-            </button>
-            <div className={styles.divRodape}>
-                <p>As contas sao criadas pelo procedimento administrativo.</p>
-            </div>
-        </div>
+        <main className={styles.loginPage}>
+            <section className={styles.brandPanel} aria-label="DtudoSite">
+                <div className={styles.brandBar}>
+                    <span className={styles.brandMark} aria-hidden="true">D</span>
+                    <span className={styles.brandName}>DtudoSite</span>
+                </div>
+                <div className={styles.brandCopy}>
+                    <p className={styles.eyebrow}>CATALOGO DTUDO</p>
+                    <h1>Seu catalogo. Sua proxima descoberta.</h1>
+                    <p className={styles.brandLead}>
+                        Continue para explorar animes, colecoes e detalhes reunidos no Dtudo.
+                    </p>
+                </div>
+                <div className={styles.brandFooter}>
+                    <span className={styles.statusDot} aria-hidden="true" />
+                    <span>Experiencia DtudoSite</span>
+                </div>
+            </section>
+            <section className={styles.authPanel} aria-labelledby="login-title">
+                <div className={styles.panelHeading}>
+                    <p className={styles.panelKicker}>ACESSO SEGURO</p>
+                    <h2 id="login-title">Entrar no DtudoSite</h2>
+                    <p className={styles.panelSubtitle}>
+                        Use sua conta para continuar.
+                    </p>
+                </div>
+                {(callbackError || authError) && (
+                    <p className={styles.alert} role="alert">
+                        <span className={styles.alertIcon} aria-hidden="true">!</span>
+                        <span>{callbackError || authError}</span>
+                    </p>
+                )}
+                <button
+                    className={styles.submitButton}
+                    type="button"
+                    onClick={iniciarLogin}
+                    disabled={isLoading || isRedirecting}
+                >
+                    <span>{isRedirecting ? 'Redirecionando...' : 'Entrar'}</span>
+                    <span className={styles.buttonArrow} aria-hidden="true">&rarr;</span>
+                </button>
+                <p className={styles.securityNote}>
+                    <span aria-hidden="true">&#9679;</span> As contas sao criadas pelo procedimento administrativo.
+                </p>
+            </section>
+        </main>
     );
 };

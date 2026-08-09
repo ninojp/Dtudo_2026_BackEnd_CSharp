@@ -426,6 +426,8 @@ app.MapPost("/account/login", async (
 app.MapMethods("/connect/authorize", [HttpMethods.Get, HttpMethods.Post], async (
     HttpContext context,
     OpenIddictAuthorizationPrincipalFactory principalFactory,
+    IAntiforgery antiforgery,
+    IOptions<OpenIddictServerConfigurationOptions> serverOptions,
     CancellationToken cancellationToken) =>
 {
     var request = Microsoft.AspNetCore.OpenIddictServerAspNetCoreHelpers
@@ -451,6 +453,25 @@ app.MapMethods("/connect/authorize", [HttpMethods.Get, HttpMethods.Post], async 
     if (principal is null)
     {
         await context.SignOutAsync(browserCookieScheme);
+        if (string.Equals(
+            request.ClientId,
+            serverOptions.Value.WinApp.ClientId,
+            StringComparison.Ordinal))
+        {
+            var returnUrl = GetSafeReturnUrl(
+                context.Request.PathBase
+                + context.Request.Path
+                + context.Request.QueryString);
+            return Results.Content(
+                BuildLoginPage(
+                    returnUrl,
+                    antiforgery.GetAndStoreTokens(context).RequestToken,
+                    "O WinAppDtudo aceita somente a conta Superadministrador."),
+                "text/html; charset=utf-8",
+                Encoding.UTF8,
+                StatusCodes.Status403Forbidden);
+        }
+
         return Results.Challenge(
             new AuthenticationProperties
             {
@@ -1523,20 +1544,304 @@ static string BuildLoginPage(string returnUrl, string? requestVerificationToken,
 {
     var encodedReturnUrl = WebUtility.HtmlEncode(returnUrl);
     var encodedToken = WebUtility.HtmlEncode(requestVerificationToken ?? string.Empty);
+    var clientId = GetLoginClientId(returnUrl);
+    var isWinApp = string.Equals(clientId, "dtudo-winapp", StringComparison.Ordinal);
+    var applicationName = isWinApp ? "WinAppDtudo" : "DtudoSite";
+    var loginTitle = WebUtility.HtmlEncode($"Entrar no {applicationName}");
+    var themeClass = isWinApp ? "winapp" : "site";
+    var mark = isWinApp ? "W" : "D";
+    var eyebrow = isWinApp ? "ACESSO ADMINISTRATIVO" : "CATALOGO DTUDO";
+    var lead = isWinApp
+        ? "Entre com a conta Superadministrador para abrir o aplicativo local."
+        : "Entre para continuar sua sessao no catalogo DtudoSite.";
+    var panelKicker = isWinApp ? "CONTROLE LOCAL" : "ACESSO SEGURO";
+    var panelTitle = isWinApp ? "Identidade do WinApp" : "Sua conta Dtudo";
+    var panelSubtitle = isWinApp
+        ? "Acesso restrito ao ambiente administrativo."
+        : "Use seu email e senha para continuar.";
+    var footer = isWinApp ? "Sessao local protegida" : "Sessao protegida pelo Identity";
+    var styles = isWinApp ? BuildWinAppLoginStyles() : BuildDtudoSiteLoginStyles();
     var encodedError = string.IsNullOrWhiteSpace(error)
         ? string.Empty
-        : $"<p role=\"alert\">{WebUtility.HtmlEncode(error)}</p>";
-    return "<!doctype html><html lang=\"pt-BR\"><head><meta charset=\"utf-8\"><title>Entrar no Dtudo</title>"
-        + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"></head><body>"
-        + "<main><h1>Entrar no Dtudo</h1>"
-        + encodedError
-        + "<form method=\"post\" action=\"/account/login\">"
-        + $"<input type=\"hidden\" name=\"returnUrl\" value=\"{encodedReturnUrl}\">"
-        + $"<input type=\"hidden\" name=\"__RequestVerificationToken\" value=\"{encodedToken}\">"
-        + "<label>Email<input type=\"email\" name=\"email\" autocomplete=\"email\" required></label>"
-        + "<label>Senha<input type=\"password\" name=\"password\" autocomplete=\"current-password\" required></label>"
-        + "<button type=\"submit\">Entrar</button></form></main></body></html>";
+        : $"<div class=\"alert\" role=\"alert\"><span class=\"alert-icon\" aria-hidden=\"true\">!</span><span>{WebUtility.HtmlEncode(error)}</span></div>";
+    return $$"""
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>{{loginTitle}}</title>
+    <style>{{styles}}</style>
+</head>
+<body class="{{themeClass}}">
+    <div class="login-shell">
+        <section class="brand-panel" aria-label="{{applicationName}}">
+            <div class="brand-bar">
+                <span class="brand-mark" aria-hidden="true">{{mark}}</span>
+                <span class="brand-name">{{applicationName}}</span>
+            </div>
+            <div class="brand-copy">
+                <p class="eyebrow">{{eyebrow}}</p>
+                <h1>{{loginTitle}}</h1>
+                <p class="brand-lead">{{lead}}</p>
+            </div>
+            <div class="brand-footer">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span>{{footer}}</span>
+            </div>
+        </section>
+        <main class="auth-panel">
+            <div class="panel-heading">
+                <p class="panel-kicker">{{panelKicker}}</p>
+                <h2>{{panelTitle}}</h2>
+                <p class="panel-subtitle">{{panelSubtitle}}</p>
+            </div>
+            {{encodedError}}
+            <form method="post" action="/account/login">
+                <input type="hidden" name="returnUrl" value="{{encodedReturnUrl}}">
+                <input type="hidden" name="__RequestVerificationToken" value="{{encodedToken}}">
+                <label class="field">
+                    <span>Email</span>
+                    <input type="email" name="email" autocomplete="email" placeholder="voce@exemplo.com" required autofocus>
+                </label>
+                <label class="field">
+                    <span>Senha</span>
+                    <input type="password" name="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+                </label>
+                <button class="submit-button" type="submit">
+                    <span>Entrar</span>
+                    <span class="submit-arrow" aria-hidden="true">&#8594;</span>
+                </button>
+            </form>
+            <p class="security-note"><span aria-hidden="true">&#9679;</span> Autenticacao protegida pelo Identity local.</p>
+        </main>
+    </div>
+</body>
+</html>
+""";
 }
+
+static string GetLoginClientId(string returnUrl)
+{
+    if (!Uri.TryCreate("https://localhost" + returnUrl, UriKind.Absolute, out var returnUri))
+    {
+        return string.Empty;
+    }
+
+    var query = QueryHelpers.ParseQuery(returnUri.Query);
+    if (!query.TryGetValue("client_id", out var clientId))
+    {
+        return string.Empty;
+    }
+
+    return clientId.ToString();
+}
+
+static string BuildDtudoSiteLoginStyles() => """
+:root {
+    color-scheme: dark;
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    color: #eef9ff;
+    background: #020c19;
+}
+* { box-sizing: border-box; }
+body {
+    min-height: 100vh;
+    margin: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    overflow-x: hidden;
+    background:
+        radial-gradient(circle at 12% 10%, #0d5f89 0, transparent 34%),
+        radial-gradient(circle at 92% 88%, #123d69 0, transparent 32%),
+        linear-gradient(145deg, #071321 0%, #041832 54%, #020c19 100%);
+}
+body::before {
+    position: fixed;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    opacity: .22;
+    background-image: linear-gradient(#ffffff0d 1px, transparent 1px), linear-gradient(90deg, #ffffff0d 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: linear-gradient(to bottom, #000, transparent 78%);
+}
+.login-shell {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr);
+    width: min(100%, 1040px);
+    min-height: 650px;
+    overflow: hidden;
+    border: 1px solid #4eb7e666;
+    border-radius: 8px;
+    background: #041832cc;
+    box-shadow: 0 28px 80px #0000008c, 0 0 0 1px #ffffff08 inset;
+}
+.brand-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+    padding: clamp(32px, 6vw, 68px);
+    overflow: hidden;
+    background: linear-gradient(148deg, #0b3157 0%, #06243e 56%, #041832 100%);
+}
+.brand-panel::after {
+    position: absolute;
+    right: -110px;
+    bottom: -140px;
+    width: 360px;
+    height: 360px;
+    content: "";
+    border: 1px solid #4eb7e633;
+    border-radius: 50%;
+    box-shadow: 0 0 0 28px #4eb7e00a, 0 0 0 56px #4eb7e006;
+}
+.brand-bar, .brand-footer { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    border: 1px solid #8fe4ff;
+    border-radius: 8px;
+    color: #041832;
+    background: #4eb7e6;
+    box-shadow: 8px 8px 0 #04183266;
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+.brand-name { color: #dff7ff; font-size: 1.1rem; font-weight: 700; letter-spacing: 0; }
+.brand-copy { position: relative; z-index: 1; max-width: 440px; }
+.eyebrow, .panel-kicker { margin: 0 0 18px; color: #7fdcff; font-size: .72rem; font-weight: 700; letter-spacing: 0; }
+h1, h2, p { margin-top: 0; }
+h1 { max-width: 10ch; margin-bottom: 22px; color: #f4fcff; font-size: 4rem; line-height: .98; letter-spacing: 0; }
+.brand-lead { max-width: 30ch; margin-bottom: 0; color: #b5d2e0; font-size: 1.04rem; line-height: 1.65; }
+.brand-footer { color: #a9c7d7; font-size: .84rem; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4eb7e6; box-shadow: 0 0 0 5px #4eb7e620, 0 0 16px #4eb7e6; }
+.auth-panel { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: clamp(32px, 6vw, 68px); background: #020c19e8; }
+.panel-heading { margin-bottom: 32px; }
+.panel-kicker { margin-bottom: 12px; color: #4eb7e6; }
+h2 { margin-bottom: 10px; color: #f4fcff; font-size: 2.35rem; line-height: 1.05; }
+.panel-subtitle { margin-bottom: 0; color: #91afbf; line-height: 1.5; }
+.alert { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 22px; padding: 12px 14px; border: 1px solid #ff7c7c66; border-radius: 6px; color: #ffdada; background: #7d28352b; line-height: 1.45; }
+.alert-icon { display: grid; flex: 0 0 auto; width: 20px; height: 20px; place-items: center; border-radius: 50%; color: #041832; background: #ff8f8f; font-size: .78rem; font-weight: 800; }
+form { display: grid; gap: 18px; }
+.field { display: grid; gap: 8px; color: #cae4ef; font-size: .86rem; font-weight: 700; }
+.field input { width: 100%; min-height: 50px; padding: 0 15px; border: 1px solid #4eb7e64d; border-radius: 5px; outline: none; color: #f4fcff; background: #061a2d; font: inherit; font-weight: 400; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease; }
+.field input::placeholder { color: #6c8b9b; }
+.field input:hover { border-color: #4eb7e699; }
+.field input:focus { border-color: #7fdcff; background: #08213a; box-shadow: 0 0 0 3px #4eb7e626; }
+.submit-button { display: flex; align-items: center; justify-content: space-between; min-height: 52px; margin-top: 8px; padding: 0 17px 0 20px; border: 1px solid #8fe4ff; border-radius: 5px; color: #041832; background: #4eb7e6; font: inherit; font-weight: 800; cursor: pointer; transition: transform .18s ease, background .18s ease, box-shadow .18s ease; }
+.submit-button:hover { background: #82d9f5; box-shadow: 0 10px 24px #4eb7e633; transform: translateY(-1px); }
+.submit-button:focus-visible { outline: 3px solid #d6f7ff; outline-offset: 3px; }
+.submit-arrow { font-size: 1.35rem; line-height: 1; }
+.security-note { margin: 28px 0 0; color: #6f91a3; font-size: .78rem; line-height: 1.5; }
+.security-note span { color: #4eb7e6; font-size: .62rem; vertical-align: 1px; }
+@media (max-width: 760px) {
+    body { padding: 12px; place-items: start center; }
+    .login-shell { grid-template-columns: 1fr; min-height: 0; }
+    .brand-panel { min-height: 290px; padding: 28px; }
+    .brand-copy { margin-top: 42px; }
+    h1 { font-size: 3.3rem; }
+    .auth-panel { padding: 34px 28px 38px; }
+}
+""";
+
+static string BuildWinAppLoginStyles() => """
+:root {
+    color-scheme: dark;
+    font-family: "Segoe UI", "Cascadia Code", sans-serif;
+    color: #f0eadb;
+    background: #080808;
+}
+* { box-sizing: border-box; }
+body {
+    min-height: 100vh;
+    margin: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    overflow-x: hidden;
+    background: radial-gradient(circle at 78% 16%, #5f46151f 0, transparent 27%), linear-gradient(145deg, #181818 0%, #0b0b0b 58%, #050505 100%);
+}
+body::before {
+    position: fixed;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    opacity: .2;
+    background: repeating-linear-gradient(135deg, transparent 0 20px, #d8af4f08 21px 22px);
+}
+.login-shell {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, .86fr);
+    width: min(100%, 1040px);
+    min-height: 650px;
+    overflow: hidden;
+    border: 1px solid #b78e3c66;
+    border-radius: 8px;
+    background: #101010;
+    box-shadow: 0 28px 80px #000000cc, 0 0 0 1px #ffffff08 inset;
+}
+.brand-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+    padding: clamp(32px, 6vw, 68px);
+    overflow: hidden;
+    border-right: 1px solid #b78e3c2e;
+    background: linear-gradient(145deg, #1a1a1a 0%, #101010 58%, #090909 100%);
+}
+.brand-panel::after { position: absolute; right: -160px; bottom: -160px; width: 420px; height: 420px; content: ""; border: 1px solid #d8af4f38; border-radius: 50%; box-shadow: 0 0 0 24px #d8af4f08, 0 0 0 48px #d8af4f05; }
+.brand-bar, .brand-footer { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
+.brand-mark { display: grid; width: 48px; height: 48px; place-items: center; border: 1px solid #d8af4f; border-radius: 8px; color: #17120a; background: #d8af4f; box-shadow: 7px 7px 0 #00000066; font-size: 1.45rem; font-weight: 900; letter-spacing: 0; }
+.brand-name { color: #f2dfae; font-size: 1.1rem; font-weight: 700; letter-spacing: 0; }
+.brand-copy { position: relative; z-index: 1; max-width: 440px; }
+.eyebrow, .panel-kicker { margin: 0 0 18px; color: #d8af4f; font-size: .72rem; font-weight: 700; letter-spacing: 0; }
+h1, h2, p { margin-top: 0; }
+h1 { max-width: 10ch; margin-bottom: 22px; color: #fff8e6; font-size: 4rem; line-height: .98; letter-spacing: 0; }
+.brand-lead { max-width: 30ch; margin-bottom: 0; color: #c1b9a8; font-size: 1.04rem; line-height: 1.65; }
+.brand-footer { color: #9e978a; font-size: .84rem; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #d8af4f; box-shadow: 0 0 0 5px #d8af4f1a, 0 0 16px #d8af4f; }
+.auth-panel { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: clamp(32px, 6vw, 68px); background: #0b0b0b; }
+.panel-heading { margin-bottom: 32px; }
+.panel-kicker { margin-bottom: 12px; color: #d8af4f; }
+h2 { margin-bottom: 10px; color: #fff8e6; font-size: 2.35rem; line-height: 1.05; }
+.panel-subtitle { margin-bottom: 0; color: #aaa296; line-height: 1.5; }
+.alert { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 22px; padding: 12px 14px; border: 1px solid #d86e5a66; border-radius: 6px; color: #ffdcd4; background: #7d30261f; line-height: 1.45; }
+.alert-icon { display: grid; flex: 0 0 auto; width: 20px; height: 20px; place-items: center; border-radius: 50%; color: #1a0e08; background: #ee967e; font-size: .78rem; font-weight: 800; }
+form { display: grid; gap: 18px; }
+.field { display: grid; gap: 8px; color: #d8cfbf; font-size: .86rem; font-weight: 700; }
+.field input { width: 100%; min-height: 50px; padding: 0 15px; border: 1px solid #c0994d59; border-radius: 5px; outline: none; color: #fff8e6; background: #151515; font: inherit; font-weight: 400; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease; }
+.field input::placeholder { color: #777166; }
+.field input:hover { border-color: #d8af4f99; }
+.field input:focus { border-color: #e5c46f; background: #1a1a1a; box-shadow: 0 0 0 3px #d8af4f26; }
+.submit-button { display: flex; align-items: center; justify-content: space-between; min-height: 52px; margin-top: 8px; padding: 0 17px 0 20px; border: 1px solid #f0d17c; border-radius: 5px; color: #1b1408; background: #d8af4f; font: inherit; font-weight: 800; cursor: pointer; transition: transform .18s ease, background .18s ease, box-shadow .18s ease; }
+.submit-button:hover { background: #ebca75; box-shadow: 0 10px 24px #d8af4f26; transform: translateY(-1px); }
+.submit-button:focus-visible { outline: 3px solid #fff1bd; outline-offset: 3px; }
+.submit-arrow { font-size: 1.35rem; line-height: 1; }
+.security-note { margin: 28px 0 0; color: #766f64; font-size: .78rem; line-height: 1.5; }
+.security-note span { color: #d8af4f; font-size: .62rem; vertical-align: 1px; }
+@media (max-width: 760px) {
+    body { padding: 12px; place-items: start center; }
+    .login-shell { grid-template-columns: 1fr; min-height: 0; }
+    .brand-panel { min-height: 290px; padding: 28px; border-right: 0; border-bottom: 1px solid #b78e3c2e; }
+    .brand-copy { margin-top: 42px; }
+    h1 { font-size: 3.3rem; }
+    .auth-panel { padding: 34px 28px 38px; }
+}
+""";
 
     public sealed record DevelopmentPasswordResetRequest(string UserName, string Password);
 

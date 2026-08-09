@@ -126,6 +126,44 @@ public sealed class WinAppHealthMonitoringServiceTests
     }
 
     [Fact]
+    public async Task ForbiddenHealthResponseIsWarningBecauseServiceIsReachable()
+    {
+        var handler = new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.Forbidden));
+        var (authenticationService, temporaryDirectory) = await CreateAuthenticationServiceAsync();
+
+        try
+        {
+            using (authenticationService)
+            using (var httpClient = new HttpClient(handler))
+            using (var service = new WinAppHealthMonitoringService(
+                       authenticationService,
+                       httpClient,
+                       new WinAppHealthMonitoringOptions
+                       {
+                           IdentityBaseUrl = new Uri("https://identity.test/"),
+                           ApiMyAnimesBaseUrl = new Uri("https://animes.test/"),
+                           ApiMyAnimeListBaseUrl = new Uri("https://mal.test/"),
+                           ApiFileStorageBaseUrl = new Uri("https://storage.test/"),
+                           CertificateTargets = [],
+                           BackupRoot = null,
+                           ProbeTimeout = TimeSpan.FromSeconds(2)
+                       }))
+            {
+                var snapshot = await service.CheckAsync();
+
+                Assert.Equal(WinAppHealthState.Warning, Find(snapshot, "ApiMyAnimes").State);
+                Assert.Equal(WinAppHealthState.Warning, Find(snapshot, "ApiMyAnimeList").State);
+                Assert.Equal(WinAppHealthState.Warning, Find(snapshot, "ApiFileStorage").State);
+                Assert.Contains("health.read", Find(snapshot, "ApiFileStorage").Summary);
+            }
+        }
+        finally
+        {
+            DeleteTemporaryDirectory(temporaryDirectory);
+        }
+    }
+
+    [Fact]
     public async Task ExpiringSessionIsReportedAsWarning()
     {
         var handler = new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
@@ -337,7 +375,7 @@ public sealed class WinAppHealthMonitoringServiceTests
         var tokenStore = new ProtectedTokenStore(Path.Combine(temporaryDirectory, "session.bin"));
         var now = DateTimeOffset.UtcNow;
         await tokenStore.SaveAsync(new WinAppTokenSet(
-            new string('t', 32),
+            TestTokens.SuperAdministratorAccessToken,
             new string('r', 32),
             now.Add(accessTokenLifetime ?? TimeSpan.FromMinutes(5)),
             now.AddDays(1),

@@ -1,4 +1,3 @@
-C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.exe
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.deps.json
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.runtimeconfig.json
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.dll
@@ -184,3 +183,4 @@ C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.runtimeconfig.json
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.dll
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.pdb
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.exe

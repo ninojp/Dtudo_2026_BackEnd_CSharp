@@ -76,7 +76,7 @@ partial class Frm_WinAppDtudo
         Btn_DtudoSite.Anchor = AnchorStyles.Top;
         Btn_DtudoSite.BackColor = Color.Transparent;
         Btn_DtudoSite.Image = (Image)resources.GetObject("Btn_DtudoSite.Image");
-        Btn_DtudoSite.Location = new Point(280, 125);
+        Btn_DtudoSite.Location = new Point(43, 568);
         Btn_DtudoSite.Margin = new Padding(2);
         Btn_DtudoSite.Name = "Btn_DtudoSite";
         Btn_DtudoSite.Size = new Size(242, 86);
@@ -116,16 +116,16 @@ partial class Frm_WinAppDtudo
         MnI_CadastrarUsuario.Size = new Size(231, 38);
         MnI_CadastrarUsuario.Text = "Cadastrar Usuário";
         MnI_CadastrarUsuario.Click += MnI_CadastrarUsuario_Click;
-        //
+        // 
         // MnI_Saude
-        //
+        // 
         MnI_Saude.ForeColor = Color.Gold;
         MnI_Saude.Image = Properties.Resources.CaveraMetal;
         MnI_Saude.Name = "MnI_Saude";
         MnI_Saude.Size = new Size(231, 38);
         MnI_Saude.Text = "Painel de Saude";
         MnI_Saude.Click += MnI_Saude_Click;
-        //
+        // 
         // MnI_Conectar
         // 
         MnI_Conectar.ForeColor = Color.Gold;
@@ -193,10 +193,10 @@ partial class Frm_WinAppDtudo
         Btn_MyAnimesForm.Anchor = AnchorStyles.Bottom;
         Btn_MyAnimesForm.BackColor = Color.Transparent;
         Btn_MyAnimesForm.Image = Properties.Resources.onePieceGroup;
-        Btn_MyAnimesForm.Location = new Point(532, 462);
+        Btn_MyAnimesForm.Location = new Point(487, 474);
         Btn_MyAnimesForm.Margin = new Padding(1, 2, 1, 2);
         Btn_MyAnimesForm.Name = "Btn_MyAnimesForm";
-        Btn_MyAnimesForm.Size = new Size(272, 233);
+        Btn_MyAnimesForm.Size = new Size(364, 216);
         Btn_MyAnimesForm.SizeMode = PictureBoxSizeMode.StretchImage;
         Btn_MyAnimesForm.TabIndex = 14;
         Btn_MyAnimesForm.Click += Btn_MyAnimesForm_Click;
@@ -207,7 +207,7 @@ partial class Frm_WinAppDtudo
         Btn_MyMusicxForm.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
         Btn_MyMusicxForm.BackColor = Color.Transparent;
         Btn_MyMusicxForm.Image = Properties.Resources.NotaMusica;
-        Btn_MyMusicxForm.Location = new Point(96, 377);
+        Btn_MyMusicxForm.Location = new Point(67, 82);
         Btn_MyMusicxForm.Margin = new Padding(1, 2, 1, 2);
         Btn_MyMusicxForm.Name = "Btn_MyMusicxForm";
         Btn_MyMusicxForm.Size = new Size(85, 213);
@@ -221,10 +221,10 @@ partial class Frm_WinAppDtudo
         Btn_NinoTIForm.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         Btn_NinoTIForm.BackColor = Color.Transparent;
         Btn_NinoTIForm.Image = Properties.Resources.TI_link;
-        Btn_NinoTIForm.Location = new Point(1044, 273);
+        Btn_NinoTIForm.Location = new Point(921, 263);
         Btn_NinoTIForm.Margin = new Padding(1, 2, 1, 2);
         Btn_NinoTIForm.Name = "Btn_NinoTIForm";
-        Btn_NinoTIForm.Size = new Size(144, 120);
+        Btn_NinoTIForm.Size = new Size(121, 90);
         Btn_NinoTIForm.SizeMode = PictureBoxSizeMode.StretchImage;
         Btn_NinoTIForm.TabIndex = 16;
         Btn_NinoTIForm.Click += Btn_NinoTIForm_Click;
@@ -234,7 +234,7 @@ partial class Frm_WinAppDtudo
         Lbl_DescricaoMyMusicX.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
         Lbl_DescricaoMyMusicX.BackColor = Color.Transparent;
         Lbl_DescricaoMyMusicX.Font = new Font("Segoe Fluent Icons", 28.125F, FontStyle.Bold, GraphicsUnit.Point, 0);
-        Lbl_DescricaoMyMusicX.Location = new Point(52, 552);
+        Lbl_DescricaoMyMusicX.Location = new Point(31, 282);
         Lbl_DescricaoMyMusicX.Margin = new Padding(1, 0, 1, 0);
         Lbl_DescricaoMyMusicX.Name = "Lbl_DescricaoMyMusicX";
         Lbl_DescricaoMyMusicX.Size = new Size(160, 53);
@@ -247,7 +247,7 @@ partial class Frm_WinAppDtudo
         Lbl_DescricaoMyAnimes.Anchor = AnchorStyles.Bottom;
         Lbl_DescricaoMyAnimes.BackColor = Color.Transparent;
         Lbl_DescricaoMyAnimes.Font = new Font("Segoe Fluent Icons", 28F, FontStyle.Bold, GraphicsUnit.Point, 0);
-        Lbl_DescricaoMyAnimes.Location = new Point(588, 425);
+        Lbl_DescricaoMyAnimes.Location = new Point(583, 435);
         Lbl_DescricaoMyAnimes.Margin = new Padding(1, 0, 1, 0);
         Lbl_DescricaoMyAnimes.Name = "Lbl_DescricaoMyAnimes";
         Lbl_DescricaoMyAnimes.Size = new Size(157, 46);
@@ -259,7 +259,7 @@ partial class Frm_WinAppDtudo
         label1.Anchor = AnchorStyles.Bottom;
         label1.BackColor = Color.Transparent;
         label1.Font = new Font("Segoe Fluent Icons", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
-        label1.Location = new Point(1058, 244);
+        label1.Location = new Point(921, 234);
         label1.Margin = new Padding(1, 0, 1, 0);
         label1.Name = "label1";
         label1.Size = new Size(111, 37);
@@ -271,7 +271,7 @@ partial class Frm_WinAppDtudo
         label2.Anchor = AnchorStyles.Bottom;
         label2.BackColor = Color.Transparent;
         label2.Font = new Font("Segoe Fluent Icons", 28F, FontStyle.Bold, GraphicsUnit.Point, 0);
-        label2.Location = new Point(333, 91);
+        label2.Location = new Point(100, 536);
         label2.Margin = new Padding(1, 0, 1, 0);
         label2.Name = "label2";
         label2.Size = new Size(157, 42);

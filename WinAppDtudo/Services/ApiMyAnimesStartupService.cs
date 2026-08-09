@@ -29,7 +29,6 @@ public sealed class ApiMyAnimesStartupService
             return;
         }
 
-#if DEBUG
         await StartupGate.WaitAsync(cancellationToken);
         try
         {
@@ -54,18 +53,14 @@ public sealed class ApiMyAnimesStartupService
 
                 await Task.Delay(PollInterval, cancellationToken);
             }
-#endif
-
             throw new WinAppAuthenticationException(
                 $"O ApiMyAnimes nao ficou disponivel em {baseUri}. " +
                 "Verifique o banco DB_Local e a configuracao local.");
-#if DEBUG
         }
         finally
         {
             StartupGate.Release();
         }
-#endif
     }
 
     private static void StartApiMyAnimes(Uri baseUri)

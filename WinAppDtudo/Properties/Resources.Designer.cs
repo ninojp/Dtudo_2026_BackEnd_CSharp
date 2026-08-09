@@ -63,9 +63,9 @@ namespace WinAppDtudo.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap AnimesElas {
+        internal static System.Drawing.Bitmap animes {
             get {
-                object obj = ResourceManager.GetObject("AnimesElas", resourceCulture);
+                object obj = ResourceManager.GetObject("animes", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

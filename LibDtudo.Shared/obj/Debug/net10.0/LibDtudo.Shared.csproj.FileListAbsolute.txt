@@ -115,3 +115,8 @@ C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Sh
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.dll
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.pdb
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.xml
+C:\2026MeusProjetos\Dtudo2026\tmp\validation\ApiMyAnimes\LibDtudo.Shared.deps.json
+C:\2026MeusProjetos\Dtudo2026\tmp\validation\ApiMyAnimes\LibDtudo.Shared.runtimeconfig.json
+C:\2026MeusProjetos\Dtudo2026\tmp\validation\ApiMyAnimes\LibDtudo.Shared.dll
+C:\2026MeusProjetos\Dtudo2026\tmp\validation\ApiMyAnimes\LibDtudo.Shared.pdb
+C:\2026MeusProjetos\Dtudo2026\tmp\validation\ApiMyAnimes\LibDtudo.Shared.xml

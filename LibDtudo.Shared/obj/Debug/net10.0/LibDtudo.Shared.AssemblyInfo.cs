@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LibDtudo.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7efb05f9918fb82409c3a95fd472bdd4b15b6410")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c06cdf84a0226601714c4c485e658c1b067d0e1")]
 [assembly: System.Reflection.AssemblyProductAttribute("LibDtudo.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LibDtudo.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -255,10 +255,18 @@ public sealed class DtudoGatewayTests
     }
 
     [Fact]
-    public void CatalogRoutesAreAuthenticatedAndUsePublicReadOnlyBackendPaths()
+    public void CatalogRoutesAreAuthenticatedAndUseExpectedReadOnlyBackendPaths()
     {
         var routes = GatewayRouteConfiguration.CreateRoutes();
         var catalogRoutes = routes.Where(route => route.RouteId.StartsWith("catalog-", StringComparison.Ordinal)).ToArray();
+        var expectedBackendPaths = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["catalog-animes-list"] = "/apiLocal/Anime",
+            ["catalog-animes-search"] = "/apiLocal/Anime/buscar",
+            ["catalog-anime-by-id"] = "/apiLocal/Anime/{id}",
+            ["catalog-collections-list"] = "/apiLocal/MyAnime/public",
+            ["catalog-collection-by-id"] = "/apiLocal/MyAnime/public/{id}",
+        };
 
         Assert.Equal(5, catalogRoutes.Length);
         Assert.All(catalogRoutes, route =>
@@ -268,7 +276,7 @@ public sealed class DtudoGatewayTests
             var backendPaths = (route.Transforms ?? [])
                 .SelectMany(transform => transform.Values)
                 .Where(value => value.StartsWith("/apiLocal/", StringComparison.Ordinal));
-            Assert.All(backendPaths, path => Assert.Contains("/public", path, StringComparison.Ordinal));
+            Assert.Contains(expectedBackendPaths[route.RouteId], backendPaths);
         });
     }
 

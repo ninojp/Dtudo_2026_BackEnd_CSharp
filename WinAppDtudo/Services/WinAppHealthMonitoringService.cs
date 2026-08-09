@@ -436,10 +436,12 @@ public sealed class WinAppHealthMonitoringService : IDisposable
             "Servicos",
             serviceName,
             statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
-                ? WinAppHealthState.Critical
+                ? WinAppHealthState.Warning
                 : WinAppHealthState.Unavailable,
             statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
-                ? "A consulta autenticada foi recusada."
+                ? statusCode == HttpStatusCode.Forbidden
+                    ? "O servico respondeu, mas a conta nao possui a permissao health.read."
+                    : "O servico respondeu, mas a sessao nao foi aceita."
                 : "Servico indisponivel para consulta.",
             checkedAt);
     }

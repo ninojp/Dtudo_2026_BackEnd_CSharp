@@ -49,6 +49,9 @@
     <Compile Update="Forms\Frm_DtudoSiteBrowser.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\Frm_HealthDashboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Frm_IdentityAdministration.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -65,6 +68,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\Frm_Questao.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Frm_WinAppLogin.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Frm_WinAppDtudo.cs">

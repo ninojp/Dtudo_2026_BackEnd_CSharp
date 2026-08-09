@@ -102,7 +102,7 @@ public sealed class FileStorageApiClientTests
         var tokenStore = new ProtectedTokenStore(Path.Combine(temporaryDirectory, "session.bin"));
         var now = DateTimeOffset.UtcNow;
         await tokenStore.SaveAsync(new WinAppTokenSet(
-            new string('t', 32),
+            TestTokens.SuperAdministratorAccessToken,
             new string('r', 32),
             now.AddMinutes(5),
             now.AddDays(1),

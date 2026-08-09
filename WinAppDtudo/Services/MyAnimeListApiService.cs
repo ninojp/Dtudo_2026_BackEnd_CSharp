@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using LibDtudo.Shared.Dtos.MyAnimeList;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -13,13 +12,15 @@ public sealed class MyAnimeListApiService
 {
     private static readonly HttpClient HttpClient;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
-    private static readonly SemaphoreSlim ApiStartupLock = new(1, 1);
-    private static bool _apiStartupAttempted;
     private readonly WinAppAuthenticationService _authenticationService;
+    private readonly ApiMyAnimeListStartupService _startupService;
 
-    public MyAnimeListApiService(WinAppAuthenticationService? authenticationService = null)
+    public MyAnimeListApiService(
+        WinAppAuthenticationService? authenticationService = null,
+        ApiMyAnimeListStartupService? startupService = null)
     {
         _authenticationService = authenticationService ?? new WinAppAuthenticationService();
+        _startupService = startupService ?? new ApiMyAnimeListStartupService();
     }
 
     public static string ApiBase => AppConfigurationService.ApiMyAnimeListBaseUrl;
@@ -45,7 +46,7 @@ public sealed class MyAnimeListApiService
         }
         catch (HttpRequestException ex) when (EhConexaoRecusada(ex))
         {
-            await IniciarApiLocalAsync(cancellationToken);
+            await _startupService.EnsureReadyAsync(cancellationToken);
             response = await SendAuthenticatedGetAsync(url, cancellationToken);
         }
 
@@ -73,7 +74,7 @@ public sealed class MyAnimeListApiService
         }
         catch (HttpRequestException ex) when (EhConexaoRecusada(ex))
         {
-            await IniciarApiLocalAsync(cancellationToken);
+            await _startupService.EnsureReadyAsync(cancellationToken);
             response = await SendAuthenticatedGetAsync(url, cancellationToken);
         }
 
@@ -96,59 +97,4 @@ public sealed class MyAnimeListApiService
     private static bool EhConexaoRecusada(HttpRequestException exception)
         => exception.InnerException is SocketException socketException
            && socketException.SocketErrorCode == SocketError.ConnectionRefused;
-
-    private static async Task IniciarApiLocalAsync(CancellationToken cancellationToken)
-    {
-        await ApiStartupLock.WaitAsync(cancellationToken);
-        try
-        {
-            if (_apiStartupAttempted) return;
-            _apiStartupAttempted = true;
-
-            var solutionRoot = LocalizarRaizDaSolucao();
-            var projectPath = solutionRoot is null
-                ? null
-                : Path.Combine(solutionRoot.FullName, "ApiMyAnimeList", "ApiMyAnimeList.csproj");
-
-            if (projectPath is null || !File.Exists(projectPath)) return;
-
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = $"run --project \"{projectPath}\" --no-launch-profile --urls {AppConfigurationService.ApiMyAnimeListAutoStartUrl}",
-                WorkingDirectory = solutionRoot!.FullName,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            });
-
-            for (var attempt = 0; attempt < 30; attempt++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
-
-                try
-                {
-                    using var healthResponse = await HttpClient.GetAsync("ApiMyAnimeList/health", cancellationToken);
-                    if ((int)healthResponse.StatusCode < 500) return;
-                }
-                catch (HttpRequestException) { }
-            }
-        }
-        finally
-        {
-            ApiStartupLock.Release();
-        }
-    }
-
-    private static DirectoryInfo? LocalizarRaizDaSolucao()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "Dtudo2026.slnx"))) return directory;
-            directory = directory.Parent;
-        }
-
-        return null;
-    }
 }

@@ -31,13 +31,10 @@ O ponto central é o projeto WinAppDtudo, que é o aplicativo desktop que manipu
 
 -------------------------------------------------------------------------------------------------------------------------------------
 C:\Users\comer\AppData\Roaming\Microsoft\UserSecrets
-`eumemosem@nadaSENHAatual123@)`
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite\
-Após logar no site, esta mostrando o nome do usuário logado, mas não deveria mostrar. deveria ter apenas o icone do usuário logado, ao passar o mouse mostra o nome do usuário, ao clicar no icone, exibe a opção "Sair".
+`eumemosem@nadaSENHAatual123@)`NinoJPDtudoDev!2026LfZDp9ftZLgbpd1f
 
-
-NinoJP
-DtudoDev!2026LfZDp9ftZLgbpd1f
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
+Após logar, 
 
 O aviso NU1510 e o conflito de WindowsBase continuam sendo avisos preexistentes.
 
@@ -57,6 +54,8 @@ FROM Animes;
 3815 Animes Adicionados
 564 AmineXs Adicionados
 4379 Total Adicionado
+5.571 animes no catálogo completo.
+1.358 animes reconhecidos pelo filtro Hentai +18.
 
 ======================================================================================================
 🎯 Próximas Ações Recomendadas para solução "Dtudo2026":

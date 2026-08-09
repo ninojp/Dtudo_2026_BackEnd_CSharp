@@ -5,6 +5,7 @@ using LibDtudo.Shared.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiMyAnimes.Controllers;
 
@@ -27,20 +28,24 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<ObterMyAnimeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public ActionResult<List<ObterMyAnimeDto>> ObterColecoesPublicas([FromQuery] int skip = 0, [FromQuery] int take = 5)
+    public async Task<ActionResult<List<ObterMyAnimeDto>>> ObterColecoesPublicas([FromQuery] int skip = 0, [FromQuery] int take = 5)
     {
         if (skip < 0 || take <= 0) return BadRequest("Parâmetros de paginação inválidos.");
 
         var limite = Math.Min(take, 500);
-        var colecoes = context.MyAnimes
+        var colecoes = await context.MyAnimes
+            .AsNoTracking()
             .OrderBy(colecao => colecao.Id)
-            .ToList()
             .Skip(skip)
             .Take(limite)
-            .Select(ParaObterMyAnimeDtoPublico)
-            .ToList();
+            .ToListAsync(HttpContext.RequestAborted);
+        var idsAdultos = await ObterIdsAdultosAsync(
+            colecoes.SelectMany(colecao => colecao.AnimesMalId),
+            HttpContext.RequestAborted);
 
-        return Ok(colecoes);
+        return Ok(colecoes
+            .Select(colecao => ParaObterMyAnimeDtoPublico(colecao, idsAdultos))
+            .ToList());
     }
 
     /// <summary>
@@ -52,14 +57,17 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
     [ProducesResponseType(typeof(ObterMyAnimeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<ObterMyAnimeDto> ObterColecaoPublicaPorId(int id)
+    public async Task<ActionResult<ObterMyAnimeDto>> ObterColecaoPublicaPorId(int id)
     {
         if (id <= 0) return BadRequest("ID deve ser um número positivo.");
 
-        var colecao = context.MyAnimes.FirstOrDefault(item => item.Id == id);
+        var colecao = await context.MyAnimes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == id, HttpContext.RequestAborted);
         if (colecao is null) return NotFound($"Coleção com ID {id} não encontrada.");
 
-        return Ok(ParaObterMyAnimeDtoPublico(colecao));
+        var idsAdultos = await ObterIdsAdultosAsync(colecao.AnimesMalId, HttpContext.RequestAborted);
+        return Ok(ParaObterMyAnimeDtoPublico(colecao, idsAdultos));
     }
 
     /// <summary>
@@ -285,15 +293,29 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
         };
     }
 
-    private ObterMyAnimeDto ParaObterMyAnimeDtoPublico(MyAnime myAnime)
+    private async Task<HashSet<int>> ObterIdsAdultosAsync(
+        IEnumerable<int> malIds,
+        CancellationToken cancellationToken)
     {
-        var ids = myAnime.AnimesMalId.Distinct().ToArray();
-        var idsAdultos = context.Animes
-            .Where(anime => ids.Contains(anime.MalId))
-            .ToList()
-            .Where(PublicCatalogPolicy.IsAdult)
-            .Select(anime => anime.MalId)
-            .ToHashSet();
+        var idsAdultos = new HashSet<int>();
+
+        foreach (var lote in malIds.Distinct().Chunk(1000))
+        {
+            var animes = await context.Animes
+                .AsNoTracking()
+                .Where(anime => lote.Contains(anime.MalId))
+                .ToListAsync(cancellationToken);
+
+            foreach (var anime in animes.Where(PublicCatalogPolicy.IsAdult))
+                idsAdultos.Add(anime.MalId);
+        }
+
+        return idsAdultos;
+    }
+
+    private static ObterMyAnimeDto ParaObterMyAnimeDtoPublico(MyAnime myAnime, ISet<int> idsAdultos)
+    {
+        var ids = myAnime.AnimesMalId.Distinct();
 
         return new ObterMyAnimeDto
         {

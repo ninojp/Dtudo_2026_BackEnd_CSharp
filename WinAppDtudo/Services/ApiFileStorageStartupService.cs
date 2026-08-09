@@ -24,7 +24,6 @@ public sealed class ApiFileStorageStartupService
             return;
         }
 
-#if DEBUG
         await StartupGate.WaitAsync(cancellationToken);
         try
         {
@@ -61,18 +60,14 @@ public sealed class ApiFileStorageStartupService
 
                 await Task.Delay(PollInterval, cancellationToken);
             }
-#endif
-
             throw new WinAppAuthenticationException(
                 $"O ApiFileStorage nao ficou disponivel em {baseUri}. " +
                 "Verifique FileStorage:Roots no User Secrets de Development.");
-#if DEBUG
         }
         finally
         {
             StartupGate.Release();
         }
-#endif
     }
 
     private static bool IsApiFileStorageProcessRunning()

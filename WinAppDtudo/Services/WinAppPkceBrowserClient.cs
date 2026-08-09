@@ -80,16 +80,39 @@ public sealed class WinAppPkceBrowserClient
         }
 
         var authorizationUri = BuildAuthorizationUri(_redirectUri, state, challenge);
+        using var callbackCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            linkedCancellation.Token);
+        var callbackTask = WaitForAuthorizationCodeAsync(
+            listener,
+            state,
+            callbackCancellation.Token);
         try
         {
             await _browserLauncher(authorizationUri);
-            var code = await WaitForAuthorizationCodeAsync(listener, state, linkedCancellation.Token);
+            var code = await callbackTask;
             var tokenSet = await ExchangeCodeAsync(code, verifier, _redirectUri, linkedCancellation.Token);
             return tokenSet;
         }
         finally
         {
+            callbackCancellation.Cancel();
             listener.Stop();
+            try
+            {
+                await callbackTask;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (IOException)
+            {
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (SocketException)
+            {
+            }
         }
     }
 
