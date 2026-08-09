@@ -9,6 +9,8 @@ public sealed class OpenIddictServerConfigurationOptions
     public string Issuer { get; set; } = string.Empty;
 
     public WinAppOpenIddictOptions WinApp { get; set; } = new();
+
+    public GatewayOpenIddictOptions Gateway { get; set; } = new();
 }
 
 public sealed class WinAppOpenIddictOptions
@@ -29,4 +31,17 @@ public sealed class WinAppOpenIddictOptions
             && string.IsNullOrEmpty(uri.Query)
             && string.IsNullOrEmpty(uri.Fragment);
     }
+}
+
+public sealed class GatewayOpenIddictOptions
+{
+    public string ClientId { get; set; } = "dtudo-gateway";
+
+    public string ClientSecret { get; set; } = string.Empty;
+
+    public string RedirectUri { get; set; } = "https://localhost:51376/signin-oidc";
+
+    public string PostLogoutRedirectUri { get; set; } = "https://localhost:51376/signout-callback-oidc";
+
+    public string[] Scopes { get; set; } = ["openid", "profile"];
 }

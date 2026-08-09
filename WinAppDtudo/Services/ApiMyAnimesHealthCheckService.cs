@@ -30,7 +30,7 @@ public sealed class ApiMyAnimesHealthCheckService
             {
                 Timeout = HealthCheckTimeout
             };
-            using var response = _authenticationService is null
+            using var response = _authenticationService is null || !_authenticationService.IsAuthenticated
                 ? await client.GetAsync(
                     healthEndpoint,
                     HttpCompletionOption.ResponseHeadersRead,
@@ -44,6 +44,11 @@ public sealed class ApiMyAnimesHealthCheckService
             {
                 return ApiMyAnimesHealthStatus.Unavailable(
                     "ApiMyAnimes is running, but DB_Local is unavailable.");
+            }
+
+            if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            {
+                return ApiMyAnimesHealthStatus.Available();
             }
 
             if (!response.IsSuccessStatusCode)

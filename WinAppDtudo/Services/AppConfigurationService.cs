@@ -14,6 +14,10 @@ public static class AppConfigurationService
 
     public static string ApiIdentityBaseUrl =>
         GetEnvironment("DTUDO_API_IDENTITY_BASE_URL") ?? Settings.Value.ApiIdentity.BaseUrl;
+    public static string DtudoGatewayBaseUrl =>
+        GetEnvironment("DTUDO_GATEWAY_BASE_URL") ?? Settings.Value.DtudoGateway.BaseUrl;
+    public static string DiscogsProxyBaseUrl =>
+        GetEnvironment("DTUDO_DISCOGS_PROXY_BASE_URL") ?? Settings.Value.DtudoSite.DiscogsProxyBaseUrl;
     public static string ApiFileStorageBaseUrl =>
         GetEnvironment("DTUDO_API_FILE_STORAGE_BASE_URL") ?? Settings.Value.ApiFileStorage.BaseUrl;
 
@@ -136,6 +140,7 @@ public static class AppConfigurationService
         public ApiSettings ApiMyAnimes { get; set; } = new("https://localhost:63980");
         public ApiSettings ApiMyAnimeList { get; set; } = new("https://localhost:7146");
         public ApiSettings ApiIdentity { get; set; } = new("https://localhost:7243");
+        public ApiSettings DtudoGateway { get; set; } = new("https://localhost:51376");
         public ApiSettings ApiFileStorage { get; set; } = new("https://localhost:7244");
         public IdentitySettings Identity { get; set; } = new();
         public DtudoSiteSettings DtudoSite { get; set; } = new();
@@ -161,6 +166,7 @@ public static class AppConfigurationService
     private sealed class DtudoSiteSettings
     {
         public string StartUrl { get; set; } = "http://localhost:5173/animes";
+        public string DiscogsProxyBaseUrl { get; set; } = "http://localhost:4010";
         public string? Directory { get; set; }
         public int StartupTimeoutSeconds { get; set; } = 90;
         public string? GoogleChromeExecutablePath { get; set; }

@@ -78,13 +78,15 @@ public sealed class FileStorageApiClient : IFileStorageApiClient
     private readonly HttpClient _storageHttpClient;
     private readonly HttpClient _identityHttpClient;
     private readonly WinAppAuthenticationService _authenticationService;
+    private readonly ApiFileStorageStartupService? _startupService;
 
     public static string ApiBase => AppConfigurationService.ApiFileStorageBaseUrl;
 
     public FileStorageApiClient(
         WinAppAuthenticationService? authenticationService = null,
         HttpClient? storageHttpClient = null,
-        HttpClient? identityHttpClient = null)
+        HttpClient? identityHttpClient = null,
+        ApiFileStorageStartupService? startupService = null)
     {
         _authenticationService = authenticationService ?? new WinAppAuthenticationService();
         _storageHttpClient = storageHttpClient ?? new HttpClient(AppConfigurationService.CreateHttpClientHandler());
@@ -93,6 +95,10 @@ public sealed class FileStorageApiClient : IFileStorageApiClient
         _identityHttpClient.BaseAddress ??= new Uri(AppConfigurationService.ApiIdentityBaseUrl.TrimEnd('/') + "/", UriKind.Absolute);
         _storageHttpClient.Timeout = TimeSpan.FromSeconds(120);
         _identityHttpClient.Timeout = TimeSpan.FromSeconds(30);
+        _startupService = startupService
+            ?? (storageHttpClient is null && identityHttpClient is null
+                ? new ApiFileStorageStartupService()
+                : null);
     }
 
     public async Task<WinAppStorageExportPlan> PrepareExportAsync(
@@ -100,6 +106,7 @@ public sealed class FileStorageApiClient : IFileStorageApiClient
         IReadOnlyCollection<int> malIds,
         CancellationToken cancellationToken = default)
     {
+        await EnsureStorageReadyAsync(cancellationToken);
         var payload = new
         {
             MyAnimeId = myAnimeId,
@@ -124,6 +131,7 @@ public sealed class FileStorageApiClient : IFileStorageApiClient
         string idempotencyKey,
         CancellationToken cancellationToken = default)
     {
+        await EnsureStorageReadyAsync(cancellationToken);
         var payload = content.ToArray();
         using var response = await _authenticationService.SendAuthenticatedAsync(
             _storageHttpClient,
@@ -138,6 +146,7 @@ public sealed class FileStorageApiClient : IFileStorageApiClient
         IReadOnlyCollection<string> objectIds,
         CancellationToken cancellationToken = default)
     {
+        await EnsureStorageReadyAsync(cancellationToken);
         using var response = await SendJsonAsync(
             _storageHttpClient,
             HttpMethod.Post,
@@ -182,6 +191,7 @@ public sealed class FileStorageApiClient : IFileStorageApiClient
         Guid previewId,
         CancellationToken cancellationToken = default)
     {
+        await EnsureStorageReadyAsync(cancellationToken);
         using var response = await SendJsonAsync(
             _storageHttpClient,
             HttpMethod.Post,
@@ -192,6 +202,9 @@ public sealed class FileStorageApiClient : IFileStorageApiClient
         return await response.Content.ReadFromJsonAsync<WinAppStorageDeleteBatch>(JsonOptions, cancellationToken)
             ?? throw new InvalidOperationException("A ApiFileStorage retornou um resultado de exclusao vazio.");
     }
+
+    private Task EnsureStorageReadyAsync(CancellationToken cancellationToken) =>
+        _startupService?.EnsureReadyAsync(cancellationToken) ?? Task.CompletedTask;
 
     private async Task<HttpResponseMessage> SendJsonAsync(
         HttpClient httpClient,

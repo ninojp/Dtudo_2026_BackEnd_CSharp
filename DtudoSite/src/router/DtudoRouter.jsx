@@ -34,65 +34,69 @@ import Git from "../components/componentsNinoTI/Git/Git";
 import GitHub from "../components/componentsNinoTI/GitHub/GitHub";
 import Figma from "../components/componentsNinoTI/Figma/Figma";
 import WordPress from "../components/componentsNinoTI/WordPress/WordPress";
+import AdultContentNotice from "../pages/AdultContentNotice/AdultContentNotice";
+import ProtetorDeRota from "../components/ProtetorDeRota/ProtetorDeRota";
 
 export default function DtudoRouter() {
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<IndexLayout />} >
-                    <Route index element={<Animes />} />
+                    <Route index element={<AdultContentNotice />} />
 
-                    <Route path="/animes">
-                        <Route index element={<Animes />} />
-                        <Route path="animes-detalhes/:malId" element={<AnimesDetalhes />} />
-                        <Route path="animes-relacionados/:malId" element={<AnimesRelacionados />} />
-                    </Route>
-
-                    <Route path="/ninoti" element={<NinoTIPageLayout />}>
-                        <Route index element={<NinoTIFrontEnd />} />
-                        <Route path="front-end" element={<NinoTIFrontEnd />}>
-                            <Route path="html5" element={<HTML />} />
-                            <Route path="css3" element={<CSS />} />
-                            <Route path="javascript" element={<JavaScript />} />
-                            <Route path="typescript" element={<TypeScript />} />
-                            <Route path="nodejs" element={<NodeJS />} />
-                            <Route path="react" element={<ReactTech />} />
-                            <Route path="vite" element={<Vite />} />
-                            <Route path="nextjs" element={<NextJS />} />
-                            <Route path="git" element={<Git />} />
-                            <Route path="github" element={<GitHub />} />
-                            <Route path="figma" element={<Figma />} />
-                            <Route path="wordpress" element={<WordPress />} />
+                    <Route element={<ProtetorDeRota />}>
+                        <Route path="animes">
+                            <Route index element={<Animes />} />
+                            <Route path="animes-detalhes/:malId" element={<AnimesDetalhes />} />
+                            <Route path="animes-relacionados/:malId" element={<AnimesRelacionados />} />
                         </Route>
-                        <Route path="programacao" element={<NinoTIProgramacao />} />
-                        <Route path="cyber-security" element={<NinoTICyberSecurity />} />
-                        <Route path="blockchain" element={<NinoTIBlockChain />} />
-                        <Route path="ia" element={<NinoTIIA />} />
-                        <Route path="hardware" element={<NinoTIHardware />} />
-                        <Route path="os" element={<NinoTIOS />} />
-                        <Route path="ciencia-computacao" element={<NinoTICienciaComputacao />} />
-                        <Route path="data-science" element={<NinoTIDataScience />} />
-                        <Route path="design-ux" element={<NinoTIDesignUX />} />
+
+                        <Route path="ninoti" element={<NinoTIPageLayout />}>
+                            <Route index element={<NinoTIFrontEnd />} />
+                            <Route path="front-end" element={<NinoTIFrontEnd />}>
+                                <Route path="html5" element={<HTML />} />
+                                <Route path="css3" element={<CSS />} />
+                                <Route path="javascript" element={<JavaScript />} />
+                                <Route path="typescript" element={<TypeScript />} />
+                                <Route path="nodejs" element={<NodeJS />} />
+                                <Route path="react" element={<ReactTech />} />
+                                <Route path="vite" element={<Vite />} />
+                                <Route path="nextjs" element={<NextJS />} />
+                                <Route path="git" element={<Git />} />
+                                <Route path="github" element={<GitHub />} />
+                                <Route path="figma" element={<Figma />} />
+                                <Route path="wordpress" element={<WordPress />} />
+                            </Route>
+                            <Route path="programacao" element={<NinoTIProgramacao />} />
+                            <Route path="cyber-security" element={<NinoTICyberSecurity />} />
+                            <Route path="blockchain" element={<NinoTIBlockChain />} />
+                            <Route path="ia" element={<NinoTIIA />} />
+                            <Route path="hardware" element={<NinoTIHardware />} />
+                            <Route path="os" element={<NinoTIOS />} />
+                            <Route path="ciencia-computacao" element={<NinoTICienciaComputacao />} />
+                            <Route path="data-science" element={<NinoTIDataScience />} />
+                            <Route path="design-ux" element={<NinoTIDesignUX />} />
+                        </Route>
+
+                        <Route path="mymusicx" element={
+                            <MyMusicxObjsListProvider>
+                                <Outlet />
+                            </MyMusicxObjsListProvider>}>
+                            <Route index element={<MyMusicX />} />
+                            <Route path="mymusicx-buscar" element={<MyMusicXBuscar />} />
+                            <Route path="mymusicx-detalhes/:id" element={
+                                <MyMusicXDetalhesProvider>
+                                    <MyMusicXDetalhes />
+                                </MyMusicXDetalhesProvider>} />
+                        </Route>
                     </Route>
 
-                    <Route path="/mymusicx" element={
-                        <MyMusicxObjsListProvider>
-                            <Outlet />
-                        </MyMusicxObjsListProvider>}>
-                        <Route index element={<MyMusicX />} />
-                        <Route path="mymusicx-buscar" element={<MyMusicXBuscar />} />
-                        <Route path="mymusicx-detalhes/:id" element={
-                            <MyMusicXDetalhesProvider>
-                                <MyMusicXDetalhes />
-                            </MyMusicXDetalhesProvider>} />
+                    <Route path="auth">
+                        <Route path="login" element={<Login />} />
+                        <Route path="logout" element={<Logout />} />
                     </Route>
 
-                    <Route path='/auth'>
-                        <Route path='login' element={<Login />} />
-                        <Route path='logout' element={<Logout />} />
-                    </Route>
-
-                    <Route path='*' element={<NotFound />} />
+                    <Route path="*" element={<NotFound />} />
                 </Route>
             </Routes>
         </BrowserRouter >

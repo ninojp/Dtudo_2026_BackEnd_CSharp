@@ -17,8 +17,11 @@ using Yarp.ReverseProxy;
 
 const string CookieScheme = "BffCookie";
 const string OpenIdConnectScheme = "oidc";
+const string BffPolicy = "gateway-bff";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddUserSecrets<Program>(optional: true);
 
 var configuredGatewayOptions = builder.Configuration
     .GetSection(GatewayOptions.SectionName)
@@ -26,7 +29,6 @@ var configuredGatewayOptions = builder.Configuration
 var configuredOpenIdConnectOptions = builder.Configuration
     .GetSection(GatewayOpenIdConnectOptions.SectionName)
     .Get<GatewayOpenIdConnectOptions>() ?? new GatewayOpenIdConnectOptions();
-var publicCatalogOnly = configuredGatewayOptions.PublicCatalogOnly;
 
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -39,7 +41,7 @@ builder.Services.AddOptions<GatewayOptions>()
     .ValidateOnStart();
 builder.Services.AddOptions<GatewayOpenIdConnectOptions>()
     .Bind(builder.Configuration.GetSection(GatewayOpenIdConnectOptions.SectionName))
-    .Validate(options => publicCatalogOnly || GatewayOptionsValidator.IsValid(options), "OpenIdConnect deve conter authority HTTPS, client id, segredo externo e escopo openid.")
+    .Validate(GatewayOptionsValidator.IsValid, "OpenIdConnect deve conter authority HTTPS, client id, segredo externo e escopo openid.")
     .ValidateOnStart();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -73,15 +75,26 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+    {
+        if (context.Request.Path.StartsWithSegments("/health"))
+        {
+            return RateLimitPartition.GetNoLimiter<string>("health");
+        }
+
+        var remoteAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var partitionName = IsAuthenticationPath(context.Request.Path)
+            ? $"authentication:{remoteAddress}"
+            : $"general:{remoteAddress}";
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionName,
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = configuredGatewayOptions.RateLimitPermitLimit,
                 Window = TimeSpan.FromSeconds(configuredGatewayOptions.RateLimitWindowSeconds),
                 QueueLimit = 0,
                 AutoReplenishment = true
-            }));
+            });
+    });
     options.OnRejected = (context, _) =>
     {
         context.HttpContext.Response.Headers.RetryAfter = configuredGatewayOptions.RateLimitWindowSeconds.ToString();
@@ -124,8 +137,8 @@ var authenticationBuilder = builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = CookieScheme;
     options.DefaultSignInScheme = CookieScheme;
-    options.DefaultChallengeScheme = publicCatalogOnly ? CookieScheme : OpenIdConnectScheme;
-    options.DefaultSignOutScheme = publicCatalogOnly ? CookieScheme : OpenIdConnectScheme;
+    options.DefaultChallengeScheme = OpenIdConnectScheme;
+    options.DefaultSignOutScheme = OpenIdConnectScheme;
 })
 .AddCookie(CookieScheme, options =>
 {
@@ -135,10 +148,10 @@ var authenticationBuilder = builder.Services.AddAuthentication(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.Path = "/";
     options.Cookie.IsEssential = true;
-    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(configuredGatewayOptions.SessionIdleTimeoutMinutes);
     options.SlidingExpiration = true;
     options.LoginPath = "/bff/login";
-    options.LogoutPath = "/bff/logout";
+    options.LogoutPath = null;
     options.Events.OnRedirectToLogin = context =>
     {
         if (context.Request.Path.StartsWithSegments("/bff"))
@@ -152,8 +165,11 @@ var authenticationBuilder = builder.Services.AddAuthentication(options =>
     };
 });
 
-if (!publicCatalogOnly)
+builder.Services.PostConfigure<CookieAuthenticationOptions>(CookieScheme, options =>
 {
+    options.LogoutPath = null;
+});
+
     authenticationBuilder.AddOpenIdConnect(OpenIdConnectScheme, options =>
     {
         options.Authority = configuredOpenIdConnectOptions.Authority;
@@ -227,6 +243,7 @@ if (!publicCatalogOnly)
                 finalRedirect = "/";
             }
 
+            finalRedirect = BuildFrontendRedirect(configuredGatewayOptions, finalRedirect);
             context.Response.Redirect(finalRedirect);
             context.HandleResponse();
             return Task.CompletedTask;
@@ -238,7 +255,6 @@ if (!publicCatalogOnly)
             return context.Response.WriteAsJsonAsync(new { error = "authentication_failed" });
         };
     });
-}
 
 builder.Services
     .AddOptions<CookieAuthenticationOptions>(CookieScheme)
@@ -248,11 +264,18 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(GatewayRouteConfiguration.AnonymousPolicy, policy =>
         policy.RequireAssertion(_ => true));
+    options.AddPolicy(GatewayRouteConfiguration.AuthenticatedCatalogPolicy, policy =>
+        policy.RequireAuthenticatedUser());
+    options.AddPolicy(BffPolicy, policy =>
+    {
+        policy.AddAuthenticationSchemes(CookieScheme);
+        policy.RequireAuthenticatedUser();
+    });
 });
 
 builder.Services.AddReverseProxy()
     .LoadFromMemory(
-        GatewayRouteConfiguration.CreateRoutes(publicCatalogOnly),
+        GatewayRouteConfiguration.CreateRoutes(),
         GatewayRouteConfiguration.CreateClusters(
             configuredGatewayOptions.ApiMyAnimesBaseUrl,
             configuredGatewayOptions.ApiIdentityBaseUrl));
@@ -272,6 +295,7 @@ app.Use(async (context, next) =>
         context.Response.Headers["X-Content-Type-Options"] = "nosniff";
         context.Response.Headers["X-Frame-Options"] = "DENY";
         context.Response.Headers["Referrer-Policy"] = "no-referrer";
+        context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
         context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
         context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self' https: data:; connect-src 'self'; style-src 'self'; script-src 'self'; font-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'";
         if (!app.Environment.IsDevelopment())
@@ -284,22 +308,11 @@ app.Use(async (context, next) =>
 
     await next(context);
 });
-if (publicCatalogOnly)
-{
-    var configuredWebRoot = app.Environment.WebRootPath
-        ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
-    if (Directory.Exists(configuredWebRoot))
-    {
-        app.UseDefaultFiles();
-        app.UseStaticFiles();
-    }
-}
 app.Use(async (context, next) =>
 {
     if (context.Request.Path.StartsWithSegments("/api/catalog"))
     {
         context.Request.Headers.Remove("Authorization");
-        context.Request.Headers.Remove("Cookie");
     }
     else if (context.Request.Path.StartsWithSegments("/identity/connect/authorize")
         || context.Request.Path.StartsWithSegments("/identity/connect/logout"))
@@ -310,7 +323,10 @@ app.Use(async (context, next) =>
     await next(context);
 });
 app.UseCors("PublicCatalog");
-app.UseRateLimiter();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseRateLimiter();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -327,8 +343,6 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
     }
 }).AllowAnonymous();
 
-if (!publicCatalogOnly)
-{
     app.MapGet("/bff/login", async (HttpContext context) =>
     {
         if (!RedirectAllowlist.TryGetAllowedRedirect(
@@ -343,7 +357,10 @@ if (!publicCatalogOnly)
 
         await context.ChallengeAsync(
             OpenIdConnectScheme,
-            new AuthenticationProperties { RedirectUri = redirect });
+            new AuthenticationProperties
+            {
+                RedirectUri = BuildFrontendRedirect(configuredGatewayOptions, redirect)
+            });
     }).AllowAnonymous();
 
     app.MapGet("/bff/antiforgery", (HttpContext context, IAntiforgery antiforgery) =>
@@ -351,6 +368,10 @@ if (!publicCatalogOnly)
         var tokens = antiforgery.GetAndStoreTokens(context);
         return Results.Ok(new { token = tokens.RequestToken });
     }).AllowAnonymous();
+
+    app.MapGet("/bff/logout", () =>
+        Results.Redirect(BuildFrontendRedirect(configuredGatewayOptions, "/auth/logout")))
+        .AllowAnonymous();
 
     app.MapGet("/bff/me", (HttpContext context) =>
     {
@@ -366,7 +387,7 @@ if (!publicCatalogOnly)
                 roles = principal.FindAll("role").Select(claim => claim.Value).ToArray()
             }
         });
-    }).RequireAuthorization();
+    }).RequireAuthorization(BffPolicy);
 
     app.MapPost("/bff/logout", async (HttpContext context, IAntiforgery antiforgery) =>
     {
@@ -392,39 +413,31 @@ if (!publicCatalogOnly)
             OpenIdConnectScheme,
             new AuthenticationProperties { RedirectUri = redirect });
     }).RequireAuthorization();
-}
 
 app.MapReverseProxy();
 
-if (publicCatalogOnly)
-{
-    app.MapFallback(async context =>
-    {
-        if (context.Request.Method != HttpMethod.Get.Method
-            && context.Request.Method != HttpMethod.Head.Method
-            || !(context.Request.Path == "/" || context.Request.Path.StartsWithSegments("/animes")))
-        {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return;
-        }
-
-        var webRoot = app.Environment.WebRootPath
-            ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
-        var indexPath = Path.Combine(webRoot, "index.html");
-        if (!File.Exists(indexPath))
-        {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return;
-        }
-
-        await context.Response.SendFileAsync(indexPath);
-    });
-}
-
 app.Run();
+
+static bool IsAuthenticationPath(PathString path) =>
+    path.StartsWithSegments("/bff")
+    || path.StartsWithSegments("/identity")
+    || path.StartsWithSegments("/signin-oidc")
+    || path.StartsWithSegments("/signout-callback-oidc");
 
 static string BuildPublicUrl(GatewayOptions options, string path) =>
     options.PublicOrigin.TrimEnd('/') + "/" + path.TrimStart('/');
+
+static string BuildFrontendRedirect(GatewayOptions options, string redirect)
+{
+    if (string.IsNullOrWhiteSpace(options.FrontendOrigin)
+        || !redirect.StartsWith("/", StringComparison.Ordinal)
+        || redirect.StartsWith("//", StringComparison.Ordinal))
+    {
+        return redirect;
+    }
+
+    return options.FrontendOrigin.TrimEnd('/') + redirect;
+}
 
 static string RemoveGatewayCookies(string? cookieHeader)
 {

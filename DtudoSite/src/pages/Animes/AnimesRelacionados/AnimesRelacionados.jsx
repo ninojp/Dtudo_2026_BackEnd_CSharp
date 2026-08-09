@@ -16,7 +16,6 @@ import {
 } from '@dtudo-anime-content';
 import styles from './AnimesRelacionados.module.css';
 
-const PUBLIC_CATALOG_ONLY = import.meta.env.MODE === 'homologation';
 const formatarTotalAnimesColecao = (total) => `${total} ${total === 1 ? 'Anime' : 'Animes'}`;
 
 export default function AnimesRelacionados() {
@@ -70,7 +69,7 @@ export default function AnimesRelacionados() {
 
     const animesRelacionados = useMemo(() => obterAnimesRelacionados({
         colecoesComAnime,
-        incluirAdultos: !PUBLIC_CATALOG_ONLY && isAuthenticated,
+        incluirAdultos: isAuthenticated,
         listObjsDetalhesAnimes,
     }), [colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes]);
 

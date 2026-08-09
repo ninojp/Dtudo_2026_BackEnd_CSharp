@@ -12,7 +12,7 @@ public sealed class ApiIdentityStartupService : IApiIdentityStartupService
     private static readonly SemaphoreSlim StartupGate = new(1, 1);
     private static readonly TimeSpan HealthTimeout = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(20);
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(1);
 
     public async Task EnsureReadyAsync(CancellationToken cancellationToken = default)
     {
@@ -38,7 +38,11 @@ public sealed class ApiIdentityStartupService : IApiIdentityStartupService
                 return;
             }
 
-            StartApiIdentity(baseUri);
+            var existingProcess = IsApiIdentityProcessRunning();
+            if (!existingProcess)
+            {
+                StartApiIdentity(baseUri);
+            }
             var deadline = DateTimeOffset.UtcNow + StartupTimeout;
             while (DateTimeOffset.UtcNow < deadline)
             {
@@ -139,6 +143,31 @@ public sealed class ApiIdentityStartupService : IApiIdentityStartupService
                 "Nao foi possivel iniciar o ApiIdentity local.",
                 exception);
         }
+    }
+
+    private static bool IsApiIdentityProcessRunning()
+    {
+        try
+        {
+            foreach (var process in Process.GetProcessesByName("ApiIdentity"))
+            {
+                using (process)
+                {
+                    if (!process.HasExited)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+        }
+
+        return false;
     }
 
     private static DirectoryInfo? FindSolutionRoot()

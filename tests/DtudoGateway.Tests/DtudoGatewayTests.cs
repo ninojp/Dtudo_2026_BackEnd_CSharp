@@ -156,11 +156,41 @@ public sealed class DtudoGatewayTests
         Assert.True(cookieOptions.Cookie.HttpOnly);
         Assert.Equal(CookieSecurePolicy.Always, cookieOptions.Cookie.SecurePolicy);
         Assert.Equal(SameSiteMode.Lax, cookieOptions.Cookie.SameSite);
+        Assert.Equal(TimeSpan.FromMinutes(120), cookieOptions.ExpireTimeSpan);
+        Assert.True(cookieOptions.SlidingExpiration);
+        Assert.False(cookieOptions.LogoutPath.HasValue);
         Assert.NotNull(cookieOptions.SessionStore);
         Assert.Equal("__Host-dtudo-xsrf", antiforgeryOptions.Cookie.Name);
         Assert.False(antiforgeryOptions.Cookie.HttpOnly);
         Assert.Equal(CookieSecurePolicy.Always, antiforgeryOptions.Cookie.SecurePolicy);
         Assert.Equal("X-CSRF-TOKEN", antiforgeryOptions.HeaderName);
+    }
+
+    [Fact]
+    public async Task NewSessionForTheSameSubjectReplacesThePreviousServerSideTicket()
+    {
+        await using var factory = CreateFactory();
+        using var scope = factory.Services.CreateScope();
+        var cookieOptions = scope.ServiceProvider
+            .GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
+            .Get("BffCookie");
+        var ticketStore = cookieOptions.SessionStore!;
+
+        static AuthenticationTicket CreateTicket() => new(
+            new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim("sub", "account-1")],
+                "oidc")),
+            new AuthenticationProperties
+            {
+                ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
+            },
+            "BffCookie");
+
+        var previousKey = await ticketStore.StoreAsync(CreateTicket());
+        var currentKey = await ticketStore.StoreAsync(CreateTicket());
+
+        Assert.Null(await ticketStore.RetrieveAsync(previousKey));
+        Assert.NotNull(await ticketStore.RetrieveAsync(currentKey));
     }
 
     [Fact]
@@ -200,7 +230,7 @@ public sealed class DtudoGatewayTests
     }
 
     [Fact]
-    public async Task ReverseProxyConfigurationContainsOnlyPublicGetCatalogRoutes()
+    public async Task ReverseProxyConfigurationRequiresAuthenticationForCatalogRoutes()
     {
         await using var factory = CreateFactory();
         using var scope = factory.Services.CreateScope();
@@ -210,22 +240,31 @@ public sealed class DtudoGatewayTests
         Assert.Equal(7, config.Routes.Count);
         Assert.All(config.Routes, route =>
         {
-            Assert.Equal(GatewayRouteConfiguration.AnonymousPolicy, route.AuthorizationPolicy);
             Assert.Equal([HttpMethod.Get.Method], route.Match.Methods);
         });
+
+        var catalogRoutes = config.Routes.Where(route => route.RouteId.StartsWith("catalog-", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(5, catalogRoutes.Length);
+        Assert.All(catalogRoutes, route =>
+            Assert.Equal(GatewayRouteConfiguration.AuthenticatedCatalogPolicy, route.AuthorizationPolicy));
+
+        var identityRoutes = config.Routes.Where(route => route.RouteId.StartsWith("identity-", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(2, identityRoutes.Length);
+        Assert.All(identityRoutes, route =>
+            Assert.Equal(GatewayRouteConfiguration.AnonymousPolicy, route.AuthorizationPolicy));
     }
 
     [Fact]
-    public void PublicCatalogModeDoesNotRegisterIdentityRoutesOrInternalPaths()
+    public void CatalogRoutesAreAuthenticatedAndUsePublicReadOnlyBackendPaths()
     {
-        var routes = GatewayRouteConfiguration.CreateRoutes(publicCatalogOnly: true);
+        var routes = GatewayRouteConfiguration.CreateRoutes();
+        var catalogRoutes = routes.Where(route => route.RouteId.StartsWith("catalog-", StringComparison.Ordinal)).ToArray();
 
-        Assert.Equal(5, routes.Count);
-        Assert.All(routes, route =>
+        Assert.Equal(5, catalogRoutes.Length);
+        Assert.All(catalogRoutes, route =>
         {
-            Assert.Equal(GatewayRouteConfiguration.AnonymousPolicy, route.AuthorizationPolicy);
+            Assert.Equal(GatewayRouteConfiguration.AuthenticatedCatalogPolicy, route.AuthorizationPolicy);
             Assert.Equal([HttpMethod.Get.Method], route.Match.Methods);
-            Assert.DoesNotContain("identity", route.RouteId, StringComparison.OrdinalIgnoreCase);
             var backendPaths = (route.Transforms ?? [])
                 .SelectMany(transform => transform.Values)
                 .Where(value => value.StartsWith("/apiLocal/", StringComparison.Ordinal));
@@ -234,44 +273,68 @@ public sealed class DtudoGatewayTests
     }
 
     [Fact]
-    public async Task HomologationCatalogOnlyRejectsPrivateSurfacesAndAddsEdgeHeaders()
+    public async Task UnauthenticatedCatalogRequestsRedirectToLoginAndExposeNoIndexHeader()
     {
-        await using var factory = CreateFactory("Homologation", publicCatalogOnly: true);
+        await using var factory = CreateFactory();
         using var client = CreateClient(factory);
 
         using var liveResponse = await client.GetAsync("/health/live");
         Assert.Equal(HttpStatusCode.OK, liveResponse.StatusCode);
-        Assert.Equal("max-age=31536000; includeSubDomains", liveResponse.Headers.GetValues("Strict-Transport-Security").Single());
-        Assert.Equal("nosniff", liveResponse.Headers.GetValues("X-Content-Type-Options").Single());
-        Assert.Equal("DENY", liveResponse.Headers.GetValues("X-Frame-Options").Single());
-        Assert.Equal("no-referrer", liveResponse.Headers.GetValues("Referrer-Policy").Single());
-        Assert.Contains("default-src 'self'", liveResponse.Headers.GetValues("Content-Security-Policy").Single(), StringComparison.Ordinal);
+        Assert.Equal("noindex, nofollow, noarchive", liveResponse.Headers.GetValues("X-Robots-Tag").Single());
 
-        using var corsRequest = new HttpRequestMessage(HttpMethod.Get, "/health/live");
-        corsRequest.Headers.TryAddWithoutValidation("Origin", "https://evil.example.invalid");
-        using var corsResponse = await client.SendAsync(corsRequest);
-        Assert.False(corsResponse.Headers.Contains("Access-Control-Allow-Origin"));
+        using var catalogResponse = await client.GetAsync("/api/catalog/animes");
+        Assert.Equal(HttpStatusCode.Redirect, catalogResponse.StatusCode);
+        Assert.Contains("/identity/connect/authorize", catalogResponse.Headers.Location?.ToString(), StringComparison.Ordinal);
+    }
 
-        foreach (var path in new[]
+    [Fact]
+    public async Task HealthChecksAreNotBlockedByTheGlobalRateLimiter()
+    {
+        await using var factory = CreateFactory();
+        using var client = CreateClient(factory);
+
+        for (var attempt = 0; attempt < 65; attempt++)
         {
-            "/bff/login",
-            "/bff/me",
-            "/identity/connect/authorize",
-            "/identity/connect/token",
-            "/swagger",
-            "/seq",
-            "/health/ready",
-            "/auth/login"
-        })
-        {
-            using var response = await client.GetAsync(path);
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            using var response = await client.GetAsync("/health/live");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+    }
 
-        using var writeResponse = await client.PostAsync(
-            "/api/catalog/animes",
-            new StringContent("{}", System.Text.Encoding.UTF8, "application/json"));
-        Assert.Equal(HttpStatusCode.NotFound, writeResponse.StatusCode);
+    [Fact]
+    public async Task DevelopmentDoesNotRateLimitUnauthenticatedBffChecks()
+    {
+        await using var factory = CreateFactory();
+        using var client = CreateClient(factory);
+
+        for (var attempt = 0; attempt < 65; attempt++)
+        {
+            using var response = await client.GetAsync("/bff/me");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task UnauthenticatedBffSessionCheckReturnsUnauthorizedWithoutOidcRedirect()
+    {
+        await using var factory = CreateFactory();
+        using var client = CreateClient(factory);
+
+        using var response = await client.GetAsync("/bff/me");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Null(response.Headers.Location);
+    }
+
+    [Fact]
+    public async Task GetLogoutRedirectsToFrontendLogoutFlowInsteadOfReturningMethodNotAllowed()
+    {
+        await using var factory = CreateFactory();
+        using var client = CreateClient(factory);
+
+        using var response = await client.GetAsync("/bff/logout?returnUrl=%2Fauth%2Flogin");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("http://localhost:5173/auth/logout", response.Headers.Location?.ToString());
     }
 
     private static HttpClient CreateClient(WebApplicationFactory<Program> factory) =>
@@ -282,9 +345,7 @@ public sealed class DtudoGatewayTests
             HandleCookies = false
         });
 
-    private static WebApplicationFactory<Program> CreateFactory(
-        string environment = "Development",
-        bool publicCatalogOnly = false) =>
+    private static WebApplicationFactory<Program> CreateFactory(string environment = "Development") =>
         new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
@@ -309,7 +370,6 @@ public sealed class DtudoGatewayTests
                         ["Gateway:TrustedProxyAddresses:1"] = "::1",
                         ["Gateway:ApiMyAnimesBaseUrl"] = "https://127.0.0.1:1/",
                         ["Gateway:ApiIdentityBaseUrl"] = "https://127.0.0.1:2/",
-                        ["Gateway:PublicCatalogOnly"] = publicCatalogOnly.ToString(),
                         ["Gateway:MaxRequestBodyBytes"] = "1048576",
                         ["Gateway:RateLimitPermitLimit"] = "60",
                         ["Gateway:RateLimitWindowSeconds"] = "60",
@@ -330,7 +390,6 @@ public sealed class DtudoGatewayTests
                         options.TrustedProxyAddresses = ["127.0.0.1", "::1"];
                         options.ApiMyAnimesBaseUrl = "https://127.0.0.1:1/";
                         options.ApiIdentityBaseUrl = "https://127.0.0.1:2/";
-                        options.PublicCatalogOnly = publicCatalogOnly;
                         options.MaxRequestBodyBytes = 1_048_576;
                         options.RateLimitPermitLimit = 60;
                         options.RateLimitWindowSeconds = 60;
@@ -342,24 +401,21 @@ public sealed class DtudoGatewayTests
                         options.ClientSecret = "test-client-secret";
                         options.Scopes = ["openid", "profile"];
                     });
-                    if (!publicCatalogOnly)
+                    services.PostConfigure<OpenIdConnectOptions>("oidc", options =>
                     {
-                        services.PostConfigure<OpenIdConnectOptions>("oidc", options =>
+                        options.Authority = "https://identity.test/";
+                        options.ClientId = "dtudo-gateway-test";
+                        options.ClientSecret = "test-client-secret";
+                        var configuration = new OpenIdConnectConfiguration
                         {
-                            options.Authority = "https://identity.test/";
-                            options.ClientId = "dtudo-gateway-test";
-                            options.ClientSecret = "test-client-secret";
-                            var configuration = new OpenIdConnectConfiguration
-                            {
-                                Issuer = "https://identity.test/",
-                                AuthorizationEndpoint = "https://identity.test/connect/authorize",
-                                TokenEndpoint = "https://identity.test/connect/token",
-                                EndSessionEndpoint = "https://identity.test/connect/logout"
-                            };
-                            options.Configuration = configuration;
-                            options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(configuration);
-                        });
-                    }
+                            Issuer = "https://identity.test/",
+                            AuthorizationEndpoint = "https://identity.test/connect/authorize",
+                            TokenEndpoint = "https://identity.test/connect/token",
+                            EndSessionEndpoint = "https://identity.test/connect/logout"
+                        };
+                        options.Configuration = configuration;
+                        options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(configuration);
+                    });
                 });
             });
 

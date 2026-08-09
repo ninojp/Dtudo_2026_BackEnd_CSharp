@@ -21,7 +21,7 @@ public sealed class AccountProvisioningServiceTests
     private const string StrongPassword = "Dtudo2026!InitialPassword";
 
     [Fact]
-    public async Task BootstrapRunsOnlyOnceAndAdministrativeProvisioningStoresOnlyAHash()
+    public async Task BootstrapRunsOnlyOnceAndAdministrativeProvisioningCreatesAnActivePasswordAccount()
     {
         await WithTemporaryDatabaseAsync(async services =>
         {
@@ -39,13 +39,14 @@ public sealed class AccountProvisioningServiceTests
                 var provisioned = await service.ProvisionAsync(new ProvisionAccountRequest(
                     "site-user",
                     "site-user@example.test",
-                    AuthorizationCatalog.Roles.SiteUser));
+                    AuthorizationCatalog.Roles.SiteUser,
+                    StrongPassword));
 
                 Assert.False(replay.Succeeded);
                 Assert.True(replay.IsAlreadyCompleted);
                 Assert.Null(replay.Delivery);
                 Assert.True(provisioned.Succeeded);
-                Assert.NotNull(provisioned.Delivery);
+                Assert.Null(provisioned.Delivery);
             }
 
             await using var verificationScope = services.CreateAsyncScope();
@@ -60,13 +61,21 @@ public sealed class AccountProvisioningServiceTests
 
             Assert.False(bootstrapAccount.IsActivationCompleted);
             Assert.Null(bootstrapAccount.PasswordHash);
+            Assert.True(siteUser.IsActivationCompleted);
+            Assert.NotNull(siteUser.ActivatedAtUtc);
+            Assert.NotNull(siteUser.PasswordHash);
+            var passwordHasher = verificationScope.ServiceProvider
+                .GetRequiredService<IPasswordHasher<IdentityAccount>>();
+            Assert.Equal(
+                PasswordVerificationResult.Success,
+                passwordHasher.VerifyHashedPassword(siteUser, siteUser.PasswordHash!, StrongPassword));
             Assert.True(await context.UserRoles.AnyAsync(role =>
                 role.UserId == bootstrapAccount.Id
                 && role.RoleId == superAdministratorRoleId));
             Assert.True(await context.UserRoles.AnyAsync(role =>
                 role.UserId == siteUser.Id
                 && role.RoleId == siteUserRoleId));
-            Assert.Equal(2, secrets.Count);
+            Assert.Single(secrets);
             Assert.All(secrets, secret =>
             {
                 Assert.NotEmpty(secret.SecretHash);
@@ -79,6 +88,28 @@ public sealed class AccountProvisioningServiceTests
             var auditEvent = await context.ProvisioningAuditEvents.FirstAsync();
             context.ProvisioningAuditEvents.Remove(auditEvent);
             await Assert.ThrowsAsync<InvalidOperationException>(() => context.SaveChangesAsync());
+        });
+    }
+
+    [Fact]
+    public async Task ReportsIdentityValidationErrorsWhenProvisioningPasswordIsRejected()
+    {
+        await WithTemporaryDatabaseAsync(async services =>
+        {
+            var bootstrap = await BootstrapAsync(services);
+            Assert.True(bootstrap.Succeeded);
+
+            await using var scope = services.CreateAsyncScope();
+            var service = scope.ServiceProvider.GetRequiredService<AccountProvisioningService>();
+            var result = await service.ProvisionAsync(new ProvisionAccountRequest(
+                "invalid-password-user",
+                "invalid-password@example.test",
+                AuthorizationCatalog.Roles.SiteUser,
+                "weak"));
+
+            Assert.False(result.Succeeded);
+            Assert.NotNull(result.Errors);
+            Assert.NotEmpty(result.Errors!);
         });
     }
 

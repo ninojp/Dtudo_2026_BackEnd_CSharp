@@ -3,13 +3,30 @@ using Microsoft.Win32;
 
 namespace WinAppDtudo.Services;
 
-public sealed class DtudoSiteStartupService(ApiMyAnimesHealthCheckService apiHealthCheckService) : IDisposable
+public sealed class DtudoSiteStartupService : IDisposable
 {
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromSeconds(15);
     private static readonly TimeSpan SiteHealthCheckTimeout = TimeSpan.FromSeconds(3);
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(1);
     private Process? _stackTerminalProcess;
     private string? _npmExecutablePath;
+    private readonly ApiMyAnimesHealthCheckService _apiHealthCheckService;
+    private readonly ApiMyAnimesStartupService _apiMyAnimesStartupService;
+    private readonly IApiIdentityStartupService _identityStartupService;
+    private readonly DtudoGatewayStartupService _gatewayStartupService;
+
+    public DtudoSiteStartupService(
+        ApiMyAnimesHealthCheckService apiHealthCheckService,
+        IApiIdentityStartupService? identityStartupService = null,
+        DtudoGatewayStartupService? gatewayStartupService = null,
+        ApiMyAnimesStartupService? apiMyAnimesStartupService = null)
+    {
+        _apiHealthCheckService = apiHealthCheckService ?? throw new ArgumentNullException(nameof(apiHealthCheckService));
+        _apiMyAnimesStartupService = apiMyAnimesStartupService
+            ?? new ApiMyAnimesStartupService(_apiHealthCheckService);
+        _identityStartupService = identityStartupService ?? new ApiIdentityStartupService();
+        _gatewayStartupService = gatewayStartupService ?? new DtudoGatewayStartupService();
+    }
 
     public async Task<DtudoSiteStartupResult> EnsureReadyAsync(Uri siteUri, CancellationToken cancellationToken)
     {
@@ -18,10 +35,17 @@ public sealed class DtudoSiteStartupService(ApiMyAnimesHealthCheckService apiHea
         if (!TryResolveDtudoSiteDirectory(out var siteDirectory, out var directoryError))
             return DtudoSiteStartupResult.Failed(directoryError);
 
-        var apiHealth = await apiHealthCheckService.CheckAsync(cancellationToken);
-        var siteIsAvailable = await IsSiteAvailableAsync(siteUri, cancellationToken);
+        var requiredServices = await EnsureRequiredServicesAsync(cancellationToken);
+        if (!requiredServices.Succeeded)
+            return requiredServices;
 
-        if (apiHealth.IsAvailable && siteIsAvailable)
+        var siteIsAvailable = await IsSiteAvailableAsync(siteUri, cancellationToken);
+        var proxyIsAvailable = await IsServiceAvailableAsync(
+            AppConfigurationService.DiscogsProxyBaseUrl,
+            "health/live",
+            cancellationToken);
+
+        if (siteIsAvailable && proxyIsAvailable)
             return DtudoSiteStartupResult.Ready();
 
         var npmCheck = await CheckNpmAvailabilityAsync(cancellationToken);
@@ -78,15 +102,16 @@ public sealed class DtudoSiteStartupService(ApiMyAnimesHealthCheckService apiHea
     private async Task<DtudoSiteStartupResult> WaitForServicesAsync(Uri siteUri, CancellationToken cancellationToken)
     {
         var deadline = DateTimeOffset.UtcNow + AppConfigurationService.DtudoSiteStartupTimeout;
-        var latestApiHealth = ApiMyAnimesHealthStatus.Unavailable("ApiMyAnimes is still starting.");
 
         while (DateTimeOffset.UtcNow < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            latestApiHealth = await apiHealthCheckService.CheckAsync(cancellationToken);
             var siteIsAvailable = await IsSiteAvailableAsync(siteUri, cancellationToken);
-            if (latestApiHealth.IsAvailable && siteIsAvailable)
+            var proxyIsAvailable = await IsServiceAvailableAsync(
+                AppConfigurationService.DiscogsProxyBaseUrl,
+                "health/live",
+                cancellationToken);
+            if (siteIsAvailable && proxyIsAvailable)
                 return DtudoSiteStartupResult.Ready();
 
             await Task.Delay(PollInterval, cancellationToken);
@@ -95,7 +120,23 @@ public sealed class DtudoSiteStartupService(ApiMyAnimesHealthCheckService apiHea
         var siteAddress = siteUri.GetLeftPart(UriPartial.Authority);
         return DtudoSiteStartupResult.Failed(
             $"Os servicos nao ficaram prontos em {AppConfigurationService.DtudoSiteStartupTimeout.TotalSeconds:0} segundos. " +
-            $"ApiMyAnimes: {latestApiHealth.Message} Vite: {siteAddress} nao respondeu.");
+            $"Vite: {siteAddress} ou proxy MyMusicX nao respondeu.");
+    }
+
+    private async Task<DtudoSiteStartupResult> EnsureRequiredServicesAsync(
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _identityStartupService.EnsureReadyAsync(cancellationToken);
+            await _gatewayStartupService.EnsureReadyAsync(cancellationToken);
+            await _apiMyAnimesStartupService.EnsureReadyAsync(cancellationToken);
+            return DtudoSiteStartupResult.Ready();
+        }
+        catch (WinAppAuthenticationException exception)
+        {
+            return DtudoSiteStartupResult.Failed(exception.Message);
+        }
     }
 
     private static async Task<bool> IsSiteAvailableAsync(Uri siteUri, CancellationToken cancellationToken)
@@ -109,6 +150,42 @@ public sealed class DtudoSiteStartupService(ApiMyAnimesHealthCheckService apiHea
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken);
 
+            return response.IsSuccessStatusCode;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+    }
+
+    private static async Task<bool> IsServiceAvailableAsync(
+        string baseUrl,
+        string relativePath,
+        CancellationToken cancellationToken)
+    {
+        var configuredUrl = baseUrl.TrimEnd('/') + "/";
+        if (!Uri.TryCreate(configuredUrl, UriKind.Absolute, out var baseUri)
+            || baseUri.Scheme is not ("https" or "http"))
+        {
+            return false;
+        }
+
+        try
+        {
+            using var handler = AppConfigurationService.CreateHttpClientHandler();
+            using var client = new HttpClient(handler) { Timeout = SiteHealthCheckTimeout };
+            using var response = await client.GetAsync(
+                new Uri(baseUri, relativePath),
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
             return response.IsSuccessStatusCode;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

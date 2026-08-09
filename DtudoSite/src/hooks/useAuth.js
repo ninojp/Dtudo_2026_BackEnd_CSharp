@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     BffRequestError,
     buildBffUrl,
     getSafeReturnPath,
     requestBff,
+    submitBffPostNavigation,
 } from '../services/bffClient';
 
 const SESSION_EXPIRED_MESSAGE = 'Sua sessao expirou ou foi revogada.';
@@ -21,7 +22,9 @@ function getErrorMessage(error, fallback) {
 export const useAuth = () => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [error, setError] = useState(null);
+    const logoutInProgress = useRef(false);
 
     const refreshSession = useCallback(async (signal) => {
         try {
@@ -73,9 +76,15 @@ export const useAuth = () => {
         ));
     }, []);
 
-    const logout = useCallback(async (returnUrl = '/auth/login') => {
-        setIsLoading(true);
+    const logout = useCallback(async (returnUrl = '/') => {
+        if (logoutInProgress.current) {
+            return { success: true };
+        }
+
+        logoutInProgress.current = true;
+        setIsLoggingOut(true);
         setError(null);
+        const safeReturnPath = getSafeReturnPath(returnUrl);
 
         try {
             const antiforgery = await requestBff('/bff/antiforgery');
@@ -83,13 +92,10 @@ export const useAuth = () => {
                 throw new Error('Protecao contra requisicoes falsificadas indisponivel.');
             }
 
-            await requestBff(
-                `/bff/logout?returnUrl=${encodeURIComponent(getSafeReturnPath(returnUrl))}`,
+            submitBffPostNavigation(
+                `/bff/logout?returnUrl=${encodeURIComponent(safeReturnPath)}`,
                 {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': antiforgery.token,
-                    },
+                    __RequestVerificationToken: antiforgery.token,
                 },
             );
             setUser(null);
@@ -98,20 +104,22 @@ export const useAuth = () => {
             if (isAuthorizationFailure(requestError)) {
                 setUser(null);
                 setError(null);
+                window.location.replace(safeReturnPath);
                 return { success: true };
             }
 
             const message = getErrorMessage(requestError, 'Nao foi possivel encerrar a sessao.');
             setError(message);
+            logoutInProgress.current = false;
+            setIsLoggingOut(false);
             return { success: false, error: message };
-        } finally {
-            setIsLoading(false);
         }
     }, []);
 
     return {
         user,
         isLoading,
+        isLoggingOut,
         error,
         isAuthenticated: !!user,
         login,

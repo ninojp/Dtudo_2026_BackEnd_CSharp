@@ -7,7 +7,7 @@ public sealed class ApiFileStorageStartupService
     private static readonly SemaphoreSlim StartupGate = new(1, 1);
     private static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(20);
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(1);
 
     public async Task EnsureReadyAsync(CancellationToken cancellationToken = default)
     {

@@ -100,6 +100,7 @@ public sealed class IdentityAdministrationApiClient
     public Task<WinAppAdminProvisionResult?> ProvisionAsync(
         string userName,
         string email,
+        string password,
         string roleName,
         IdentityAdminContext context,
         CancellationToken cancellationToken = default) =>
@@ -111,6 +112,7 @@ public sealed class IdentityAdministrationApiClient
                 UserName = userName,
                 Email = email,
                 RoleName = roleName,
+                Password = password,
                 SessionId = context.SessionId,
                 DeviceId = context.DeviceId
             },
@@ -252,13 +254,41 @@ public sealed class IdentityAdministrationApiClient
         var detail = await response.Content.ReadAsStringAsync(cancellationToken);
         var message = response.StatusCode switch
         {
-            HttpStatusCode.Forbidden => "A operacao administrativa exige permissao e step-up MFA valido.",
+            HttpStatusCode.Forbidden => "A operacao administrativa exige permissao, sessao ativa e, quando aplicavel, step-up MFA valido.",
             HttpStatusCode.Unauthorized => "A sessao do Identity expirou ou foi revogada.",
             _ => $"O Identity rejeitou a operacao. Status {(int)response.StatusCode}."
         };
+        var details = ReadErrorDetails(detail);
         return new WinAppAuthenticationException(
-            string.IsNullOrWhiteSpace(detail) ? message : $"{message}\n\n{detail}");
+            details.Count == 0 ? message : $"{message}\n\n{string.Join("\n", details)}");
     }
+
+    private static IReadOnlyList<string> ReadErrorDetails(string detail)
+    {
+        if (string.IsNullOrWhiteSpace(detail))
+        {
+            return Array.Empty<string>();
+        }
+
+        try
+        {
+            var error = JsonSerializer.Deserialize<IdentityErrorResponse>(detail, JsonOptions);
+            return error?.Errors is { Count: > 0 }
+                ? error.Errors
+                    .Where(message => !string.IsNullOrWhiteSpace(message))
+                    .Distinct(StringComparer.Ordinal)
+                    .ToArray()
+                : Array.Empty<string>();
+        }
+        catch (JsonException)
+        {
+            return Array.Empty<string>();
+        }
+    }
+
+    private sealed record IdentityErrorResponse(
+        string? Error,
+        IReadOnlyList<string>? Errors);
 
     private static string BuildQuery(
         string path,

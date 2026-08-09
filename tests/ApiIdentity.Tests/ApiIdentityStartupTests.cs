@@ -38,6 +38,24 @@ public sealed class ApiIdentityStartupTests
     }
 
     [Fact]
+    public async Task EndSessionExpiresTheIdentityBrowserCookie()
+    {
+        await using var factory = CreateFactory();
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false,
+            BaseAddress = new Uri("https://localhost")
+        });
+
+        using var response = await client.GetAsync("/connect/logout");
+
+        Assert.Contains(
+            response.Headers.GetValues("Set-Cookie"),
+            value => value.Contains("__Host-DtudoIdentity=", StringComparison.Ordinal)
+                && value.Contains("expires=Thu, 01 Jan 1970", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void ConfiguresAnIdentityDatabaseSeparateFromOtherServiceContexts()
     {
         using var factory = CreateFactory();

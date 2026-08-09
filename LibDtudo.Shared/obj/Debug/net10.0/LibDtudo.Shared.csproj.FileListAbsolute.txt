@@ -110,3 +110,8 @@ C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppTests-single-owner\LibDtudo.Sh
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppTests-single-owner\LibDtudo.Shared.dll
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppTests-single-owner\LibDtudo.Shared.pdb
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppTests-single-owner\LibDtudo.Shared.xml
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.deps.json
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.runtimeconfig.json
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.pdb
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.xml

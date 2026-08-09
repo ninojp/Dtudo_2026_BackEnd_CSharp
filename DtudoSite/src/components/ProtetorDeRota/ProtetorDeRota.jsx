@@ -1,7 +1,7 @@
 import { use, useEffect } from "react";
 import AuthContext from "../../context_api/AuthContext/AuthContext";
 import Spinner from "../Spinner/Spinner";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 export default function ProtetorDeRota({ children }) {
     const { isAuthenticated, isLoading } = use(AuthContext);
@@ -26,5 +26,5 @@ export default function ProtetorDeRota({ children }) {
         return null;
     };
     //==============
-    return children
+    return children ?? <Outlet />;
 };

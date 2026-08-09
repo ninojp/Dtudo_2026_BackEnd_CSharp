@@ -117,21 +117,26 @@ public sealed class AccountProvisioningService
         ArgumentNullException.ThrowIfNull(request);
 
         if (!await _context.BootstrapStates.AsNoTracking().AnyAsync(cancellationToken)
-            || !IsCatalogRole(request.RoleName))
+            || !IsCatalogRole(request.RoleName)
+            || string.IsNullOrWhiteSpace(request.Password))
         {
-            return new ProvisionAccountResult(false, null);
+            return new ProvisionAccountResult(false, null, [
+                "Informe usuario, email, role e uma senha valida."
+            ]);
         }
 
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         var account = CreateAccount(request.UserName, request.Email);
-        var creation = await CreateAccountWithRoleAsync(account, request.RoleName.Trim());
-        if (!creation)
+        var errors = await CreateAccountWithPasswordAndRoleAsync(
+            account,
+            request.RoleName.Trim(),
+            request.Password);
+        if (errors.Count > 0)
         {
             await transaction.RollbackAsync(cancellationToken);
-            return new ProvisionAccountResult(false, null);
+            return new ProvisionAccountResult(false, null, errors);
         }
 
-        var delivery = IssueInitialSecret(account);
         RecordAudit(
             actor,
             "identity.account.provisioned",
@@ -141,7 +146,7 @@ public sealed class AccountProvisioningService
 
         await _context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return new ProvisionAccountResult(true, delivery);
+        return new ProvisionAccountResult(true, null);
     }
 
     public async Task<bool> RevokeInitialSecretAsync(
@@ -248,6 +253,39 @@ public sealed class AccountProvisioningService
         var roleAssignment = await _userManager.AddToRoleAsync(account, roleName);
         return roleAssignment.Succeeded;
     }
+
+    private async Task<IReadOnlyList<string>> CreateAccountWithPasswordAndRoleAsync(
+        IdentityAccount account,
+        string roleName,
+        string password)
+    {
+        var creation = await _userManager.CreateAsync(account, password);
+        if (!creation.Succeeded)
+        {
+            return GetIdentityErrors(creation);
+        }
+
+        var roleAssignment = await _userManager.AddToRoleAsync(account, roleName);
+        if (!roleAssignment.Succeeded)
+        {
+            return GetIdentityErrors(roleAssignment);
+        }
+
+        account.IsActivationCompleted = true;
+        account.ActivatedAtUtc = _timeProvider.GetUtcNow();
+        var update = await _userManager.UpdateAsync(account);
+        return update.Succeeded
+            ? Array.Empty<string>()
+            : GetIdentityErrors(update);
+    }
+
+    private static IReadOnlyList<string> GetIdentityErrors(IdentityResult result) => result.Errors
+        .Select(error => string.IsNullOrWhiteSpace(error.Description)
+            ? error.Code
+            : error.Description)
+        .Where(error => !string.IsNullOrWhiteSpace(error))
+        .Distinct(StringComparer.Ordinal)
+        .ToArray();
 
     private InitialSecretDelivery IssueInitialSecret(IdentityAccount account)
     {

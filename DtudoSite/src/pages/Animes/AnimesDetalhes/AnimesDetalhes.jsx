@@ -20,7 +20,6 @@ import styles from './AnimesDetalhes.module.css';
 
 const formatarNumero = (valor) => valor ? Number(valor).toLocaleString('pt-BR') : 'N/A';
 const formatarLista = (valores) => Array.isArray(valores) && valores.length > 0 ? valores.join(', ') : 'N/A';
-const PUBLIC_CATALOG_ONLY = import.meta.env.MODE === 'homologation';
 
 export default function AnimesDetalhes() {
     const { malId } = useParams();
@@ -44,7 +43,7 @@ export default function AnimesDetalhes() {
     const colecoesComAnime = useMemo(() => obterColecoesComAnime(colecoes, malIdNumerico), [colecoes, malIdNumerico]);
     const animesRelacionados = useMemo(() => obterAnimesRelacionados({
         colecoesComAnime,
-        incluirAdultos: !PUBLIC_CATALOG_ONLY && isAuthenticated,
+        incluirAdultos: isAuthenticated,
         listObjsDetalhesAnimes,
     }), [colecoesComAnime, isAuthenticated, listObjsDetalhesAnimes]);
 
@@ -89,7 +88,7 @@ export default function AnimesDetalhes() {
     }, [animeDaLista, listaCarregando, malIdNumerico, navigate]);
 
     useEffect(() => {
-        if (!PUBLIC_CATALOG_ONLY && !isLoading && anime && ehAnimeAdulto(anime) && !isAuthenticated) {
+        if (!isLoading && anime && ehAnimeAdulto(anime) && !isAuthenticated) {
             navigate('/animes', { replace: true });
         }
     }, [anime, isAuthenticated, isLoading, navigate]);

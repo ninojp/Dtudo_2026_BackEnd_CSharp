@@ -1,27 +1,21 @@
-import { use, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { use, useEffect, useRef } from 'react';
 import AuthContext from '../../context_api/AuthContext/AuthContext';
 import Spinner from '../../components/Spinner/Spinner';
 
 export default function Logout() {
-    const { error, isLoading, logout } = use(AuthContext);
-    const navigate = useNavigate();
+    const { error, isLoggingOut, logout } = use(AuthContext);
+    const logoutStarted = useRef(false);
 
     useEffect(() => {
-        let ativo = true;
+        if (logoutStarted.current) {
+            return;
+        }
 
-        logout('/auth/login').then((result) => {
-            if (ativo && result.success) {
-                navigate('/auth/login', { replace: true });
-            }
-        });
+        logoutStarted.current = true;
+        logout('/').catch(() => undefined);
+    }, [logout]);
 
-        return () => {
-            ativo = false;
-        };
-    }, [logout, navigate]);
-
-    if (isLoading) {
+    if (isLoggingOut) {
         return <Spinner />;
     }
 
@@ -29,12 +23,12 @@ export default function Logout() {
         return (
             <div role="alert">
                 <p>{error}</p>
-                <button type="button" onClick={() => window.location.reload()}>
+                <button type="button" onClick={() => logout('/')}>
                     Tentar novamente
                 </button>
             </div>
         );
     }
 
-    return null;
+    return <Spinner />;
 };

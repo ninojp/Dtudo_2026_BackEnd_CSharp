@@ -296,6 +296,7 @@ builder.Services.AddOpenIddict()
         options.SetAuthorizationEndpointUris("/connect/authorize");
         options.SetTokenEndpointUris("/connect/token");
         options.SetRevocationEndpointUris("/connect/revocation");
+        options.SetEndSessionEndpointUris("/connect/logout");
         options.AllowAuthorizationCodeFlow();
         options.AllowRefreshTokenFlow();
         options.AllowClientCredentialsFlow();
@@ -312,7 +313,8 @@ builder.Services.AddOpenIddict()
         options.AddDevelopmentEncryptionCertificate();
         options.AddDevelopmentSigningCertificate();
         options.UseAspNetCore()
-            .EnableAuthorizationEndpointPassthrough();
+            .EnableAuthorizationEndpointPassthrough()
+            .EnableEndSessionEndpointPassthrough();
     })
     .AddValidation(options =>
     {
@@ -393,15 +395,14 @@ app.MapPost("/account/login", async (
     IAntiforgery antiforgery,
     UserManager<IdentityAccount> userManager,
     SignInManager<IdentityAccount> signInManager,
-    [FromForm] string? userName,
+    [FromForm] string? email,
     [FromForm] string? password,
     [FromForm] string? returnUrl) =>
 {
     await antiforgery.ValidateRequestAsync(context);
     var safeReturnUrl = GetSafeReturnUrl(returnUrl);
-    var normalizedUserName = userName?.Trim() ?? string.Empty;
-    var account = await userManager.FindByNameAsync(normalizedUserName)
-        ?? await userManager.FindByEmailAsync(normalizedUserName);
+    var normalizedEmail = email?.Trim() ?? string.Empty;
+    var account = await userManager.FindByEmailAsync(normalizedEmail);
     if (account is not null)
     {
         var result = await signInManager.CheckPasswordSignInAsync(
@@ -461,6 +462,13 @@ app.MapMethods("/connect/authorize", [HttpMethods.Get, HttpMethods.Post], async 
     return Results.SignIn(
         principal,
         authenticationScheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+});
+
+app.MapMethods("/connect/logout", [HttpMethods.Get, HttpMethods.Post], async (HttpContext context) =>
+{
+    await context.SignOutAsync(browserCookieScheme);
+    return Results.SignOut(
+        authenticationSchemes: [OpenIddictServerAspNetCoreDefaults.AuthenticationScheme]);
 });
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -844,7 +852,15 @@ administration.MapPost("/accounts", async (
     CancellationToken cancellationToken) =>
 {
     var result = await service.ProvisionAsync(httpContext.User, request, cancellationToken);
-    return result.Succeeded ? Results.Ok(result) : Results.BadRequest();
+    return result.Succeeded
+        ? Results.Ok(result)
+        : Results.BadRequest(new
+        {
+            Error = "identity_provisioning_failed",
+            Errors = result.Errors is { Count: > 0 }
+                ? result.Errors
+                : new[] { "O Identity nao conseguiu salvar a conta." }
+        });
 });
 
 administration.MapPost("/accounts/{accountId}/roles", async (
@@ -1517,7 +1533,7 @@ static string BuildLoginPage(string returnUrl, string? requestVerificationToken,
         + "<form method=\"post\" action=\"/account/login\">"
         + $"<input type=\"hidden\" name=\"returnUrl\" value=\"{encodedReturnUrl}\">"
         + $"<input type=\"hidden\" name=\"__RequestVerificationToken\" value=\"{encodedToken}\">"
-        + "<label>Usuario ou email<input name=\"userName\" autocomplete=\"username\" required></label>"
+        + "<label>Email<input type=\"email\" name=\"email\" autocomplete=\"email\" required></label>"
         + "<label>Senha<input type=\"password\" name=\"password\" autocomplete=\"current-password\" required></label>"
         + "<button type=\"submit\">Entrar</button></form></main></body></html>";
 }

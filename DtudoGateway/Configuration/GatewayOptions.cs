@@ -8,6 +8,8 @@ public sealed class GatewayOptions
 
     public string PublicOrigin { get; set; } = string.Empty;
 
+    public string FrontendOrigin { get; set; } = string.Empty;
+
     public string[] AllowedRedirectOrigins { get; set; } = [];
 
     public string[] AllowedCorsOrigins { get; set; } = [];
@@ -18,7 +20,9 @@ public sealed class GatewayOptions
 
     public string ApiIdentityBaseUrl { get; set; } = string.Empty;
 
-    public bool PublicCatalogOnly { get; set; }
+    public int SessionIdleTimeoutMinutes { get; set; } = 120;
+
+    public int SessionAbsoluteLifetimeHours { get; set; } = 24;
 
     public long MaxRequestBodyBytes { get; set; } = 1_048_576;
 
@@ -37,7 +41,7 @@ public sealed class GatewayOpenIdConnectOptions
 
     public string ClientSecret { get; set; } = string.Empty;
 
-    public string[] Scopes { get; set; } = ["openid", "profile"];
+    public string[] Scopes { get; set; } = [];
 }
 
 public static class GatewayOptionsValidator
@@ -48,9 +52,9 @@ public static class GatewayOptionsValidator
             || options.AllowedRedirectOrigins.Length == 0
             || !options.AllowedRedirectOrigins.All(IsHttpsOrigin)
             || !options.AllowedRedirectOrigins.Any(origin => SameOrigin(origin, options.PublicOrigin))
+            || !string.IsNullOrWhiteSpace(options.FrontendOrigin) && !IsAllowedFrontendOrigin(options.FrontendOrigin)
             || options.AllowedCorsOrigins.Length == 0
             || !options.AllowedCorsOrigins.All(IsHttpsOrigin)
-            || options.PublicCatalogOnly && options.AllowedCorsOrigins.Any(origin => !SameOrigin(origin, options.PublicOrigin))
             || options.TrustedProxyAddresses.Length == 0
             || options.TrustedProxyAddresses.Any(address => !IPAddress.TryParse(address, out _)))
         {
@@ -60,6 +64,8 @@ public static class GatewayOptionsValidator
         return options.MaxRequestBodyBytes is >= 1_024 and <= 10_485_760
             && options.RateLimitPermitLimit is >= 1 and <= 10_000
             && options.RateLimitWindowSeconds is >= 1 and <= 3_600
+            && options.SessionIdleTimeoutMinutes is >= 5 and <= 1_440
+            && options.SessionAbsoluteLifetimeHours is >= 1 and <= 720
             && IsHttpsBaseUrl(options.ApiMyAnimesBaseUrl)
             && IsHttpsBaseUrl(options.ApiIdentityBaseUrl);
     }
@@ -97,6 +103,27 @@ public static class GatewayOptionsValidator
             && string.IsNullOrEmpty(uri.UserInfo)
             && string.IsNullOrEmpty(uri.Query)
             && string.IsNullOrEmpty(uri.Fragment);
+    }
+
+    public static bool IsAllowedFrontendOrigin(string value)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri)
+            || !string.IsNullOrEmpty(uri.UserInfo)
+            || !string.IsNullOrEmpty(uri.Query)
+            || !string.IsNullOrEmpty(uri.Fragment)
+            || uri.AbsolutePath != "/")
+        {
+            return false;
+        }
+
+        if (uri.Scheme == Uri.UriSchemeHttps)
+        {
+            return true;
+        }
+
+        return uri.Scheme == Uri.UriSchemeHttp
+            && (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                || IPAddress.TryParse(uri.Host, out var address) && IPAddress.IsLoopback(address));
     }
 
     public static bool SameOrigin(string left, string right)

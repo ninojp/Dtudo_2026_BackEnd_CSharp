@@ -6,6 +6,7 @@ public sealed record IdentityAdminProvisionRequest(
     string UserName,
     string Email,
     string RoleName,
+    string Password,
     string? SessionId,
     string? DeviceId);
 
@@ -58,4 +59,5 @@ public sealed record IdentityAdminSessionView(
 
 public sealed record IdentityAdminProvisionResult(
     bool Succeeded,
-    InitialSecretDelivery? Delivery = null);
+    InitialSecretDelivery? Delivery = null,
+    IReadOnlyList<string>? Errors = null);

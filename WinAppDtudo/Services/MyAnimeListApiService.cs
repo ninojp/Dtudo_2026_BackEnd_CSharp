@@ -124,7 +124,7 @@ public sealed class MyAnimeListApiService
             for (var attempt = 0; attempt < 30; attempt++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
 
                 try
                 {

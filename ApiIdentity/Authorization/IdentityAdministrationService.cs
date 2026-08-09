@@ -130,14 +130,16 @@ public sealed class IdentityAdministrationService
             cancellationToken);
         if (actorId is null)
         {
-            return new IdentityAdminProvisionResult(false);
+            return new IdentityAdminProvisionResult(false, Errors: [
+                "A autorizacao administrativa expirou. Informe novamente o codigo TOTP."
+            ]);
         }
 
         var result = await _provisioningService.ProvisionAsync(
-            new ProvisionAccountRequest(request.UserName, request.Email, request.RoleName),
+            new ProvisionAccountRequest(request.UserName, request.Email, request.RoleName, request.Password),
             actorId,
             cancellationToken);
-        return new IdentityAdminProvisionResult(result.Succeeded, result.Delivery);
+        return new IdentityAdminProvisionResult(result.Succeeded, result.Delivery, result.Errors);
     }
 
     public async Task<bool> AssignRoleAsync(
@@ -279,7 +281,8 @@ public sealed class IdentityAdministrationService
         ClaimsPrincipal principal,
         string? sessionId,
         string? deviceId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool requireStepUp = true)
     {
         var actorId = GetPrincipalAccountId(principal);
         if (actorId is null)
@@ -288,13 +291,43 @@ public sealed class IdentityAdministrationService
         }
 
         var context = new SecurityContext(sessionId, deviceId);
-        return await _stepUpService.IsAllowedAsync(
+        if (!SecurityContextFactory.TryGetIds(context, out _, out _))
+        {
+            return null;
+        }
+
+        var account = await _userManager.FindByIdAsync(actorId);
+        if (account is null
+            || !await HasPermissionAsync(principal, account, ProvisionAction)
+            || !await _sessionService.IsActiveBindingAsync(actorId, context, cancellationToken))
+        {
+            return null;
+        }
+
+        return !requireStepUp
+            || await _stepUpService.IsAllowedAsync(
                 principal,
                 ProvisionAction,
                 context,
                 cancellationToken)
             ? actorId
             : null;
+    }
+
+    private async Task<bool> HasPermissionAsync(
+        ClaimsPrincipal principal,
+        IdentityAccount account,
+        string permission)
+    {
+        if (principal.HasClaim(AuthorizationCatalog.PermissionClaimType, permission))
+        {
+            return true;
+        }
+
+        var roles = await _userManager.GetRolesAsync(account);
+        return roles.Any(roleName => AuthorizationCatalog.AllRoles
+            .Any(role => string.Equals(role.Name, roleName, StringComparison.Ordinal)
+                && role.PermissionKeys.Contains(permission, StringComparer.Ordinal)));
     }
 
     private static bool IsCatalogRole(string? roleName) => AuthorizationCatalog.AllRoles

@@ -175,3 +175,12 @@ C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppTests-single-owner\WinAppDtudo
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppTests-single-owner\WinAppDtudo.runtimeconfig.json
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppTests-single-owner\WinAppDtudo.dll
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppTests-single-owner\WinAppDtudo.pdb
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\runtimes\win-x86\native\WebView2Loader.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\runtimes\win-x64\native\WebView2Loader.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\runtimes\win-arm64\native\WebView2Loader.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\appsettings.json
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.exe
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.deps.json
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.runtimeconfig.json
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0-windows10.0.26100.0\WinAppDtudo.pdb

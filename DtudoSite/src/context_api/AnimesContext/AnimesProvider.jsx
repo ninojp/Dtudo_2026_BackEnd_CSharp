@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { buscarTodosAnimesDaApiLocal } from "../../services/apiMyAnimes";
+import { use } from "react";
+import AuthContext from "../AuthContext/AuthContext";
 import AnimesContext from "./AnimesContext";
 
 export default function AnimesProvider({ children }) {
+    const { isAuthenticated } = use(AuthContext);
     const [listObjsDetalhesAnimes, setListObjsDetalhesAnimes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -10,6 +13,13 @@ export default function AnimesProvider({ children }) {
     const recarregarAnimes = useCallback(() => setTentativa((valor) => valor + 1), []);
 
     useEffect(() => {
+        if (!isAuthenticated) {
+            setListObjsDetalhesAnimes([]);
+            setIsLoading(false);
+            setError(null);
+            return undefined;
+        }
+
         const controller = new AbortController();
         let ativo = true;
 
@@ -35,7 +45,7 @@ export default function AnimesProvider({ children }) {
             ativo = false;
             controller.abort();
         };
-    }, [tentativa]);
+    }, [isAuthenticated, tentativa]);
 
     return (
         <AnimesContext.Provider

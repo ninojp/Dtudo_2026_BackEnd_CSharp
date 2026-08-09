@@ -6,7 +6,7 @@ const BFF_BASE_URL = import.meta.env.VITE_BFF_BASE_URL
 export function axiosHttpBffCatalog() {
     return axios.create({
         baseURL: BFF_BASE_URL.replace(/\/+$/, ''),
-        withCredentials: false,
+        withCredentials: true,
         headers: {
             Accept: 'application/json',
         },

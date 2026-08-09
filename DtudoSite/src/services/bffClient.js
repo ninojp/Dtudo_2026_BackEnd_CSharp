@@ -37,6 +37,28 @@ export function getSafeReturnPath(candidate = '/') {
     return candidate.split('#', 1)[0] || '/';
 }
 
+export function submitBffPostNavigation(path, fields = {}) {
+    if (typeof document === 'undefined') {
+        throw new Error('A navegacao BFF exige um documento do navegador.');
+    }
+
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = buildBffUrl(path);
+    form.style.display = 'none';
+
+    for (const [name, value] of Object.entries(fields)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
 function publishSessionExpiredEvent() {
     if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('dtudo:bff-session-expired'));

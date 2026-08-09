@@ -18,6 +18,9 @@ const PORT = process.env.PORT || 4010;
 const DISCOGS_TOKEN = process.env.DISCOGS_TOKEN || '';
 
 app.use(express.json());
+app.get('/health/live', (_req, res) => {
+  res.status(200).json({ status: 'ok', service: 'discogsProxy' });
+});
 // Simples CORS e preflight handling
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');

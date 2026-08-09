@@ -13,17 +13,21 @@ public class ApiMyAnimesService
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
     private readonly HttpClient _httpClient;
     private readonly WinAppAuthenticationService? _authenticationService;
+    private readonly ApiMyAnimesStartupService? _startupService;
 
     public static string ApiBase => AppConfigurationService.ApiMyAnimesBaseUrl;
 
     public ApiMyAnimesService(
         WinAppAuthenticationService? authenticationService = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        ApiMyAnimesStartupService? startupService = null)
     {
         _authenticationService = authenticationService;
         _httpClient = httpClient ?? new HttpClient(AppConfigurationService.CreateHttpClientHandler());
         _httpClient.BaseAddress ??= new Uri(ApiBase.TrimEnd('/') + "/");
         _httpClient.Timeout = TimeSpan.FromSeconds(120);
+        _startupService = startupService
+            ?? (httpClient is null ? new ApiMyAnimesStartupService() : null);
     }
 
     public async Task<EnsureMyAnimeCollectionResponse> GarantirMyAnimeColecaoAsync(
@@ -65,7 +69,7 @@ public class ApiMyAnimesService
             };
 
         var termoEscapado = Uri.EscapeDataString(query.Trim());
-        using var response = await _httpClient.GetAsync(
+        using var response = await GetAsync(
             $"apiLocal/Anime/buscar?termo={termoEscapado}&take={MaxResultadosBusca}");
         response.EnsureSuccessStatusCode();
 
@@ -158,7 +162,7 @@ public class ApiMyAnimesService
 
     public async Task<List<ObterMyAnimeDto>> ObterMyAnimesAsync(int skip = 0, int take = 100)
     {
-        using var response = await _httpClient.GetAsync($"apiLocal/MyAnime?skip={skip}&take={take}");
+        using var response = await GetAsync($"apiLocal/MyAnime?skip={skip}&take={take}");
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
@@ -167,7 +171,7 @@ public class ApiMyAnimesService
 
     public async Task<ObterMyAnimeDto?> ObterMyAnimePorIdAsync(int id)
     {
-        using var response = await _httpClient.GetAsync($"apiLocal/MyAnime/{id}");
+        using var response = await GetAsync($"apiLocal/MyAnime/{id}");
 
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             return null;
@@ -294,7 +298,7 @@ public class ApiMyAnimesService
 
     public async Task<List<ObterAnimeDto>> ObterAnimesAsync(int skip = 0, int take = 100)
     {
-        using var response = await _httpClient.GetAsync($"apiLocal/Anime?skip={skip}&take={take}");
+        using var response = await GetAsync($"apiLocal/Anime?skip={skip}&take={take}");
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
@@ -303,7 +307,7 @@ public class ApiMyAnimesService
 
     public async Task<ObterAnimeDto?> ObterAnimePorMalIdAsync(int malId)
     {
-        using var response = await _httpClient.GetAsync($"apiLocal/Anime/{malId}");
+        using var response = await GetAsync($"apiLocal/Anime/{malId}");
 
         if (response.StatusCode == HttpStatusCode.NotFound)
             return null;
@@ -362,6 +366,7 @@ public class ApiMyAnimesService
         bool requiresAuthentication,
         CancellationToken cancellationToken)
     {
+        await EnsureApiReadyAsync(cancellationToken);
         if (requiresAuthentication)
         {
             if (_authenticationService is null)
@@ -376,6 +381,17 @@ public class ApiMyAnimesService
         using var request = CreateRequest(method, path, contentFactory);
         return await _httpClient.SendAsync(request, cancellationToken);
     }
+
+    private async Task<HttpResponseMessage> GetAsync(
+        string path,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureApiReadyAsync(cancellationToken);
+        return await _httpClient.GetAsync(path, cancellationToken);
+    }
+
+    private Task EnsureApiReadyAsync(CancellationToken cancellationToken) =>
+        _startupService?.EnsureReadyAsync(cancellationToken) ?? Task.CompletedTask;
 
     private static HttpRequestMessage CreateRequest(
         HttpMethod method,

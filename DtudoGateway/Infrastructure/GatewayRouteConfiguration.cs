@@ -6,9 +6,10 @@ public static class GatewayRouteConfiguration
 {
     public const string CatalogClusterId = "api-my-animes-catalog";
     public const string IdentityClusterId = "api-identity-oidc";
-    public const string AnonymousPolicy = "gateway-public-catalog";
+    public const string AnonymousPolicy = "gateway-anonymous";
+    public const string AuthenticatedCatalogPolicy = "gateway-authenticated-catalog";
 
-    public static IReadOnlyList<RouteConfig> CreateRoutes(bool publicCatalogOnly = false)
+    public static IReadOnlyList<RouteConfig> CreateRoutes()
     {
         var routes = new List<RouteConfig>
         {
@@ -19,21 +20,20 @@ public static class GatewayRouteConfiguration
             CreateParameterizedRoute("catalog-collection-by-id", "/api/catalog/collections/{id:int}", "/apiLocal/MyAnime/public/{id}"),
         };
 
-        if (!publicCatalogOnly)
-        {
-            routes.Add(CreateExactRoute(
-                "identity-authorization",
-                "/identity/connect/authorize",
-                "/connect/authorize",
-                IdentityClusterId,
-                stripBrowserHeaders: false));
-            routes.Add(CreateExactRoute(
-                "identity-logout",
-                "/identity/connect/logout",
-                "/connect/logout",
-                IdentityClusterId,
-                stripBrowserHeaders: false));
-        }
+        routes.Add(CreateExactRoute(
+            "identity-authorization",
+            "/identity/connect/authorize",
+            "/connect/authorize",
+            IdentityClusterId,
+            stripBrowserHeaders: false,
+            authorizationPolicy: AnonymousPolicy));
+        routes.Add(CreateExactRoute(
+            "identity-logout",
+            "/identity/connect/logout",
+            "/connect/logout",
+            IdentityClusterId,
+            stripBrowserHeaders: false,
+            authorizationPolicy: AnonymousPolicy));
 
         return routes;
     }
@@ -71,12 +71,13 @@ public static class GatewayRouteConfiguration
         string publicPath,
         string backendPath,
         string clusterId = CatalogClusterId,
-        bool stripBrowserHeaders = true) =>
+        bool stripBrowserHeaders = true,
+        string authorizationPolicy = AuthenticatedCatalogPolicy) =>
         new()
         {
             RouteId = routeId,
             ClusterId = clusterId,
-            AuthorizationPolicy = AnonymousPolicy,
+            AuthorizationPolicy = authorizationPolicy,
             Match = new RouteMatch
             {
                 Path = publicPath,
@@ -90,7 +91,7 @@ public static class GatewayRouteConfiguration
         {
             RouteId = routeId,
             ClusterId = CatalogClusterId,
-            AuthorizationPolicy = AnonymousPolicy,
+            AuthorizationPolicy = AuthenticatedCatalogPolicy,
             Match = new RouteMatch
             {
                 Path = publicPath,

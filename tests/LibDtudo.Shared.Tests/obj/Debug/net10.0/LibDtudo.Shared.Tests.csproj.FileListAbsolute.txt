@@ -111,3 +111,13 @@ C:\2026MeusProjetos\Dtudo2026\tests\LibDtudo.Shared.Tests\obj\Debug\net10.0\LibD
 C:\2026MeusProjetos\Dtudo2026\tests\LibDtudo.Shared.Tests\obj\Debug\net10.0\LibDtudo.Shared.Tests.genruntimeconfig.cache
 C:\2026MeusProjetos\Dtudo2026\tests\LibDtudo.Shared.Tests\obj\Debug\net10.0\ref\LibDtudo.Shared.Tests.dll
 C:\2026MeusProjetos\Dtudo2026\tests\LibDtudo.Shared.Tests\bin\Debug\net10.0\Serilog.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\.msCoverageSourceRootsMapping_LibDtudo.Shared.Tests
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\CoverletSourceRootsMapping_LibDtudo.Shared.Tests
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\testhost.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\xunit.abstractions.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\testhost.exe
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\xunit.runner.visualstudio.testadapter.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.Tests.deps.json
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.Tests.runtimeconfig.json
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.Tests.dll
+C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\LibDtudo.Shared.Tests.pdb

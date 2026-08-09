@@ -598,6 +598,7 @@ public sealed class IdentitySecurityServiceTests
                 "provisioned-user",
                 "provisioned@example.test",
                 AuthorizationCatalog.Roles.SiteUser,
+                "Dtudo2026!ProvisionPassword",
                 context.SessionId,
                 context.DeviceId);
             var withoutPermission = CreatePrincipal(accountId);

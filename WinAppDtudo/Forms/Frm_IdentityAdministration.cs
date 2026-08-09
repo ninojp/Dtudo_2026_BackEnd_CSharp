@@ -8,6 +8,7 @@ public sealed class Frm_IdentityAdministration : Form
     private readonly WinAppAuthenticationService _authenticationService;
     private readonly TextBox _userNameInput = new();
     private readonly TextBox _emailInput = new();
+    private readonly TextBox _passwordInput = new();
     private readonly ComboBox _roleInput = new();
     private readonly DataGridView _accountsGrid = CreateGrid();
     private readonly DataGridView _rolesGrid = CreateGrid();
@@ -102,6 +103,8 @@ public sealed class Frm_IdentityAdministration : Form
         };
         ConfigureInput(_userNameInput, "Usuario", 190);
         ConfigureInput(_emailInput, "Email", 250);
+        ConfigureInput(_passwordInput, "Senha", 250);
+        _passwordInput.UseSystemPasswordChar = true;
         _roleInput.DropDownStyle = ComboBoxStyle.DropDownList;
         _roleInput.Width = 220;
         _roleInput.Height = 34;
@@ -109,6 +112,7 @@ public sealed class Frm_IdentityAdministration : Form
         provisionButton.Click += async (_, _) => await ProvisionAccountAsync();
         provision.Controls.Add(CreateInputGroup("Usuario", _userNameInput));
         provision.Controls.Add(CreateInputGroup("Email", _emailInput));
+        provision.Controls.Add(CreateInputGroup("Senha", _passwordInput));
         provision.Controls.Add(CreateInputGroup("Role", _roleInput));
         provision.Controls.Add(provisionButton);
 
@@ -252,9 +256,10 @@ public sealed class Frm_IdentityAdministration : Form
         if (context is null
             || string.IsNullOrWhiteSpace(_userNameInput.Text)
             || string.IsNullOrWhiteSpace(_emailInput.Text)
+            || string.IsNullOrWhiteSpace(_passwordInput.Text)
             || string.IsNullOrWhiteSpace(role))
         {
-            ShowStatus("Preencha usuario, email e role.", true);
+            ShowStatus("Preencha usuario, email, senha e role.", true);
             return;
         }
 
@@ -269,24 +274,23 @@ public sealed class Frm_IdentityAdministration : Form
             var result = await _client.ProvisionAsync(
                 _userNameInput.Text.Trim(),
                 _emailInput.Text.Trim(),
+                _passwordInput.Text,
                 role,
                 context,
                 _closingCancellation.Token);
-            if (result?.Delivery is null)
+            if (result is null || !result.Succeeded)
             {
-                throw new WinAppAuthenticationException("O Identity nao entregou o segredo inicial.");
+                throw new WinAppAuthenticationException("O Identity nao confirmou o provisionamento da conta.");
             }
 
             DarkMessageBox.Show(
-                $"Conta criada. Entregue o segredo inicial uma unica vez ao usuario.\n\n" +
-                $"Activation ID: {result.Delivery.ActivationId:D}\n" +
-                $"Segredo inicial: {result.Delivery.InitialSecret}\n" +
-                $"Expira em: {result.Delivery.ExpiresAtUtc:O}",
+                "Conta criada com sucesso. A conta ja pode iniciar sessao com a senha informada.",
                 "Provisionamento concluido",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
             _userNameInput.Clear();
             _emailInput.Clear();
+            _passwordInput.Clear();
             await LoadDataAsync();
         }
         catch (Exception exception)
@@ -555,7 +559,7 @@ public sealed class Frm_IdentityAdministration : Form
 
     private void ShowStatus(string message, bool error)
     {
-        _statusLabel.Text = message;
+        _statusLabel.Text = message.ReplaceLineEndings(" | ");
         _statusLabel.ForeColor = error
             ? DarkModeColors.ErrorColor
             : DarkModeColors.TextSecondaryColor;
