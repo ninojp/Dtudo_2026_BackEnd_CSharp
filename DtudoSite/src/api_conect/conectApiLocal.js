@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_LOCAL_BASE_URL = import.meta.env.VITE_API_LOCAL_BASE_URL || "http://localhost:3666/";
+const API_LOCAL_BASE_URL = import.meta.env.VITE_API_LOCAL_BASE_URL || "http://localhost:4010/";
 const BFF_BASE_URL = import.meta.env.VITE_BFF_BASE_URL
     || (typeof window !== 'undefined' ? window.location.origin : 'https://localhost:7120');
 const normalizarBaseUrl = (url) => url.replace(/\/+$/, "");

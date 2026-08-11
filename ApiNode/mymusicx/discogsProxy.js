@@ -16,11 +16,9 @@ dotenv.config({
 const app = express();
 const PORT = process.env.PORT || 4010;
 const DISCOGS_TOKEN = process.env.DISCOGS_TOKEN || '';
+const MYMUSICX_DATA_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), 'mymusicx.json');
 
 app.use(express.json());
-app.get('/health/live', (_req, res) => {
-  res.status(200).json({ status: 'ok', service: 'discogsProxy' });
-});
 // Simples CORS e preflight handling
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -28,6 +26,24 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
+});
+app.get('/health/live', (_req, res) => {
+  res.status(200).json({ status: 'ok', service: 'discogsProxy' });
+});
+app.get('/mymusicx', (_req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(MYMUSICX_DATA_PATH, 'utf8'));
+    const myMusicxList = Array.isArray(data) ? data : data.mymusicx;
+
+    if (!Array.isArray(myMusicxList)) {
+      return res.status(500).json({ error: 'Invalid MyMusicX data format' });
+    }
+
+    return res.status(200).json(myMusicxList);
+  } catch (err) {
+    console.error('MyMusicX local data error:', err.message || err);
+    return res.status(500).json({ error: 'Unable to load MyMusicX local data' });
+  }
 });
 // Busca no Endpoint pelo artista
 app.get('/api/discogs/artists', async (req, res) => {
