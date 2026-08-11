@@ -1,43 +1,52 @@
-
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import styles from './CardReleaseDetalhes.module.css';
 import Spinner from "../../Spinner/Spinner";
+import ButtonPadrao from "../../ButtonPadrao/ButtonPadrao";
+import {
+    getApiMusicXErrorMessage,
+    getMusicRelease,
+} from "../../../services/apiMusicX";
 
-export default function CardReleaseDetalhes({ id }) {
+export default function CardReleaseDetalhes({ releaseId, id }) {
     const [releaseDetails, setReleaseDetails] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-    const discogsProxyBaseUrl = (typeof import.meta !== 'undefined' ? import.meta.env.VITE_DISCOGS_PROXY_URL : undefined) || 'http://localhost:4010';
+    const [retryNumber, setRetryNumber] = useState(0);
+    const selectedReleaseId = releaseId ?? id;
 
     useEffect(() => {
-        if (!id) {
+        if (!selectedReleaseId) {
             setReleaseDetails(null);
             return;
         }
 
+        const controller = new AbortController();
         const fetchReleaseDetails = async () => {
             setIsLoading(true);
             setError(null);
             
             try {
-                const response = await fetch(`${discogsProxyBaseUrl}/api/discogs/release/${id}`);
-                
-                if (!response.ok) {
-                    throw new Error('Erro ao buscar detalhes do release');
+                const data = await getMusicRelease(selectedReleaseId, { signal: controller.signal });
+                if (!controller.signal.aborted) {
+                    setReleaseDetails(data);
                 }
-                
-                const data = await response.json();
-                setReleaseDetails(data);
-            } catch (err) {
-                console.error('Erro ao buscar detalhes:', err);
-                setError(err.message);
+            } catch (requestError) {
+                if (requestError.name === 'AbortError') return;
+                console.error('Erro ao buscar detalhes do release na ApiMusicX:', requestError);
+                if (!controller.signal.aborted) {
+                    setReleaseDetails(null);
+                    setError(requestError);
+                }
             } finally {
-                setIsLoading(false);
+                if (!controller.signal.aborted) {
+                    setIsLoading(false);
+                }
             }
         };
 
         fetchReleaseDetails();
-    }, [id, discogsProxyBaseUrl]);
+        return () => controller.abort();
+    }, [selectedReleaseId, retryNumber]);
 
     if (isLoading) {
         return <Spinner />;
@@ -46,7 +55,8 @@ export default function CardReleaseDetalhes({ id }) {
     if (error) {
         return (
             <div className={styles.errorContainer}>
-                <p>Erro ao carregar detalhes: {error}</p>
+                <p>{getApiMusicXErrorMessage(error)}</p>
+                <ButtonPadrao onClick={() => setRetryNumber(current => current + 1)}>Tentar novamente</ButtonPadrao>
             </div>
         );
     }
@@ -63,52 +73,45 @@ export default function CardReleaseDetalhes({ id }) {
         <article className={styles.cardDetalhes}>
             <div className={styles.headerSection}>
                 <figure className={styles.coverContainer}>
-                    <img 
-                        src={releaseDetails.images?.[0]?.uri || '/mymusicx/NotaMusica.png'} 
+                    <img
+                        src="/mymusicx/NotaMusica.png"
                         alt={releaseDetails.title}
                         className={styles.coverImage}
                     />
                 </figure>
                 <div className={styles.infoSection}>
                     <h3 className={styles.title}>{releaseDetails.title}</h3>
-                    {releaseDetails.year && (
-                        <p className={styles.year}>Ano: {releaseDetails.year}</p>
+                    {releaseDetails.releaseYear && (
+                        <p className={styles.year}>Ano: {releaseDetails.releaseYear}</p>
                     )}
-                    {releaseDetails.genres?.length > 0 && (
+                    {releaseDetails.artists?.length > 0 && (
                         <p className={styles.genres}>
-                            Gênero: {releaseDetails.genres.join(', ')}
+                            Artistas: {releaseDetails.artists.map(artist => artist.displayName).join(', ')}
                         </p>
                     )}
-                    {releaseDetails.styles?.length > 0 && (
+                    {releaseDetails.notes && (
                         <p className={styles.styles}>
-                            Estilo: {releaseDetails.styles.join(', ')}
-                        </p>
-                    )}
-                    {releaseDetails.formats?.length > 0 && (
-                        <p className={styles.format}>
-                            Formato: {releaseDetails.formats.map(f => 
-                                `${f.name}${f.descriptions ? ` (${f.descriptions.join(', ')})` : ''}`
-                            ).join(', ')}
+                            Observações: {releaseDetails.notes}
                         </p>
                     )}
                 </div>
             </div>
 
-            {releaseDetails.tracklist?.length > 0 && (
+            {releaseDetails.tracks?.length > 0 && (
                 <div className={styles.tracklistSection}>
                     <h4 className={styles.tracklistTitle}>Faixas:</h4>
                     <ol className={styles.tracklist}>
-                        {releaseDetails.tracklist.map((track, index) => (
-                            <li key={index} className={styles.track}>
+                        {releaseDetails.tracks.map((track, index) => (
+                            <li key={track.musicTrackId} className={styles.track}>
                                 <span className={styles.trackPosition}>
-                                    {track.position || index + 1}.
+                                    {track.positionLabel || track.sequence || index + 1}.
                                 </span>
                                 <span className={styles.trackTitle}>
                                     {track.title}
                                 </span>
-                                {track.duration && (
+                                {(track.durationText || track.durationSeconds) && (
                                     <span className={styles.trackDuration}>
-                                        {track.duration}
+                                        {track.durationText || formatDuration(track.durationSeconds)}
                                     </span>
                                 )}
                             </li>
@@ -119,3 +122,12 @@ export default function CardReleaseDetalhes({ id }) {
         </article>
     );
 };
+
+function formatDuration(durationSeconds) {
+    const seconds = Number(durationSeconds);
+    if (!Number.isFinite(seconds) || seconds < 0) return '';
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = String(seconds % 60).padStart(2, '0');
+    return `${minutes}:${remainingSeconds}`;
+}

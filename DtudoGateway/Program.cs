@@ -67,6 +67,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(configuredGatewayOptions.AllowedCorsOrigins)
             .WithMethods(HttpMethods.Get, HttpMethods.Head, HttpMethods.Options)
             .WithHeaders("Accept", "Content-Type")
+            .AllowCredentials()
             .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
@@ -203,6 +204,7 @@ builder.Services.PostConfigure<CookieAuthenticationOptions>(CookieScheme, option
             context.ProtocolMessage.IssuerAddress = BuildPublicUrl(
                 configuredGatewayOptions,
                 "/identity/connect/authorize");
+            context.ProtocolMessage.SetParameter("resource", "urn:dtudo:api-musicx");
             context.ProtocolMessage.RedirectUri = BuildPublicUrl(
                 configuredGatewayOptions,
                 context.Options.CallbackPath.Value!);
@@ -278,6 +280,7 @@ builder.Services.AddReverseProxy()
         GatewayRouteConfiguration.CreateRoutes(),
         GatewayRouteConfiguration.CreateClusters(
             configuredGatewayOptions.ApiMyAnimesBaseUrl,
+            configuredGatewayOptions.ApiMusicXBaseUrl,
             configuredGatewayOptions.ApiIdentityBaseUrl));
 
 var app = builder.Build();
@@ -328,6 +331,20 @@ if (!app.Environment.IsDevelopment())
     app.UseRateLimiter();
 }
 app.UseAuthentication();
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/api/catalog/music"))
+    {
+        context.Request.Headers.Remove("Authorization");
+        var accessToken = await context.GetTokenAsync(CookieScheme, "access_token");
+        if (!string.IsNullOrWhiteSpace(accessToken))
+        {
+            context.Request.Headers.Authorization = "Bearer " + accessToken;
+        }
+    }
+
+    await next(context);
+});
 app.UseAuthorization();
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions

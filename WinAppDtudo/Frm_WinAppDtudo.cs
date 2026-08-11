@@ -14,6 +14,8 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     private readonly ApiFileStorageStartupService _apiFileStorageStartupService = new();
     private readonly ApiMyAnimesHealthCheckService _apiMyAnimesHealthCheckService;
     private readonly ApiMyAnimesStartupService _apiMyAnimesStartupService;
+    private readonly ApiMusicXHealthCheckService _apiMusicXHealthCheckService;
+    private readonly ApiMusicXStartupService _apiMusicXStartupService;
     private readonly ApiMyAnimeListStartupService _apiMyAnimeListStartupService = new();
     private readonly WinAppHealthMonitoringService _healthMonitoringService;
     private readonly CancellationTokenSource _formClosingCancellationTokenSource = new();
@@ -38,6 +40,8 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
                 browserLauncher: OpenWinAppLoginAsync));
         _apiMyAnimesHealthCheckService = new ApiMyAnimesHealthCheckService(_identityAuthenticationService);
         _apiMyAnimesStartupService = new ApiMyAnimesStartupService(_apiMyAnimesHealthCheckService);
+        _apiMusicXHealthCheckService = new ApiMusicXHealthCheckService(_identityAuthenticationService);
+        _apiMusicXStartupService = new ApiMusicXStartupService(_apiMusicXHealthCheckService);
         _healthMonitoringService = new WinAppHealthMonitoringService(_identityAuthenticationService);
         _healthNotificationService = new WindowsHealthNotificationService(Icon);
         _healthNotificationService.OpenRequested += HealthNotificationService_OpenRequested;
@@ -76,7 +80,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     //Menu MyMusicX - Abrir formulário Frm_MyMusicX.
     private void MnI_MyMusicX_Click(object sender, EventArgs e)
     {
-        Frm_MyMusicX formMyMusicX = new();
+        Frm_MyMusicX formMyMusicX = new(_identityAuthenticationService);
         formMyMusicX.Show();
     }
     //Menu NinoTI - Abrir formulário Frm_NinoTI.
@@ -312,6 +316,10 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             TryEnsureServiceReadyAsync(
                 "ApiMyAnimes",
                 () => _apiMyAnimesStartupService.EnsureReadyAsync(cancellationToken),
+                cancellationToken),
+            TryEnsureServiceReadyAsync(
+                "ApiMusicX",
+                () => _apiMusicXStartupService.EnsureReadyAsync(cancellationToken),
                 cancellationToken),
             TryEnsureServiceReadyAsync(
                 "ApiMyAnimeList",

@@ -59,7 +59,8 @@ public sealed class OpenIddictConfigurationSeeder
         descriptor.AddResourcePermissions(
             "urn:dtudo:api-my-animes",
             "urn:dtudo:api-my-animelist",
-            "urn:dtudo:api-file-storage");
+            "urn:dtudo:api-file-storage",
+            "urn:dtudo:api-musicx");
         descriptor.Permissions.UnionWith(
             new[]
             {
@@ -103,6 +104,7 @@ public sealed class OpenIddictConfigurationSeeder
         };
         gatewayDescriptor.RedirectUris.Add(new Uri(_options.Gateway.RedirectUri, UriKind.Absolute));
         gatewayDescriptor.PostLogoutRedirectUris.Add(new Uri(_options.Gateway.PostLogoutRedirectUri, UriKind.Absolute));
+        gatewayDescriptor.AddResourcePermissions("urn:dtudo:api-musicx");
         gatewayDescriptor.Requirements.Add(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange);
         gatewayDescriptor.Permissions.UnionWith(
         new[]

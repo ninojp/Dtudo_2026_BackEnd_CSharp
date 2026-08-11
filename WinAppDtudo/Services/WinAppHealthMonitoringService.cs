@@ -46,6 +46,7 @@ public sealed class WinAppHealthMonitoringOptions
 
     public Uri IdentityBaseUrl { get; init; } = UnavailableBaseUrl;
     public Uri ApiMyAnimesBaseUrl { get; init; } = UnavailableBaseUrl;
+    public Uri ApiMusicXBaseUrl { get; init; } = UnavailableBaseUrl;
     public Uri ApiMyAnimeListBaseUrl { get; init; } = UnavailableBaseUrl;
     public Uri ApiFileStorageBaseUrl { get; init; } = UnavailableBaseUrl;
     public IReadOnlyList<WinAppHealthCertificateTarget> CertificateTargets { get; init; } = [];
@@ -56,12 +57,14 @@ public sealed class WinAppHealthMonitoringOptions
     {
         IdentityBaseUrl = CreateUriOrUnavailable(AppConfigurationService.ApiIdentityBaseUrl),
         ApiMyAnimesBaseUrl = CreateUriOrUnavailable(AppConfigurationService.ApiMyAnimesBaseUrl),
+        ApiMusicXBaseUrl = CreateUriOrUnavailable(AppConfigurationService.ApiMusicXBaseUrl),
         ApiMyAnimeListBaseUrl = CreateUriOrUnavailable(AppConfigurationService.ApiMyAnimeListBaseUrl),
         ApiFileStorageBaseUrl = CreateUriOrUnavailable(AppConfigurationService.ApiFileStorageBaseUrl),
         CertificateTargets =
         [
             new("ApiIdentity", CreateUriOrUnavailable(AppConfigurationService.ApiIdentityBaseUrl)),
             new("ApiMyAnimes", CreateUriOrUnavailable(AppConfigurationService.ApiMyAnimesBaseUrl)),
+            new("ApiMusicX", CreateUriOrUnavailable(AppConfigurationService.ApiMusicXBaseUrl)),
             new("ApiMyAnimeList", CreateUriOrUnavailable(AppConfigurationService.ApiMyAnimeListBaseUrl)),
             new("ApiFileStorage", CreateUriOrUnavailable(AppConfigurationService.ApiFileStorageBaseUrl))
         ],
@@ -234,6 +237,7 @@ public sealed class WinAppHealthMonitoringService : IDisposable
         var remoteChecks = await Task.WhenAll(
             CheckServiceAsync("ApiIdentity", _options.IdentityBaseUrl, "health/ready", cancellationToken),
             CheckServiceAsync("ApiMyAnimes", _options.ApiMyAnimesBaseUrl, "apiLocal/Health", cancellationToken),
+            CheckServiceAsync("ApiMusicX", _options.ApiMusicXBaseUrl, "apiLocal/Health", cancellationToken),
             CheckServiceAsync("ApiMyAnimeList", _options.ApiMyAnimeListBaseUrl, "ApiMyAnimeList/health", cancellationToken),
             CheckFileStorageAsync(cancellationToken));
 

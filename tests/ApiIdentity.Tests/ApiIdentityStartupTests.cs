@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OpenIddict.Server;
 using System.Net;
 
 namespace ApiIdentity.Tests;
@@ -183,6 +184,16 @@ public sealed class ApiIdentityStartupTests
                 && claimRequirement.ClaimType == AuthorizationCatalog.PermissionClaimType
                 && claimRequirement.AllowedValues?.Contains(permission.Key) == true);
         }
+    }
+
+    [Fact]
+    public void RegistersTheMusicApiAsAnOpenIddictResource()
+    {
+        using var factory = CreateFactory();
+        using var scope = factory.Services.CreateScope();
+        var serverOptions = scope.ServiceProvider.GetRequiredService<IOptions<OpenIddictServerOptions>>().Value;
+
+        Assert.Contains(new Uri("urn:dtudo:api-musicx"), serverOptions.Resources);
     }
 
     private static WebApplicationFactory<Program> CreateFactory(

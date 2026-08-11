@@ -9,6 +9,9 @@ public static class AppConfigurationService
     public static string ApiMyAnimesBaseUrl =>
         GetEnvironment("DTUDO_API_MYANIMES_BASE_URL") ?? Settings.Value.ApiMyAnimes.BaseUrl;
 
+    public static string ApiMusicXBaseUrl =>
+        GetEnvironment("DTUDO_API_MUSICX_BASE_URL") ?? Settings.Value.ApiMusicX.BaseUrl;
+
     public static string ApiMyAnimeListBaseUrl =>
         GetEnvironment("DTUDO_API_MYANIMELIST_BASE_URL") ?? Settings.Value.ApiMyAnimeList.BaseUrl;
 
@@ -52,6 +55,9 @@ public static class AppConfigurationService
 
     public static string ApiMyAnimeListAutoStartUrl =>
         GetEnvironment("DTUDO_API_MYANIMELIST_AUTOSTART_URL") ?? Settings.Value.ApiMyAnimeList.AutoStartUrl;
+
+    public static string ApiMusicXAutoStartUrl =>
+        GetEnvironment("DTUDO_API_MUSICX_AUTOSTART_URL") ?? Settings.Value.ApiMusicX.AutoStartUrl;
 
     public static string DtudoSiteStartUrl =>
         GetEnvironment("DTUDO_SITE_START_URL") ?? Settings.Value.DtudoSite.StartUrl;
@@ -138,6 +144,7 @@ public static class AppConfigurationService
     private sealed class AppSettings
     {
         public ApiSettings ApiMyAnimes { get; set; } = new("https://localhost:63980");
+        public ApiSettings ApiMusicX { get; set; } = new("https://localhost:63982");
         public ApiSettings ApiMyAnimeList { get; set; } = new("https://localhost:7146");
         public ApiSettings ApiIdentity { get; set; } = new("https://localhost:7243");
         public ApiSettings DtudoGateway { get; set; } = new("https://localhost:51376");
@@ -158,8 +165,8 @@ public static class AppConfigurationService
     {
         public string ClientId { get; set; } = "dtudo-winapp";
         public string RedirectUri { get; set; } = "http://127.0.0.1:49173/callback/";
-        public string[] Scopes { get; set; } = ["openid", "profile", "offline_access", "identity.login", "identity.provision", "catalog.write", "catalog.delete", "health.read"];
-        public string[] Resources { get; set; } = ["urn:dtudo:api-my-animes", "urn:dtudo:api-my-animelist"];
+        public string[] Scopes { get; set; } = ["openid", "profile", "offline_access", "identity.login", "identity.provision", "catalog.read", "catalog.write", "catalog.delete", "health.read"];
+        public string[] Resources { get; set; } = ["urn:dtudo:api-my-animes", "urn:dtudo:api-my-animelist", "urn:dtudo:api-musicx"];
         public int AuthenticationTimeoutSeconds { get; set; } = 300;
     }
 

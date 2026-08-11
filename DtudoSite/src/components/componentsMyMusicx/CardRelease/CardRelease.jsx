@@ -12,6 +12,11 @@ export default function CardRelease({ cdTitulo, cdImgSrc, cdAno }) {
                 <img className={styles.imgAnimacao}
                     src={thumb}
                     alt={cdTitulo}
+                    onError={(event) => {
+                        if (!event.currentTarget.src.endsWith('/mymusicx/NotaMusica.png')) {
+                            event.currentTarget.src = notaFireMusical;
+                        }
+                    }}
                 />
             </figure>
             <div className={styles.divContainerData}>

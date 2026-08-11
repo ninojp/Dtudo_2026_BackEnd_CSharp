@@ -309,7 +309,8 @@ builder.Services.AddOpenIddict()
         options.RegisterResources(
             "urn:dtudo:api-my-animes",
             "urn:dtudo:api-my-animelist",
-            "urn:dtudo:api-file-storage");
+            "urn:dtudo:api-file-storage",
+            "urn:dtudo:api-musicx");
         options.AddDevelopmentEncryptionCertificate();
         options.AddDevelopmentSigningCertificate();
         options.UseAspNetCore()

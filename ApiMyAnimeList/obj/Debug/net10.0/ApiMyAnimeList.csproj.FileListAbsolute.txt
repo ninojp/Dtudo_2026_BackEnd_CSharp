@@ -86,3 +86,4 @@ C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\ApiMyAnimeL
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\ApiMyAnimeList.runtimeconfig.json
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\ApiMyAnimeList.dll
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-slnx-build\Debug\net10.0\ApiMyAnimeList.pdb
+C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

@@ -120,3 +120,8 @@ C:\2026MeusProjetos\Dtudo2026\tmp\validation\ApiMyAnimes\LibDtudo.Shared.runtime
 C:\2026MeusProjetos\Dtudo2026\tmp\validation\ApiMyAnimes\LibDtudo.Shared.dll
 C:\2026MeusProjetos\Dtudo2026\tmp\validation\ApiMyAnimes\LibDtudo.Shared.pdb
 C:\2026MeusProjetos\Dtudo2026\tmp\validation\ApiMyAnimes\LibDtudo.Shared.xml
+C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared\tmp\ApiIdentityBuild\LibDtudo.Shared.deps.json
+C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared\tmp\ApiIdentityBuild\LibDtudo.Shared.runtimeconfig.json
+C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared\tmp\ApiIdentityBuild\LibDtudo.Shared.dll
+C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared\tmp\ApiIdentityBuild\LibDtudo.Shared.pdb
+C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared\tmp\ApiIdentityBuild\LibDtudo.Shared.xml

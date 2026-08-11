@@ -1,36 +1,62 @@
-import { useEffect, useState } from "react"
-import {axiosHttpRequest} from "../../api_conect/conectApiLocal";
+import { useCallback, useEffect, useState } from "react";
+import {
+    getApiMusicXErrorMessage,
+    listAllMusicCollections,
+} from "../../services/apiMusicX";
 import MyMusicxObjsListContext from "./MyMusicxObjsListContext";
 
 export default function MyMusicxObjsListProvider({ children }) {
     const [listObjsMyMusicx, setListObjsMyMusicx] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [totalCount, setTotalCount] = useState(0);
 
-    async function fetchAllObjsMyMusicx() {
+    const fetchAllObjsMyMusicx = useCallback(async (signal) => {
         setIsLoading(true);
+        setError(null);
+
         try {
-            const response = await axiosHttpRequest().get('/mymusicx');
-            //console.log(response.data);
-            setListObjsMyMusicx(response.data);
-            return response.data;
-        } catch (error) {
-            console.error("Erro ao buscar objetos MyMusicx: ", error);
-            throw error;
+            const response = await listAllMusicCollections({ signal });
+            if (!signal?.aborted) {
+                setListObjsMyMusicx(response.items);
+                setTotalCount(response.totalCount ?? response.items.length);
+            }
+            return response.items;
+        } catch (requestError) {
+            if (requestError.name === 'AbortError') {
+                throw requestError;
+            }
+
+            console.error("Erro ao buscar Colecoes da ApiMusicX: ", requestError);
+            if (!signal?.aborted) {
+                setListObjsMyMusicx([]);
+                setTotalCount(0);
+                setError(requestError);
+            }
+            return null;
         } finally {
-            setIsLoading(false);
+            if (!signal?.aborted) {
+                setIsLoading(false);
+            }
         }
-    }
-    //Total de objetos, adicionar, atualizar, deletar...
-    useEffect(() => {
-        fetchAllObjsMyMusicx();
     }, []);
-    //===========================================================================
+
+    useEffect(() => {
+        const controller = new AbortController();
+        fetchAllObjsMyMusicx(controller.signal).catch(() => undefined);
+
+        return () => controller.abort();
+    }, [fetchAllObjsMyMusicx]);
+
     return (
         <MyMusicxObjsListContext.Provider value={
             {
                 listObjsMyMusicx,
                 isLoading,
-                fetchAllObjsMyMusicx
+                error,
+                errorMessage: error ? getApiMusicXErrorMessage(error) : null,
+                totalCount,
+                fetchAllObjsMyMusicx,
             }}>
             {children}
         </MyMusicxObjsListContext.Provider>

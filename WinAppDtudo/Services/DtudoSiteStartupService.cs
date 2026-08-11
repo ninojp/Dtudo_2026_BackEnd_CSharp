@@ -40,12 +40,8 @@ public sealed class DtudoSiteStartupService : IDisposable
             return requiredServices;
 
         var siteIsAvailable = await IsSiteAvailableAsync(siteUri, cancellationToken);
-        var proxyIsAvailable = await IsServiceAvailableAsync(
-            AppConfigurationService.DiscogsProxyBaseUrl,
-            "health/live",
-            cancellationToken);
 
-        if (siteIsAvailable && proxyIsAvailable)
+        if (siteIsAvailable)
             return DtudoSiteStartupResult.Ready();
 
         var npmCheck = await CheckNpmAvailabilityAsync(cancellationToken);
@@ -107,11 +103,7 @@ public sealed class DtudoSiteStartupService : IDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
             var siteIsAvailable = await IsSiteAvailableAsync(siteUri, cancellationToken);
-            var proxyIsAvailable = await IsServiceAvailableAsync(
-                AppConfigurationService.DiscogsProxyBaseUrl,
-                "health/live",
-                cancellationToken);
-            if (siteIsAvailable && proxyIsAvailable)
+            if (siteIsAvailable)
                 return DtudoSiteStartupResult.Ready();
 
             await Task.Delay(PollInterval, cancellationToken);
@@ -120,7 +112,7 @@ public sealed class DtudoSiteStartupService : IDisposable
         var siteAddress = siteUri.GetLeftPart(UriPartial.Authority);
         return DtudoSiteStartupResult.Failed(
             $"Os servicos nao ficaram prontos em {AppConfigurationService.DtudoSiteStartupTimeout.TotalSeconds:0} segundos. " +
-            $"Vite: {siteAddress} ou proxy MyMusicX nao respondeu.");
+            $"Vite: {siteAddress} nao respondeu.");
     }
 
     private async Task<DtudoSiteStartupResult> EnsureRequiredServicesAsync(
@@ -150,42 +142,6 @@ public sealed class DtudoSiteStartupService : IDisposable
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken);
 
-            return response.IsSuccessStatusCode;
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (HttpRequestException)
-        {
-            return false;
-        }
-        catch (OperationCanceledException)
-        {
-            return false;
-        }
-    }
-
-    private static async Task<bool> IsServiceAvailableAsync(
-        string baseUrl,
-        string relativePath,
-        CancellationToken cancellationToken)
-    {
-        var configuredUrl = baseUrl.TrimEnd('/') + "/";
-        if (!Uri.TryCreate(configuredUrl, UriKind.Absolute, out var baseUri)
-            || baseUri.Scheme is not ("https" or "http"))
-        {
-            return false;
-        }
-
-        try
-        {
-            using var handler = AppConfigurationService.CreateHttpClientHandler();
-            using var client = new HttpClient(handler) { Timeout = SiteHealthCheckTimeout };
-            using var response = await client.GetAsync(
-                new Uri(baseUri, relativePath),
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
             return response.IsSuccessStatusCode;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

@@ -8,54 +8,74 @@ import FiltrarPorAno from "../../FiltrarPorAno/FiltrarPorAno";
 import QtdExibirPorPage from "../../QtdExibirPorPage/QtdExibirPorPage";
 import PaginationButtons from "../../PaginationButtons/PaginationButtons";
 import CardRelease from "../CardRelease/CardRelease";
+import Spinner from "../../Spinner/Spinner";
+import ButtonPadrao from "../../ButtonPadrao/ButtonPadrao";
 export default function CardsMyMusicxList() {
-    const { listObjsMyMusicx } = useContext(MyMusicxObjsListContext);
-    // console.log('listObjsMyMusicx:', listObjsMyMusicx);
-    //Filtro por Letra
+    const {
+        listObjsMyMusicx,
+        isLoading,
+        errorMessage,
+        fetchAllObjsMyMusicx,
+    } = useContext(MyMusicxObjsListContext);
     const [letraSelecionada, setLetraSelecionada] = useState('');
-    //Filtro por Ano
     const [anoSelecionado, setAnoSelecionado] = useState('');
-    //Estado Local Paginação
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(48);
-    //Estado local do campo Busca
     const [searchTerm, setSearchTerm] = useState('');
-    //Filtros combinados e busca
+
     const filteredItems = useMemo(() => {
         let myMusicxList = listObjsMyMusicx;
-        // Campo de busca
+
         if (searchTerm) {
             myMusicxList = myMusicxList.filter(item =>
-                String(item.artista).toLowerCase().includes(searchTerm.toLowerCase())
+                [item.displayName, ...(item.artists || []).map(artist => artist.displayName)]
+                    .filter(Boolean)
+                    .some(value => String(value).toLowerCase().includes(searchTerm.toLowerCase()))
             );
         };
-        // Filtro por letra inicial do título
+
         if (letraSelecionada) {
             myMusicxList = myMusicxList.filter(item =>
-                String(item.artista).toUpperCase().startsWith(letraSelecionada)
+                String(item.displayName).toUpperCase().startsWith(letraSelecionada)
             );
         };
-        // Filtro por ano
+
         if (anoSelecionado) {
             myMusicxList = myMusicxList.filter(item => {
-                const anoMusicx = item.releases.albums[0].ano;
-                return String(anoMusicx) === anoSelecionado;
+                const releaseYears = item.releaseYears || [];
+                return releaseYears.map(String).includes(anoSelecionado);
             });
         };
+
         return myMusicxList;
     }, [listObjsMyMusicx, searchTerm, letraSelecionada, anoSelecionado]);
-    //Paginação, cálculo totalPages e itens paginados
+
     const totalPages = Math.max(1, Math.ceil(filteredItems.length / limit));
     const paginatedItems = useMemo(() => {
         const start = (page - 1) * limit;
         return filteredItems.slice(start, start + limit);
     }, [filteredItems, page, limit]);
-    //Função de busca
+
     const handleSearch = useCallback((valor) => {
         setSearchTerm(valor);
         setPage(1);
     }, []);
-    //=========================================================
+
+    if (isLoading) {
+        return <main className={styles.mainCardsMyAnimesList}><Spinner /></main>;
+    }
+
+    if (errorMessage) {
+        return (
+            <main className={styles.mainCardsMyAnimesList}>
+                <div className={styles.apiStateContainer} role="alert">
+                    <p>{errorMessage}</p>
+                    <ButtonPadrao onClick={() => fetchAllObjsMyMusicx()}>Tentar novamente</ButtonPadrao>
+                </div>
+            </main>
+        );
+    }
+
     return (
         <main className={styles.mainCardsMyAnimesList}>
             <CampoBuscar onSearch={handleSearch} />
@@ -63,7 +83,11 @@ export default function CardsMyMusicxList() {
                 <div className={styles.divContainerFiltros}>
                     <h4>Filtrar por: </h4>
                     <FiltrarPorLetra letraSelecionada={letraSelecionada} setLetraSelecionada={setLetraSelecionada} />
-                    <FiltrarPorAno anoSelecionado={anoSelecionado} setAnoSelecionado={setAnoSelecionado} />
+                    <FiltrarPorAno
+                        anoSelecionado={anoSelecionado}
+                        setAnoSelecionado={setAnoSelecionado}
+                        animes={listObjsMyMusicx}
+                    />
                 </div>
                 <QtdExibirPorPage
                     value={limit}
@@ -79,34 +103,19 @@ export default function CardsMyMusicxList() {
                 )}
             </div>
             <div className={styles.divContainerListaCardsMyaAnimes}>
-                {paginatedItems.map((item) => {
-                    // Calcular primeiro e último ano dos álbuns
-                    const albums = item.releases?.albums || [];
-                    // Filtrar apenas álbuns que têm ano válido (não vazio)
-                    const albumsComAno = albums.filter(album => album.ano && album.ano.trim() !== '');
-                    let anoExibir = '';
-                    if (albumsComAno.length === 1) {
-                        anoExibir = albumsComAno[0].ano;
-                    } else if (albumsComAno.length > 1) {
-                        const primeiroAno = albumsComAno[0].ano;
-                        const ultimoAno = albumsComAno[albumsComAno.length - 1].ano;
-                        // Se primeiro e último ano são iguais, exibe só um
-                        if (primeiroAno === ultimoAno) {
-                            anoExibir = primeiroAno;
-                        } else {
-                            anoExibir = `${primeiroAno} - ${ultimoAno}`;
-                        }
-                    }
-                    return (
-                        <Link key={item.id} to={`/mymusicx/mymusicx-detalhes/${item.id}`}>
-                            <CardRelease
-                                cdTitulo={item.artista}
-                                cdImgSrc={`/mymusicx/${item.id}.jpg`}
-                                cdAno={anoExibir}
-                            />
-                        </Link>
-                    );
-                })}
+                {paginatedItems.length === 0 ? (
+                    <div className={styles.apiStateContainer}>
+                        <p>Nenhuma Coleção local foi encontrada.</p>
+                    </div>
+                ) : paginatedItems.map((item) => (
+                    <Link key={item.musicCollectionId} to={`/mymusicx/mymusicx-detalhes/${item.musicCollectionId}`}>
+                        <CardRelease
+                            cdTitulo={item.displayName}
+                            cdImgSrc={`/mymusicx/${String(item.displayName).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.jpg`}
+                            cdAno={item.releaseCount ? `${item.releaseCount} releases` : ''}
+                        />
+                    </Link>
+                ))}
             </div>
             <PaginationButtons
                 currentPage={page}
@@ -114,5 +123,5 @@ export default function CardsMyMusicxList() {
                 onPageChange={setPage}
             />
         </main>
-    )
+    );
 };

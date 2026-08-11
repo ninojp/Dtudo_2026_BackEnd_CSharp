@@ -237,7 +237,7 @@ public sealed class DtudoGatewayTests
         var provider = scope.ServiceProvider.GetRequiredService<IProxyConfigProvider>();
         var config = provider.GetConfig();
 
-        Assert.Equal(7, config.Routes.Count);
+        Assert.Equal(13, config.Routes.Count);
         Assert.All(config.Routes, route =>
         {
             Assert.Equal([HttpMethod.Get.Method], route.Match.Methods);
@@ -277,6 +277,38 @@ public sealed class DtudoGatewayTests
                 .SelectMany(transform => transform.Values)
                 .Where(value => value.StartsWith("/apiLocal/", StringComparison.Ordinal));
             Assert.Contains(expectedBackendPaths[route.RouteId], backendPaths);
+        });
+    }
+
+    [Fact]
+    public void MusicRoutesAreAuthenticatedReadOnlyRoutesForTheApiMusicXContract()
+    {
+        var routes = GatewayRouteConfiguration.CreateRoutes();
+        var musicRoutes = routes.Where(route => route.RouteId.StartsWith("musicx-", StringComparison.Ordinal)).ToArray();
+        var expectedBackendPaths = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["musicx-collections-list"] = "/apiLocal/collections",
+            ["musicx-collection-by-id"] = "/apiLocal/collections/{id}",
+            ["musicx-collection-releases"] = "/apiLocal/collections/{id}/releases",
+            ["musicx-artists-list"] = "/apiLocal/artists",
+            ["musicx-artist-by-id"] = "/apiLocal/artists/{id}",
+            ["musicx-release-by-id"] = "/apiLocal/releases/{id}",
+        };
+
+        Assert.Equal(expectedBackendPaths.Count, musicRoutes.Length);
+        Assert.All(musicRoutes, route =>
+        {
+            Assert.Equal(GatewayRouteConfiguration.MusicClusterId, route.ClusterId);
+            Assert.Equal(GatewayRouteConfiguration.AuthenticatedCatalogPolicy, route.AuthorizationPolicy);
+            Assert.Equal([HttpMethod.Get.Method], route.Match.Methods);
+            var backendPaths = (route.Transforms ?? [])
+                .SelectMany(transform => transform.Values)
+                .Where(value => value.StartsWith("/apiLocal/", StringComparison.Ordinal));
+            Assert.Contains(expectedBackendPaths[route.RouteId], backendPaths);
+            Assert.DoesNotContain(
+                route.Transforms ?? [],
+                transform => transform.TryGetValue("RequestHeaderRemove", out var header)
+                    && header.Equals("Authorization", StringComparison.OrdinalIgnoreCase));
         });
     }
 
@@ -361,6 +393,7 @@ public sealed class DtudoGatewayTests
                 builder.UseSetting("Gateway:PublicOrigin", PublicOrigin);
                 builder.UseSetting("Gateway:AllowedRedirectOrigins:0", PublicOrigin);
                 builder.UseSetting("Gateway:ApiMyAnimesBaseUrl", "https://127.0.0.1:1/");
+                builder.UseSetting("Gateway:ApiMusicXBaseUrl", "https://127.0.0.1:3/");
                 builder.UseSetting("OpenIdConnect:Authority", "https://identity.test/");
                 builder.UseSetting("OpenIdConnect:ClientId", "dtudo-gateway-test");
                 builder.UseSetting("OpenIdConnect:ClientSecret", "test-client-secret");
@@ -377,6 +410,7 @@ public sealed class DtudoGatewayTests
                         ["Gateway:TrustedProxyAddresses:0"] = "127.0.0.1",
                         ["Gateway:TrustedProxyAddresses:1"] = "::1",
                         ["Gateway:ApiMyAnimesBaseUrl"] = "https://127.0.0.1:1/",
+                        ["Gateway:ApiMusicXBaseUrl"] = "https://127.0.0.1:3/",
                         ["Gateway:ApiIdentityBaseUrl"] = "https://127.0.0.1:2/",
                         ["Gateway:MaxRequestBodyBytes"] = "1048576",
                         ["Gateway:RateLimitPermitLimit"] = "60",
@@ -397,6 +431,7 @@ public sealed class DtudoGatewayTests
                         options.AllowedCorsOrigins = [PublicOrigin];
                         options.TrustedProxyAddresses = ["127.0.0.1", "::1"];
                         options.ApiMyAnimesBaseUrl = "https://127.0.0.1:1/";
+                        options.ApiMusicXBaseUrl = "https://127.0.0.1:3/";
                         options.ApiIdentityBaseUrl = "https://127.0.0.1:2/";
                         options.MaxRequestBodyBytes = 1_048_576;
                         options.RateLimitPermitLimit = 60;

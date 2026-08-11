@@ -13,7 +13,6 @@
           "SixLabors.ImageSharp": "3.1.11",
           "Microsoft.Web.WebView2.Core": "1.0.4129.50",
           "Microsoft.Web.WebView2.WinForms": "1.0.4129.50",
-          "Microsoft.Web.WebView2.Wpf": "1.0.4129.50",
           "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.26100.57"
         },
         "runtime": {
@@ -204,14 +203,6 @@
             "fileVersion": "1.0.4129.50"
           }
         }
-      },
-      "Microsoft.Web.WebView2.Wpf/1.0.4129.50": {
-        "runtime": {
-          "Microsoft.Web.WebView2.Wpf.dll": {
-            "assemblyVersion": "1.0.4129.50",
-            "fileVersion": "1.0.4129.50"
-          }
-        }
       }
     }
   },
@@ -328,11 +319,6 @@
       "sha512": ""
     },
     "Microsoft.Web.WebView2.WinForms/1.0.4129.50": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "Microsoft.Web.WebView2.Wpf/1.0.4129.50": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

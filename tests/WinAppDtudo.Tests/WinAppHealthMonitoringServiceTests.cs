@@ -51,6 +51,7 @@ public sealed class WinAppHealthMonitoringServiceTests
                        {
                            IdentityBaseUrl = new Uri("https://identity.test/"),
                            ApiMyAnimesBaseUrl = new Uri("https://animes.test/"),
+                           ApiMusicXBaseUrl = new Uri("https://musicx.test/"),
                            ApiMyAnimeListBaseUrl = new Uri("https://mal.test/"),
                            ApiFileStorageBaseUrl = new Uri("https://storage.test/"),
                            CertificateTargets = [],
@@ -62,6 +63,7 @@ public sealed class WinAppHealthMonitoringServiceTests
 
                 Assert.Equal(WinAppHealthState.Healthy, Find(snapshot, "ApiIdentity").State);
                 Assert.Equal(WinAppHealthState.Healthy, Find(snapshot, "ApiMyAnimes").State);
+                Assert.Equal(WinAppHealthState.Healthy, Find(snapshot, "ApiMusicX").State);
                 Assert.Equal(WinAppHealthState.Unavailable, Find(snapshot, "ApiMyAnimeList").State);
                 Assert.Equal(WinAppHealthState.Healthy, Find(snapshot, "ApiFileStorage").State);
                 Assert.Equal(WinAppHealthState.Healthy, Find(snapshot, "Armazenamento").State);
@@ -106,6 +108,7 @@ public sealed class WinAppHealthMonitoringServiceTests
                        {
                            IdentityBaseUrl = new Uri("https://identity.test/"),
                            ApiMyAnimesBaseUrl = new Uri("https://animes.test/"),
+                           ApiMusicXBaseUrl = new Uri("https://musicx.test/"),
                            ApiMyAnimeListBaseUrl = new Uri("https://mal.test/"),
                            ApiFileStorageBaseUrl = new Uri("https://storage.test/"),
                            CertificateTargets = [],
@@ -142,6 +145,7 @@ public sealed class WinAppHealthMonitoringServiceTests
                        {
                            IdentityBaseUrl = new Uri("https://identity.test/"),
                            ApiMyAnimesBaseUrl = new Uri("https://animes.test/"),
+                           ApiMusicXBaseUrl = new Uri("https://musicx.test/"),
                            ApiMyAnimeListBaseUrl = new Uri("https://mal.test/"),
                            ApiFileStorageBaseUrl = new Uri("https://storage.test/"),
                            CertificateTargets = [],
@@ -180,6 +184,7 @@ public sealed class WinAppHealthMonitoringServiceTests
                        {
                            IdentityBaseUrl = new Uri("https://identity.test/"),
                            ApiMyAnimesBaseUrl = new Uri("https://animes.test/"),
+                           ApiMusicXBaseUrl = new Uri("https://musicx.test/"),
                            ApiMyAnimeListBaseUrl = new Uri("https://mal.test/"),
                            ApiFileStorageBaseUrl = new Uri("https://storage.test/"),
                            CertificateTargets = [],
@@ -220,6 +225,7 @@ public sealed class WinAppHealthMonitoringServiceTests
                        {
                            IdentityBaseUrl = new Uri("https://identity.test/"),
                            ApiMyAnimesBaseUrl = new Uri("https://animes.test/"),
+                           ApiMusicXBaseUrl = new Uri("https://musicx.test/"),
                            ApiMyAnimeListBaseUrl = new Uri("https://mal.test/"),
                            ApiFileStorageBaseUrl = new Uri("https://storage.test/"),
                            CertificateTargets = [],
@@ -282,6 +288,7 @@ public sealed class WinAppHealthMonitoringServiceTests
                        {
                            IdentityBaseUrl = new Uri("https://identity.test/"),
                            ApiMyAnimesBaseUrl = new Uri("https://animes.test/"),
+                           ApiMusicXBaseUrl = new Uri("https://musicx.test/"),
                            ApiMyAnimeListBaseUrl = new Uri("https://mal.test/"),
                            ApiFileStorageBaseUrl = new Uri("https://storage.test/"),
                            CertificateTargets = [],

@@ -15,6 +15,11 @@ Stack atual:
 - `ApiMyAnimeList`: `C:\2026MeusProjetos\Dtudo2026\ApiMyAnimeList`
 - `ApiMyAnimeList`: `https://localhost:7146`
 
+- `ApiMusicX`: `C:\2026MeusProjetos\Dtudo2026\ApiMusicX`
+- `ApiMusicX`: `https://localhost:63982`
+
+- `DtudoGateway`: `https://localhost:51376`
+
 - `LibDtudo.Shared`: `C:\2026MeusProjetos\Dtudo2026\LibDtudo.Shared`
 
 Comando principal, para iniciar a solução localmente (a partir da raiz do repositorio):
@@ -59,6 +64,15 @@ O WinApp le `WinAppDtudo/appsettings.json` e tambem aceita variaveis:
 - `DTUDO_API_MYANIMELIST_BASE_URL`
 - `DTUDO_API_MYANIMELIST_AUTOSTART_URL`
 - `DTUDO_ALLOW_INVALID_CERTIFICATES`
+
+## MyMusicX no DtudoSite
+
+As consultas locais de Colecoes, artistas, releases e faixas usam a fachada autenticada do `DtudoGateway`:
+
+- `VITE_API_MUSICX_BASE_URL`: origem configuravel da fachada; por padrao usa `VITE_BFF_BASE_URL` ou a origem atual do site.
+- `VITE_API_MUSICX_PATH_PREFIX`: prefixo configuravel; por padrao, `/api/catalog/music`.
+
+O gateway encaminha somente requisicoes GET para a `ApiMusicX` e repassa o token no servidor com `catalog.read`; o React nao recebe nem envia bearer token. O proxy Node legado permanece apenas para a rota de busca externa Discogs enquanto a migracao da Fase 2 nao for concluida.
 
 ## Identidade e autenticacao
 
