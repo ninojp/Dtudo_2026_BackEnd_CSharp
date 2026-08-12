@@ -15,12 +15,13 @@ public static class AppConfigurationService
     public static string ApiMyAnimeListBaseUrl =>
         GetEnvironment("DTUDO_API_MYANIMELIST_BASE_URL") ?? Settings.Value.ApiMyAnimeList.BaseUrl;
 
+    public static string ApiDiscogsBaseUrl =>
+        GetEnvironment("DTUDO_API_DISCOGS_BASE_URL") ?? Settings.Value.ApiDiscogs.BaseUrl;
+
     public static string ApiIdentityBaseUrl =>
         GetEnvironment("DTUDO_API_IDENTITY_BASE_URL") ?? Settings.Value.ApiIdentity.BaseUrl;
     public static string DtudoGatewayBaseUrl =>
         GetEnvironment("DTUDO_GATEWAY_BASE_URL") ?? Settings.Value.DtudoGateway.BaseUrl;
-    public static string DiscogsProxyBaseUrl =>
-        GetEnvironment("DTUDO_DISCOGS_PROXY_BASE_URL") ?? Settings.Value.DtudoSite.DiscogsProxyBaseUrl;
     public static string ApiFileStorageBaseUrl =>
         GetEnvironment("DTUDO_API_FILE_STORAGE_BASE_URL") ?? Settings.Value.ApiFileStorage.BaseUrl;
 
@@ -55,6 +56,9 @@ public static class AppConfigurationService
 
     public static string ApiMyAnimeListAutoStartUrl =>
         GetEnvironment("DTUDO_API_MYANIMELIST_AUTOSTART_URL") ?? Settings.Value.ApiMyAnimeList.AutoStartUrl;
+
+    public static string ApiDiscogsAutoStartUrl =>
+        GetEnvironment("DTUDO_API_DISCOGS_AUTOSTART_URL") ?? Settings.Value.ApiDiscogs.AutoStartUrl;
 
     public static string ApiMusicXAutoStartUrl =>
         GetEnvironment("DTUDO_API_MUSICX_AUTOSTART_URL") ?? Settings.Value.ApiMusicX.AutoStartUrl;
@@ -146,6 +150,7 @@ public static class AppConfigurationService
         public ApiSettings ApiMyAnimes { get; set; } = new("https://localhost:63980");
         public ApiSettings ApiMusicX { get; set; } = new("https://localhost:63982");
         public ApiSettings ApiMyAnimeList { get; set; } = new("https://localhost:7146");
+        public ApiSettings ApiDiscogs { get; set; } = new("https://localhost:7147");
         public ApiSettings ApiIdentity { get; set; } = new("https://localhost:7243");
         public ApiSettings DtudoGateway { get; set; } = new("https://localhost:51376");
         public ApiSettings ApiFileStorage { get; set; } = new("https://localhost:7244");
@@ -166,14 +171,13 @@ public static class AppConfigurationService
         public string ClientId { get; set; } = "dtudo-winapp";
         public string RedirectUri { get; set; } = "http://127.0.0.1:49173/callback/";
         public string[] Scopes { get; set; } = ["openid", "profile", "offline_access", "identity.login", "identity.provision", "catalog.read", "catalog.write", "catalog.delete", "health.read"];
-        public string[] Resources { get; set; } = ["urn:dtudo:api-my-animes", "urn:dtudo:api-my-animelist", "urn:dtudo:api-musicx"];
+        public string[] Resources { get; set; } = ["urn:dtudo:api-my-animes", "urn:dtudo:api-my-animelist", "urn:dtudo:api-musicx", "urn:dtudo:api-discogs"];
         public int AuthenticationTimeoutSeconds { get; set; } = 300;
     }
 
     private sealed class DtudoSiteSettings
     {
         public string StartUrl { get; set; } = "http://localhost:5173/animes";
-        public string DiscogsProxyBaseUrl { get; set; } = "http://localhost:4010";
         public string? Directory { get; set; }
         public int StartupTimeoutSeconds { get; set; } = 90;
         public string? GoogleChromeExecutablePath { get; set; }

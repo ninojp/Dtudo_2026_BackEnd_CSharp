@@ -36,6 +36,7 @@ export default defineConfig({
     headers: noIndexHeaders,
     proxy: {
       '/api/catalog': { ...gatewayProxy },
+      '/api/external': { ...gatewayProxy },
       '/bff': { ...gatewayProxy },
       '/identity': { ...gatewayProxy },
       '/signin-oidc': { ...gatewayProxy },

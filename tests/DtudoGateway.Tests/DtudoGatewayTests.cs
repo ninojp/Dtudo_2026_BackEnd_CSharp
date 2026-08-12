@@ -82,6 +82,8 @@ public sealed class DtudoGatewayTests
         Assert.Equal("code", query[OpenIdConnectParameterNames.ResponseType].ToString());
         Assert.Equal("S256", query["code_challenge_method"].ToString());
         Assert.False(string.IsNullOrWhiteSpace(query["code_challenge"].ToString()));
+        Assert.Contains("urn:dtudo:api-musicx", query["resource"].ToArray());
+        Assert.Contains("urn:dtudo:api-discogs", query["resource"].ToArray());
         Assert.Equal(
             PublicOrigin + "/signin-oidc",
             query[OpenIdConnectParameterNames.RedirectUri].ToString());
@@ -237,7 +239,7 @@ public sealed class DtudoGatewayTests
         var provider = scope.ServiceProvider.GetRequiredService<IProxyConfigProvider>();
         var config = provider.GetConfig();
 
-        Assert.Equal(13, config.Routes.Count);
+        Assert.Equal(18, config.Routes.Count);
         Assert.All(config.Routes, route =>
         {
             Assert.Equal([HttpMethod.Get.Method], route.Match.Methods);
@@ -304,6 +306,39 @@ public sealed class DtudoGatewayTests
             var backendPaths = (route.Transforms ?? [])
                 .SelectMany(transform => transform.Values)
                 .Where(value => value.StartsWith("/apiLocal/", StringComparison.Ordinal));
+            Assert.Contains(expectedBackendPaths[route.RouteId], backendPaths);
+            Assert.DoesNotContain(
+                route.Transforms ?? [],
+                transform => transform.TryGetValue("RequestHeaderRemove", out var header)
+                    && header.Equals("Authorization", StringComparison.OrdinalIgnoreCase));
+        });
+    }
+
+    [Fact]
+    public void DiscogsRoutesAreAuthenticatedReadOnlyRoutesForTheApiDiscogsContract()
+    {
+        var routes = GatewayRouteConfiguration.CreateRoutes();
+        var discogsRoutes = routes
+            .Where(route => route.RouteId.StartsWith("external-discogs-", StringComparison.Ordinal))
+            .ToArray();
+        var expectedBackendPaths = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["external-discogs-artist-search"] = "/ApiDiscogs/artists/search",
+            ["external-discogs-artist-by-id"] = "/ApiDiscogs/artists/{id}",
+            ["external-discogs-artist-releases"] = "/ApiDiscogs/artists/{id}/releases",
+            ["external-discogs-release-by-id"] = "/ApiDiscogs/releases/{id}",
+            ["external-discogs-master-by-id"] = "/ApiDiscogs/masters/{id}",
+        };
+
+        Assert.Equal(expectedBackendPaths.Count, discogsRoutes.Length);
+        Assert.All(discogsRoutes, route =>
+        {
+            Assert.Equal(GatewayRouteConfiguration.DiscogsClusterId, route.ClusterId);
+            Assert.Equal(GatewayRouteConfiguration.AuthenticatedCatalogPolicy, route.AuthorizationPolicy);
+            Assert.Equal([HttpMethod.Get.Method], route.Match.Methods);
+            var backendPaths = (route.Transforms ?? [])
+                .SelectMany(transform => transform.Values)
+                .Where(value => value.StartsWith("/ApiDiscogs/", StringComparison.Ordinal));
             Assert.Contains(expectedBackendPaths[route.RouteId], backendPaths);
             Assert.DoesNotContain(
                 route.Transforms ?? [],
@@ -411,6 +446,7 @@ public sealed class DtudoGatewayTests
                         ["Gateway:TrustedProxyAddresses:1"] = "::1",
                         ["Gateway:ApiMyAnimesBaseUrl"] = "https://127.0.0.1:1/",
                         ["Gateway:ApiMusicXBaseUrl"] = "https://127.0.0.1:3/",
+                        ["Gateway:ApiDiscogsBaseUrl"] = "https://127.0.0.1:4/",
                         ["Gateway:ApiIdentityBaseUrl"] = "https://127.0.0.1:2/",
                         ["Gateway:MaxRequestBodyBytes"] = "1048576",
                         ["Gateway:RateLimitPermitLimit"] = "60",
@@ -432,6 +468,7 @@ public sealed class DtudoGatewayTests
                         options.TrustedProxyAddresses = ["127.0.0.1", "::1"];
                         options.ApiMyAnimesBaseUrl = "https://127.0.0.1:1/";
                         options.ApiMusicXBaseUrl = "https://127.0.0.1:3/";
+                        options.ApiDiscogsBaseUrl = "https://127.0.0.1:4/";
                         options.ApiIdentityBaseUrl = "https://127.0.0.1:2/";
                         options.MaxRequestBodyBytes = 1_048_576;
                         options.RateLimitPermitLimit = 60;

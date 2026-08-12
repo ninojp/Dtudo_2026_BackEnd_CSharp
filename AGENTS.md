@@ -24,8 +24,8 @@ Treat this repository as one full-stack workspace, not as separate apps.
 
 - Path: `ApiNode/`
 - Local JSON server data: `ApiNode/db/animacoes.json`
-- Music proxy: `ApiNode/mymusicx/discogsProxy.js`
-- These scripts are being replaced by `ApiMyAnimes` and `ApiMyAnimeList`; inspect them only when the current request clearly depends on legacy data/proxy behavior.
+- Legacy migration utilities only; the Discogs proxy was retired after the ApiDiscogs and gateway migration.
+- Inspect remaining scripts only when the current request clearly depends on legacy data migration behavior.
 
 
 ## Working rules

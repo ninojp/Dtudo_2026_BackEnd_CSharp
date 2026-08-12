@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiMyAnimeList.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+db6b2a585bb2ac4ed46cd2e2a8d1f1e58bf17bd7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ae2a05a89e195c44197336968daefd4661bf1f9d")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiMyAnimeList.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiMyAnimeList.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

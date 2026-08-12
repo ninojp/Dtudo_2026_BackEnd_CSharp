@@ -310,7 +310,8 @@ builder.Services.AddOpenIddict()
             "urn:dtudo:api-my-animes",
             "urn:dtudo:api-my-animelist",
             "urn:dtudo:api-file-storage",
-            "urn:dtudo:api-musicx");
+            "urn:dtudo:api-musicx",
+            "urn:dtudo:api-discogs");
         options.AddDevelopmentEncryptionCertificate();
         options.AddDevelopmentSigningCertificate();
         options.UseAspNetCore()
@@ -1551,7 +1552,7 @@ static string BuildLoginPage(string returnUrl, string? requestVerificationToken,
     var loginTitle = WebUtility.HtmlEncode($"Entrar no {applicationName}");
     var themeClass = isWinApp ? "winapp" : "site";
     var mark = isWinApp ? "W" : "D";
-    var eyebrow = isWinApp ? "ACESSO ADMINISTRATIVO" : "CATALOGO DTUDO";
+    var eyebrow = isWinApp ? "ACESSO ADMINISTRATIVO" : "DTUDO SITE";
     var lead = isWinApp
         ? "Entre com a conta Superadministrador para abrir o aplicativo local."
         : "Entre para continuar sua sessao no catalogo DtudoSite.";

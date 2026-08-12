@@ -20,6 +20,8 @@ public sealed class GatewayOptions
 
     public string ApiMusicXBaseUrl { get; set; } = string.Empty;
 
+    public string ApiDiscogsBaseUrl { get; set; } = string.Empty;
+
     public string ApiIdentityBaseUrl { get; set; } = string.Empty;
 
     public int SessionIdleTimeoutMinutes { get; set; } = 120;
@@ -70,6 +72,7 @@ public static class GatewayOptionsValidator
             && options.SessionAbsoluteLifetimeHours is >= 1 and <= 720
             && IsHttpsBaseUrl(options.ApiMyAnimesBaseUrl)
             && IsHttpsBaseUrl(options.ApiMusicXBaseUrl)
+            && IsHttpsBaseUrl(options.ApiDiscogsBaseUrl)
             && IsHttpsBaseUrl(options.ApiIdentityBaseUrl);
     }
 

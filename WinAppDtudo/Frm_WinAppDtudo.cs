@@ -17,6 +17,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     private readonly ApiMusicXHealthCheckService _apiMusicXHealthCheckService;
     private readonly ApiMusicXStartupService _apiMusicXStartupService;
     private readonly ApiMyAnimeListStartupService _apiMyAnimeListStartupService = new();
+    private readonly ApiDiscogsStartupService _apiDiscogsStartupService = new();
     private readonly WinAppHealthMonitoringService _healthMonitoringService;
     private readonly CancellationTokenSource _formClosingCancellationTokenSource = new();
     private readonly DtudoSiteStartupService _dtudoSiteStartupService;
@@ -324,6 +325,10 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             TryEnsureServiceReadyAsync(
                 "ApiMyAnimeList",
                 () => _apiMyAnimeListStartupService.EnsureReadyAsync(cancellationToken),
+                cancellationToken),
+            TryEnsureServiceReadyAsync(
+                "ApiDiscogs",
+                () => _apiDiscogsStartupService.EnsureReadyAsync(cancellationToken),
                 cancellationToken),
             TryEnsureServiceReadyAsync(
                 "ApiFileStorage",

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace WinAppDtudo.Services;
 
-public sealed class ApiMusicXService : IApiMusicXCollectionImporter
+public sealed class ApiMusicXService : IApiMusicXCollectionImporter, IApiMusicXLocalConflictReader
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {

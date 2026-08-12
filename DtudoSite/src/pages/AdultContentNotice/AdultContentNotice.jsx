@@ -54,14 +54,7 @@ export default function AdultContentNotice() {
     return (
         <main className={styles.mainNotice} aria-labelledby="adult-content-title">
             <section className={styles.sectionNotice}>
-                <p className={styles.eyebrow}>Dtudo</p>
-                <h1 id="adult-content-title">Conteúdo adulto (Hentai)</h1>
-                <p className={styles.noticeText}>
-                    Esta página contém conteúdo destinado exclusivamente a maiores de 18 anos.
-                </p>
-                <p className={styles.noticeText}>
-                    O acesso é permitido somente para pessoas maiores de 18 anos com uma conta previamente criada.
-                </p>
+                <h1 id="adult-content-title">Dtudo Site</h1>
                 <p className={styles.confirmationText}>
                     Você confirma ser maior de 18 anos e possuir uma conta?
                 </p>

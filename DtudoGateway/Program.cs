@@ -203,7 +203,8 @@ builder.Services.PostConfigure<CookieAuthenticationOptions>(CookieScheme, option
         {
             context.ProtocolMessage.IssuerAddress = BuildPublicUrl(
                 configuredGatewayOptions,
-                "/identity/connect/authorize");
+                "/identity/connect/authorize")
+                + "?resource=urn%3Adtudo%3Aapi-discogs";
             context.ProtocolMessage.SetParameter("resource", "urn:dtudo:api-musicx");
             context.ProtocolMessage.RedirectUri = BuildPublicUrl(
                 configuredGatewayOptions,
@@ -281,6 +282,7 @@ builder.Services.AddReverseProxy()
         GatewayRouteConfiguration.CreateClusters(
             configuredGatewayOptions.ApiMyAnimesBaseUrl,
             configuredGatewayOptions.ApiMusicXBaseUrl,
+            configuredGatewayOptions.ApiDiscogsBaseUrl,
             configuredGatewayOptions.ApiIdentityBaseUrl));
 
 var app = builder.Build();
@@ -313,7 +315,8 @@ app.Use(async (context, next) =>
 });
 app.Use(async (context, next) =>
 {
-    if (context.Request.Path.StartsWithSegments("/api/catalog"))
+    if (context.Request.Path.StartsWithSegments("/api/catalog")
+        || context.Request.Path.StartsWithSegments("/api/external/discogs"))
     {
         context.Request.Headers.Remove("Authorization");
     }
@@ -333,7 +336,8 @@ if (!app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.Use(async (context, next) =>
 {
-    if (context.Request.Path.StartsWithSegments("/api/catalog/music"))
+    if (context.Request.Path.StartsWithSegments("/api/catalog/music")
+        || context.Request.Path.StartsWithSegments("/api/external/discogs"))
     {
         context.Request.Headers.Remove("Authorization");
         var accessToken = await context.GetTokenAsync(CookieScheme, "access_token");

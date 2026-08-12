@@ -33,10 +33,9 @@ export default function Login() {
                     <span className={styles.brandName}>DtudoSite</span>
                 </div>
                 <div className={styles.brandCopy}>
-                    <p className={styles.eyebrow}>CATALOGO DTUDO</p>
-                    <h1>Seu catalogo. Sua proxima descoberta.</h1>
+                    <h1>Dtudo Site</h1>
                     <p className={styles.brandLead}>
-                        Continue para explorar animes, colecoes e detalhes reunidos no Dtudo.
+                        Animes, Musicas e T.I, Dtudo Site.
                     </p>
                 </div>
                 <div className={styles.brandFooter}>

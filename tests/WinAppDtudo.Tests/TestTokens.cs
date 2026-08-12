@@ -17,7 +17,8 @@ internal static class TestTokens
                 "urn:dtudo:api-my-animes",
                 "urn:dtudo:api-my-animelist",
                 "urn:dtudo:api-file-storage",
-                "urn:dtudo:api-musicx"
+                "urn:dtudo:api-musicx",
+                "urn:dtudo:api-discogs"
             },
             role
         });

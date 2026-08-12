@@ -1,10 +1,25 @@
 import styles from './CardRelease.module.css';
 import notaFireMusical from '/mymusicx/NotaMusica.png';
 
-export default function CardRelease({ cdTitulo, cdImgSrc, cdAno }) {
+export default function CardRelease({ cdTitulo, cdImgSrc, cdAno, onClick }) {
     const thumb = cdImgSrc || notaFireMusical;
+    const isInteractive = typeof onClick === 'function';
+
+    const handleKeyDown = (event) => {
+        if (isInteractive && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            onClick();
+        }
+    };
+
     return (
-        <article className={styles.animesCardArticle}>
+        <article
+            className={styles.animesCardArticle}
+            onClick={onClick}
+            onKeyDown={handleKeyDown}
+            role={isInteractive ? 'button' : undefined}
+            tabIndex={isInteractive ? 0 : undefined}
+        >
             <div className={styles.divContainerTitulo}>
                 <h3 className={styles.h3Titulo}>{cdTitulo}</h3>
             </div>

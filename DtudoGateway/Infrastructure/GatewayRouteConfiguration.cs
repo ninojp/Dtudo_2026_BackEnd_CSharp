@@ -6,6 +6,7 @@ public static class GatewayRouteConfiguration
 {
     public const string CatalogClusterId = "api-my-animes-catalog";
     public const string MusicClusterId = "api-musicx-catalog";
+    public const string DiscogsClusterId = "api-discogs-external";
     public const string IdentityClusterId = "api-identity-oidc";
     public const string AnonymousPolicy = "gateway-anonymous";
     public const string AuthenticatedCatalogPolicy = "gateway-authenticated-catalog";
@@ -55,6 +56,36 @@ public static class GatewayRouteConfiguration
                 "/apiLocal/releases/{id}",
                 clusterId: MusicClusterId,
                 removeAuthorizationHeader: false),
+            CreateExactRoute(
+                "external-discogs-artist-search",
+                "/api/external/discogs/artists/search",
+                "/ApiDiscogs/artists/search",
+                clusterId: DiscogsClusterId,
+                removeAuthorizationHeader: false),
+            CreateParameterizedRoute(
+                "external-discogs-artist-by-id",
+                "/api/external/discogs/artists/{id:int}",
+                "/ApiDiscogs/artists/{id}",
+                clusterId: DiscogsClusterId,
+                removeAuthorizationHeader: false),
+            CreateParameterizedRoute(
+                "external-discogs-artist-releases",
+                "/api/external/discogs/artists/{id:int}/releases",
+                "/ApiDiscogs/artists/{id}/releases",
+                clusterId: DiscogsClusterId,
+                removeAuthorizationHeader: false),
+            CreateParameterizedRoute(
+                "external-discogs-release-by-id",
+                "/api/external/discogs/releases/{id:int}",
+                "/ApiDiscogs/releases/{id}",
+                clusterId: DiscogsClusterId,
+                removeAuthorizationHeader: false),
+            CreateParameterizedRoute(
+                "external-discogs-master-by-id",
+                "/api/external/discogs/masters/{id:int}",
+                "/ApiDiscogs/masters/{id}",
+                clusterId: DiscogsClusterId,
+                removeAuthorizationHeader: false),
         };
 
         routes.Add(CreateExactRoute(
@@ -78,6 +109,7 @@ public static class GatewayRouteConfiguration
     public static IReadOnlyList<ClusterConfig> CreateClusters(
         string animeDestinationAddress,
         string musicDestinationAddress,
+        string discogsDestinationAddress,
         string identityDestinationAddress) =>
     [
         new ClusterConfig
@@ -99,6 +131,17 @@ public static class GatewayRouteConfiguration
                 ["api-musicx"] = new DestinationConfig
                 {
                     Address = musicDestinationAddress.TrimEnd('/') + "/"
+                }
+            }
+        },
+        new ClusterConfig
+        {
+            ClusterId = DiscogsClusterId,
+            Destinations = new Dictionary<string, DestinationConfig>(StringComparer.Ordinal)
+            {
+                ["api-discogs"] = new DestinationConfig
+                {
+                    Address = discogsDestinationAddress.TrimEnd('/') + "/"
                 }
             }
         },

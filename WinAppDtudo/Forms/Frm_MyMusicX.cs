@@ -4,6 +4,7 @@ namespace WinAppDtudo.Forms;
 
 public partial class Frm_MyMusicX : CustomFormNoBorder
 {
+    private readonly WinAppAuthenticationService? _authenticationService;
     private readonly ApiMusicXService _apiMusicXService;
     private readonly LegacyMusicCollectionMigrationService _legacyMigrationService;
     private readonly CancellationTokenSource _closingCancellationTokenSource = new();
@@ -12,6 +13,7 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
     private readonly Button _importButton;
     private readonly Button _cancelImportButton;
     private readonly CheckBox _dryRunCheckBox;
+    private readonly Button _discogsButton;
     private readonly ListView _collectionsListView;
     private readonly RichTextBox _operationLog;
     private CancellationTokenSource? _migrationCancellationTokenSource;
@@ -24,9 +26,10 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         LegacyMusicCollectionMigrationService? legacyMigrationService = null)
     {
         InitializeComponent();
+        _authenticationService = authenticationService;
         _apiMusicXService = apiMusicXService ?? new ApiMusicXService(authenticationService);
         _legacyMigrationService = legacyMigrationService ?? new LegacyMusicCollectionMigrationService(_apiMusicXService);
-        (_apiStatusLabel, _refreshButton, _importButton, _cancelImportButton, _dryRunCheckBox, _collectionsListView, _operationLog) = CreateMusicSurface();
+        (_apiStatusLabel, _refreshButton, _importButton, _cancelImportButton, _dryRunCheckBox, _discogsButton, _collectionsListView, _operationLog) = CreateMusicSurface();
         abrirToolStripMenuItem.Text = "Migrar JSON legado";
         abrirToolStripMenuItem.Click += ImportLegacyButton_Click;
         Load += Frm_MyMusicX_Load;
@@ -56,6 +59,19 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
     private async void RefreshButton_Click(object? sender, EventArgs e)
     {
         await RefreshCollectionsAsync();
+    }
+
+    private void DiscogsButton_Click(object? sender, EventArgs e)
+    {
+        if (_isRefreshing || _isImporting || IsDisposed)
+        {
+            return;
+        }
+
+        using var form = new Frm_DiscogsImport(
+            _authenticationService,
+            apiMusicXService: _apiMusicXService);
+        form.ShowDialog(this);
     }
 
     private async Task RefreshCollectionsAsync()
@@ -265,7 +281,7 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         _operationLog.ScrollToCaret();
     }
 
-    private (Label Status, Button Refresh, Button Import, Button CancelImport, CheckBox DryRun, ListView Collections, RichTextBox Log) CreateMusicSurface()
+    private (Label Status, Button Refresh, Button Import, Button CancelImport, CheckBox DryRun, Button Discogs, ListView Collections, RichTextBox Log) CreateMusicSurface()
     {
         var contentPanel = new Panel
         {
@@ -317,6 +333,16 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         };
         importButton.FlatAppearance.BorderColor = DarkModeColors.ActiveBorderColor;
         importButton.Click += ImportLegacyButton_Click;
+        var discogsButton = new Button
+        {
+            Size = new Size(190, 42),
+            BackColor = DarkModeColors.AccentColor,
+            ForeColor = DarkModeColors.TextColor,
+            FlatStyle = FlatStyle.Flat,
+            Text = "Buscar Discogs"
+        };
+        discogsButton.FlatAppearance.BorderColor = DarkModeColors.ActiveBorderColor;
+        discogsButton.Click += DiscogsButton_Click;
         var cancelImportButton = new Button
         {
             Size = new Size(130, 42),
@@ -340,7 +366,7 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         var actionPanel = new FlowLayoutPanel
         {
             Dock = DockStyle.Right,
-            Width = 570,
+            Width = 770,
             FlowDirection = FlowDirection.RightToLeft,
             WrapContents = false,
             Padding = new Padding(0, 12, 0, 0),
@@ -348,6 +374,7 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         };
         actionPanel.Controls.Add(cancelImportButton);
         actionPanel.Controls.Add(importButton);
+        actionPanel.Controls.Add(discogsButton);
         actionPanel.Controls.Add(refreshButton);
         actionPanel.Controls.Add(dryRunCheckBox);
         headerPanel.Controls.Add(titleLabel);
@@ -393,12 +420,13 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         ThemeManager.ApplyDarkModeToControl(statusLabel);
         ThemeManager.ApplyDarkModeToControl(refreshButton);
         ThemeManager.ApplyDarkModeToControl(importButton);
+        ThemeManager.ApplyDarkModeToControl(discogsButton);
         ThemeManager.ApplyDarkModeToControl(cancelImportButton);
         ThemeManager.ApplyDarkModeToControl(dryRunCheckBox);
         ThemeManager.ApplyDarkModeToControl(collectionsListView);
         ThemeManager.ApplyDarkModeToControl(operationLog);
 
-        return (statusLabel, refreshButton, importButton, cancelImportButton, dryRunCheckBox, collectionsListView, operationLog);
+        return (statusLabel, refreshButton, importButton, cancelImportButton, dryRunCheckBox, discogsButton, collectionsListView, operationLog);
     }
 
     private void CancelImportButton_Click(object? sender, EventArgs e)
@@ -424,6 +452,7 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
             && !_closingCancellationTokenSource.IsCancellationRequested;
         _refreshButton.Enabled = canStart;
         _importButton.Enabled = canStart;
+        _discogsButton.Enabled = canStart;
         _dryRunCheckBox.Enabled = canStart;
         _cancelImportButton.Enabled = _isImporting;
         abrirToolStripMenuItem.Enabled = canStart;

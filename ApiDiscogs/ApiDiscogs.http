@@ -1,0 +1,6 @@
+@ApiDiscogs_HostAddress = https://localhost:7147
+
+GET {{ApiDiscogs_HostAddress}}/ApiDiscogs/health
+Accept: application/json
+
+###

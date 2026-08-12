@@ -13,7 +13,7 @@
 - `useAuth` consulta `/bff/me` no carregamento, mantem somente o usuario em memoria, inicia o login por `/bff/login`, busca antiforgery e executa `POST /bff/logout`. Falha de autorizacao limpa a sessao local e publica o evento de expiracao/revogacao.
 - O router nao possui mais cadastro publico. A tela de login nao coleta e-mail ou senha; ela redireciona para o fluxo OIDC do gateway. A protecao de rota conserva a URL local de retorno.
 - O catalogo trocou `ApiMyAnimes` direto por `/api/catalog/animes`, `/api/catalog/animes/search`, `/api/catalog/animes/{id}` e `/api/catalog/collections`, sem `withCredentials`.
-- A leitura de `VITE_DISCOGS_TOKEN` foi removida do React; a credencial continua pertencendo somente ao proxy servidor legado.
+- A leitura de `VITE_DISCOGS_TOKEN` foi removida do React; a credencial pertence somente ao `ApiDiscogs` via User Secrets.
 - Os arquivos de cadastro legado foram removidos por nao existir rota BFF de registro nem cadastro publico previsto no plano.
 
 ## Evidencias
@@ -46,7 +46,7 @@ Os testes do gateway cobrem o contrato consumido pelo frontend: `/bff/me`, chall
 
 - O OIDC live nao foi executado nesta sessao: nao havia processos escutando nas portas locais do gateway/Identity/catalogo e nao havia User Secrets configurados. E necessario fornecer `OpenIdConnect:ClientSecret` por fonte externa, iniciar os servicos e exercitar login, callback, logout, expiracao e revogacao antes da promocao.
 - O desenvolvimento com Vite separado precisa usar uma origem BFF/gateway configurada e allowlisted; o deployment previsto deve servir o frontend na origem publica do gateway ou configurar uma borda equivalente sem abrir APIs internas.
-- O modulo MyMusicX continua usando seus endpoints/proxy legados sem tokens OAuth do site; ele nao foi convertido em rota BFF porque a Etapa 16 nao os expoe e esta etapa preserva o escopo do catalogo/autenticacao.
+- O modulo MyMusicX usa os contratos `ApiMusicX` e `ApiDiscogs` publicados pelo gateway; o proxy Node legado foi retirado.
 
 ## Rollback
 

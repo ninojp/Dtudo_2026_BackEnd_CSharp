@@ -719,6 +719,12 @@ A `ApiDiscogs` nao possui o banco principal da Colecao e nao grava dados na `Api
 
 Definir o que sera exposto da Discogs e como proteger a saida externa antes de escrever o cliente HTTP.
 
+### Decisao produzida
+
+O contrato detalhado, a politica de seguranca, os DTOs normalizados, a matriz de permissoes, os limites e o tratamento de falhas estao documentados em [docs/decisions/APIDISCOGS_CONTRATO.md](docs/decisions/APIDISCOGS_CONTRATO.md).
+
+**Status da Parte 2.1:** documentada; pronta para a criacao e configuracao base da ApiDiscogs na Parte 2.2.
+
 ### Contrato inicial sugerido
 
 ```text

@@ -196,6 +196,16 @@ public sealed class ApiIdentityStartupTests
         Assert.Contains(new Uri("urn:dtudo:api-musicx"), serverOptions.Resources);
     }
 
+    [Fact]
+    public void RegistersTheDiscogsApiAsAnOpenIddictResource()
+    {
+        using var factory = CreateFactory();
+        using var scope = factory.Services.CreateScope();
+        var serverOptions = scope.ServiceProvider.GetRequiredService<IOptions<OpenIddictServerOptions>>().Value;
+
+        Assert.Contains(new Uri("urn:dtudo:api-discogs"), serverOptions.Resources);
+    }
+
     private static WebApplicationFactory<Program> CreateFactory(
         IReadOnlyDictionary<string, string?>? overrides = null)
     {
