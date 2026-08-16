@@ -30,60 +30,25 @@ Minha solução (conjunto de projetos) atualmente é projeto pessoal e que roda 
 O ponto central é o projeto WinAppDtudo, que é o aplicativo desktop que manipula, faz consultas externas e DEVE CONTROLAR o Banco de dados local e arquivos em disco local.
 
 -------------------------------------------------------------------------------------------------------------------------------------
-C:\Users\comer\AppData\Roaming\Microsoft\UserSecrets
-`eumemosem@nadaSENHAatual123@)`NinoJPDtudoDev!2026LfZDp9ftZLgbpd1f
 
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite\
-Após logar, ao acessar a página MyMusicX, ela não está carregando. Preciso que ela volte a funcionar, mesmo que temporariamente, pois vou criar a ApiMyMusicX na seguencia, mas neste momento preciso que a página MyMusicX volte a funcionar, mesmo que temporariamente, para poder acessar as informações das músicas, artistas e álbuns.
-Temos esse erro no console:
-[0] (node:7876) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/2026MeusProjetos/Dtudo2026/scripts/run-if-down.js is not specified and it doesn't parse as CommonJS.
-[0] Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-[0] To eliminate this warning, add "type": "module" to \\?\C:\2026MeusProjetos\Dtudo2026\package.json.
-[0] (Use `node --trace-warnings ...` to show where the warning was created)
-[2] (node:21716) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/2026MeusProjetos/Dtudo2026/scripts/run-if-down.js is not specified and it doesn't parse as CommonJS.
-[2] Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-[2] To eliminate this warning, add "type": "module" to \\?\C:\2026MeusProjetos\Dtudo2026\package.json.
-[2] (Use `node --trace-warnings ...` to show where the warning was created)
-[3] (node:22536) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/2026MeusProjetos/Dtudo2026/scripts/run-if-down.js is not specified and it doesn't parse as CommonJS.
-[3] Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-[3] To eliminate this warning, add "type": "module" to \\?\C:\2026MeusProjetos\Dtudo2026\package.json.
-[3] (Use `node --trace-warnings ...` to show where the warning was created)
-[1] (node:14472) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/2026MeusProjetos/Dtudo2026/scripts/run-if-down.js is not specified and it doesn't parse as CommonJS.
-[1] Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-[1] To eliminate this warning, add "type": "module" to \\?\C:\2026MeusProjetos\Dtudo2026\package.json.
-[1] (Use `node --trace-warnings ...` to show where the warning was created)
-[4] (node:17336) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/2026MeusProjetos/Dtudo2026/scripts/run-if-down.js is not specified and it doesn't parse as CommonJS.
-[4] Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-[4] To eliminate this warning, add "type": "module" to \\?\C:\2026MeusProjetos\Dtudo2026\package.json.
-[4] (Use `node --trace-warnings ...` to show where the warning was created)
-[3] [dtudo] https://localhost:51376/health/live ja esta acessivel (HTTP 200). Mantendo este processo ativo para o concurrently.
-[0] [dtudo] https://localhost:7243/health/live ja esta acessivel (HTTP 200). Mantendo este processo ativo para o concurrently.
-[2] [dtudo] https://localhost:7146/ApiMyAnimeList/health ja esta acessivel (HTTP 401). Mantendo este processo ativo para o concurrently.
-[1] [dtudo] https://localhost:63980/apiLocal/Health ja esta acessivel (HTTP 401). Mantendo este processo ativo para o concurrently.
-[5] (node:21352) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/2026MeusProjetos/Dtudo2026/scripts/run-if-down.js is not specified and it doesn't parse as CommonJS.
-[5] Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-[5] To eliminate this warning, add "type": "module" to \\?\C:\2026MeusProjetos\Dtudo2026\package.json.
-[5] (Use `node --trace-warnings ...` to show where the warning was created)
-[4] [dtudo] http://localhost:4010/health/live fora do ar. Iniciando: npm run proxy
-[5] [dtudo] http://localhost:5173/ fora do ar. Iniciando: npm run dev
-[4]
-[4] > dtudo@3.0.0 proxy
-[4] > node ../ApiNode/mymusicx/discogsProxy.js
-[4]
-[5]
-[5] > dtudo@3.0.0 dev
-[5] > vite
-[5]
-[4] (node:14220) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/2026MeusProjetos/Dtudo2026/ApiNode/mymusicx/discogsProxy.js is not specified and it doesn't parse as CommonJS.
-[4] Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-[4] To eliminate this warning, add "type": "module" to \\?\C:\2026MeusProjetos\Dtudo2026\package.json.
-[4] (Use `node --trace-warnings ...` to show where the warning was created)
-[4] discogsProxy.js listening on http://localhost:4010
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
+Após logar no App, e acessar a Form MyAnimes, na aba "Busca externa - ApiMyAnimeList", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimeList é chamada, que por sua vez chama a Api externa MyAnimeList, que retorna os resultados (Cards) da busca.
+Após clicar em um Card, e abrirmos a aba "Detalhes do Anime" (vindos da ApiMyAnimeList), dentro desta aba temos o botão "Salvar Como MyAnime" que ao ser clicado, deve salvar o anime no banco de dados local (ApiMyAnimes). Mas não está salvando, ao clicar no botão apresenta esta erro: Falha ao salvar em MyAnime.
+Aproveitando que estaremos trabalhando na aba "Detalhes do Anime", quero implementar uma nova funcionalidade, Ao salvar o anime no banco de dados local, quero que seja salvo também os Mal_ids dos animes relacionados (Mal_id) que estão sendo exibidos na aba "Detalhes do Anime" (na lista de animes relacionados).
+Me pergunte qualquer coisa que precisar para executar o que pedi, correção e implementação da nova funcionalidade.
 
+Não funcionou, agora temos outro erro: O WinAppDtudo encontrou um erro durente a inicialização.
 
+A Sessão administrador do WinApp nao esta configurada
+
+Log:
+C:\Users\comer\AppData\Local\Dtudo2026\WinAppDtudo\startup.log
+
+Se possivel, troque o local de salvamento do arquivo de log para: C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\Logs\
 
 ===================================================================================================
-
+C:\Users\comer\AppData\Roaming\Microsoft\UserSecrets
+`eumemosem@nadaSENHAatual123@)NinoJPDtudoDev!2026LfZDp9ftZLgbpd1f`
 Documentação official da api MyAnimeList:  <https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters>  
 
 09/07/2026 NUMEROS DEPOIS DE POPULAR O DB LOCAL
