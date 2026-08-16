@@ -28,7 +28,8 @@ public class ImportadorAnimesMyAnimeService
         string tituloMyAnime,
         IReadOnlyCollection<int> malIds,
         IProgress<ProgressoImportacaoAnimes>? progresso = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IReadOnlyDictionary<int, IReadOnlyCollection<int>>? animesRelacionadosPorMalId = null)
     {
         var resultado = new ResultadoImportacaoAnimes
         {
@@ -65,6 +66,7 @@ public class ImportadorAnimesMyAnimeService
                     tituloMyAnime,
                     malId,
                     resultado,
+                    ObterIdsRelacionados(animesRelacionadosPorMalId, malId),
                     cancellationToken);
                 if (!salvouFallback)
                     resultado.AnimesComFalha++;
@@ -73,12 +75,23 @@ public class ImportadorAnimesMyAnimeService
                 continue;
             }
 
-            var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(detalhes, myAnimeId);
+            var animesRelacionadosIds = ObterIdsRelacionados(animesRelacionadosPorMalId, malId);
+            var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(
+                detalhes,
+                myAnimeId,
+                animesRelacionadosIds);
 
             try
             {
-                await GarantirAnimeNaColecaoAsync(dtoAnime, myAnimeId, cancellationToken);
-                resultado.AnimesSalvos++;
+                var animeFoiCriado = await GarantirAnimeNaColecaoAsync(
+                    dtoAnime,
+                    myAnimeId,
+                    animesRelacionadosIds,
+                    cancellationToken);
+                if (animeFoiCriado)
+                    resultado.AnimesSalvos++;
+                else
+                    resultado.AnimesIgnorados++;
             }
             catch (Exception ex)
             {
@@ -107,6 +120,7 @@ public class ImportadorAnimesMyAnimeService
         string tituloMyAnime,
         int malId,
         ResultadoImportacaoAnimes resultado,
+        IReadOnlyCollection<int>? animesRelacionadosIds,
         CancellationToken cancellationToken)
     {
         try
@@ -117,11 +131,16 @@ public class ImportadorAnimesMyAnimeService
                 Titulo = $"Anime_{malId}_Fallback",
                 Episodios = 1,
                 MyAnimeID = myAnimeId,
+                AnimesRelacionadosIds = [.. animesRelacionadosIds ?? []],
                 Source = "Fallback",
                 Synopsis = $"Registro em modo de degradação. Falha ao consultar detalhes na ApiMyAnimeList para a coleção '{tituloMyAnime}'."
             };
 
-            var animeFoiCriado = await GarantirAnimeNaColecaoAsync(dtoFallback, myAnimeId, cancellationToken);
+            var animeFoiCriado = await GarantirAnimeNaColecaoAsync(
+                dtoFallback,
+                myAnimeId,
+                animesRelacionadosIds,
+                cancellationToken);
             if (animeFoiCriado)
             {
                 resultado.AnimesSalvosModoDegradacao++;
@@ -142,6 +161,17 @@ public class ImportadorAnimesMyAnimeService
                 $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha no modo de degradação para MalId {malId} da coleção '{tituloMyAnime}': {ex.Message}");
             return false;
         }
+    }
+
+    private static IReadOnlyCollection<int>? ObterIdsRelacionados(
+        IReadOnlyDictionary<int, IReadOnlyCollection<int>>? animesRelacionadosPorMalId,
+        int malId)
+    {
+        if (animesRelacionadosPorMalId is null ||
+            !animesRelacionadosPorMalId.TryGetValue(malId, out var ids))
+            return null;
+
+        return ids.Where(id => id > 0).Distinct().ToList();
     }
 
     private async Task<AnimeDetails?> BuscarAnimeComRetryAsync(
@@ -181,6 +211,7 @@ public class ImportadorAnimesMyAnimeService
     private async Task<bool> GarantirAnimeNaColecaoAsync(
         AdicionaAnimeDto dto,
         int myAnimeId,
+        IReadOnlyCollection<int>? animesRelacionadosIds,
         CancellationToken cancellationToken)
     {
         var animeFoiCriado = true;
@@ -191,6 +222,13 @@ public class ImportadorAnimesMyAnimeService
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
         {
             animeFoiCriado = false;
+            if (animesRelacionadosIds is not null)
+            {
+                await _apiMyAnimesService.AtualizarAnimesRelacionadosIdsAsync(
+                    dto.MalId,
+                    animesRelacionadosIds,
+                    cancellationToken);
+            }
         }
 
         await _apiMyAnimesService.AssociarAnimeAoMyAnimeAsync(

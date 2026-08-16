@@ -41,6 +41,26 @@ public sealed class CatalogMigrationControllerTests
     }
 
     [Fact]
+    public void EnsureCollection_PreservesTitleLongerThanOneHundredCharacters()
+    {
+        using var context = CreateContext();
+        var controller = new CatalogMigrationController(context);
+        var longTitle = string.Join(" ", Enumerable.Repeat("Titulo completo do anime", 20));
+
+        var result = controller.EnsureMyAnimeCollection(new EnsureMyAnimeCollectionRequest
+        {
+            Titulo = longTitle,
+            AnimesMalId = [1]
+        });
+
+        Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(longTitle, context.MyAnimes.Single().Titulo);
+        Assert.Null(context.Model.FindEntityType(typeof(MyAnime))
+            ?.FindProperty(nameof(MyAnime.Titulo))
+            ?.GetMaxLength());
+    }
+
+    [Fact]
     public void EnsureAssociation_ReplayPreservesCatalogConsistency()
     {
         using var context = CreateContext();

@@ -15,6 +15,7 @@ public class ObterAnimeDto
     public List<string> ImagensUrlMal { get; set; } = new();
 
     public List<string> SubTitulos { get; set; } = new();
+    public List<int> AnimesRelacionadosIds { get; set; } = new();
     public int MyAnimeID { get; set; }
 
     public string? Trailer { get; set; }

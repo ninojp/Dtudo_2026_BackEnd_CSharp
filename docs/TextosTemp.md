@@ -22,7 +22,6 @@ Busca os animes relacionados a um anime específico pelo ID do MyAnimeList. Util
 
 Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação de dados (Lê e grava no DB_Local e em disco local, pastas e arquivos).
 
-Projetos FUTUROS, projetos que serão criados futuramente, mas que já estão planejados:
 Projeto ApiDiscogs - Api para consulta externa de informações sobre músicas, artistas e álbuns.
 Projeto ApiMyMusicX - Api para gestão do Banco de dados local de músicas, artistas e álbuns. (CRUD completo, documentada com Swagger).
 
@@ -33,21 +32,12 @@ O ponto central é o projeto WinAppDtudo, que é o aplicativo desktop que manipu
 
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
 Após logar no App, e acessar a Form MyAnimes, na aba "Busca externa - ApiMyAnimeList", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimeList é chamada, que por sua vez chama a Api externa MyAnimeList, que retorna os resultados (Cards) da busca.
-Após clicar em um Card, e abrirmos a aba "Detalhes do Anime" (vindos da ApiMyAnimeList), dentro desta aba temos o botão "Salvar Como MyAnime" que ao ser clicado, deve salvar o anime no banco de dados local (ApiMyAnimes). Mas não está salvando, ao clicar no botão apresenta esta erro: Falha ao salvar em MyAnime.
-Aproveitando que estaremos trabalhando na aba "Detalhes do Anime", quero implementar uma nova funcionalidade, Ao salvar o anime no banco de dados local, quero que seja salvo também os Mal_ids dos animes relacionados (Mal_id) que estão sendo exibidos na aba "Detalhes do Anime" (na lista de animes relacionados).
-Me pergunte qualquer coisa que precisar para executar o que pedi, correção e implementação da nova funcionalidade.
-
-Não funcionou, agora temos outro erro: O WinAppDtudo encontrou um erro durente a inicialização.
-
-A Sessão administrador do WinApp nao esta configurada
-
-Log:
-C:\Users\comer\AppData\Local\Dtudo2026\WinAppDtudo\startup.log
-
-Se possivel, troque o local de salvamento do arquivo de log para: C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\Logs\
+Após clicar em um Card, e abrirmos a aba "Detalhes do Anime" (vindos da ApiMyAnimeList), dentro desta aba temos o botão "Salvar Anime" que ao ser clicado, deve salvar o anime no banco de dados local (ApiMyAnimes).  
+Agora, ao salvar o anime no banco de dados local, quero que seja salvo também os Mal_ids dos animes relacionados AO ANIME EM EXIBIÇÃO ATUAL (Mal_id de cada anime) que estão sendo exibidos na aba "Detalhes do Anime" (na lista de animes relacionados).
+Me pergunte qualquer coisa que precisar para executar o que pedi, Criar um novo campo na tabela animes (AnimesRelacionadosIds) para armazenar os Mal_ids dos animes relacionados.
+LEMBRANDO que o botão "Salvar Como MyAnime" (que salva o anime no banco de dados local) deve salvar também os Mal_ids dos animes relacionados ao anime que está sendo exibido na aba "Detalhes do Anime" (e não confundir com TODOS os animes relacionados DA COLEÇÃO MYANIME).
 
 ===================================================================================================
-C:\Users\comer\AppData\Roaming\Microsoft\UserSecrets
 `eumemosem@nadaSENHAatual123@)NinoJPDtudoDev!2026LfZDp9ftZLgbpd1f`
 Documentação official da api MyAnimeList:  <https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters>  
 

@@ -411,6 +411,7 @@ public sealed class FUC_EditarAnime : UserControl
             Titulo = titulo,
             Episodios = episodios,
             MyAnimeID = _fields.OptionalInt("MyAnimeID", "MyAnime ID", 0, null, errors) ?? 0,
+            AnimesRelacionadosIds = [.. _animeAtual.AnimesRelacionadosIds],
             MalUrl = _fields.Text("MalUrl"),
             ImagensUrlMal = _fields.List("ImagensUrlMal"),
             SubTitulos = _fields.List("SubTitulos"),

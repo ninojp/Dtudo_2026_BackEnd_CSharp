@@ -100,6 +100,37 @@ public sealed class ApiMyAnimesServiceTests
     }
 
     [Fact]
+    public async Task UpdateRelatedIds_UsesAuthorizedPatch()
+    {
+        var handler = new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
+        using var apiHttpClient = CreateApiHttpClient(handler);
+        var (authenticationService, temporaryDirectory) = await CreateAuthenticationServiceAsync();
+
+        try
+        {
+            using (authenticationService)
+            {
+                var service = new ApiMyAnimesService(authenticationService, apiHttpClient);
+                await service.AtualizarAnimesRelacionadosIdsAsync(42, [7, -1, 7, 8]);
+            }
+
+            Assert.Equal(HttpMethod.Patch, handler.Method);
+            Assert.Equal("/apiLocal/Anime/42", handler.RequestUri?.AbsolutePath);
+            Assert.Equal("Bearer", handler.AuthorizationScheme);
+
+            using var document = JsonDocument.Parse(handler.Body ?? string.Empty);
+            var operation = document.RootElement[0];
+            Assert.Equal("replace", operation.GetProperty("op").GetString());
+            Assert.Equal("/AnimesRelacionadosIds", operation.GetProperty("path").GetString());
+            Assert.Equal([7, 8], operation.GetProperty("value").EnumerateArray().Select(value => value.GetInt32()));
+        }
+        finally
+        {
+            DeleteTemporaryDirectory(temporaryDirectory);
+        }
+    }
+
+    [Fact]
     public async Task ProtectedMutation_WithoutSessionFailsClosed()
     {
         var handler = new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
@@ -114,6 +145,45 @@ public sealed class ApiMyAnimesServiceTests
             }));
 
         Assert.Equal(0, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task EnsureCollection_BadRequestIncludesValidationDetails()
+    {
+        var handler = new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = JsonContent.Create(new
+            {
+                title = "One or more validation errors occurred.",
+                errors = new Dictionary<string, string[]>
+                {
+                    ["AnimesMalId"] = ["Informe pelo menos um MalId."]
+                }
+            })
+        });
+        using var apiHttpClient = CreateApiHttpClient(handler);
+        var (authenticationService, temporaryDirectory) = await CreateAuthenticationServiceAsync();
+
+        try
+        {
+            using (authenticationService)
+            {
+                var service = new ApiMyAnimesService(authenticationService, apiHttpClient);
+                var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+                    service.GarantirMyAnimeColecaoAsync(new AdicionaMyAnimeDto
+                    {
+                        Titulo = "Colecao A",
+                        AnimesMalId = [1]
+                    }));
+
+                Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
+                Assert.Contains("AnimesMalId: Informe pelo menos um MalId.", exception.Message);
+            }
+        }
+        finally
+        {
+            DeleteTemporaryDirectory(temporaryDirectory);
+        }
     }
 
     private static HttpClient CreateApiHttpClient(RecordingHandler handler)

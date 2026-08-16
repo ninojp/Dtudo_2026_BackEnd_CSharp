@@ -5,7 +5,6 @@ namespace LibDtudo.Shared.Dtos;
 public sealed class EnsureMyAnimeCollectionRequest
 {
     [Required]
-    [StringLength(100, MinimumLength = 1)]
     public string Titulo { get; init; } = string.Empty;
 
     [Required]

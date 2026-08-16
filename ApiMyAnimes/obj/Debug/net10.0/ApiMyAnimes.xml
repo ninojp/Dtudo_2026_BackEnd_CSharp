@@ -322,6 +322,30 @@
         <member name="M:ApiMyAnimes.Migrations.SecurityAuditTrail.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:ApiMyAnimes.Migrations.RemoveMyAnimeTitleLengthLimit">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.RemoveMyAnimeTitleLengthLimit.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.RemoveMyAnimeTitleLengthLimit.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.RemoveMyAnimeTitleLengthLimit.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ApiMyAnimes.Migrations.AnimesRelacionadosIds">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.AnimesRelacionadosIds.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.AnimesRelacionadosIds.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.AnimesRelacionadosIds.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:ApiMyAnimes.Services.AnimeBuscaLocalService">
             <summary>
             Executa a busca local de animes com prioridade para colecoes MyAnime.

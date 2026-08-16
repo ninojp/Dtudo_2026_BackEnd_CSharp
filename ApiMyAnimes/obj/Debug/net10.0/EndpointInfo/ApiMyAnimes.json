@@ -1913,6 +1913,14 @@
             },
             "nullable": true
           },
+          "animesRelacionadosIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
           "trailer": {
             "type": "string",
             "nullable": true
@@ -2129,6 +2137,14 @@
             },
             "nullable": true
           },
+          "animesRelacionadosIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
           "trailer": {
             "type": "string",
             "nullable": true
@@ -2298,8 +2314,7 @@
         "type": "object",
         "properties": {
           "titulo": {
-            "maxLength": 100,
-            "minLength": 0,
+            "minLength": 1,
             "type": "string"
           },
           "animesMalId": {
@@ -2367,7 +2382,6 @@
         "type": "object",
         "properties": {
           "titulo": {
-            "maxLength": 100,
             "minLength": 1,
             "type": "string"
           },
@@ -2440,6 +2454,14 @@
             "type": "array",
             "items": {
               "type": "string"
+            },
+            "nullable": true
+          },
+          "animesRelacionadosIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
             },
             "nullable": true
           },

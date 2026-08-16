@@ -7,7 +7,10 @@ namespace WinAppDtudo.Services;
 
 public static class ConversorAnimeDtoService
 {
-    public static AdicionaAnimeDto CriarAdicionaAnimeDto(AnimeDetails anime, int myAnimeId)
+    public static AdicionaAnimeDto CriarAdicionaAnimeDto(
+        AnimeDetails anime,
+        int myAnimeId,
+        IEnumerable<int>? animesRelacionadosIds = null)
     {
         var episodiosInformados = anime.Episodes is > 0 ? anime.Episodes : null;
         var episodios = episodiosInformados ?? 1;
@@ -31,6 +34,7 @@ public static class ConversorAnimeDtoService
             MalUrl = anime.Url ?? string.Empty,
             ImagensUrlMal = imagens.Distinct().ToList(),
             SubTitulos = subtitulos.Distinct().ToList(),
+            AnimesRelacionadosIds = NormalizarAnimesRelacionadosIds(animesRelacionadosIds),
             Trailer = anime.Trailer,
             Approved = anime.Approved,
             Title = anime.Title,
@@ -65,9 +69,12 @@ public static class ConversorAnimeDtoService
         };
     }
 
-    public static AtualizaAnimeDto CriarAtualizaAnimeDto(AnimeDetails anime, int myAnimeId)
+    public static AtualizaAnimeDto CriarAtualizaAnimeDto(
+        AnimeDetails anime,
+        int myAnimeId,
+        IEnumerable<int>? animesRelacionadosIds = null)
     {
-        var adicionaAnimeDto = CriarAdicionaAnimeDto(anime, myAnimeId);
+        var adicionaAnimeDto = CriarAdicionaAnimeDto(anime, myAnimeId, animesRelacionadosIds);
         return new AtualizaAnimeDto
         {
             Titulo = adicionaAnimeDto.Titulo,
@@ -76,6 +83,7 @@ public static class ConversorAnimeDtoService
             MalUrl = adicionaAnimeDto.MalUrl,
             ImagensUrlMal = [.. adicionaAnimeDto.ImagensUrlMal],
             SubTitulos = [.. adicionaAnimeDto.SubTitulos],
+            AnimesRelacionadosIds = [.. adicionaAnimeDto.AnimesRelacionadosIds],
             Trailer = adicionaAnimeDto.Trailer,
             Approved = adicionaAnimeDto.Approved,
             Title = adicionaAnimeDto.Title,
@@ -122,6 +130,7 @@ public static class ConversorAnimeDtoService
             MalUrl = anime.MalUrl,
             ImagensUrlMal = [.. anime.ImagensUrlMal],
             SubTitulos = [.. anime.SubTitulos],
+            AnimesRelacionadosIds = [.. anime.AnimesRelacionadosIds],
             Trailer = anime.Trailer,
             Approved = anime.Approved,
             Title = anime.Title,
@@ -182,4 +191,7 @@ public static class ConversorAnimeDtoService
 
         return null;
     }
+
+    private static List<int> NormalizarAnimesRelacionadosIds(IEnumerable<int>? ids)
+        => (ids ?? []).Where(id => id > 0).Distinct().ToList();
 }

@@ -285,6 +285,30 @@ public class ApiMyAnimesService
         await EnsureSuccessStatusCodeAsync(response, cancellationToken);
     }
 
+    public async Task AtualizarAnimesRelacionadosIdsAsync(
+        int malId,
+        IReadOnlyCollection<int> animesRelacionadosIds,
+        CancellationToken cancellationToken = default)
+    {
+        var patch = new[]
+        {
+            new
+            {
+                op = "replace",
+                path = "/AnimesRelacionadosIds",
+                value = animesRelacionadosIds.Where(id => id > 0).Distinct().ToList()
+            }
+        };
+
+        using var response = await SendJsonAsync(
+            HttpMethod.Patch,
+            $"apiLocal/Anime/{malId}",
+            patch,
+            requiresAuthentication: true,
+            cancellationToken);
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
+    }
+
     public async Task RemoverAnimeAsync(int malId, CancellationToken cancellationToken = default)
     {
         using var response = await SendAsync(
@@ -412,6 +436,7 @@ public class ApiMyAnimesService
             return;
 
         var detail = await response.Content.ReadAsStringAsync(cancellationToken);
+        detail = ObterDetalhesValidacao(detail);
         if (detail.Length > 600)
             detail = detail[..600];
 
@@ -420,6 +445,38 @@ public class ApiMyAnimesService
             : $"A ApiMyAnimes retornou {(int)response.StatusCode}: {detail.Trim()}";
 
         throw new HttpRequestException(message, null, response.StatusCode);
+    }
+
+    private static string ObterDetalhesValidacao(string responseBody)
+    {
+        if (string.IsNullOrWhiteSpace(responseBody))
+            return string.Empty;
+
+        try
+        {
+            using var document = JsonDocument.Parse(responseBody);
+            if (!document.RootElement.TryGetProperty("errors", out var errors)
+                || errors.ValueKind != JsonValueKind.Object)
+            {
+                return responseBody;
+            }
+
+            var messages = errors.EnumerateObject()
+                .SelectMany(error => error.Value.ValueKind == JsonValueKind.Array
+                    ? error.Value.EnumerateArray()
+                        .Select(message => $"{error.Name}: {message.GetString()}")
+                    : [$"{error.Name}: {error.Value}"])
+                .Where(message => !string.IsNullOrWhiteSpace(message))
+                .ToList();
+
+            return messages.Count > 0
+                ? string.Join(Environment.NewLine, messages)
+                : responseBody;
+        }
+        catch (JsonException)
+        {
+            return responseBody;
+        }
     }
 
     public async Task<ObterMyAnimeDto?> ObterMyAnimePorTituloAsync(string titulo)

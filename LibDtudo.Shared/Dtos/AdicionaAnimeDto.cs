@@ -18,6 +18,7 @@ public class AdicionaAnimeDto
     public string MalUrl { get; set; } = string.Empty;
     public List<string> ImagensUrlMal { get; set; } = new();
     public List<string> SubTitulos { get; set; } = new();
+    public List<int> AnimesRelacionadosIds { get; set; } = new();
     public string? Trailer { get; set; }
     public int MyAnimeID { get; set; }
     public bool Approved { get; set; }

@@ -885,32 +885,6 @@ public partial class FUC_DetalhesAnime : UserControl
         Btn_SalvarComoMyAnime.Enabled = false;
         try
         {
-            var myAnimeExistente = await _apiMyAnimesService.ObterMyAnimePorTituloAsync(tituloMyAnime);
-            if (myAnimeExistente is not null)
-            {
-                var malIdsAtualizados = myAnimeExistente.AnimesMalId
-                    .Concat(malIdsRelacionados)
-                    .Where(malId => malId > 0)
-                    .Distinct()
-                    .ToList();
-
-                if (!malIdsAtualizados.SequenceEqual(myAnimeExistente.AnimesMalId))
-                {
-                    await _apiMyAnimesService.AtualizarMyAnimeAsync(
-                        myAnimeExistente.Id,
-                        new AtualizaMyAnimeDto
-                        {
-                            Titulo = myAnimeExistente.Titulo,
-                            AnimesMalId = malIdsAtualizados
-                        });
-
-                    myAnimeExistente.AnimesMalId = malIdsAtualizados;
-                }
-
-                MostrarMyAnimeExistente(myAnimeExistente);
-                return;
-            }
-
             var dto = new AdicionaMyAnimeDto
             {
                 Titulo = tituloMyAnime,
@@ -918,38 +892,41 @@ public partial class FUC_DetalhesAnime : UserControl
             };
 
             var colecao = await _apiMyAnimesService.GarantirMyAnimeColecaoAsync(dto);
-            if (!colecao.Created)
-            {
-                var colecaoExistente = await _apiMyAnimesService.ObterMyAnimePorIdAsync(colecao.Id);
-                if (colecaoExistente is not null)
-                    MostrarMyAnimeExistente(colecaoExistente);
-                return;
-            }
-
             var myAnimeId = colecao.Id;
 
             var importador = new ImportadorAnimesMyAnimeService(
                 _apiMyAnimesService,
                 myAnimeListApiService: _myAnimeListService);
+            var animesRelacionadosPorMalId = new Dictionary<int, IReadOnlyCollection<int>>
+            {
+                [_animeAtual.MalId] = ObterMalIdsAnimesRelacionados()
+            };
             var importacao = await importador.ImportarAsync(
                 myAnimeId,
                 tituloMyAnime,
-                malIdsRelacionados);
+                malIdsRelacionados,
+                animesRelacionadosPorMalId: animesRelacionadosPorMalId);
 
+            var caminhoLog = ImportadorAnimesMyAnimeService.SalvarLogErros(
+                $"salvar-myanime-{myAnimeId}",
+                importacao.ErrosDetalhados);
             var mensagemSucesso =
                 $"Coleção '{tituloMyAnime}' salva com sucesso em MyAnime.\n\n" +
                 $"Animes salvos: {importacao.AnimesSalvos}\n" +
                 $"Animes já existentes: {importacao.AnimesIgnorados}\n" +
-                $"Animes salvos em modo degradação: {importacao.AnimesSalvosModoDegradacao}";
-            var iconeSucesso = importacao.AnimesComFalha == 0
-                ? MessageBoxIcon.Information
-                : MessageBoxIcon.Warning;
+                $"Animes salvos em modo degradação: {importacao.AnimesSalvosModoDegradacao}\n" +
+                $"Animes com falha: {importacao.AnimesComFalha}";
+
+            if (!string.IsNullOrWhiteSpace(caminhoLog))
+                mensagemSucesso += $"\n\nDetalhes registrados em:\n{caminhoLog}";
+
+            var importacaoCompleta = importacao.AnimesComFalha == 0;
 
             WinAppDtudo.Services.DarkMessageBox.Show(
                 mensagemSucesso,
-                "Sucesso",
+                importacaoCompleta ? "Sucesso" : "Concluído com avisos",
                 MessageBoxButtons.OK,
-                iconeSucesso);
+                importacaoCompleta ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
 
             MyAnimeAtualizado?.Invoke(this, myAnimeId);
         }
@@ -1029,14 +1006,21 @@ public partial class FUC_DetalhesAnime : UserControl
                 return;
             }
 
-            var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(_animeAtual, myAnimeId);
+            var animesRelacionadosIds = ObterMalIdsAnimesRelacionados();
+            var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(
+                _animeAtual,
+                myAnimeId,
+                animesRelacionadosIds);
             var animeExistente = await _apiMyAnimesService.ObterAnimePorMalIdAsync(_animeAtual.MalId);
             if (animeExistente is not null)
             {
                 if (!ConfirmarSubstituicaoAnime())
                     return;
 
-                var atualizaAnime = ConversorAnimeDtoService.CriarAtualizaAnimeDto(_animeAtual, myAnimeId);
+                var atualizaAnime = ConversorAnimeDtoService.CriarAtualizaAnimeDto(
+                    _animeAtual,
+                    myAnimeId,
+                    animesRelacionadosIds);
                 await _apiMyAnimesService.AtualizarAnimeAsync(_animeAtual.MalId, atualizaAnime);
             }
             else
@@ -1236,24 +1220,31 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private string ObterTituloMyAnime(AnimeDetails anime)
     {
-        return !string.IsNullOrWhiteSpace(anime.Title)
+        var titulo = !string.IsNullOrWhiteSpace(anime.Title)
             ? anime.Title
             : !string.IsNullOrWhiteSpace(anime.TitleEnglish)
                 ? anime.TitleEnglish
                 : $"Anime_{anime.MalId}";
+
+        return titulo.Trim();
     }
 
     private List<int> ObterMalIdsRelacionados()
     {
-        var ids = _animesRelacionados
-            .Select(a => a.MalId)
-            .Where(id => id > 0)
-            .ToList();
+        var ids = ObterMalIdsAnimesRelacionados();
 
         if (_animeAtual is not null && _animeAtual.MalId > 0)
             ids.Add(_animeAtual.MalId);
 
         return ids.Distinct().ToList();
+    }
+
+    private List<int> ObterMalIdsAnimesRelacionados()
+    {
+        return _animesRelacionados
+            .Select(a => a.MalId)
+            .Where(id => id > 0)
+            .ToList();
     }
 
     private static int? ExtrairAnoLancamentoPeloAired(string? aired)

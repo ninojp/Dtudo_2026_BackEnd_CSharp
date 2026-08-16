@@ -24,6 +24,7 @@ public class Anime
 
     public List<string> SubTitulos { get; set; } = new();
     public int MyAnimeID { get; set; }
+    public List<int> AnimesRelacionadosIds { get; set; } = new();
     public string? Trailer { get; set; }
     public bool Approved { get; set; }
     public string? Title { get; set; }

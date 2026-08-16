@@ -87,6 +87,7 @@ public class AnimeController(
                 Titulo = animeImportado.Titulo,
                 Episodios = animeImportado.Episodios,
                 MyAnimeID = adicionaAnimeDto?.MyAnimeID ?? 0,
+                AnimesRelacionadosIds = NormalizarAnimesRelacionadosIds(adicionaAnimeDto?.AnimesRelacionadosIds),
                 MalUrl = animeImportado.MalUrl,
                 ImagensUrlMal = animeImportado.ImagensUrlMal,
                 SubTitulos = animeImportado.SubTitulos,
@@ -140,6 +141,7 @@ public class AnimeController(
             Titulo = adicionaAnimeDto.Titulo,
             Episodios = adicionaAnimeDto.Episodios,
             MyAnimeID = adicionaAnimeDto.MyAnimeID,
+            AnimesRelacionadosIds = NormalizarAnimesRelacionadosIds(adicionaAnimeDto.AnimesRelacionadosIds),
             MalUrl = adicionaAnimeDto.MalUrl,
             ImagensUrlMal = adicionaAnimeDto.ImagensUrlMal,
             SubTitulos = adicionaAnimeDto.SubTitulos,
@@ -400,6 +402,7 @@ public class AnimeController(
         anime.Titulo = atualizaAnimeDto.Titulo;
         anime.Episodios = atualizaAnimeDto.Episodios;
         anime.MyAnimeID = atualizaAnimeDto.MyAnimeID;
+        anime.AnimesRelacionadosIds = NormalizarAnimesRelacionadosIds(atualizaAnimeDto.AnimesRelacionadosIds);
         anime.MalUrl = atualizaAnimeDto.MalUrl;
         anime.ImagensUrlMal = atualizaAnimeDto.ImagensUrlMal;
         anime.SubTitulos = atualizaAnimeDto.SubTitulos;
@@ -468,6 +471,7 @@ public class AnimeController(
             Titulo = anime.Titulo,
             Episodios = anime.Episodios,
             MyAnimeID = anime.MyAnimeID,
+            AnimesRelacionadosIds = anime.AnimesRelacionadosIds,
             MalUrl = anime.MalUrl,
             ImagensUrlMal = anime.ImagensUrlMal,
             SubTitulos = anime.SubTitulos,
@@ -510,6 +514,7 @@ public class AnimeController(
         anime.Titulo = animeParaAtualizar.Titulo;
         anime.Episodios = animeParaAtualizar.Episodios;
         anime.MyAnimeID = animeParaAtualizar.MyAnimeID;
+        anime.AnimesRelacionadosIds = NormalizarAnimesRelacionadosIds(animeParaAtualizar.AnimesRelacionadosIds);
         anime.MalUrl = animeParaAtualizar.MalUrl;
         anime.ImagensUrlMal = animeParaAtualizar.ImagensUrlMal;
         anime.SubTitulos = animeParaAtualizar.SubTitulos;
@@ -595,6 +600,7 @@ public class AnimeController(
             Titulo = anime.Titulo,
             Episodios = anime.Episodios,
             MyAnimeID = anime.MyAnimeID,
+            AnimesRelacionadosIds = anime.AnimesRelacionadosIds,
             MalUrl = anime.MalUrl,
             ImagensUrlMal = anime.ImagensUrlMal,
             SubTitulos = anime.SubTitulos,
@@ -635,4 +641,7 @@ public class AnimeController(
 
     private static int? NormalizarEpisodios(int? episodios)
         => episodios is > 0 ? episodios : null;
+
+    private static List<int> NormalizarAnimesRelacionadosIds(IEnumerable<int>? ids)
+        => (ids ?? []).Where(id => id > 0).Distinct().ToList();
 }
