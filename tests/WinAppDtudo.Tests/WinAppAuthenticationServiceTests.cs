@@ -50,6 +50,50 @@ public sealed class WinAppAuthenticationServiceTests
     }
 
     [Fact]
+    public async Task GetAccessTokenRejectsSavedSessionWithoutCatalogWritePermission()
+    {
+        var filePath = Path.Combine(
+            Path.GetTempPath(),
+            "Dtudo2026",
+            "WinAppAuthenticationServiceTests",
+            Guid.NewGuid().ToString("N"),
+            "session.bin");
+        var sessionId = Guid.NewGuid();
+        var store = new ProtectedTokenStore(filePath);
+        await store.SaveAsync(new WinAppTokenSet(
+            TestTokens.SuperAdministratorWithoutCatalogWriteAccessToken,
+            "stale-refresh-token",
+            DateTimeOffset.UtcNow.AddMinutes(5),
+            DateTimeOffset.UtcNow.AddHours(1),
+            sessionId,
+            Guid.NewGuid()));
+
+        try
+        {
+            using var httpClient = new HttpClient(new RefreshHandler(
+                sessionId,
+                TestTokens.SuperAdministratorWithoutCatalogWriteAccessToken));
+            using var service = new WinAppAuthenticationService(
+                store,
+                httpClient: httpClient);
+
+            var exception = await Assert.ThrowsAsync<WinAppAuthenticationException>(
+                () => service.GetAccessTokenAsync());
+
+            Assert.Contains("catalog.write", exception.Message, StringComparison.Ordinal);
+            Assert.False(File.Exists(filePath));
+            Assert.False(service.IsAuthenticated);
+        }
+        finally
+        {
+            if (Directory.Exists(Path.GetDirectoryName(filePath)))
+            {
+                Directory.Delete(Path.GetDirectoryName(filePath)!, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task SignInRefreshesSnakeCaseOAuthResponseAndRebindsAccessToken()
     {
         var filePath = Path.Combine(

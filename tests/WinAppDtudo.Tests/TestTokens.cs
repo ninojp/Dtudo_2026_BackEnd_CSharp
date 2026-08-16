@@ -4,10 +4,17 @@ namespace WinAppDtudo.Tests;
 
 internal static class TestTokens
 {
-    public static string SuperAdministratorAccessToken { get; } = CreateAccessToken("Superadministrador");
-    public static string CommonUserAccessToken { get; } = CreateAccessToken("Usuario do Site");
+    public static string SuperAdministratorAccessToken { get; } = CreateAccessToken(
+        "Superadministrador",
+        ["catalog.write"]);
+    public static string SuperAdministratorWithoutCatalogWriteAccessToken { get; } = CreateAccessToken(
+        "Superadministrador",
+        []);
+    public static string CommonUserAccessToken { get; } = CreateAccessToken(
+        "Usuario do Site",
+        ["catalog.read"]);
 
-    private static string CreateAccessToken(string role)
+    private static string CreateAccessToken(string role, string[] permissions)
     {
         var header = Encode(new { alg = "none", typ = "JWT" });
         var payload = Encode(new
@@ -20,7 +27,8 @@ internal static class TestTokens
                 "urn:dtudo:api-musicx",
                 "urn:dtudo:api-discogs"
             },
-            role
+            role,
+            permission = permissions
         });
 
         return $"{header}.{payload}.test-signature";
