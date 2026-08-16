@@ -8,6 +8,7 @@ namespace WinAppDtudo;
 public partial class Frm_MyAnimes : CustomFormNoBorder
 {
     private const int CloseButtonSize = 24;
+    private readonly WinAppAuthenticationService _authenticationService;
     private readonly ApiMyAnimesService _apiMyAnimesService;
     private readonly AnalizadorDeEstruturas _analizadorDeEstruturas = new();
     private readonly ImportadorAnimesMyAnimeService _importadorAnimesMyAnimeService;
@@ -16,8 +17,11 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     public int _tabIndexApiMyAnimeListPorNome = 0;
     public Frm_MyAnimes(WinAppAuthenticationService? authenticationService = null)
     {
-        _apiMyAnimesService = new ApiMyAnimesService(authenticationService);
-        _importadorAnimesMyAnimeService = new ImportadorAnimesMyAnimeService(_apiMyAnimesService);
+        _authenticationService = authenticationService ?? new WinAppAuthenticationService();
+        _apiMyAnimesService = new ApiMyAnimesService(_authenticationService);
+        _importadorAnimesMyAnimeService = new ImportadorAnimesMyAnimeService(
+            _apiMyAnimesService,
+            authenticationService: _authenticationService);
         InitializeComponent();
         MnI_ApiMyAnimeListBuscarNome.Click += MnI_ApiMyAnimeListBuscarNome_Click;
         MnI_DBLocalBuscarAnime.Click += MnI_DBLocalBuscarAnime_Click;
@@ -54,7 +58,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         _tabIndexApiMyAnimeListPorNome++;
         try
         {
-            var ucBuscaApiMyAnimeList = new FUC_ApiMyAnimeListBuscarNome
+            var ucBuscaApiMyAnimeList = new FUC_ApiMyAnimeListBuscarNome(_authenticationService)
             {
                 Dock = DockStyle.Fill
             };
@@ -354,7 +358,11 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             return;
         }
 
-        var ucDetalhes = new FUC_DetalhesAnime(malId, consultaLocal, _apiMyAnimesService)
+        var ucDetalhes = new FUC_DetalhesAnime(
+            malId,
+            consultaLocal,
+            _apiMyAnimesService,
+            _authenticationService)
         {
             Dock = DockStyle.Fill
         };

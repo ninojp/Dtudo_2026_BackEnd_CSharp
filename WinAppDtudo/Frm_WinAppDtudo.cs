@@ -567,7 +567,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
 
     private void Btn_MyAnimesForm_Click(object sender, EventArgs e)
     {
-        Frm_MyAnimes formMyAnimes = new();
+        Frm_MyAnimes formMyAnimes = new(_identityAuthenticationService);
         formMyAnimes.Show();
     }
 

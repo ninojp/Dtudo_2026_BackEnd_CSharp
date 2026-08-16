@@ -10,11 +10,17 @@ public class ImportadorAnimesMyAnimeService
     private static readonly TimeSpan DelayTentativaApiMyAnimeList = TimeSpan.FromSeconds(2);
 
     private readonly ApiMyAnimesService _apiMyAnimesService;
-    private readonly MyAnimeListApiService _myAnimeListApiService = new();
+    private readonly MyAnimeListApiService _myAnimeListApiService;
 
-    public ImportadorAnimesMyAnimeService(ApiMyAnimesService? apiMyAnimesService = null)
+    public ImportadorAnimesMyAnimeService(
+        ApiMyAnimesService? apiMyAnimesService = null,
+        WinAppAuthenticationService? authenticationService = null,
+        MyAnimeListApiService? myAnimeListApiService = null)
     {
-        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService();
+        var resolvedAuthenticationService = authenticationService ?? new WinAppAuthenticationService();
+        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService(resolvedAuthenticationService);
+        _myAnimeListApiService = myAnimeListApiService
+            ?? new MyAnimeListApiService(resolvedAuthenticationService);
     }
 
     public async Task<ResultadoImportacaoAnimes> ImportarAsync(

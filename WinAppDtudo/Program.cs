@@ -50,8 +50,11 @@ internal static class Program
         StartupDiagnostics.Record(source, exception);
         try
         {
+            var momentoErro = source == "Startup"
+                ? "durante a inicializacao"
+                : "durante a execucao";
             MessageBox.Show(
-                $"O WinAppDtudo encontrou um erro durante a inicializacao.\n\n{exception.Message}\n\nLog: {StartupDiagnostics.LogPath}",
+                $"O WinAppDtudo encontrou um erro {momentoErro}.\n\n{exception.Message}\n\nLog: {StartupDiagnostics.LogPath}",
                 "Erro no WinAppDtudo",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);

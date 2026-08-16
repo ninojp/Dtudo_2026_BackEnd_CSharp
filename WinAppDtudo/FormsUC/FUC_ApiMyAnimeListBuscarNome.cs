@@ -10,7 +10,7 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
 {
     public event EventHandler<int>? AnimeMyAnimeListSelecionado;
 
-    private readonly MyAnimeListApiService _apiService = new();
+    private readonly MyAnimeListApiService _apiService;
     private readonly TextBox _txbBusca;
     private readonly Button _btnBuscar;
     private readonly Label _lblStatus;
@@ -23,8 +23,9 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
     private string _consultaAtual = string.Empty;
     private bool _carregando;
 
-    public FUC_ApiMyAnimeListBuscarNome()
+    public FUC_ApiMyAnimeListBuscarNome(WinAppAuthenticationService? authenticationService = null)
     {
+        _apiService = new MyAnimeListApiService(authenticationService);
         var lblTitulo = new Label
         {
             AutoSize = true,

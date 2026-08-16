@@ -48,7 +48,7 @@ public class ApiMyAnimesService
             request,
             requiresAuthentication: true,
             cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
 
         return await response.Content.ReadFromJsonAsync<EnsureMyAnimeCollectionResponse>(
             _jsonOptions,
@@ -201,7 +201,7 @@ public class ApiMyAnimesService
             dto,
             requiresAuthentication: true,
             cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
     }
 
     public async Task RemoverMyAnimeAsync(int id, CancellationToken cancellationToken = default)
@@ -212,7 +212,7 @@ public class ApiMyAnimesService
             contentFactory: null,
             requiresAuthentication: true,
             cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
     }
 
     public async Task<EnsureAnimeAssociationResponse> AssociarAnimeAoMyAnimeAsync(
@@ -227,7 +227,7 @@ public class ApiMyAnimesService
             request,
             requiresAuthentication: true,
             cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
 
         return await response.Content.ReadFromJsonAsync<EnsureAnimeAssociationResponse>(
             _jsonOptions,
@@ -249,7 +249,7 @@ public class ApiMyAnimesService
             dto,
             requiresAuthentication: true,
             cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
     }
 
     public async Task<ConflitoTituloAnimeDto?> BuscarConflitoDeTituloAsync(
@@ -282,7 +282,7 @@ public class ApiMyAnimesService
             dto,
             requiresAuthentication: true,
             cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
     }
 
     public async Task RemoverAnimeAsync(int malId, CancellationToken cancellationToken = default)
@@ -293,7 +293,7 @@ public class ApiMyAnimesService
             contentFactory: null,
             requiresAuthentication: true,
             cancellationToken);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
     }
 
     public async Task<List<ObterAnimeDto>> ObterAnimesAsync(int skip = 0, int take = 100)
@@ -402,6 +402,24 @@ public class ApiMyAnimesService
         {
             Content = contentFactory?.Invoke()
         };
+    }
+
+    private static async Task EnsureSuccessStatusCodeAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        if (response.IsSuccessStatusCode)
+            return;
+
+        var detail = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (detail.Length > 600)
+            detail = detail[..600];
+
+        var message = string.IsNullOrWhiteSpace(detail)
+            ? $"A ApiMyAnimes retornou {(int)response.StatusCode} ({response.ReasonPhrase})."
+            : $"A ApiMyAnimes retornou {(int)response.StatusCode}: {detail.Trim()}";
+
+        throw new HttpRequestException(message, null, response.StatusCode);
     }
 
     public async Task<ObterMyAnimeDto?> ObterMyAnimePorTituloAsync(string titulo)

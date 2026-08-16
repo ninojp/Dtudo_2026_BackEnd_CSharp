@@ -22,8 +22,9 @@ public partial class FUC_DetalhesAnime : UserControl
     public event EventHandler<int>? MyAnimeSolicitado;
     public event EventHandler<int>? EditarAnimeSolicitado;
 
-    private readonly MyAnimeListApiService _myAnimeListService = new();
+    private readonly MyAnimeListApiService _myAnimeListService;
     private readonly ApiMyAnimesService _apiMyAnimesService;
+    private readonly WinAppAuthenticationService _authenticationService;
     private readonly int _malId;
     private readonly bool _consultaLocal;
     private int _yOffset;
@@ -42,12 +43,15 @@ public partial class FUC_DetalhesAnime : UserControl
     public FUC_DetalhesAnime(
         int malId,
         bool consultaLocal,
-        ApiMyAnimesService? apiMyAnimesService = null)
+        ApiMyAnimesService? apiMyAnimesService = null,
+        WinAppAuthenticationService? authenticationService = null)
     {
         InitializeComponent();
         _malId = malId;
         _consultaLocal = consultaLocal;
-        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService();
+        _authenticationService = authenticationService ?? new WinAppAuthenticationService();
+        _myAnimeListService = new MyAnimeListApiService(_authenticationService);
+        _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService(_authenticationService);
         ConfigurarColunaDeDetalhes();
         Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
         Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
@@ -138,9 +142,22 @@ public partial class FUC_DetalhesAnime : UserControl
             try
             {
                 relacoes = await _myAnimeListService.BuscarRelacoesAsync(_malId);
+                _animesRelacionados = relacoes
+                    .SelectMany(grupo => grupo.Entry ?? [])
+                    .Where(entrada => entrada.MalId > 0)
+                    .ToList();
             }
-            catch
+            catch (Exception ex) when (
+                ex is HttpRequestException
+                or WinAppAuthenticationException
+                or System.Text.Json.JsonException)
             {
+                _animesRelacionados = [];
+                WinAppDtudo.Services.DarkMessageBox.Show(
+                    $"Não foi possível carregar os animes relacionados.\n\nDetalhes: {ex.Message}",
+                    "Relações indisponíveis",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
             }
         }
         else if (anime.MyAnimeID > 0)
@@ -871,6 +888,25 @@ public partial class FUC_DetalhesAnime : UserControl
             var myAnimeExistente = await _apiMyAnimesService.ObterMyAnimePorTituloAsync(tituloMyAnime);
             if (myAnimeExistente is not null)
             {
+                var malIdsAtualizados = myAnimeExistente.AnimesMalId
+                    .Concat(malIdsRelacionados)
+                    .Where(malId => malId > 0)
+                    .Distinct()
+                    .ToList();
+
+                if (!malIdsAtualizados.SequenceEqual(myAnimeExistente.AnimesMalId))
+                {
+                    await _apiMyAnimesService.AtualizarMyAnimeAsync(
+                        myAnimeExistente.Id,
+                        new AtualizaMyAnimeDto
+                        {
+                            Titulo = myAnimeExistente.Titulo,
+                            AnimesMalId = malIdsAtualizados
+                        });
+
+                    myAnimeExistente.AnimesMalId = malIdsAtualizados;
+                }
+
                 MostrarMyAnimeExistente(myAnimeExistente);
                 return;
             }
@@ -892,7 +928,10 @@ public partial class FUC_DetalhesAnime : UserControl
 
             var myAnimeId = colecao.Id;
 
-            var importacao = await new ImportadorAnimesMyAnimeService(_apiMyAnimesService).ImportarAsync(
+            var importador = new ImportadorAnimesMyAnimeService(
+                _apiMyAnimesService,
+                myAnimeListApiService: _myAnimeListService);
+            var importacao = await importador.ImportarAsync(
                 myAnimeId,
                 tituloMyAnime,
                 malIdsRelacionados);
@@ -926,10 +965,26 @@ public partial class FUC_DetalhesAnime : UserControl
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex)
         {
             WinAppDtudo.Services.DarkMessageBox.Show(
-                $"Falha ao salvar em MyAnime.",
+                $"Falha ao salvar em MyAnime.\n\nDetalhes: {ex.Message}",
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        catch (WinAppAuthenticationException ex)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show(
+                $"A sessão administrativa não está disponível.\n\nDetalhes: {ex.Message}",
+                "Autenticação necessária",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+        catch (InvalidOperationException ex)
+        {
+            WinAppDtudo.Services.DarkMessageBox.Show(
+                $"A ApiMyAnimes retornou uma resposta inválida.\n\nDetalhes: {ex.Message}",
                 "Erro",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
