@@ -26,3 +26,9 @@
 
 - No controle de detalhes de anime, exibir os títulos alternativos na ordem: título principal, título em inglês, sinônimos e título japonês; usar uma fonte um pouco maior para o título e alinhar os títulos secundários à linha superior da imagem de capa.
 - Manter os três itens de estatísticas (ano, tipo e score) centralizados na mesma linha, seguidos verticalmente por episódios, duração, gêneros e pelo botão Exibir MyAnime; o layout deve ser dinâmico porque apenas gêneros têm altura variável.
+
+## Agent Integration Workflow
+
+- Ao concluir uma tarefa com alterações neste repositório, validar o resultado, criar o commit e mesclar automaticamente a branch do agente na pasta principal do repositório.
+- Preservar alterações locais não relacionadas na pasta principal; não executar `reset`, `checkout` destrutivo, force push ou sobrescrita de arquivos do usuário.
+- Se houver conflito de merge ou alterações locais sobrepostas que possam ser sobrescritas, interromper o processo e pedir orientação antes de continuar.
