@@ -346,6 +346,18 @@
         <member name="M:ApiMyAnimes.Migrations.AnimesRelacionadosIds.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:ApiMyAnimes.Migrations.DesativarCacheIdentityMyAnimes">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.DesativarCacheIdentityMyAnimes.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.DesativarCacheIdentityMyAnimes.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ApiMyAnimes.Migrations.DesativarCacheIdentityMyAnimes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:ApiMyAnimes.Services.AnimeBuscaLocalService">
             <summary>
             Executa a busca local de animes com prioridade para colecoes MyAnime.

@@ -29,10 +29,8 @@ O ponto central é o projeto WinAppDtudo, que é o aplicativo desktop que manipu
 -------------------------------------------------------------------------------------------------------------------------------------
 
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca de Animes - DB_Local, ApiMyAnimes", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimes é chamada, e retorna os resultados (Cards) da busca.
-Após clicar em um Card, e abrirmos a aba "Detalhes do Anime" (vindos da ApiMyAnimes), dentro desta aba temos o botão "Exibir MyAnime" que ao ser clicado, abre uma nova aba "MyAnime Detalhes", que são os detalhes da coleção MyAnime e a lista de TODOS os animes relacionados entre si (vindos da ApiMyAnimes, MyAnime).  
-Nesta aba "MyAnime Detalhes", temos o botão "Exportar para ApiFileStore", que ao ser clicado, DEVERIA 
-
+Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca Externa - ApiMyAnimeList, ApiMyAnimeList", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimeList é chamada, e retorna os resultados (Cards) da busca.
+Após clicar em um Card, e abrirmos a aba "Detalhes do Anime", dentro desta aba temos o botão "Salvar Como MyAnime" que ao ser clicado, Salva o anime atual como um MyAnime (coleção) no banco de dados local, ApiMyAnimes.  
 
 
 ===================================================================================================
