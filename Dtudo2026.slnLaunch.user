@@ -7,6 +7,10 @@
         "Action": "Start"
       },
       {
+        "Path": "ApiFileStorage\\ApiFileStorage.csproj",
+        "Action": "Start"
+      },
+      {
         "Path": "ApiMyAnimes\\ApiMyAnimes.csproj",
         "Action": "Start"
       },

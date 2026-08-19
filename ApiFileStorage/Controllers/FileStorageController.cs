@@ -18,6 +18,17 @@ public sealed class FileStorageController(
     IFileStorageStepUpValidator stepUpValidator,
     IOptions<FileStorageOptions> options) : ControllerBase
 {
+    [HttpGet("export/destinations")]
+    public ActionResult<IReadOnlyList<StorageExportDestinationResponse>> GetExportDestinations()
+    {
+        var destinations = commandService.GetExportDestinations()
+            .Select(destination => new StorageExportDestinationResponse(
+                destination.Id,
+                destination.DisplayName))
+            .ToArray();
+        return Ok(destinations);
+    }
+
     [HttpPost("export/plan")]
     public ActionResult<PrepareStorageExportResponse> PrepareExport(
         [FromBody] PrepareStorageExportRequest? request)
@@ -31,7 +42,15 @@ public sealed class FileStorageController(
         {
             var result = commandService.PrepareExport(new PrepareStorageExportCommand(
                 request.MyAnimeId,
-                request.MalIds ?? []));
+                request.MyAnimeTitle,
+                request.Animes?
+                    .Select(anime => new PrepareStorageExportAnime(
+                        anime.MalId,
+                        anime.Year,
+                        anime.Title,
+                        anime.Type))
+                    .ToArray() ?? [],
+                request.DestinationId));
             return Ok(new PrepareStorageExportResponse(
                 result.MyAnimeId,
                 result.Items

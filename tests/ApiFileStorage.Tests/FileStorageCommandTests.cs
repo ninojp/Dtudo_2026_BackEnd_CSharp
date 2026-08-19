@@ -59,6 +59,89 @@ public sealed class FileStorageCommandTests : IDisposable
     }
 
     [Fact]
+    public void PrepareExport_BuildsNamedCollectionAndAnimeFoldersInsideConfiguredRoot()
+    {
+        var rootCatalog = new StorageRootCatalog(Options.Create(_options));
+        var service = new FileStorageCommandService(rootCatalog, Options.Create(_options));
+
+        var result = service.PrepareExport(new PrepareStorageExportCommand(
+            7,
+            "Dragon Ball: Saga",
+            [
+                new PrepareStorageExportAnime(1535, 1986, "Dragon Ball", "TV"),
+                new PrepareStorageExportAnime(223, 1996, "Dragon Ball Z", "Filme")
+            ]));
+
+        Assert.Equal(
+            [
+                "my-animes/Dragon Ball Saga/1986 Dragon Ball - TV/1535.jpg",
+                "my-animes/Dragon Ball Saga/1996 Dragon Ball Z - Filme/223.jpg"
+            ],
+            result.Items.Select(item => StorageObjectId.Decode(item.ObjectId).RelativePath));
+    }
+
+    [Fact]
+    public void PrepareExport_UsesSelectedConfiguredDestinationWithoutExposingPhysicalPath()
+    {
+        _options.ExportDestinations =
+        [
+            new FileStorageExportDestinationOptions
+            {
+                Id = "principal",
+                DisplayName = "Biblioteca principal",
+                RootId = "media",
+                PathPrefix = "my-animes"
+            },
+            new FileStorageExportDestinationOptions
+            {
+                Id = "arquivo",
+                DisplayName = "Arquivo de colecoes",
+                RootId = "media",
+                PathPrefix = "arquivo"
+            }
+        ];
+        var rootCatalog = new StorageRootCatalog(Options.Create(_options));
+        var service = new FileStorageCommandService(rootCatalog, Options.Create(_options));
+
+        var destinations = service.GetExportDestinations();
+        var result = service.PrepareExport(new PrepareStorageExportCommand(
+            7,
+            "Colecao",
+            [new PrepareStorageExportAnime(42, 2026, "Anime", "TV")],
+            "arquivo"));
+        var objectId = Assert.Single(result.Items).ObjectId;
+        var logicalObject = StorageObjectId.Decode(objectId);
+
+        Assert.Equal(["principal", "arquivo"], destinations.Select(destination => destination.Id));
+        Assert.Equal("media", logicalObject.RootId);
+        Assert.Equal("arquivo/Colecao/2026 Anime - TV/42.jpg", logicalObject.RelativePath);
+        Assert.DoesNotContain(_temporaryDirectory, objectId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void PrepareExport_AllowsCollectionLargerThanBulkDeleteLimit()
+    {
+        _options.Limits.MaxBulkDeleteItems = 2;
+        _options.Limits.MaxExportItems = 20;
+        var rootCatalog = new StorageRootCatalog(Options.Create(_options));
+        var service = new FileStorageCommandService(rootCatalog, Options.Create(_options));
+        var animes = Enumerable.Range(1, 11)
+            .Select(malId => new PrepareStorageExportAnime(
+                malId,
+                2000 + malId,
+                $"Anime {malId}",
+                "TV"))
+            .ToArray();
+
+        var result = service.PrepareExport(new PrepareStorageExportCommand(
+            7,
+            "Colecao completa",
+            animes));
+
+        Assert.Equal(11, result.Items.Count);
+    }
+
+    [Fact]
     public async Task BulkDelete_RequiresStepUpAndUsesTrashLifecycle()
     {
         var objectId = StorageObjectId.Create("media", "my-animes/7/42.jpg");
@@ -175,6 +258,8 @@ public sealed class FileStorageCommandTests : IDisposable
 
     private sealed class FakeCommandService : IFileStorageCommandService
     {
+        public IReadOnlyList<StorageExportDestination> GetExportDestinations() => [];
+
         public PrepareStorageExportResult PrepareExport(PrepareStorageExportCommand command) =>
             new(command.MyAnimeId, []);
     }

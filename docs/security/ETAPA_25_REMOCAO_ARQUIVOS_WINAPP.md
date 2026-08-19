@@ -70,6 +70,22 @@ Concluida no Development local em 2026-08-07. A Etapa 26 nao foi iniciada.
 - A analise da pasta escolhida pelo operador e a escrita de `LogsImportacao`
   permanecem locais por decisao da Etapa 23; nao sao a raiz protegida de midia.
 
+## Atualizacao funcional de 2026-08-16
+
+- O plano de exportacao passou a receber, alem dos IDs, titulo da colecao e
+  metadados de exibicao dos animes. Esses valores nunca sao tratados como
+  caminho livre: a API sanitiza cada segmento e deriva a hierarquia fixa
+  `<MyAnime>/<ano> <titulo> - <tipo>/<MalId>.jpg`.
+- Destinos de exportacao sao perfis configurados no servidor. O WinApp lista e
+  seleciona somente `DestinationId` e nome de exibicao; raiz fisica e prefixo
+  continuam exclusivos da ApiFileStorage.
+- A chave idempotente inclui um hash do `ObjectId`, evitando colisao ao exportar
+  a mesma colecao para destinos autorizados diferentes.
+- O limite de exportacao foi separado do limite menor de exclusao em massa para
+  permitir todas as entradas relacionadas sem ampliar o lote destrutivo.
+- A configuracao e exemplos para adicionar destinos estao em
+  `ApiFileStorage/README.md`.
+
 ## Rollback
 
 Parar a `ApiFileStorage`, preservar diarios de quarentena/lixeira e restaurar

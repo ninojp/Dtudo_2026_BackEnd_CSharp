@@ -8,7 +8,7 @@ namespace WinAppDtudo.Tests;
 public sealed class FileStorageApiClientTests
 {
     [Fact]
-    public async Task PrepareExportSendsOnlyIdsWithAuthenticatedSessionContext()
+    public async Task PrepareExportSendsCatalogMetadataWithoutPaths()
     {
         var handler = new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -27,7 +27,11 @@ public sealed class FileStorageApiClientTests
             using (authenticationService)
             {
                 var client = new FileStorageApiClient(authenticationService, storageHttpClient);
-                var result = await client.PrepareExportAsync(7, [42]);
+                var result = await client.PrepareExportAsync(
+                    7,
+                    "Colecao",
+                    [new WinAppStorageExportAnime(42, 1986, "Anime 42", "TV")],
+                    "my-animes");
 
                 Assert.Equal(7, result.MyAnimeId);
             }
@@ -39,8 +43,47 @@ public sealed class FileStorageApiClientTests
             Assert.True(Guid.TryParse(handler.SessionId, out _));
             Assert.True(Guid.TryParse(handler.DeviceId, out _));
             Assert.Contains("42", handler.Body ?? string.Empty, StringComparison.Ordinal);
+            Assert.Contains("Colecao", handler.Body ?? string.Empty, StringComparison.Ordinal);
+            Assert.Contains("Anime 42", handler.Body ?? string.Empty, StringComparison.Ordinal);
+            Assert.Contains("my-animes", handler.Body ?? string.Empty, StringComparison.Ordinal);
             Assert.DoesNotContain("ConnectionStrings", handler.Body ?? string.Empty, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("C:\\", handler.Body ?? string.Empty, StringComparison.Ordinal);
+        }
+        finally
+        {
+            DeleteTemporaryDirectory(temporaryDirectory);
+        }
+    }
+
+    [Fact]
+    public async Task GetExportDestinationsUsesAuthenticatedSessionContext()
+    {
+        var handler = new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = JsonContent.Create(
+                new[] { new WinAppStorageExportDestination("my-animes", "Pasta MyAnimes") })
+        });
+        using var storageHttpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://file-storage.test/")
+        };
+        var (authenticationService, temporaryDirectory) = await CreateAuthenticationServiceAsync();
+
+        try
+        {
+            using (authenticationService)
+            {
+                var client = new FileStorageApiClient(authenticationService, storageHttpClient);
+                var destinations = await client.GetExportDestinationsAsync();
+
+                Assert.Equal("my-animes", Assert.Single(destinations).Id);
+            }
+
+            Assert.Equal(HttpMethod.Get, handler.Method);
+            Assert.Equal("/api/file-storage/export/destinations", handler.RequestUri?.AbsolutePath);
+            Assert.Equal("Bearer", handler.AuthorizationScheme);
+            Assert.True(Guid.TryParse(handler.SessionId, out _));
+            Assert.True(Guid.TryParse(handler.DeviceId, out _));
         }
         finally
         {

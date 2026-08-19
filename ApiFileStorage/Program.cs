@@ -37,6 +37,7 @@ builder.Services.AddOptions<FileStorageOptions>()
     .Validate(options => options.Limits is not null
         && options.Limits.MaxFileSizeBytes > 0
         && options.Limits.MaxFileSizeBytes <= int.MaxValue
+        && options.Limits.MaxExportItems is > 0 and <= 5000
         && options.Limits.MaxFileNameLength is > 0 and <= 255
         && options.Limits.MinimumFreeSpaceBytes >= 0
         && options.Limits.MaxIdempotencyKeyLength > 0

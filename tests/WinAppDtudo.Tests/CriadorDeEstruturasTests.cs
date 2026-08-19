@@ -19,13 +19,17 @@ public sealed class CriadorDeEstruturasTests
                 new ObterAnimeDto { MalId = 42, Titulo = "Anime 42" },
                 new ObterAnimeDto { MalId = 12, Titulo = "Anime 12" }
             ],
-            progress);
+            progress,
+            "my-animes");
 
         Assert.Equal(2, result.TotalPastasCriadas);
         Assert.Equal(2, result.TotalImagensSalvas);
         Assert.Empty(result.Erros);
+        Assert.Equal("Colecao", storage.PreparedMyAnimeTitle);
+        Assert.Equal("my-animes", storage.PreparedDestinationId);
         Assert.Equal([12, 42], storage.PreparedMalIds);
         Assert.Equal([12, 42], storage.Uploads.Select(upload => upload.MalId));
+        Assert.Equal(2, storage.Uploads.Select(upload => upload.IdempotencyKey).Distinct().Count());
         Assert.All(storage.Uploads, upload =>
         {
             Assert.StartsWith("v1.", upload.ObjectId, StringComparison.Ordinal);
@@ -41,19 +45,32 @@ public sealed class CriadorDeEstruturasTests
     {
         public List<int> PreparedMalIds { get; } = [];
 
+        public string? PreparedMyAnimeTitle { get; private set; }
+
+        public string? PreparedDestinationId { get; private set; }
+
         public List<Upload> Uploads { get; } = [];
+
+        public Task<IReadOnlyList<WinAppStorageExportDestination>> GetExportDestinationsAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<WinAppStorageExportDestination>>(
+                [new WinAppStorageExportDestination("my-animes", "MyAnimes")]);
 
         public Task<WinAppStorageExportPlan> PrepareExportAsync(
             int myAnimeId,
-            IReadOnlyCollection<int> malIds,
+            string myAnimeTitle,
+            IReadOnlyCollection<WinAppStorageExportAnime> animes,
+            string? destinationId = null,
             CancellationToken cancellationToken = default)
         {
-            PreparedMalIds.AddRange(malIds);
+            PreparedMyAnimeTitle = myAnimeTitle;
+            PreparedDestinationId = destinationId;
+            PreparedMalIds.AddRange(animes.Select(anime => anime.MalId));
             return Task.FromResult(new WinAppStorageExportPlan(
                 myAnimeId,
-                malIds.Select(malId => new WinAppStorageExportPlanItem(
-                    malId,
-                    $"v1.logical-{malId}"))
+                animes.Select(anime => new WinAppStorageExportPlanItem(
+                    anime.MalId,
+                    $"v1.logical-{anime.MalId}"))
                     .ToArray()));
         }
 
@@ -69,7 +86,8 @@ public sealed class CriadorDeEstruturasTests
                 int.Parse(Path.GetFileNameWithoutExtension(fileName)),
                 objectId,
                 contentType,
-                content.ToArray()));
+                content.ToArray(),
+                idempotencyKey));
             return Task.FromResult(new WinAppStorageImportResult(
                 objectId,
                 new string('a', 64),
@@ -93,7 +111,12 @@ public sealed class CriadorDeEstruturasTests
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public sealed record Upload(int MalId, string ObjectId, string ContentType, byte[] Content);
+        public sealed record Upload(
+            int MalId,
+            string ObjectId,
+            string ContentType,
+            byte[] Content,
+            string IdempotencyKey);
     }
 
     private sealed class FakeCoverDownloader : IAnimeCoverDownloader

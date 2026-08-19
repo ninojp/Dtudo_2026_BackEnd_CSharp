@@ -5,6 +5,16 @@ namespace WinAppDtudo.Services;
 
 public sealed record WinAppStorageExportPlanItem(int MalId, string ObjectId);
 
+public sealed record WinAppStorageExportAnime(
+    int MalId,
+    int? Year,
+    string? Title,
+    string? Type);
+
+public sealed record WinAppStorageExportDestination(
+    string Id,
+    string DisplayName);
+
 public sealed record WinAppStorageExportPlan(
     int MyAnimeId,
     IReadOnlyList<WinAppStorageExportPlanItem> Items);
@@ -41,9 +51,14 @@ public sealed record WinAppStepUpGrant(Guid GrantId, DateTimeOffset ExpiresAtUtc
 
 public interface IFileStorageApiClient
 {
+    Task<IReadOnlyList<WinAppStorageExportDestination>> GetExportDestinationsAsync(
+        CancellationToken cancellationToken = default);
+
     Task<WinAppStorageExportPlan> PrepareExportAsync(
         int myAnimeId,
-        IReadOnlyCollection<int> malIds,
+        string myAnimeTitle,
+        IReadOnlyCollection<WinAppStorageExportAnime> animes,
+        string? destinationId = null,
         CancellationToken cancellationToken = default);
 
     Task<WinAppStorageImportResult> ImportAsync(
@@ -101,16 +116,49 @@ public sealed class FileStorageApiClient : IFileStorageApiClient
                 : null);
     }
 
+    public async Task<IReadOnlyList<WinAppStorageExportDestination>> GetExportDestinationsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureStorageReadyAsync(cancellationToken);
+        using var response = await _authenticationService.SendAuthenticatedAsync(
+            _storageHttpClient,
+            _ =>
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "api/file-storage/export/destinations");
+                AddSessionHeaders(request);
+                return request;
+            },
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<WinAppStorageExportDestination[]>(
+                JsonOptions,
+                cancellationToken)
+            ?? throw new InvalidOperationException(
+                "A ApiFileStorage retornou uma lista de destinos vazia.");
+    }
+
     public async Task<WinAppStorageExportPlan> PrepareExportAsync(
         int myAnimeId,
-        IReadOnlyCollection<int> malIds,
+        string myAnimeTitle,
+        IReadOnlyCollection<WinAppStorageExportAnime> animes,
+        string? destinationId = null,
         CancellationToken cancellationToken = default)
     {
         await EnsureStorageReadyAsync(cancellationToken);
         var payload = new
         {
             MyAnimeId = myAnimeId,
-            MalIds = malIds.Distinct().OrderBy(malId => malId).ToArray()
+            MyAnimeTitle = myAnimeTitle,
+            DestinationId = destinationId,
+            Animes = animes
+                .GroupBy(anime => anime.MalId)
+                .Select(group => group.First())
+                .OrderBy(anime => anime.Year ?? int.MaxValue)
+                .ThenBy(anime => anime.Title, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(anime => anime.MalId)
+                .ToArray()
         };
         using var response = await SendJsonAsync(
             _storageHttpClient,

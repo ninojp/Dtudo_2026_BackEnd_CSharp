@@ -2,8 +2,6 @@
 
 Abaixo vou descrever minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "Dtudo2026" e seus projetos internos relacionados
 
-O projeto ApiNode (deve ser ignorado) está sendo gradativamente sendo substituído pelos projetos ApiMyAnimes e ApiMyAnimeList.
-
 Projeto LibDtudo.Shared - Biblioteca para compartilhar Dtos, Modelos, Utils... entre os projetos dentro da solução Dtudo2026.
 
 Projeto ApiMyAnimes - Api Local MyAnimes (CRUD completo, documentada com Swagger) - <https://localhost:63980>
@@ -25,21 +23,22 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 Projeto ApiDiscogs - Api para consulta externa de informações sobre músicas, artistas e álbuns.
 Projeto ApiMyMusicX - Api para gestão do Banco de dados local de músicas, artistas e álbuns. (CRUD completo, documentada com Swagger).
 
-Minha solução (conjunto de projetos) atualmente é projeto pessoal e que roda 100% local, mas futuramente será disponibilizada para uso externo (internet), via site DtudoSite (deve apenas acessar as informações do banco de dados, via ApiMyAnimes).
+Minha solução (conjunto de projetos) atualmente é projeto pessoal e que roda 100% local, mas futuramente (após o termino do básico, atual 50%) será disponibilizada para uso externo (internet), via site DtudoSite (deve apenas acessar as informações do banco de dados, via ApiMyAnimes).
 O ponto central é o projeto WinAppDtudo, que é o aplicativo desktop que manipula, faz consultas externas e DEVE CONTROLAR o Banco de dados local e arquivos em disco local.
 
 -------------------------------------------------------------------------------------------------------------------------------------
 
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Após logar no App, e acessar a Form MyAnimes, na aba "Busca externa - ApiMyAnimeList", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimeList é chamada, que por sua vez chama a Api externa MyAnimeList, que retorna os resultados (Cards) da busca.
-Após clicar em um Card, e abrirmos a aba "Detalhes do Anime" (vindos da ApiMyAnimeList), dentro desta aba temos o botão "Salvar Anime" que ao ser clicado, deve salvar o anime no banco de dados local (ApiMyAnimes).  
-Agora, ao salvar o anime no banco de dados local, quero que seja salvo também os Mal_ids dos animes relacionados AO ANIME EM EXIBIÇÃO ATUAL (Mal_id de cada anime) que estão sendo exibidos na aba "Detalhes do Anime" (na lista de animes relacionados).
-Me pergunte qualquer coisa que precisar para executar o que pedi, Criar um novo campo na tabela animes (AnimesRelacionadosIds) para armazenar os Mal_ids dos animes relacionados.
-LEMBRANDO que o botão "Salvar Como MyAnime" (que salva o anime no banco de dados local) deve salvar também os Mal_ids dos animes relacionados ao anime que está sendo exibido na aba "Detalhes do Anime" (e não confundir com TODOS os animes relacionados DA COLEÇÃO MYANIME).
+Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca de Animes - DB_Local, ApiMyAnimes", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimes é chamada, e retorna os resultados (Cards) da busca.
+Após clicar em um Card, e abrirmos a aba "Detalhes do Anime" (vindos da ApiMyAnimes), dentro desta aba temos o botão "Exibir MyAnime" que ao ser clicado, abre uma nova aba "MyAnime Detalhes", que são os detalhes da coleção MyAnime e a lista de TODOS os animes relacionados entre si (vindos da ApiMyAnimes, MyAnime).  
+Nesta aba "MyAnime Detalhes", temos o botão "Exportar para ApiFileStore", que ao ser clicado, DEVERIA 
+
+
 
 ===================================================================================================
-`eumemosem@nadaSENHAatual123@)NinoJPDtudoDev!2026LfZDp9ftZLgbpd1f`
 Documentação official da api MyAnimeList:  <https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters>  
+C:\Users\comer\AppData\Local\Dtudo2026\ApiFileStorage\media\my-animes
+eumemosem@nadaSENHAatual123@)NinoJPDtudoDev!2026LfZDp9ftZLgbpd1f
 
 09/07/2026 NUMEROS DEPOIS DE POPULAR O DB LOCAL
 SQL Server, new query:

@@ -54,10 +54,8 @@ C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\runtimes\win-arm64\native\WebView2Loader.dll
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Core.dll
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.WinForms.dll
-C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Wpf.dll
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Core.xml
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.WinForms.xml
-C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Microsoft.Web.WebView2.Wpf.xml
 C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\Serilog.dll
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppRelease-out\runtimes\win-x86\native\WebView2Loader.dll
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppRelease-out\runtimes\win-x64\native\WebView2Loader.dll
@@ -86,3 +84,4 @@ C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppRelease-final\WinAppDtudo.deps
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppRelease-final\WinAppDtudo.runtimeconfig.json
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppRelease-final\WinAppDtudo.dll
 C:\Users\comer\AppData\Local\Temp\Dtudo2026-WinAppRelease-final\WinAppDtudo.pdb
+C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\bin\Release\net10.0-windows10.0.26100.0\WinAppDtudo.exe

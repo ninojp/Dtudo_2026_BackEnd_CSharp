@@ -562,6 +562,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         _healthNotificationService.Dispose();
         _healthMonitoringService.Dispose();
         _dtudoSiteStartupService.Dispose();
+        _apiFileStorageStartupService.Dispose();
         _identityAuthenticationService.Dispose();
     }
 

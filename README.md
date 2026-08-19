@@ -42,6 +42,20 @@ Health checks locais:
 - `GET https://localhost:7146/ApiMyAnimeList/health`
 - `GET https://localhost:51376/health/live` (gateway catalog-only)
 
+## Inicializacao pelo Visual Studio
+
+O perfil de varios projetos `IniciaTudo`, definido em `Dtudo2026.slnLaunch.user`, inicia o conjunto necessario para login, consulta local de animes, capas e exportacao segura:
+
+- `ApiIdentity`
+- `ApiMyAnimes`
+- `ApiMyAnimeList`
+- `ApiFileStorage`
+- `WinAppDtudo`
+
+`LibDtudo.Shared` e uma biblioteca referenciada e nao deve ser iniciada. Para trabalhar no fluxo de musicas, inicie tambem `ApiMusicX` e `ApiDiscogs`. `DtudoGateway` e `DtudoSite` sao necessarios somente para o site e podem ser iniciados quando esse fluxo for usado.
+
+A ApiFileStorage deve ser iniciada pelo perfil durante a depuracao. Se o WinApp precisar inicia-la como fallback, ele passa a encerrar somente o processo que ele proprio criou ao fechar, evitando que um binario Debug antigo continue bloqueado.
+
 ## Segredos Locais
 
 O `ClientId` da MyAnimeList nao fica versionado. Configure com user-secrets:

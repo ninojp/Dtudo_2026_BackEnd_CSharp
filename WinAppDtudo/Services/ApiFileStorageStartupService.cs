@@ -1,16 +1,23 @@
 using System.Diagnostics;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace WinAppDtudo.Services;
 
-public sealed class ApiFileStorageStartupService
+public sealed class ApiFileStorageStartupService : IDisposable
 {
+    private const int RequiredContractVersion = 2;
     private static readonly SemaphoreSlim StartupGate = new(1, 1);
     private static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(1);
+    private readonly object _processSync = new();
+    private Process? _startedProcess;
+    private bool _disposed;
 
     public async Task EnsureReadyAsync(CancellationToken cancellationToken = default)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         var configuredUrl = AppConfigurationService.ApiFileStorageBaseUrl.TrimEnd('/') + "/";
         if (!Uri.TryCreate(configuredUrl, UriKind.Absolute, out var baseUri)
             || baseUri.Scheme is not ("https" or "http"))
@@ -19,7 +26,7 @@ public sealed class ApiFileStorageStartupService
                 "A URL local do ApiFileStorage nao esta configurada corretamente.");
         }
 
-        if (await IsReachableAsync(baseUri, cancellationToken))
+        if (await HasRequiredContractAsync(baseUri, cancellationToken))
         {
             return;
         }
@@ -27,7 +34,7 @@ public sealed class ApiFileStorageStartupService
         await StartupGate.WaitAsync(cancellationToken);
         try
         {
-            if (await IsReachableAsync(baseUri, cancellationToken))
+            if (await HasRequiredContractAsync(baseUri, cancellationToken))
             {
                 return;
             }
@@ -36,7 +43,7 @@ public sealed class ApiFileStorageStartupService
             if (!existingProcess)
             {
                 await Task.Delay(PollInterval, cancellationToken);
-                if (await IsReachableAsync(baseUri, cancellationToken))
+                if (await HasRequiredContractAsync(baseUri, cancellationToken))
                 {
                     return;
                 }
@@ -53,7 +60,7 @@ public sealed class ApiFileStorageStartupService
             while (DateTimeOffset.UtcNow < deadline)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (await IsReachableAsync(baseUri, cancellationToken))
+                if (await HasRequiredContractAsync(baseUri, cancellationToken))
                 {
                     return;
                 }
@@ -61,8 +68,9 @@ public sealed class ApiFileStorageStartupService
                 await Task.Delay(PollInterval, cancellationToken);
             }
             throw new WinAppAuthenticationException(
-                $"O ApiFileStorage nao ficou disponivel em {baseUri}. " +
-                "Verifique FileStorage:Roots no User Secrets de Development.");
+                $"A ApiFileStorage em {baseUri} nao disponibilizou o contrato de inicializacao " +
+                $"v{RequiredContractVersion}. Encerre instancias antigas da ApiFileStorage, " +
+                "inicie novamente pelo perfil IniciaTudo e verifique FileStorage:Roots.");
         }
         finally
         {
@@ -95,7 +103,7 @@ public sealed class ApiFileStorageStartupService
         return false;
     }
 
-    private static async Task<bool> IsReachableAsync(
+    private static async Task<bool> HasRequiredContractAsync(
         Uri baseUri,
         CancellationToken cancellationToken)
     {
@@ -108,10 +116,19 @@ public sealed class ApiFileStorageStartupService
         try
         {
             using var response = await client.GetAsync(
-                baseUri,
+                new Uri(baseUri, "api/file-storage/startup"),
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken);
-            return (int)response.StatusCode < 500;
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            var startup = await response.Content.ReadFromJsonAsync<FileStorageStartupProbe>(
+                cancellationToken: cancellationToken);
+            return startup is not null
+                && string.Equals(startup.Service, "ApiFileStorage", StringComparison.Ordinal)
+                && startup.ContractVersion == RequiredContractVersion;
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -121,9 +138,13 @@ public sealed class ApiFileStorageStartupService
         {
             return false;
         }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
-    private static void StartApiFileStorage(Uri baseUri)
+    private void StartApiFileStorage(Uri baseUri)
     {
         var solutionRoot = FindSolutionRoot();
         var projectPath = solutionRoot is null
@@ -153,10 +174,23 @@ public sealed class ApiFileStorageStartupService
             startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
             startInfo.Environment["DOTNET_ENVIRONMENT"] = "Development";
 
-            if (Process.Start(startInfo) is null)
+            var process = Process.Start(startInfo);
+            if (process is null)
             {
                 throw new WinAppAuthenticationException(
                     "Nao foi possivel iniciar o processo local do ApiFileStorage.");
+            }
+
+            lock (_processSync)
+            {
+                if (_disposed)
+                {
+                    process.Kill(entireProcessTree: true);
+                    process.Dispose();
+                    throw new ObjectDisposedException(nameof(ApiFileStorageStartupService));
+                }
+
+                _startedProcess = process;
             }
         }
         catch (WinAppAuthenticationException)
@@ -187,4 +221,47 @@ public sealed class ApiFileStorageStartupService
 
         return null;
     }
+
+    public void Dispose()
+    {
+        Process? process;
+        lock (_processSync)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            process = _startedProcess;
+            _startedProcess = null;
+        }
+
+        if (process is null)
+        {
+            return;
+        }
+
+        using (process)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                    process.WaitForExit(5000);
+                }
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+            }
+        }
+    }
+
+    private sealed record FileStorageStartupProbe(
+        string Service,
+        int ContractVersion);
 }

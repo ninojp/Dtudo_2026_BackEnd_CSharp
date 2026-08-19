@@ -9,6 +9,7 @@ namespace ApiFileStorage.Tests;
 public sealed class FileStorageLifecycleTests : IDisposable
 {
     private readonly string _temporaryDirectory;
+    private readonly FileStorageOptions _options;
     private readonly StorageRootCatalog _rootCatalog;
     private readonly SecureStoragePathResolver _pathResolver;
     private readonly FakeScanner _scanner = new();
@@ -19,7 +20,7 @@ public sealed class FileStorageLifecycleTests : IDisposable
     {
         _temporaryDirectory = Path.Combine(Path.GetTempPath(), "DtudoFileStorageLifecycleTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_temporaryDirectory);
-        var options = new FileStorageOptions
+        _options = new FileStorageOptions
         {
             Roots =
             [
@@ -44,17 +45,52 @@ public sealed class FileStorageLifecycleTests : IDisposable
                     Extension = ".png",
                     MimeType = "image/png",
                     MagicBytesHex = "89504E470D0A1A0A"
+                },
+                new AllowedStorageFileTypeOptions
+                {
+                    Extension = ".jpg",
+                    MimeType = "image/jpeg",
+                    MagicBytesHex = "FFD8FF"
                 }
             ]
         };
-        _rootCatalog = new StorageRootCatalog(Options.Create(options));
+        _rootCatalog = new StorageRootCatalog(Options.Create(_options));
         _pathResolver = new SecureStoragePathResolver(_rootCatalog);
         _service = new FileStorageLifecycleService(
             _pathResolver,
             _rootCatalog,
-            Options.Create(options),
+            Options.Create(_options),
             _scanner,
             _spaceChecker);
+    }
+
+    [Fact]
+    public async Task NamedMyAnimeExportPlan_IsPromotedToExpectedPhysicalHierarchy()
+    {
+        var commandService = new FileStorageCommandService(
+            _rootCatalog,
+            Options.Create(_options));
+        var plan = commandService.PrepareExport(new PrepareStorageExportCommand(
+            7,
+            "Dragon Ball",
+            [new PrepareStorageExportAnime(1535, 1986, "Dragon Ball", "TV")]));
+        var item = Assert.Single(plan.Items);
+
+        await ImportAsync(
+            item.ObjectId,
+            "1535.jpg",
+            ValidJpeg(),
+            "named-my-anime-export",
+            "image/jpeg");
+
+        var expectedPath = Path.Combine(
+            _temporaryDirectory,
+            "my-animes",
+            "Dragon Ball",
+            "1986 Dragon Ball - TV",
+            "1535.jpg");
+        Assert.True(File.Exists(expectedPath));
+        Assert.Equal(ValidJpeg(), await File.ReadAllBytesAsync(expectedPath));
     }
 
     [Fact]
@@ -235,17 +271,21 @@ public sealed class FileStorageLifecycleTests : IDisposable
         string objectId,
         string fileName,
         byte[] content,
-        string idempotencyKey)
+        string idempotencyKey,
+        string contentType = "image/png")
         => await _service.ImportAsync(new ImportStorageFileCommand(
             objectId,
             fileName,
-            "image/png",
+            contentType,
             content.Length,
             new MemoryStream(content, writable: false),
             idempotencyKey));
 
     private static byte[] ValidPng()
         => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00];
+
+    private static byte[] ValidJpeg()
+        => [0xFF, 0xD8, 0xFF, 0xE0, 0x00];
 
     private static byte[] ValidPngWithSyntheticMarker()
         => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x44, 0x54, 0x55, 0x44, 0x4F, 0x2D, 0x53, 0x59, 0x4E, 0x54, 0x48, 0x45, 0x54, 0x49, 0x43, 0x41, 0x4C, 0x2D, 0x4D, 0x41, 0x4C, 0x57, 0x41, 0x52, 0x45];

@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using LibDtudo.Shared.Dtos;
 
 namespace WinAppDtudo.Services;
@@ -36,6 +38,7 @@ public class CriadorDeEstruturas
         ObterMyAnimeDto myAnime,
         IReadOnlyCollection<ObterAnimeDto> animes,
         IProgress<ProgressoExportacao>? progresso = null,
+        string? destinationId = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(myAnime);
@@ -60,7 +63,15 @@ public class CriadorDeEstruturas
 
         var plano = await _fileStorageApiClient.PrepareExportAsync(
             myAnime.Id,
-            animesOrdenados.Select(anime => anime.MalId).ToArray(),
+            myAnime.Titulo,
+            animesOrdenados
+                .Select(anime => new WinAppStorageExportAnime(
+                    anime.MalId,
+                    anime.Year,
+                    anime.Titulo,
+                    anime.Type))
+                .ToArray(),
+            destinationId,
             cancellationToken);
         var objetosPorMalId = plano.Items.ToDictionary(item => item.MalId);
         var resultado = new CriacaoEstruturaResultado
@@ -103,7 +114,7 @@ public class CriadorDeEstruturas
                     $"{anime.MalId}.jpg",
                     "image/jpeg",
                     imagem,
-                    $"export-{myAnime.Id}-{anime.MalId}",
+                    BuildIdempotencyKey(myAnime.Id, anime.MalId, destino.ObjectId),
                     cancellationToken);
                 resultado.TotalImagensSalvas++;
                 if (importacao.Replayed)
@@ -131,6 +142,13 @@ public class CriadorDeEstruturas
                 : $"Exportação finalizada com {resultado.Erros.Count} ocorrência(s)."
         });
         return resultado;
+    }
+
+    private static string BuildIdempotencyKey(int myAnimeId, int malId, string objectId)
+    {
+        var objectHash = Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(objectId)))[..16];
+        return $"export-{myAnimeId}-{malId}-{objectHash}";
     }
 
     private static void Reportar(

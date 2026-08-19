@@ -10,6 +10,8 @@ public sealed class FileStorageOptions
 
     public string ExportPathPrefix { get; set; } = "my-animes";
 
+    public FileStorageExportDestinationOptions[] ExportDestinations { get; set; } = [];
+
     public FileStorageLimitsOptions Limits { get; set; } = new();
 
     public FileStorageStepUpOptions StepUp { get; set; } = new();
@@ -35,9 +37,22 @@ public sealed class AllowedStorageRootOptions
     public string Path { get; set; } = string.Empty;
 }
 
+public sealed class FileStorageExportDestinationOptions
+{
+    public string Id { get; set; } = string.Empty;
+
+    public string DisplayName { get; set; } = string.Empty;
+
+    public string RootId { get; set; } = string.Empty;
+
+    public string PathPrefix { get; set; } = string.Empty;
+}
+
 public sealed class FileStorageLimitsOptions
 {
     public long MaxFileSizeBytes { get; set; } = 50 * 1024 * 1024;
+
+    public int MaxExportItems { get; set; } = 1000;
 
     public int MaxFileNameLength { get; set; } = 255;
 

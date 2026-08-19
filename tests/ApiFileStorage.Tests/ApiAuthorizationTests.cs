@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using ApiFileStorage.Controllers;
 using ApiFileStorage.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -38,6 +39,21 @@ public sealed class ApiAuthorizationTests : IDisposable
         using var response = await app.CreateClient().GetAsync("/api/file-storage/health");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AnonymousStartupProbeReturnsOnlyServiceAndContractVersion()
+    {
+        await using var app = CreateApp();
+
+        using var response = await app.CreateClient().GetAsync("/api/file-storage/startup");
+        var startup = await response.Content.ReadFromJsonAsync<FileStorageStartupResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(startup);
+        Assert.Equal("ApiFileStorage", startup.Service);
+        Assert.Equal(FileStorageStartupController.CurrentContractVersion, startup.ContractVersion);
+        Assert.DoesNotContain(_temporaryDirectory, await response.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

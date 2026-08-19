@@ -9,9 +9,21 @@ public sealed record ResolveStorageObjectResponse(
     long Length,
     DateTimeOffset LastWriteTimeUtc);
 
+public sealed record PrepareStorageExportAnimeRequest(
+    int MalId,
+    int? Year,
+    string? Title,
+    string? Type);
+
 public sealed record PrepareStorageExportRequest(
     int MyAnimeId,
-    IReadOnlyCollection<int>? MalIds);
+    string? MyAnimeTitle,
+    IReadOnlyCollection<PrepareStorageExportAnimeRequest>? Animes,
+    string? DestinationId);
+
+public sealed record StorageExportDestinationResponse(
+    string Id,
+    string DisplayName);
 
 public sealed record PreparedStorageObjectResponse(
     int MalId,

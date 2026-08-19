@@ -332,10 +332,18 @@ public class FUC_MyAnimeDetalhes : UserControl
         }
 
         _btnSalvarEstrutura.Enabled = false;
-        _lblStatus.Text = "Preparando exportação segura na ApiFileStorage...";
+        _lblStatus.Text = "Consultando pastas de exportação autorizadas...";
 
         try
         {
+            var destino = await SelecionarDestinoAsync("Selecione a pasta para exportar o MyAnime.");
+            if (destino is null)
+            {
+                _lblStatus.Text = "Exportação cancelada antes do envio.";
+                return;
+            }
+
+            _lblStatus.Text = "Preparando exportação segura na ApiFileStorage...";
             var progresso = new Progress<ProgressoExportacao>(atualizacao =>
             {
                 _lblStatus.Text = $"{atualizacao.PercentualConcluido}% - {atualizacao.Mensagem}";
@@ -343,12 +351,14 @@ public class FUC_MyAnimeDetalhes : UserControl
             var resultado = await _criadorDeEstruturas.CriarEstruturaAsync(
                 _myAnimeAtual,
                 _animesAtuais,
-                progresso);
+                progresso,
+                destino.Id);
 
             _lblStatus.Text = "Exportação concluída na ApiFileStorage.";
 
             var mensagem =
                 $"Exportação concluída com segurança.\n\n" +
+                $"Pasta selecionada: {destino.DisplayName}\n" +
                 $"Destinos lógicos preparados: {resultado.TotalPastasCriadas}\n" +
                 $"Imagens salvas: {resultado.TotalImagensSalvas}";
 
@@ -391,13 +401,29 @@ public class FUC_MyAnimeDetalhes : UserControl
 
         _btnSalvarEstrutura.Enabled = false;
         _btnExcluirEstrutura.Enabled = false;
-        _lblStatus.Text = "Preparando prévia de exclusão segura...";
+        _lblStatus.Text = "Consultando pastas de exportação autorizadas...";
 
         try
         {
+            var destino = await SelecionarDestinoAsync("Selecione a pasta cujas capas serão excluídas.");
+            if (destino is null)
+            {
+                _lblStatus.Text = "Exclusão cancelada antes da prévia.";
+                return;
+            }
+
+            _lblStatus.Text = "Preparando prévia de exclusão segura...";
             var plano = await _fileStorageApiClient.PrepareExportAsync(
                 _myAnimeAtual.Id,
-                _animesAtuais.Select(anime => anime.MalId).ToArray());
+                _myAnimeAtual.Titulo,
+                _animesAtuais
+                    .Select(anime => new WinAppStorageExportAnime(
+                        anime.MalId,
+                        anime.Year,
+                        anime.Titulo,
+                        anime.Type))
+                    .ToArray(),
+                destino.Id);
             var previa = await _fileStorageApiClient.PreviewDeleteAsync(
                 plano.Items.Select(item => item.ObjectId).ToArray());
             var tamanhoTotal = previa.Items.Sum(item => item.Length);
@@ -458,6 +484,27 @@ public class FUC_MyAnimeDetalhes : UserControl
             _btnSalvarEstrutura.Enabled = _animesAtuais.Count > 0;
             _btnExcluirEstrutura.Enabled = _animesAtuais.Count > 0;
         }
+    }
+
+    private async Task<WinAppStorageExportDestination?> SelecionarDestinoAsync(string mensagem)
+    {
+        var destinos = await _fileStorageApiClient.GetExportDestinationsAsync();
+        if (destinos.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Nenhuma pasta de exportação foi configurada na ApiFileStorage.");
+        }
+
+        var destinoId = DarkSelectionDialog.Show(
+            mensagem,
+            "Pasta de exportação",
+            destinos
+                .Select(destino => new DarkSelectionOption(destino.Id, destino.DisplayName))
+                .ToArray());
+        return destinoId is null
+            ? null
+            : destinos.First(destino =>
+                string.Equals(destino.Id, destinoId, StringComparison.Ordinal));
     }
 
 }

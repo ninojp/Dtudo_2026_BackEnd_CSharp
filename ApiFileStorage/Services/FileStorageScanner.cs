@@ -56,6 +56,7 @@ public sealed class CompositeFileScanner(
     IOptions<FileStorageOptions> options,
     ILogger<CompositeFileScanner> logger) : IFileScanner
 {
+    private const int AmsiResultDetected = 0x8000;
     private readonly FileStorageScannerOptions _scannerOptions = options.Value.Scanner;
     private readonly FileStorageLimitsOptions _limits = options.Value.Limits;
 
@@ -234,7 +235,7 @@ public sealed class CompositeFileScanner(
                     throw new FileStorageScannerUnavailableException();
                 }
 
-                return AmsiResultIsMalware(amsiResult)
+                return amsiResult >= AmsiResultDetected
                     ? new FileScanResult(FileScanVerdict.ThreatDetected)
                     : new FileScanResult(FileScanVerdict.Clean);
             }
@@ -306,8 +307,4 @@ public sealed class CompositeFileScanner(
 
     [DllImport("amsi.dll")]
     private static extern void AmsiUninitialize(nint context);
-
-    [DllImport("amsi.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool AmsiResultIsMalware(int result);
 }
