@@ -32,6 +32,16 @@ Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
 Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca Externa - ApiMyAnimeList, ApiMyAnimeList", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimeList é chamada, e retorna os resultados (Cards) da busca.
 Após clicar em um Card, e abrirmos a aba "Detalhes do Anime", dentro desta aba temos o botão "Salvar Como MyAnime" que ao ser clicado, Salva o anime atual como um MyAnime (coleção) no banco de dados local, ApiMyAnimes.  
 
+ApiMyAnimes - tabela Animes, no campo AnimesRelacionadosIds, armazena os IDs dos animes relacionados ao anime atual apenas.
+
+LENTIDÃO ACESSAR ANIME
+
+EXPORTAR PARA ApiFileStore, não cria pastas que já foram salvar antes... (Blue Period, não criou)
+
+Nesta minha solução (conjunto de projetos) C:\2026MeusProjetos\Dtudo2026
+Eu já tenho o arquivo .gitIgnore, mas percebi que alguns arquivos e pastas locais (a pasta tests e seus projetos, as pastas de compilaçaõ \bin e \obj, entre outros arquivos temporários e de configuração) ainda estão sendo rastreados pelo Git.
+Para resolver isso, preciso atualizar meu arquivo .gitIgnore para incluir essas pastas e arquivos que não devem ser rastreados pelo Git.
+Lembrando que este meu projeto (é pessoal e apenas eu trabalho nele, portanto não necessita de controle de versão avançado ou integração contínua) está em desenvolvimento e não tem uma versão de deployment ainda.
 
 ===================================================================================================
 Documentação official da api MyAnimeList:  <https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters>  

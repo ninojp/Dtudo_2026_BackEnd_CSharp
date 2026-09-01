@@ -18,6 +18,14 @@ dist-ssr
 # .NET build outputs
 **/bin/
 **/obj/
+**/TestResults/
+**/coverage/
+*.trx
+*.coverage
+*.coveragexml
+
+# Local test projects
+**/tests/
 
 # Local runtime data and secrets
 **/App_Data/*.json
@@ -29,6 +37,7 @@ dist-ssr
 .idea
 .DS_Store
 *.suo
+*.user
 *.ntvs*
 *.njsproj
 *.sln
