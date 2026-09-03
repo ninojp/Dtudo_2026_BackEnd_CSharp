@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace LibDtudo.Shared.Security;
 
@@ -370,8 +371,10 @@ public sealed class ServiceAccessTokenProvider : IAsyncDisposable
 
     private sealed class ServiceAccessTokenResponse
     {
+        [JsonPropertyName("access_token")]
         public string AccessToken { get; set; } = string.Empty;
 
+        [JsonPropertyName("expires_in")]
         public int ExpiresIn { get; set; }
     }
 }

@@ -93,12 +93,13 @@ public partial class FUC_DetalhesAnime : UserControl
     {
         MostrarCarregando(true);
         AnimeDetails? anime = null;
+        ObterAnimeDto? animeLocal = null;
         string? erro = null;
         try
         {
             if (_consultaLocal)
             {
-                var animeLocal = await _apiMyAnimesService.ObterAnimePorMalIdAsync(_malId);
+                animeLocal = await _apiMyAnimesService.ObterAnimePorMalIdAsync(_malId);
                 anime = animeLocal is null ? null : AnimeDetailsMapper.FromLocal(animeLocal);
             }
             else
@@ -136,7 +137,7 @@ public partial class FUC_DetalhesAnime : UserControl
         _animeAtual = anime;
 
         List<AnimeRelationGroup> relacoes = [];
-        List<ObterAnimeDto> relacoesMyAnime = [];
+        List<ObterAnimeDto> relacoesLocais = [];
         if (!_consultaLocal)
         {
             try
@@ -160,18 +161,19 @@ public partial class FUC_DetalhesAnime : UserControl
                     MessageBoxIcon.Warning);
             }
         }
-        else if (anime.MyAnimeID > 0)
+        else if (animeLocal?.AnimesRelacionadosIds.Count > 0)
         {
             try
             {
-                relacoesMyAnime = await _apiMyAnimesService.ObterAnimesPorMyAnimeIdAsync(anime.MyAnimeID);
+                relacoesLocais = await _apiMyAnimesService.ObterAnimesRelacionadosAsync(
+                    animeLocal.AnimesRelacionadosIds.Where(id => id != anime.MalId));
             }
             catch
             {
             }
         }
 
-        PopularUI(anime, relacoes, !_consultaLocal, relacoesMyAnime);
+        PopularUI(anime, relacoes, !_consultaLocal, relacoesLocais);
     }
     // ===================================================================
     /// <summary>
@@ -182,7 +184,7 @@ public partial class FUC_DetalhesAnime : UserControl
         AnimeDetails anime,
         List<AnimeRelationGroup> relacoes,
         bool exibirRelacoes,
-        IReadOnlyList<ObterAnimeDto> relacoesMyAnime)
+        IReadOnlyList<ObterAnimeDto> relacoesLocais)
     {
         var anoLancamento = ExtrairAnoLancamentoPeloAired(anime.Aired);
         // Header
@@ -259,7 +261,7 @@ public partial class FUC_DetalhesAnime : UserControl
         int larguraValor = Math.Max(larguraColuna - 160, 180);
         
         if (_consultaLocal)
-            AdicionarRelacoesMyAnime(relacoesMyAnime);
+            AdicionarRelacoesLocais(relacoesLocais);
         else if (exibirRelacoes)
             AdicionarRelacoes(relacoes);
 
@@ -767,7 +769,7 @@ public partial class FUC_DetalhesAnime : UserControl
         Pnl_Info.ResumeLayout(true);
     }
 
-    private void AdicionarRelacoesMyAnime(IReadOnlyList<ObterAnimeDto> animes)
+    private void AdicionarRelacoesLocais(IReadOnlyList<ObterAnimeDto> animes)
     {
         int larguraSecao = Math.Max(Pnl_Info.ClientSize.Width - 12, 370);
         var lblTituloSecao = new Label
@@ -777,7 +779,7 @@ public partial class FUC_DetalhesAnime : UserControl
             ForeColor = Color.Gold,
             Location = new Point(4, _yOffset),
             Size = new Size(larguraSecao, 100),
-            Text = "🔗 Animes relacionados no MyAnime:",
+            Text = "🔗 Animes relacionados:",
             TextAlign = ContentAlignment.MiddleCenter
         };
         Pnl_Info.Controls.Add(lblTituloSecao);
@@ -793,7 +795,7 @@ public partial class FUC_DetalhesAnime : UserControl
                 ForeColor = Color.Gold,
                 Location = new Point(4, _yOffset),
                 Size = new Size(larguraSecao, 100),
-                Text = "Nenhum anime do MyAnime foi encontrado no DB_Local.",
+                Text = "Nenhum anime relacionado foi encontrado no DB_Local.",
                 TextAlign = ContentAlignment.MiddleCenter
             };
             Pnl_Info.Controls.Add(lblSemRelacoes);

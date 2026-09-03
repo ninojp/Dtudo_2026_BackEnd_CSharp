@@ -1,6 +1,8 @@
 # PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA
 
-Abaixo vou descrever minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "Dtudo2026" e seus projetos internos relacionados
+Minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "Dtudo2026" atualmente é projeto pessoal e que roda 100% local, mas futuramente (após o termino do básico, atual 50%) será disponibilizada para uso externo (internet), via site DtudoSite (deve apenas acessar as informações do banco de dados, via ApiMyAnimes).  
+O ponto central é o projeto WinAppDtudo, que é o aplicativo desktop que manipula, faz consultas externas e DEVE CONTROLAR o Banco de dados local e arquivos em disco local.  
+Lembrando que este meu projeto (é pessoal e apenas eu trabalho nele, portanto não necessita de controle de versão avançado ou integração contínua) está em desenvolvimento e não tem uma versão de deployment ainda.
 
 Projeto LibDtudo.Shared - Biblioteca para compartilhar Dtos, Modelos, Utils... entre os projetos dentro da solução Dtudo2026.
 
@@ -23,29 +25,24 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 Projeto ApiDiscogs - Api para consulta externa de informações sobre músicas, artistas e álbuns.
 Projeto ApiMyMusicX - Api para gestão do Banco de dados local de músicas, artistas e álbuns. (CRUD completo, documentada com Swagger).
 
-Minha solução (conjunto de projetos) atualmente é projeto pessoal e que roda 100% local, mas futuramente (após o termino do básico, atual 50%) será disponibilizada para uso externo (internet), via site DtudoSite (deve apenas acessar as informações do banco de dados, via ApiMyAnimes).
-O ponto central é o projeto WinAppDtudo, que é o aplicativo desktop que manipula, faz consultas externas e DEVE CONTROLAR o Banco de dados local e arquivos em disco local.
+Atualmente (03/09/2026) foram adicionados (através de I.A) diversos novos projetos e funcionalidades, ApiIdentity, ApiFileStore, ApiDiscogs, ApiMusicX, DtudoGateway e as Apis de Testes.
 
--------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
 
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite\
+Quando acessamos o site pela primeira vez, aparece uma página de notificação, com a menssagem "Você confirma ser maior de 18 anos e possuir uma conta?" e abaixo um botão "Acessar o site", está página NÃO É MAIS NECESSÁRIA, quero remove-la por completo. Depois de clicar para acessar o site temos OUTRA tela "Entrar no site DtudoSite" com um botão "Entrar", essa tela TAMBÉM deve ser removida por completo (inclusive agora aparece uma caixa de dialoga para selecionar o certificado de segurança, que também não é necessária).
+Agora quero que seja removida toda a navegação inicial desnecessária, deixando apenas a tela, com formulario de login. Nessa tela de login do lado esquerdo, na parte superior, onde atualmente temos D DtudoSite, escrito quero meu Logo (DtudoSite\public\Logo_Dtudo_300p.png) no lugar do texto "D DtudoSite", onde temos a frase "Entre para continuar sua sessao no catalogo DtudoSite", troque pela frase "Para ecessar este site você precisa de uma conta préviamente criada pelo administrador."
+Qualquer dúvida me pergunte antes de implementar.
+
+==================================================================================================
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca Externa - ApiMyAnimeList, ApiMyAnimeList", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimeList é chamada, e retorna os resultados (Cards) da busca.
-Após clicar em um Card, e abrirmos a aba "Detalhes do Anime", dentro desta aba temos o botão "Salvar Como MyAnime" que ao ser clicado, Salva o anime atual como um MyAnime (coleção) no banco de dados local, ApiMyAnimes.  
-
-ApiMyAnimes - tabela Animes, no campo AnimesRelacionadosIds, armazena os IDs dos animes relacionados ao anime atual apenas.
-
-LENTIDÃO ACESSAR ANIME
+Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca de Animes - DB_Local, ApiMyAnimes", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimes é chamada, e retorna os resultados (Cards) da busca.
 
 EXPORTAR PARA ApiFileStore, não cria pastas que já foram salvar antes... (Blue Period, não criou)
 
-Nesta minha solução (conjunto de projetos) C:\2026MeusProjetos\Dtudo2026
-Eu já tenho o arquivo .gitIgnore, mas percebi que alguns arquivos e pastas locais (a pasta tests e seus projetos, as pastas de compilaçaõ \bin e \obj, entre outros arquivos temporários e de configuração) ainda estão sendo rastreados pelo Git.
-Para resolver isso, preciso atualizar meu arquivo .gitIgnore para incluir essas pastas e arquivos que não devem ser rastreados pelo Git.
-Lembrando que este meu projeto (é pessoal e apenas eu trabalho nele, portanto não necessita de controle de versão avançado ou integração contínua) está em desenvolvimento e não tem uma versão de deployment ainda.
-
-===================================================================================================
 Documentação official da api MyAnimeList:  <https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters>  
 C:\Users\comer\AppData\Local\Dtudo2026\ApiFileStorage\media\my-animes
+O CÓDIGO ABAIXO NÃO É SEGREDO E PODE SER EXIBIDO NO GITHUB SEM PROBLEMAS.
 eumemosem@nadaSENHAatual123@)NinoJPDtudoDev!2026LfZDp9ftZLgbpd1f
 
 09/07/2026 NUMEROS DEPOIS DE POPULAR O DB LOCAL
@@ -71,8 +68,6 @@ FROM Animes;
 3.
 
 ======================================================================================================
-O aviso NU1510 e o conflito de WindowsBase continuam sendo avisos preexistentes.
-
 Estou recebendo este aviso (Este projeto está definido para abrir o Designer WinForms no modo sem Reconhecimento de DPI.)
 recebo o aviso: A escala na tela principal está definida como 200%. Considere abrir o WinForm Designer no modo DPI-Unaware.
 Estou trabalhando (meu hardware) com uma tv 50" (escala 200%) com RESOLUÇÃO de 3840x2160. Pergunto se isso pode estar causando problemas visuais (por exemplo, itens (textos) dentro da aba animes detalhes estão se sobrepondo).

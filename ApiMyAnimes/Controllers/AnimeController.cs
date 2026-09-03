@@ -301,6 +301,37 @@ public class AnimeController(
         return Ok(animesDto);
     }
 
+    /// <summary>
+    /// Obtém os animes relacionados cujos <c>MalId</c> foram informados, preservando a ordem dos IDs.
+    /// </summary>
+    /// <param name="ids">Identificadores dos animes relacionados no MyAnimeList.</param>
+    /// <returns>
+    /// Retorna <c>200 OK</c> com os animes encontrados,
+    /// ou <c>400 BadRequest</c> quando nenhum ID válido é informado ou o limite é excedido.
+    /// </returns>
+    [HttpGet("relacionados")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<ObterAnimeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public ActionResult<List<ObterAnimeDto>> ObterAnimesRelacionados([FromQuery] int[] ids)
+    {
+        var idsNormalizados = ids.Where(id => id > 0).Distinct().ToList();
+        if (idsNormalizados.Count == 0) return BadRequest("Informe pelo menos um ID positivo.");
+        if (idsNormalizados.Count > 200) return BadRequest("O limite máximo é de 200 IDs relacionados.");
+
+        var ordemPorId = idsNormalizados
+            .Select((id, indice) => new { id, indice })
+            .ToDictionary(item => item.id, item => item.indice);
+        var animes = context.Animes
+            .Where(anime => idsNormalizados.Contains(anime.MalId))
+            .ToList()
+            .OrderBy(anime => ordemPorId[anime.MalId])
+            .Select(ParaObterAnimeDto)
+            .ToList();
+
+        return Ok(animes);
+    }
+
     //==============================================
     /// <summary>
     /// Busca animes localmente priorizando colecoes MyAnime e, se nenhuma colecao for encontrada,

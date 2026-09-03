@@ -342,6 +342,22 @@ public class ApiMyAnimesService
         return JsonSerializer.Deserialize<ObterAnimeDto>(json, _jsonOptions);
     }
 
+    public async Task<List<ObterAnimeDto>> ObterAnimesRelacionadosAsync(IEnumerable<int> ids)
+    {
+        var idsNormalizados = ids.Where(id => id > 0).Distinct().ToList();
+        if (idsNormalizados.Count == 0)
+            return [];
+        if (idsNormalizados.Count > 200)
+            throw new ArgumentException("O limite máximo é de 200 IDs relacionados.", nameof(ids));
+
+        var query = string.Join("&", idsNormalizados.Select(id => $"ids={id}"));
+        using var response = await GetAsync($"apiLocal/Anime/relacionados?{query}");
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<ObterAnimeDto>>(json, _jsonOptions) ?? [];
+    }
+
     public async Task<List<ObterAnimeDto>> ObterAnimesPorMyAnimeIdAsync(int myAnimeId, int take = 200)
     {
         var skip = 0;

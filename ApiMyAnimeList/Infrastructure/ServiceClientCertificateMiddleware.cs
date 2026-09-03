@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using LibDtudo.Shared.Security;
 using Microsoft.Extensions.Options;
 
@@ -13,9 +14,15 @@ public sealed class ServiceClientCertificateMiddleware(
     {
         var serviceOptions = options.Value;
         var clientId = context.User.FindFirst("client_id")?.Value;
-        if (!serviceOptions.Enabled || string.IsNullOrWhiteSpace(clientId))
+        if (!serviceOptions.Enabled || !IsServiceToken(context.User))
         {
             await next(context);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(clientId))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return;
         }
 
@@ -36,4 +43,13 @@ public sealed class ServiceClientCertificateMiddleware(
 
         await next(context);
     }
+
+    private static bool IsServiceToken(ClaimsPrincipal principal)
+        => principal.Claims.Any(claim =>
+            claim.Type == "permission"
+            && string.Equals(claim.Value, "service.mal.read", StringComparison.Ordinal))
+        && principal.Claims
+            .Where(claim => claim.Type is "scope" or "scp")
+            .SelectMany(claim => claim.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Any(scope => string.Equals(scope, "service.mal.read", StringComparison.Ordinal));
 }
