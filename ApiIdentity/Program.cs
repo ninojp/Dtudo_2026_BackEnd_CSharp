@@ -47,7 +47,7 @@ builder.WebHost.ConfigureKestrel(options =>
             return;
         }
 
-        https.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
+        https.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
         https.ClientCertificateValidation = (certificate, _, _) =>
             certificate is not null
             && configuredServiceAuthentication.Clients.Any(binding =>
@@ -338,6 +338,7 @@ await using (var scope = app.Services.CreateAsyncScope())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRateLimiter();
 app.Use(async (context, next) =>
 {
@@ -1551,11 +1552,13 @@ static string BuildLoginPage(string returnUrl, string? requestVerificationToken,
     var applicationName = isWinApp ? "WinAppDtudo" : "DtudoSite";
     var loginTitle = WebUtility.HtmlEncode($"Entrar no {applicationName}");
     var themeClass = isWinApp ? "winapp" : "site";
-    var mark = isWinApp ? "W" : "D";
+    var brandContent = isWinApp
+        ? "<span class=\"brand-mark\" aria-hidden=\"true\">W</span><span class=\"brand-name\">WinAppDtudo</span>"
+        : "<img class=\"brand-logo\" src=\"/Logo_Dtudo_300p.png\" alt=\"DtudoSite\">";
     var eyebrow = isWinApp ? "ACESSO ADMINISTRATIVO" : "DTUDO SITE";
     var lead = isWinApp
         ? "Entre com a conta Superadministrador para abrir o aplicativo local."
-        : "Entre para continuar sua sessao no catalogo DtudoSite.";
+        : "Para ecessar este site você precisa de uma conta préviamente criada pelo administrador.";
     var panelKicker = isWinApp ? "CONTROLE LOCAL" : "ACESSO SEGURO";
     var panelTitle = isWinApp ? "Identidade do WinApp" : "Sua conta Dtudo";
     var panelSubtitle = isWinApp
@@ -1580,8 +1583,7 @@ static string BuildLoginPage(string returnUrl, string? requestVerificationToken,
     <div class="login-shell">
         <section class="brand-panel" aria-label="{{applicationName}}">
             <div class="brand-bar">
-                <span class="brand-mark" aria-hidden="true">{{mark}}</span>
-                <span class="brand-name">{{applicationName}}</span>
+                {{brandContent}}
             </div>
             <div class="brand-copy">
                 <p class="eyebrow">{{eyebrow}}</p>
@@ -1705,21 +1707,7 @@ body::before {
     box-shadow: 0 0 0 28px #4eb7e00a, 0 0 0 56px #4eb7e006;
 }
 .brand-bar, .brand-footer { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
-.brand-mark {
-    display: grid;
-    width: 48px;
-    height: 48px;
-    place-items: center;
-    border: 1px solid #8fe4ff;
-    border-radius: 8px;
-    color: #041832;
-    background: #4eb7e6;
-    box-shadow: 8px 8px 0 #04183266;
-    font-size: 1.45rem;
-    font-weight: 800;
-    letter-spacing: 0;
-}
-.brand-name { color: #dff7ff; font-size: 1.1rem; font-weight: 700; letter-spacing: 0; }
+.brand-logo { display: block; width: min(100%, 300px); height: auto; object-fit: contain; }
 .brand-copy { position: relative; z-index: 1; max-width: 440px; }
 .eyebrow, .panel-kicker { margin: 0 0 18px; color: #7fdcff; font-size: .72rem; font-weight: 700; letter-spacing: 0; }
 h1, h2, p { margin-top: 0; }

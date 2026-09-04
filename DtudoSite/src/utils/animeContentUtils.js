@@ -1,3 +1,7 @@
+import { createElement } from 'react';
+import { FaBullhorn, FaCirclePlay, FaFilm, FaMusic, FaTv, FaVideo } from 'react-icons/fa6';
+import { MdMovieCreation, MdOndemandVideo } from 'react-icons/md';
+
 const normalizarValor = (valor) => String(valor || '').trim().toLocaleLowerCase('pt-BR');
 const mesesEmIngles = {
     jan: 0,
@@ -115,6 +119,46 @@ export function obterTipoAnime(anime) {
     return typeof tipo === 'string' && tipo.trim() ? tipo.trim().toLocaleUpperCase('pt-BR') : null;
 }
 
+function normalizarTipoAnime(tipo) {
+    return String(tipo || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLocaleLowerCase('pt-BR')
+        .trim()
+        .replace(/[\s-]+/g, '_');
+}
+
+export function obterTipoCanonicoAnime(anime) {
+    const tipo = normalizarTipoAnime(obterTipoAnime(anime));
+
+    if (tipo === 'tv' || tipo === 'tv_series' || tipo === 'series') return 'TV';
+    if (tipo === 'ova') return 'OVA';
+    if (tipo === 'ona') return 'ONA';
+    if (tipo === 'movie' || tipo === 'movies' || tipo === 'film' || tipo === 'filme') return 'MOVIE';
+    if (tipo === 'special' || tipo === 'specials' || tipo === 'tv_special') return 'SPECIAL';
+    if (tipo === 'music' || tipo === 'musics') return 'MUSIC';
+    if (tipo === 'cm' || tipo === 'commercial' || tipo === 'commercials') return 'CM';
+    if (tipo === 'pv' || tipo === 'promotional_video' || tipo === 'promotional_videos') return 'PV';
+
+    return tipo.toLocaleUpperCase('pt-BR');
+}
+
+export function obterIconeTipoAnime(anime) {
+    const icones = {
+        TV: FaTv,
+        OVA: MdOndemandVideo,
+        ONA: FaCirclePlay,
+        MOVIE: FaFilm,
+        SPECIAL: MdMovieCreation,
+        MUSIC: FaMusic,
+        CM: FaBullhorn,
+        PV: FaVideo,
+    };
+
+    const Icone = icones[obterTipoCanonicoAnime(anime)] || MdMovieCreation;
+    return createElement(Icone, { 'aria-hidden': 'true' });
+}
+
 export function obterScoreAnime(anime) {
     const score = anime?.score ?? anime?.mean;
     const scoreNumerico = Number(score);
@@ -154,12 +198,12 @@ export function obterColecoesComAnime(colecoes, malId) {
 }
 
 export function obterAnimesRelacionados({
-    colecoesComAnime,
+    animeAtual,
     incluirAdultos,
     listObjsDetalhesAnimes,
 }) {
     const idsRelacionados = new Set(
-        colecoesComAnime.flatMap(idsDaColecao)
+        (animeAtual?.animesRelacionadosIds || animeAtual?.AnimesRelacionadosIds || [])
             .map(Number)
     );
 

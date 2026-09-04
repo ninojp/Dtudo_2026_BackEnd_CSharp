@@ -1,25 +1,77 @@
 .mainDetalhes {
-    width: min(1120px, calc(100% - 2rem));
+    width: min(1860px, calc(100% - 4rem));
     margin: 0 auto;
     padding: 2rem 0 4rem;
     color: #ffffff;
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 1.5rem;
 }
 
-.sectionResumo {
+.gradeTitulos {
     display: grid;
-    grid-template-columns: 240px minmax(0, 1fr);
-    gap: 2rem;
-    align-items: start;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    align-items: center;
+    width: 100%;
+    row-gap: 0.8rem;
+}
+
+.gradeTitulos .tituloSecao {
+    width: 100%;
+    padding: 0 0.75rem;
+}
+
+.painelEsquerdo {
+    min-width: 0;
+}
+
+.tituloSecao {
+    margin: 0 0 0.75rem;
+    color: var(--hTituloColor);
+    font-size: clamp(1.05rem, 1.35vw, 1.45rem);
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.tituloPrincipal {
+    font-size: clamp(1.35rem, 1.8vw, 1.9rem);
+}
+
+.tituloSecundario {
+    font-size: clamp(1.2rem, 1.6vw, 1.7rem);
+}
+
+.tituloAlternativo {
+    font-size: clamp(1.1rem, 1.4vw, 1.5rem);
+}
+
+.painelDireito {
+    min-width: 0;
+    grid-column: 2;
+}
+
+.cabecalhoDetalhes {
+    margin: 0 0 2rem;
+    text-align: center;
+}
+
+.cabecalhoDetalhes p {
+    margin: 0;
+    color: var(--pTextColor);
+    font-size: 1rem;
 }
 
 .figurePoster {
-    margin: 0;
+    margin: 2.75rem 0 0 1.25rem;
 }
 
 .imgPoster,
 .posterIndisponivel {
-    width: 240px;
-    height: 360px;
+    width: 220px;
+    height: 322px;
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid #315f9e;
@@ -33,60 +85,61 @@
     text-align: center;
 }
 
-.divInfoPrincipal {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
 .divAcoes {
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
     gap: 0.75rem;
+    width: 220px;
+    margin-top: 1.25rem;
 }
 
 .linkVoltar,
 .linkAcao {
+    display: block;
+    text-align: center;
     color: #ffffff;
     border: 1px solid #315f9e;
     border-radius: 4px;
     padding: 0.45rem 0.75rem;
 }
 
-.pAvisoRelacionados {
-    width: fit-content;
-    margin: -0.75rem 0 0;
-    border: 1px solid #9e7b31;
-    border-radius: 4px;
-    padding: 0.55rem 0.75rem;
-    color: #ffe1a3;
-    background-color: #3d2d08;
-}
-
 .dlMetadados {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
     margin: 0;
+    border-bottom: var(--bordaPadrao);
 }
 
 .dlMetadados div {
-    border-bottom: 1px solid #315f9e;
-    padding-bottom: 0.5rem;
+    display: grid;
+    grid-template-columns: minmax(100px, 0.8fr) minmax(0, 1.2fr);
+    gap: 0.75rem;
+    align-items: baseline;
+    min-width: 0;
+    padding: 0.35rem 0.5rem;
 }
 
 .dlMetadados dt {
-    font-size: 0.75rem;
-    color: #a9c7ef;
+    font-size: 0.9rem;
+    color: var(--pTextColor);
+    font-weight: 600;
+    text-align: right;
 }
 
 .dlMetadados dd {
-    margin: 0.2rem 0 0;
+    color: var(--hTituloColor);
+    font-size: 0.9rem;
+    margin: 0;
+    overflow-wrap: anywhere;
+    text-align: left;
 }
 
 .sectionTexto,
 .sectionListas {
-    margin-top: 2rem;
+    margin-top: 0;
+    margin-bottom: 2rem;
     line-height: 1.6;
 }
 
@@ -94,13 +147,151 @@
     margin-bottom: 0.75rem;
 }
 
+.sectionTexto .tituloSecao {
+    margin-bottom: 1rem;
+}
+
+.sectionRelacionados {
+    margin: 0 0 1.5rem;
+}
+
+.sectionRelacionados h2 {
+    margin: 0 0 0.75rem;
+    color: var(--hTituloColor);
+    font-size: inherit;
+    text-align: center;
+}
+
+.rotuloSecao {
+    margin: 0 0 0.9rem;
+    color: var(--pTextColor);
+    font-size: clamp(1.15rem, 1.35vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.divCardsRelacionados {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
+    gap: 0.9rem;
+    padding: 0.25rem;
+}
+
+.divCardsRelacionados a {
+    color: #ffffff;
+}
+
+.cardRelacionado {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+    font-size: 0.85rem;
+    width: 122px;
+    height: 228px;
+    justify-self: center;
+    border: var(--bordaPadrao);
+    padding: 0.25rem;
+    color: var(--hTituloColor);
+    text-align: center;
+}
+
+.cardRelacionado img {
+    width: 114px;
+    height: 166px;
+    object-fit: cover;
+    border: 1px solid #315f9e;
+    border-radius: 4px;
+}
+
+.cardRelacionado strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.imagemRelacionadoIndisponivel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 114px;
+    height: 166px;
+    border: 1px solid #315f9e;
+    border-radius: 4px;
+    background-color: #041832;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.cardRelacionado span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.estatisticasRapidas {
+    width: 220px;
+    margin-top: 1.25rem;
+    color: var(--hTituloColor);
+    text-align: center;
+}
+
+.estatisticasRapidas div {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-bottom: 0.65rem;
+    font-weight: 700;
+}
+
+.estatisticasRapidas svg {
+    color: var(--pTextColor);
+    vertical-align: -0.1em;
+}
+
+.estatisticasRapidas span,
+.estatisticasRapidas p {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.estatisticasRapidas p {
+    margin: 0;
+    line-height: 1.45;
+    color: var(--hTituloColor);
+}
+
+.estatisticasRapidas p svg {
+    flex: 0 0 auto;
+    font-size: 1.15rem;
+}
+
+.sectionTexto {
+    padding-top: 1.5rem;
+}
+
 @media (max-width: 720px) {
-    .sectionResumo {
-        grid-template-columns: 1fr;
+    .mainDetalhes {
+        display: block;
+    }
+
+    .painelDireito {
+        margin-top: 2rem;
+    }
+
+    .gradeTitulos {
+        row-gap: 0.55rem;
     }
 
     .imgPoster,
     .posterIndisponivel {
-        width: min(240px, 100%);
+        width: min(220px, 100%);
+    }
+
+    .dlMetadados {
+        grid-template-columns: 1fr;
     }
 }

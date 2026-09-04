@@ -1,10 +1,10 @@
 import styles from './CardAnime.module.css';
 import { FaCalendarAlt, FaStar } from 'react-icons/fa';
-import { MdMovieCreation } from 'react-icons/md';
 import {
     obterAnoAnime,
     obterGenerosAnime,
     obterImagemAnime,
+    obterIconeTipoAnime,
     obterScoreAnime,
     obterTipoAnime,
     obterTituloAlternativoAnime,
@@ -21,7 +21,7 @@ export default function CardAnime({ anime }) {
     const generos = obterGenerosAnime(anime);
     const itensResumo = [
         ano && { label: 'Ano', value: ano, variant: styles.spanIconeAno, icon: <FaCalendarAlt aria-hidden="true" /> },
-        tipo && { label: 'Tipo', value: tipo, variant: styles.spanIconeTipo, icon: <MdMovieCreation aria-hidden="true" /> },
+        tipo && { label: 'Tipo', value: tipo, variant: styles.spanIconeTipo, icon: obterIconeTipoAnime(anime) },
         score && { label: 'Nota media', value: score, variant: styles.spanIconeScore, icon: <FaStar aria-hidden="true" /> },
     ].filter(Boolean);
 

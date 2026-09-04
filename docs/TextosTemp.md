@@ -1,5 +1,6 @@
 # PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA
 
+Estou DESENVOLVENDO e EXECUTANDO (modo Debug) TODA parte de back-end (C#) da minha solução via Visual Studio 2016, e apenas o front-end (React.js) é feito via VS Code (inclusive uso o Chat e agents I.A no VS Code, para auxiliar no desenvolvimento).
 Minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "Dtudo2026" atualmente é projeto pessoal e que roda 100% local, mas futuramente (após o termino do básico, atual 50%) será disponibilizada para uso externo (internet), via site DtudoSite (deve apenas acessar as informações do banco de dados, via ApiMyAnimes).  
 O ponto central é o projeto WinAppDtudo, que é o aplicativo desktop que manipula, faz consultas externas e DEVE CONTROLAR o Banco de dados local e arquivos em disco local.  
 Lembrando que este meu projeto (é pessoal e apenas eu trabalho nele, portanto não necessita de controle de versão avançado ou integração contínua) está em desenvolvimento e não tem uma versão de deployment ainda.
@@ -30,13 +31,11 @@ Atualmente (03/09/2026) foram adicionados (através de I.A) diversos novos proje
 ------------------------------------------------------------------------------------------------------------------
 
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\DtudoSite\
-Quando acessamos o site pela primeira vez, aparece uma página de notificação, com a menssagem "Você confirma ser maior de 18 anos e possuir uma conta?" e abaixo um botão "Acessar o site", está página NÃO É MAIS NECESSÁRIA, quero remove-la por completo. Depois de clicar para acessar o site temos OUTRA tela "Entrar no site DtudoSite" com um botão "Entrar", essa tela TAMBÉM deve ser removida por completo (inclusive agora aparece uma caixa de dialoga para selecionar o certificado de segurança, que também não é necessária).
-Agora quero que seja removida toda a navegação inicial desnecessária, deixando apenas a tela, com formulario de login. Nessa tela de login do lado esquerdo, na parte superior, onde atualmente temos D DtudoSite, escrito quero meu Logo (DtudoSite\public\Logo_Dtudo_300p.png) no lugar do texto "D DtudoSite", onde temos a frase "Entre para continuar sua sessao no catalogo DtudoSite", troque pela frase "Para ecessar este site você precisa de uma conta préviamente criada pelo administrador."
-Qualquer dúvida me pergunte antes de implementar.
+Depois de logar e acessar a pagina inicial (http://localhost:5173/animes), temos a lista de Cards dos animes, ao clicar em um Card, somos redirecionados para a página de detalhes do anime selecionado (http://localhost:5173/animes/animes-detalhes/Malid).  
 
 ==================================================================================================
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca de Animes - DB_Local, ApiMyAnimes", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimes é chamada, e retorna os resultados (Cards) da busca.
+Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca de Animes - DB_Local, ApiMyAnimes", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimes é chamada, e retorna os resultados (Cards) da busca. Ao clicar em um Card, somos redirecionados para a página de detalhes do anime selecionado, nessa Aba "detalhes do anime" temos o LAYOUT (disposição dos elementos na tela) completo com todas as informações do anime e seus animes relacionados (mini cards).
 
 EXPORTAR PARA ApiFileStore, não cria pastas que já foram salvar antes... (Blue Period, não criou)
 

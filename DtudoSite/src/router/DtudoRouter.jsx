@@ -34,7 +34,6 @@ import Git from "../components/componentsNinoTI/Git/Git";
 import GitHub from "../components/componentsNinoTI/GitHub/GitHub";
 import Figma from "../components/componentsNinoTI/Figma/Figma";
 import WordPress from "../components/componentsNinoTI/WordPress/WordPress";
-import AdultContentNotice from "../pages/AdultContentNotice/AdultContentNotice";
 import ProtetorDeRota from "../components/ProtetorDeRota/ProtetorDeRota";
 
 export default function DtudoRouter() {
@@ -42,13 +41,13 @@ export default function DtudoRouter() {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<IndexLayout />} >
-                    <Route index element={<AdultContentNotice />} />
+                    <Route index element={<Login />} />
 
                     <Route element={<ProtetorDeRota />}>
                         <Route path="animes">
                             <Route index element={<Animes />} />
                             <Route path="animes-detalhes/:malId" element={<AnimesDetalhes />} />
-                            <Route path="animes-relacionados/:malId" element={<AnimesRelacionados />} />
+                            <Route path="myanimes-colecao/:myAnimeId" element={<AnimesRelacionados />} />
                         </Route>
 
                         <Route path="ninoti" element={<NinoTIPageLayout />}>
