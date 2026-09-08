@@ -1,37 +1,18 @@
 # ApiFileStorage
 
-Serviço interno responsável por importar, validar, promover e excluir arquivos apenas dentro de raízes autorizadas.
+Serviço interno responsável por validar, promover e excluir arquivos apenas dentro de raízes autorizadas, com quarentena, verificação de magic bytes/MIME, scanner Defender/AMSI e reconciliação de diários.
 
-## Exportação de MyAnime
+## Superfície atual (2026-09-07)
 
-O WinApp consulta `GET /api/file-storage/export/destinations` e apresenta os destinos configurados ao operador. A escolha envia somente o `DestinationId`; caminhos físicos, UNC ou relativos livres não fazem parte do contrato.
+Os endpoints de importação (`import`), destinos/plano de exportação (`export/destinations`, `export/plan`) e exclusão (`delete`, `delete/preview`, `delete/batch`) foram removidos: o WinApp não envia mais arquivos pela API — o salvamento de estruturas de MyAnime é feito diretamente no disco local, na pasta escolhida pelo operador via diálogo nativo do Windows, sem passar pela ApiFileStorage.
 
-Cada destino combina uma raiz autorizada com um prefixo controlado pelo servidor:
+Permanecem expostos somente:
 
-```json
-{
-  "FileStorage": {
-    "ExportDestinations": [
-      {
-        "Id": "my-animes",
-        "DisplayName": "Pasta MyAnimes da ApiFileStorage",
-        "RootId": "media",
-        "PathPrefix": "my-animes"
-      }
-    ]
-  }
-}
-```
+- `POST /api/file-storage/resolve`: metadados lógicos de um `ObjectId`, sem devolver caminho físico.
+- `POST /api/file-storage/reconcile`: retomada de diários de quarentena/lixeira e purge autorizado (também executado automaticamente no startup).
+- `GET /api/file-storage/health` e `GET /api/file-storage/startup`: sondas operacionais usadas pelo painel de saúde e pela inicialização do WinApp.
 
-A estrutura resultante é:
-
-```text
-<raiz autorizada>\<prefixo>\<título do MyAnime>\
-└── <ano> <título do anime> - <tipo>\
-    └── <MalId>.jpg
-```
-
-Os nomes são sanitizados no servidor, nomes reservados do Windows são recusados ou ajustados, colisões recebem sufixo e todos os destinos continuam sujeitos à validação canônica, quarentena, Defender/AMSI e promoção da ApiFileStorage.
+O motor interno de quarentena/scanner/promoção/lixeira (`FileStorageLifecycleService`) permanece implementado e coberto por testes, pronto para um futuro fluxo de ingestão, mas hoje não é alcançável por endpoint de escrita.
 
 ## Configurar uma raiz local
 
@@ -43,16 +24,4 @@ dotnet user-secrets set "FileStorage:Roots:0:Id" "media" --project .\ApiFileStor
 dotnet user-secrets set "FileStorage:Roots:0:Path" "D:\Dtudo\Media" --project .\ApiFileStorage\ApiFileStorage.csproj
 ```
 
-Para oferecer outra pasta na janela de seleção, cadastre uma segunda raiz e um segundo destino:
-
-```powershell
-New-Item -ItemType Directory -Force "E:\Animes"
-dotnet user-secrets set "FileStorage:Roots:1:Id" "animes-e" --project .\ApiFileStorage\ApiFileStorage.csproj
-dotnet user-secrets set "FileStorage:Roots:1:Path" "E:\Animes" --project .\ApiFileStorage\ApiFileStorage.csproj
-dotnet user-secrets set "FileStorage:ExportDestinations:1:Id" "animes-e" --project .\ApiFileStorage\ApiFileStorage.csproj
-dotnet user-secrets set "FileStorage:ExportDestinations:1:DisplayName" "Animes no disco E" --project .\ApiFileStorage\ApiFileStorage.csproj
-dotnet user-secrets set "FileStorage:ExportDestinations:1:RootId" "animes-e" --project .\ApiFileStorage\ApiFileStorage.csproj
-dotnet user-secrets set "FileStorage:ExportDestinations:1:PathPrefix" "my-animes" --project .\ApiFileStorage\ApiFileStorage.csproj
-```
-
-Reinicie a ApiFileStorage depois de alterar raízes ou destinos. A conta do processo da API precisa de ACL na raiz; o WinApp não precisa de permissão direta nela.
+Reinicie a ApiFileStorage depois de alterar raízes. A conta do processo da API precisa de ACL na raiz; o WinApp não precisa de permissão direta nela.

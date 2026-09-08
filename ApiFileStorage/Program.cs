@@ -37,24 +37,12 @@ builder.Services.AddOptions<FileStorageOptions>()
     .Validate(options => options.Limits is not null
         && options.Limits.MaxFileSizeBytes > 0
         && options.Limits.MaxFileSizeBytes <= int.MaxValue
-        && options.Limits.MaxExportItems is > 0 and <= 5000
         && options.Limits.MaxFileNameLength is > 0 and <= 255
         && options.Limits.MinimumFreeSpaceBytes >= 0
         && options.Limits.MaxIdempotencyKeyLength > 0
-        && options.Limits.ScannerTimeoutSeconds > 0
-        && options.Limits.MaxBulkDeleteItems is > 0 and <= 500
-        && options.Limits.DeletePreviewLifetimeSeconds is >= 30 and <= 900,
+        && options.Limits.ScannerTimeoutSeconds > 0,
         "FileStorage:Limits possui valores invalidos.")
     .Validate(options => options.Scanner is not null, "FileStorage:Scanner deve ser configurado.")
-    .Validate(options => !string.IsNullOrWhiteSpace(options.ExportRootId)
-        && !string.IsNullOrWhiteSpace(options.ExportPathPrefix),
-        "FileStorage:ExportRootId e ExportPathPrefix sao obrigatorios.")
-    .Validate(options => options.StepUp is not null
-        && Uri.TryCreate(options.StepUp.IdentityBaseUrl, UriKind.Absolute, out var identityUri)
-        && identityUri.Scheme == Uri.UriSchemeHttps
-        && !string.IsNullOrWhiteSpace(options.StepUp.Action)
-        && options.StepUp.TimeoutSeconds is >= 1 and <= 60,
-        "FileStorage:StepUp deve apontar para uma Identity HTTPS valida.")
     .ValidateOnStart();
 
 builder.Services.AddSingleton<StorageRootCatalog>();
@@ -63,16 +51,7 @@ builder.Services.AddSingleton<IStoragePathResolver, SecureStoragePathResolver>()
 builder.Services.AddSingleton<IStorageSpaceChecker, StorageSpaceChecker>();
 builder.Services.AddSingleton<IFileScanner, CompositeFileScanner>();
 builder.Services.AddSingleton<IFileStorageLifecycleService, FileStorageLifecycleService>();
-builder.Services.AddSingleton<IFileStorageCommandService, FileStorageCommandService>();
 builder.Services.AddSingleton<FileStorageHealthService>();
-builder.Services.AddSingleton<FileStorageDeletePreviewStore>();
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddHttpClient<IFileStorageStepUpValidator, IdentityFileStorageStepUpValidator>((services, client) =>
-{
-    var stepUpOptions = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<FileStorageOptions>>().Value.StepUp;
-    client.BaseAddress = new Uri(stepUpOptions.IdentityBaseUrl.TrimEnd('/') + "/", UriKind.Absolute);
-    client.Timeout = TimeSpan.FromSeconds(stepUpOptions.TimeoutSeconds);
-});
 builder.Services.AddHostedService<FileStorageRootValidationHostedService>();
 builder.Services.AddHostedService<FileStorageReconciliationHostedService>();
 

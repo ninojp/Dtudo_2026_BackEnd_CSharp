@@ -19,8 +19,6 @@ public sealed record DeleteStorageFileCommand(
     string ObjectId,
     string IdempotencyKey);
 
-public sealed record DeleteStorageFileRequest(string ObjectId);
-
 public sealed record DeleteStorageFileResult(
     string ObjectId,
     string Sha256,

@@ -202,9 +202,9 @@ foi criado.
 ## 13. Atualizacao pos-Etapa 25
 
 O `WinAppDtudo` nao grava mais imagens nem cria diretorios na raiz de
-exportacao. `CriadorDeEstruturas` baixa a capa em memoria, solicita
-`POST /api/file-storage/export/plan` por IDs e envia multipart para
-`POST /api/file-storage/import` com `ObjectId` e `Idempotency-Key`.
+exportacao. `CriadorDeEstruturas` baixa a capa em memoria e grava a estrutura diretamente no disco local, na pasta escolhida pelo operador via `FolderBrowserDialog` nativo. Antes de gravar, verifica se a estrutura ja existe; se existir, o operador escolhe "Adicionar novos" (cria somente o que falta, sem apagar nem substituir conteudo existente) ou "Cancelar".
+
+Atualizacao (2026-09-07): o fluxo de upload para `POST /api/file-storage/import` foi removido junto com o metodo `CriarEstruturaAsync`. A exclusao em massa via API (previa + step-up TOTP + `delete/batch`) tambem foi removida do WinApp e da ApiFileStorage — os endpoints `export/destinations`, `export/plan`, `import`, `delete`, `delete/preview` e `delete/batch` deixaram de existir, e toda a infra associada (cliente `FileStorageApiClient`, servico de comandos, preview store, step-up validator e configuracoes `ExportDestinations`/`StepUp`) foi removida. Na ApiFileStorage restam apenas `resolve`, `reconcile`, `health` e `startup`.
 
 Exclusoes em massa usam `delete/preview` e `delete/batch`. A previa e vinculada
 ao ator, sessao e dispositivo; o lote consulta o grant de step-up da

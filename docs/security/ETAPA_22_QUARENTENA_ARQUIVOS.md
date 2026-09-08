@@ -19,9 +19,9 @@
 
 ## Endpoints internos
 
-- `POST /api/file-storage/import`: multipart com `objectId`, `file` e header `Idempotency-Key`.
-- `POST /api/file-storage/delete`: recebe somente `ObjectId` e exige `Idempotency-Key`.
-- `POST /api/file-storage/reconcile`: executa a reconstrucao autorizada dos diarios.
+- `POST /api/file-storage/import`: **REMOVIDO em 2026-09-07.** O WinApp nao consome mais este endpoint — o salvamento de estruturas e feito diretamente no disco local pelo WinApp. O motor interno de quarentena/scanner/promocao (`FileStorageLifecycleService`) permanece implementado e coberto por testes, mas nao e mais alcancavel por endpoint de escrita.
+- `POST /api/file-storage/delete`: **REMOVIDO em 2026-09-07**, junto com `delete/preview` e `delete/batch`, na desmontagem da exclusao de capas via API.
+- `POST /api/file-storage/reconcile`: executa a reconstrucao autorizada dos diarios (permanece ativo).
 
 Todos os endpoints continuam sob a policy `permission:filesystem.command`. Respostas e problemas nao devolvem raiz fisica, caminho temporario ou caminho canonico.
 

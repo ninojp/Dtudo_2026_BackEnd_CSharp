@@ -43,8 +43,9 @@ Concluida no Development local em 2026-08-07. A Etapa 26 nao foi iniciada.
 - `WinAppDtudo/appsettings.json`
 - `ApiIdentity/appsettings.json`
 - `tests/ApiFileStorage.Tests/FileStorageCommandTests.cs`
-- `tests/WinAppDtudo.Tests/CriadorDeEstruturasTests.cs`
 - `tests/WinAppDtudo.Tests/FileStorageApiClientTests.cs`
+
+Observacao de atualizacao (2026-09-07): o arquivo `tests/WinAppDtudo.Tests/CriadorDeEstruturasTests.cs` foi removido junto com o metodo `CriarEstruturaAsync`, que cobria exclusivamente o fluxo antigo de exportacao via `POST /api/file-storage/import`. O fluxo atual salva diretamente no disco local via `CriarEstruturaLocalAsync`.
 
 ## Validacao
 
@@ -54,7 +55,7 @@ Concluida no Development local em 2026-08-07. A Etapa 26 nao foi iniciada.
 - `dotnet test .\tests\WinAppDtudo.Tests\WinAppDtudo.Tests.csproj --no-restore`: **16/16**, 0 falhas e 0 ignorados.
 - `dotnet test .\tests\ApiIdentity.Tests\ApiIdentity.Tests.csproj --no-restore`: **57/57**, 0 falhas e 0 ignorados, apos o novo escopo do client.
 - Testes focados: comandos da API **2/2**, cliente HTTP **2/2** e criador sem escrita local **1/1**.
-- Varredura dos arquivos migrados: zero ocorrencias de `Directory`, `File`, `Path`, `FolderBrowserDialog` ou APIs de ACL em `CriadorDeEstruturas` e `FUC_MyAnimeDetalhes`.
+- Varredura dos arquivos migrados: a Etapa 25 removeu os acessos diretos na epoca; posteriormente (2026-09-07) o metodo `CriarEstruturaAsync` foi removido e o salvamento passou a ser feito diretamente no disco local pelo WinApp (`CriarEstruturaLocalAsync`), com `FolderBrowserDialog` nativo e verificacao de estrutura existente. O endpoint `POST /api/file-storage/import` ficou sem consumidor no WinApp.
 - Varredura do WinApp: nenhum `FileSystemAccessRule`, `DirectorySecurity`, `FileSecurity`, `GetAccessControl` ou `SetAccessControl`; os acessos restantes estao restritos a analise de origem, configuracao, DPAPI, ferramentas locais e log diagnostico.
 
 ## Riscos residuais e acoes manuais

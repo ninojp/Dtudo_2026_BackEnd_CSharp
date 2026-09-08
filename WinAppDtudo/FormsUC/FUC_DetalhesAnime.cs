@@ -1271,7 +1271,6 @@ public partial class FUC_DetalhesAnime : UserControl
 
         return null;
     }
-
     // ===================================================================
 
     private void MostrarCarregando(bool carregando)
