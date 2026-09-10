@@ -17,9 +17,10 @@ public static class GatewayRouteConfiguration
         {
             CreateExactRoute("catalog-animes-list", "/api/catalog/animes", "/apiLocal/Anime"),
             CreateExactRoute("catalog-animes-search", "/api/catalog/animes/search", "/apiLocal/Anime/buscar"),
+            CreateExactRoute("catalog-animes-relacionados", "/api/catalog/animes/relacionados", "/apiLocal/Anime/relacionados"),
             CreateParameterizedRoute("catalog-anime-by-id", "/api/catalog/animes/{id:int}", "/apiLocal/Anime/{id}"),
-            CreateExactRoute("catalog-collections-list", "/api/catalog/collections", "/apiLocal/MyAnime/public"),
-            CreateParameterizedRoute("catalog-collection-by-id", "/api/catalog/collections/{id:int}", "/apiLocal/MyAnime/public/{id}"),
+            CreateExactRoute("catalog-collections-list", "/api/catalog/collections", "/apiLocal/MyAnime"),
+            CreateParameterizedRoute("catalog-collection-by-id", "/api/catalog/collections/{id:int}", "/apiLocal/MyAnime/{id}"),
             CreateExactRoute(
                 "musicx-collections-list",
                 "/api/catalog/music/collections",

@@ -9,8 +9,9 @@ import AuthContext from '../../../context_api/AuthContext/AuthContext';
 import FiltrarPorGenero from '../../FiltrarPorGenero/FiltrarPorGenero';
 import FiltrarPorLetra from '../../FiltrarPorLetra/FiltrarPorLetra';
 import FiltrarPorAno from '../../FiltrarPorAno/FiltrarPorAno';
+import FiltrarPorTipo, { TIPO_FILTRO_PADRAO, TIPO_FILTRO_TODOS } from '../../FiltrarPorTipo/FiltrarPorTipo';
 import CardAnime from '../CardAnime/CardAnime';
-import { ehAnimeAdulto, obterAnoAnime, obterGenerosAnime, obterIdAnime, obterTituloAnime } from '@dtudo-anime-content';
+import { ehAnimeAdulto, obterAnoAnime, obterGenerosAnime, obterIdAnime, obterTipoCanonicoAnime, obterTituloAnime, TIPOS_PRINCIPAIS_ANIME } from '@dtudo-anime-content';
 import { buscarAnimesDaApiLocalPorTermo } from '../../../services/apiMyAnimes';
 
 export default function CardsAnimesList() {
@@ -19,8 +20,9 @@ export default function CardsAnimesList() {
     const [generoSelecionado, setGeneroSelecionado] = useState('');
     const [letraSelecionada, setLetraSelecionada] = useState('');
     const [anoSelecionado, setAnoSelecionado] = useState('');
+    const [tipoSelecionado, setTipoSelecionado] = useState(TIPO_FILTRO_PADRAO);
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(48);
+    const [limit, setLimit] = useState(100);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -96,6 +98,11 @@ export default function CardsAnimesList() {
         if (anoSelecionado) {
             animesList = animesList.filter((anime) => String(obterAnoAnime(anime)) === anoSelecionado);
         }
+        if (tipoSelecionado === TIPO_FILTRO_PADRAO) {
+            animesList = animesList.filter((anime) => TIPOS_PRINCIPAIS_ANIME.includes(obterTipoCanonicoAnime(anime)));
+        } else if (tipoSelecionado !== TIPO_FILTRO_TODOS) {
+            animesList = animesList.filter((anime) => obterTipoCanonicoAnime(anime) === tipoSelecionado);
+        }
 
         if (searchTerm) return [...animesList];
 
@@ -105,7 +112,7 @@ export default function CardsAnimesList() {
                 sensitivity: 'base'
             })
         );
-    }, [animesPermitidos, searchTerm, generoSelecionado, letraSelecionada, anoSelecionado]);
+    }, [animesPermitidos, searchTerm, generoSelecionado, letraSelecionada, anoSelecionado, tipoSelecionado]);
 
     const totalPages = Math.max(1, Math.ceil(filteredItems.length / limit));
     const paginatedItems = useMemo(() => {
@@ -149,6 +156,7 @@ export default function CardsAnimesList() {
                     <FiltrarPorLetra letraSelecionada={letraSelecionada} setLetraSelecionada={atualizarFiltro(setLetraSelecionada)} exibirNumericos />
                     <FiltrarPorGenero generoSelecionado={generoSelecionado} setGeneroSelecionado={atualizarFiltro(setGeneroSelecionado)} animes={animesPermitidos} />
                     <FiltrarPorAno anoSelecionado={anoSelecionado} setAnoSelecionado={atualizarFiltro(setAnoSelecionado)} animes={animesPermitidos} />
+                    <FiltrarPorTipo tipoSelecionado={tipoSelecionado} setTipoSelecionado={atualizarFiltro(setTipoSelecionado)} />
                     {isAuthenticated && (
                         <button
                             type='button'
@@ -160,18 +168,16 @@ export default function CardsAnimesList() {
                         </button>
                     )}
                 </div>
+                <span className={styles.spanTotalAnimes}>
+                    <strong className={styles.strongTotalAnimes}>{filteredItems.length}</strong> Animes Filtrados
+                </span>
                 <QtdExibirPorPage
                     value={limit}
                     onChange={(newLimit) => { setLimit(newLimit); setPage(1); }}
-                    options={[12, 24, 48, 96]}
+                    options={[20, 50, 100]}
                 />
             </div>
             <div>
-                {(searchTerm || generoSelecionado || letraSelecionada || anoSelecionado || mostrarAdultos) && (
-                    <span className={styles.spanTotalAnimes}>
-                        <strong className={styles.strongTotalAnimes}>{filteredItems.length}</strong> Animes encontrados
-                    </span>
-                )}
                 {isSearching && <span className={styles.spanTotalAnimes}>Buscando...</span>}
                 {searchError && <span className={styles.spanTotalAnimes} role='alert'>{searchError}</span>}
             </div>

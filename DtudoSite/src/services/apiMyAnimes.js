@@ -70,3 +70,36 @@ export async function buscarTodasColecoesMyAnimeDaApiLocal(signal) {
 
     return colecoes;
 }
+
+export async function buscarColecaoMyAnimePorId(myAnimeId, signal) {
+    const response = await axiosHttpBffCatalog().get(`/api/catalog/collections/${myAnimeId}`, { signal });
+    return response.data;
+}
+
+const TAMANHO_LOTE_ANIMES_RELACIONADOS = 200;
+
+export async function buscarAnimesPorMalIds(malIds, signal) {
+    const idsUnicos = [...new Set((malIds || []).filter((malId) => Number.isInteger(malId) && malId > 0))];
+    if (idsUnicos.length === 0) return [];
+
+    const cliente = axiosHttpBffCatalog();
+    let animes = [];
+
+    for (let inicio = 0; inicio < idsUnicos.length; inicio += TAMANHO_LOTE_ANIMES_RELACIONADOS) {
+        const lote = idsUnicos.slice(inicio, inicio + TAMANHO_LOTE_ANIMES_RELACIONADOS);
+        const response = await cliente.get('/api/catalog/animes/relacionados', {
+            params: { ids: lote },
+            paramsSerializer: { indexes: null },
+            signal,
+        });
+
+        if (!Array.isArray(response.data)) {
+            throw new TypeError('A ApiMyAnimes retornou uma resposta de animes relacionados invalida.');
+        }
+
+        animes = animes.concat(response.data);
+    }
+
+    return animes;
+}
+

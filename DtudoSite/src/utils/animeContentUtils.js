@@ -178,6 +178,8 @@ export function obterImagemAnime(anime) {
         || null;
 }
 
+export const TIPOS_PRINCIPAIS_ANIME = ['TV', 'OVA', 'ONA', 'MOVIE'];
+
 export function ehAnimeAdulto(anime) {
     const possuiGeneroHentai = obterGenerosAnime(anime)
         .some((genero) => normalizarValor(genero) === 'hentai');

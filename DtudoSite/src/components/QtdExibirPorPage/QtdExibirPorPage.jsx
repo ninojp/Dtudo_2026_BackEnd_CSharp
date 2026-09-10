@@ -1,7 +1,7 @@
 import ParagrafoPage from '../ParagrafoPage/ParagrafoPage';
 import styles from './QtdExibirPorPage.module.css';
 
-export default function QtdExibirPorPage({ value, onChange, options = [ 12, 24, 48, 96] }) {
+export default function QtdExibirPorPage({ value, onChange, options = [20, 50, 100] }) {
     return (
         <fieldset className={styles.containerParagQtd}>
             <label htmlFor='selectQtdPorPgId' className={styles.labelQtdPorPg}>

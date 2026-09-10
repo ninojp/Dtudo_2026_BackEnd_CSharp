@@ -26,13 +26,24 @@ Projeto WinAppDtudo - Aplicativo Desktop para consulta, cadastro e manipulação
 Projeto ApiDiscogs - Api para consulta externa de informações sobre músicas, artistas e álbuns.
 Projeto ApiMyMusicX - Api para gestão do Banco de dados local de músicas, artistas e álbuns. (CRUD completo, documentada com Swagger).
 
-anomalia detectada,   
 Atualmente (03/09/2026) foram adicionados (através de I.A) diversos novos projetos e funcionalidades, ApiIdentity, ApiFileStorage, ApiDiscogs, ApiMusicX, DtudoGateway e as Apis de Testes.
+
+ANOTE, MARQUE, REGISTRE!!!!
+EU SEMPRE EXECUTO TUDO VIA VS 2026!
+ESTOU TRABALHANDO LOCALMENTE, SOZINHO NO PROJETO.
+MEU PORJETO NÃO TEM VERSÃO DE PRODUÇÃO (DEPLOY) AINDA (FUTURAMENTE TERÁ).
+MEU PROJETO PRINCIPAL É WINAPPDTUDO (C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\), ATRAVÉS DELE EU EXECUTO TODAS AS MINHAS AÇÕES PRINCIPAIS RELACIONADAS À CONSULTA, CADASTRO, MANIPULAÇÃO DE DADOS E EXECUÇÃO DOS DEMAIS PROJETOS (DTUDOSITE).
 
 ------------------------------------------------------------------------------------------------------------------
 
+COMO SEMPRE! VOU REPETIR!
+Quero uma implementação (correção, modificação) PROFISSIONAL, COMPLETA E ROBUSTA.
+Se tiver qualquer duvida me pergunte antes de começar a implementar.
+
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
 Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca de Animes - DB_Local, ApiMyAnimes", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimes é chamada, e retorna os resultados (Cards) da busca. Ao clicar em um Card, somos redirecionados para a nova ABA (UC) de detalhes do anime selecionado, nessa Aba "detalhes do anime" temos o botão "Exibir MyAnime" que ao ser clicado abre uma nova aba que exibe a coleção completa (MyAnime, que são todos os animes relacionado entre si) do anime selecionado, nesta aba temos um botão "Salvar estrutura" que ao ser clicado abre uma caixa de diálogo para escolhermos o local onde a estrutura de pastas e arquivos será salva.
+
+anomalia detectada, ao salvar o anime (Build Divide: Code White) não salvou os dois animes relacionados!
 
 As proximas etapas serão, gerenciamento, monitoramento e estatisticas das minhas estruturas de dados locais (via ApiFileStorage e WinAppDtudo para exibição das estruturas salvas e seus conteúdos e suas estatisticas).
  

@@ -5,8 +5,7 @@ import H1TituloPage from '../../../components/H1TituloPage/H1TituloPage';
 import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
 import CardAnime from '../../../components/componentsAnimes/CardAnime/CardAnime';
 import AuthContext from '../../../context_api/AuthContext/AuthContext';
-import AnimesContext from '../../../context_api/AnimesContext/AnimesContext';
-import { buscarTodasColecoesMyAnimeDaApiLocal } from '../../../services/apiMyAnimes';
+import { buscarColecaoMyAnimePorId, buscarAnimesPorMalIds } from '../../../services/apiMyAnimes';
 import {
     ehAnimeAdulto,
     obterIdAnime,
@@ -15,6 +14,7 @@ import {
     obterTipoCanonicoAnime,
 } from '@dtudo-anime-content';
 import styles from './AnimesRelacionados.module.css';
+
 
 const TIPOS_COLECAO = [
     ['TV', 'TV Series'],
@@ -53,9 +53,9 @@ export default function AnimesRelacionados() {
     const { isAuthenticated } = useContext(AuthContext);
     const { myAnimeId } = useParams();
     const navigate = useNavigate();
-    const { listObjsDetalhesAnimes, isLoading: animesCarregando } = useContext(AnimesContext);
-    const [colecoes, setColecoes] = useState([]);
-    const [isLoadingColecoes, setIsLoadingColecoes] = useState(true);
+    const [colecao, setColecao] = useState(null);
+    const [animesEncontrados, setAnimesEncontrados] = useState([]);
+    const [isLoadingColecao, setIsLoadingColecao] = useState(true);
     const [error, setError] = useState(null);
     const myAnimeIdNumerico = Number(myAnimeId);
 
@@ -66,44 +66,60 @@ export default function AnimesRelacionados() {
     }, [myAnimeIdNumerico, navigate]);
 
     useEffect(() => {
+        if (!Number.isInteger(myAnimeIdNumerico) || myAnimeIdNumerico <= 0) return undefined;
+
         const controller = new AbortController();
         let ativo = true;
 
-        async function carregarColecoes() {
-            setIsLoadingColecoes(true);
+        async function carregarColecao() {
+            setIsLoadingColecao(true);
             setError(null);
 
             try {
-                const colecoesDaApi = await buscarTodasColecoesMyAnimeDaApiLocal(controller.signal);
-                if (ativo) setColecoes(colecoesDaApi);
+                const colecaoDaApi = await buscarColecaoMyAnimePorId(myAnimeIdNumerico, controller.signal);
+                const animesDaColecao = await buscarAnimesPorMalIds(colecaoDaApi?.animesMalId, controller.signal);
+
+                if (ativo) {
+                    setColecao(colecaoDaApi);
+                    setAnimesEncontrados(animesDaColecao);
+                }
             } catch (erro) {
                 if (erro.code === 'ERR_CANCELED' || !ativo) return;
-                setError('Nao foi possivel carregar as colecoes MyAnimes.');
+
+                if (erro.response?.status === 404) {
+                    setError(`Nenhuma coleção MyAnimes encontrada para o ID ${myAnimeIdNumerico}.`);
+                } else {
+                    setError('Nao foi possivel carregar a colecao MyAnimes.');
+                }
             } finally {
-                if (ativo) setIsLoadingColecoes(false);
+                if (ativo) setIsLoadingColecao(false);
             }
         }
 
-        carregarColecoes();
+        carregarColecao();
         return () => {
             ativo = false;
             controller.abort();
         };
-    }, []);
+    }, [myAnimeIdNumerico]);
 
-    const colecoesDoAnime = useMemo(() => colecoes.filter((colecao) => (
-        Number(colecao.id) === myAnimeIdNumerico
-    )), [colecoes, myAnimeIdNumerico]);
+    const animesDaColecao = useMemo(() => {
+        const idsDaColecao = colecao?.animesMalId || [];
 
-    const colecoesComAnimes = useMemo(() => colecoesDoAnime.map((colecao) => ({
-        colecao,
-        animes: (colecao.animesMalId || [])
-            .map((malId) => listObjsDetalhesAnimes.find((anime) => Number(obterIdAnime(anime)) === Number(malId)))
-            .filter((anime) => anime && (isAuthenticated || !ehAnimeAdulto(anime))),
-    })).filter(({ animes }) => animes.length > 0), [colecoesDoAnime, isAuthenticated, listObjsDetalhesAnimes]);
-            const colecaoAtual = colecoesDoAnime[0];
+        return idsDaColecao
+            .map((malId) => {
+                const animeEncontrado = animesEncontrados.find((anime) => Number(obterIdAnime(anime)) === Number(malId));
+                if (animeEncontrado) return { malId, anime: animeEncontrado, disponivelLocalmente: true };
+                return { malId, anime: null, disponivelLocalmente: false };
+            })
+            .filter(({ anime }) => !anime || isAuthenticated || !ehAnimeAdulto(anime));
+    }, [colecao, animesEncontrados, isAuthenticated]);
 
-    if (animesCarregando || isLoadingColecoes) {
+    const animesVisiveis = useMemo(() => (
+        animesDaColecao.filter(({ anime }) => anime !== null).map(({ anime }) => anime)
+    ), [animesDaColecao]);
+
+    if (isLoadingColecao) {
         return <main className={styles.mainRelacionados}>Loading...</main>;
     }
 
@@ -120,38 +136,43 @@ export default function AnimesRelacionados() {
         <>
             <HeaderPage>
                 <H1TituloPage className={styles.tituloColecao}>Coleção Completa</H1TituloPage>
-                <H2SubTitulo className={styles.subtituloColecao}>{colecaoAtual?.titulo || `MyAnime ID ${myAnimeIdNumerico}`}</H2SubTitulo>
+                <H2SubTitulo className={styles.subtituloColecao}>{colecao?.titulo || `MyAnime ID ${myAnimeIdNumerico}`}</H2SubTitulo>
             </HeaderPage>
             <main className={styles.mainRelacionados}>
-                {colecoesComAnimes.length > 0 ? (
+                {animesDaColecao.length > 0 ? (
                     <section className={styles.sectionColecoes}>
-                        {colecoesComAnimes.map(({ colecao, animes }) => (
-                            <div key={colecao.id ?? colecao.titulo} className={styles.divColecao}>
-                                <div className={styles.estatisticasColecao}>
-                                    {obterEstatisticasColecao(animes).filter(({ icone }) => !icone).map(({ rotulo, valor, sufixo }, indice) => (
-                                        <p className={indice === 0 ? styles.estatisticaPrincipal : undefined} key={rotulo}>
-                                            <span className={styles.rotuloEstatistica}>{rotulo}:</span> {valor}{sufixo ? ` ${sufixo}` : ''}
-                                        </p>
-                                    ))}
-                                    <div className={styles.estatisticasTipos}>
-                                        {obterEstatisticasColecao(animes).filter(({ icone }) => icone).map(({ rotulo, valor, icone }) => (
-                                            <span key={rotulo}>
-                                                <span className={styles.iconeEstatistica}>{icone}</span>{' '}
-                                                <span className={styles.tipoEstatistica}>{rotulo}:</span>{' '}
-                                                <span className={styles.numeroEstatistica}>{valor}</span>
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className={styles.sectionCards}>
-                                    {animes.map((anime) => (
-                                        <Link key={obterIdAnime(anime)} to={`/animes/animes-detalhes/${obterIdAnime(anime)}`}>
-                                            <CardAnime anime={anime} />
-                                        </Link>
+                        <div className={styles.divColecao}>
+                            <div className={styles.estatisticasColecao}>
+                                {obterEstatisticasColecao(animesVisiveis).filter(({ icone }) => !icone).map(({ rotulo, valor, sufixo }, indice) => (
+                                    <p className={indice === 0 ? styles.estatisticaPrincipal : undefined} key={rotulo}>
+                                        <span className={styles.rotuloEstatistica}>{rotulo}:</span> {valor}{sufixo ? ` ${sufixo}` : ''}
+                                    </p>
+                                ))}
+                                <div className={styles.estatisticasTipos}>
+                                    {obterEstatisticasColecao(animesVisiveis).filter(({ icone }) => icone).map(({ rotulo, valor, icone }) => (
+                                        <span key={rotulo}>
+                                            <span className={styles.iconeEstatistica}>{icone}</span>{' '}
+                                            <span className={styles.tipoEstatistica}>{rotulo}:</span>{' '}
+                                            <span className={styles.numeroEstatistica}>{valor}</span>
+                                        </span>
                                     ))}
                                 </div>
                             </div>
-                        ))}
+                            <div className={styles.sectionCards}>
+                                {animesDaColecao.map(({ malId, anime, disponivelLocalmente }) => (
+                                    disponivelLocalmente ? (
+                                        <Link key={malId} to={`/animes/animes-detalhes/${obterIdAnime(anime)}`}>
+                                            <CardAnime anime={anime} />
+                                        </Link>
+                                    ) : (
+                                        <div key={malId} className={styles.cardPlaceholder} title={`MalId ${malId} ainda nao foi importado para o banco local.`}>
+                                            <p>Anime ainda nao importado localmente</p>
+                                            <p className={styles.placeholderMalId}>MalId: {malId}</p>
+                                        </div>
+                                    )
+                                ))}
+                            </div>
+                        </div>
                     </section>
                 ) : (
                     <section className={styles.sectionColecoes}>
@@ -162,3 +183,4 @@ export default function AnimesRelacionados() {
         </>
     );
 }
+
