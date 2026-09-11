@@ -34,6 +34,24 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         AddControlButtonsToMenuStrip(Mnu_MenuMyAnimes);
     }
 
+    /// <summary>
+    /// Atualiza o texto exibido na barra de status no rodapé da janela, usada para
+    /// reportar progresso de operações demoradas sem bloquear a interface com um diálogo modal.
+    /// </summary>
+    public void AtualizarStatusRodape(string mensagem)
+    {
+        if (IsDisposed)
+            return;
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => AtualizarStatusRodape(mensagem));
+            return;
+        }
+
+        Lbl_StatusRodape.Text = mensagem;
+    }
+
     private void MnI_DBLocalBuscarAnime_Click(object? sender, EventArgs e)
     {
         var ucBuscaLocal = new FUC_DBLocalBuscarAnime(_apiMyAnimesService)
@@ -379,6 +397,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             AbrirDetalhesMyAnime(this, myAnimeId);
             _ = AtualizarAbaMyAnimeAsync(myAnimeId);
         };
+        ucDetalhes.StatusAtualizado += (_, mensagem) => AtualizarStatusRodape(mensagem);
         var tabPage = new TabPage
         {
             Text = consultaLocal ? $"DB #{malId}" : $" #{malId}",

@@ -71,6 +71,7 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
         catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante relações do anime {Id}", id); return StatusCode(503, new { message = "A API MyAnimeList está temporariamente indisponível." }); }
         catch (TimeoutRejectedException) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return NotFound(new { message = $"Anime com ID {id} não encontrado." }); }
         catch (HttpRequestException ex) { logger.LogError(ex, "Erro ao obter relações do anime {Id} na MAL", id); return StatusCode(502, new { message = "Falha ao comunicar com a API MyAnimeList." }); }
     }
 }

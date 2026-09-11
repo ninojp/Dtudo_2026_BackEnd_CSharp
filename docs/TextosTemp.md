@@ -36,14 +36,30 @@ MEU PROJETO PRINCIPAL É WINAPPDTUDO (C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
 
 ------------------------------------------------------------------------------------------------------------------
 
+
+
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
+Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca Externa - ApiMyAnimeList", depois de digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimeList é chamada, e retorna os resultados (Cards) da busca. Ao clicar em um Card, abre uma nova ABA (UC) de detalhes do anime clicado, nessa Aba "detalhes do anime" temos o botão "Salvar Como MyAnime" que ao ser clicado deve salvar (via ApiMyAnimes) o anime atual como MyAnime (MyAnime, representa a coleção completa a qual o anime vai pertencer, deve salvar nome e IDs dos animes relacionados ao atual), também deve salvar este mesmo anime como um Anime (com todos os detalhes do anime atual e SEUS ANIMES RELACIONADOS A ELE).
+
+Descobri OUTRA anomalia ao salvar animes relacionados ao anime atual, cada anime tem seus próprios animes relacionados a ele, que atualmente não estão sendo salvos corretamente em cada anime na tabela Animes.
+Corrija isso.
+
+Testei e continua sem salvar corretamente os animes relacionados dos animes relacionados ao anime atual.
+vou colocar um exemplo detalhado de como os animes relacionados deveriam ser salvos corretamente:  
+MyAnime id 2494, Cardcaptor Sakura: mal-id 232  
+tem 4 animes relacionados diretamente a ele: [371, 2424, 372, 35320]  
+anime 371: [232]  
+anime 2424: [232]  
+anime 372: [232, 1078, 33354, 35320] aqui não salvou o 1078  
+anime 35320: [232, 372, 33354] aqui não salvou o 33354  
+O salvamento pode ser feito em etapas e de forma lenta (tempo não é problema)  
+Se possivel gostaria que o salvamento fosse feito de forma recursiva, garantindo que todos os animes relacionados, e os animes relacionados a eles, fossem salvos corretamente. E se possivel, poderia salvar em mais um nivel, ou seja, Anime 372 [232, 1078, 33354, 35320] salvar também os animes relacionados a cada um desses animes (apenas neste terceiro nivel e não além dele).
+Gostaria de exbir status do processo e relatorio de erros caso ocorra.
+Me questione se não entendeu algo.
+
 COMO SEMPRE! VOU REPETIR!
 Quero uma implementação (correção, modificação) PROFISSIONAL, COMPLETA E ROBUSTA.
 Se tiver qualquer duvida me pergunte antes de começar a implementar.
-
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca de Animes - DB_Local, ApiMyAnimes", ao digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimes é chamada, e retorna os resultados (Cards) da busca. Ao clicar em um Card, somos redirecionados para a nova ABA (UC) de detalhes do anime selecionado, nessa Aba "detalhes do anime" temos o botão "Exibir MyAnime" que ao ser clicado abre uma nova aba que exibe a coleção completa (MyAnime, que são todos os animes relacionado entre si) do anime selecionado, nesta aba temos um botão "Salvar estrutura" que ao ser clicado abre uma caixa de diálogo para escolhermos o local onde a estrutura de pastas e arquivos será salva.
-
-anomalia detectada, ao salvar o anime (Build Divide: Code White) não salvou os dois animes relacionados!
 
 As proximas etapas serão, gerenciamento, monitoramento e estatisticas das minhas estruturas de dados locais (via ApiFileStorage e WinAppDtudo para exibição das estruturas salvas e seus conteúdos e suas estatisticas).
  

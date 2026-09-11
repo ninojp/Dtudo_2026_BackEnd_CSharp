@@ -44,7 +44,10 @@ partial class Frm_MyAnimes
         Mnu_AnalizarEstruturas = new ToolStripMenuItem();
         Tbc_MyAnimes = new WinAppDtudo.Controls.DarkTabControl();
         Iml_ImagensList = new ImageList(components);
+        Ssb_StatusRodape = new StatusStrip();
+        Lbl_StatusRodape = new ToolStripStatusLabel();
         Mnu_MenuMyAnimes.SuspendLayout();
+        Ssb_StatusRodape.SuspendLayout();
         SuspendLayout();
         // 
         // Mnu_MenuMyAnimes
@@ -185,6 +188,22 @@ partial class Frm_MyAnimes
         Iml_ImagensList.Images.SetKeyName(2, "RosaDosVentos.png");
         Iml_ImagensList.Images.SetKeyName(3, "Vvendetta.png");
         // 
+        // Ssb_StatusRodape
+        // 
+        Ssb_StatusRodape.Items.AddRange(new ToolStripItem[] { Lbl_StatusRodape });
+        Ssb_StatusRodape.Location = new Point(0, 670);
+        Ssb_StatusRodape.Name = "Ssb_StatusRodape";
+        Ssb_StatusRodape.Size = new Size(1272, 22);
+        Ssb_StatusRodape.SizingGrip = false;
+        Ssb_StatusRodape.TabIndex = 2;
+        // 
+        // Lbl_StatusRodape
+        // 
+        Lbl_StatusRodape.Name = "Lbl_StatusRodape";
+        Lbl_StatusRodape.Size = new Size(0, 17);
+        Lbl_StatusRodape.Spring = true;
+        Lbl_StatusRodape.TextAlign = ContentAlignment.MiddleLeft;
+        // 
         // Frm_MyAnimes
         // 
         AllowDrop = true;
@@ -195,6 +214,7 @@ partial class Frm_MyAnimes
         BackgroundImageLayout = ImageLayout.Stretch;
         ClientSize = new Size(1272, 692);
         Controls.Add(Tbc_MyAnimes);
+        Controls.Add(Ssb_StatusRodape);
         Controls.Add(Mnu_MenuMyAnimes);
         Font = new Font("Segoe Fluent Icons", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
         ForeColor = Color.Gold;
@@ -208,6 +228,8 @@ partial class Frm_MyAnimes
         Load += Frm_MyAnimes_Load;
         Mnu_MenuMyAnimes.ResumeLayout(false);
         Mnu_MenuMyAnimes.PerformLayout();
+        Ssb_StatusRodape.ResumeLayout(false);
+        Ssb_StatusRodape.PerformLayout();
         ResumeLayout(false);
         PerformLayout();
     }
@@ -215,6 +237,8 @@ partial class Frm_MyAnimes
     #endregion
 
     private MenuStrip Mnu_MenuMyAnimes;
+    private StatusStrip Ssb_StatusRodape;
+    private ToolStripStatusLabel Lbl_StatusRodape;
     private ToolStripMenuItem MnI_DBLocalBuscarAnime;
     private WinAppDtudo.Controls.DarkTabControl Tbc_MyAnimes;
     private ImageList Iml_ImagensList;

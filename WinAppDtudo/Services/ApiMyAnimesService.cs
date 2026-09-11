@@ -239,16 +239,16 @@ public class ApiMyAnimesService
         AdicionaAnimeDto dto,
         CancellationToken cancellationToken = default)
     {
-        var animeExistente = await ObterAnimePorMalIdAsync(dto.MalId);
-        if (animeExistente is not null)
-            throw new HttpRequestException($"Anime com MalId {dto.MalId} já existe.", null, HttpStatusCode.Conflict);
-
         using var response = await SendJsonAsync(
             HttpMethod.Post,
             "apiLocal/Anime",
             dto,
             requiresAuthentication: true,
             cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.Conflict)
+            throw new HttpRequestException($"Anime com MalId {dto.MalId} já existe.", null, HttpStatusCode.Conflict);
+
         await EnsureSuccessStatusCodeAsync(response, cancellationToken);
     }
 

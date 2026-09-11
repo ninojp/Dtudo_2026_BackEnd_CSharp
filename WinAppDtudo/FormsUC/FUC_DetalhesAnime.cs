@@ -21,6 +21,8 @@ public partial class FUC_DetalhesAnime : UserControl
     public event EventHandler<int>? MyAnimeExistenteSelecionado;
     public event EventHandler<int>? MyAnimeSolicitado;
     public event EventHandler<int>? EditarAnimeSolicitado;
+    /// <summary>Disparado com o texto de progresso do salvamento, para ser exibido na barra de status do formulário hospedeiro.</summary>
+    public event EventHandler<string>? StatusAtualizado;
 
     private readonly MyAnimeListApiService _myAnimeListService;
     private readonly ApiMyAnimesService _apiMyAnimesService;
@@ -885,6 +887,7 @@ public partial class FUC_DetalhesAnime : UserControl
         var malIdsRelacionados = ObterMalIdsRelacionados();
 
         Btn_SalvarComoMyAnime.Enabled = false;
+        StatusAtualizado?.Invoke(this, $"Salvando MyAnime '{tituloMyAnime}': iniciando...");
         try
         {
             var dto = new AdicionaMyAnimeDto
@@ -903,10 +906,13 @@ public partial class FUC_DetalhesAnime : UserControl
             {
                 [_animeAtual.MalId] = ObterMalIdsAnimesRelacionados()
             };
+            var progresso = new Progress<ProgressoImportacaoAnimes>(p =>
+                StatusAtualizado?.Invoke(this, $"[{p.Percentual}%] {p.Mensagem}"));
             var importacao = await importador.ImportarAsync(
                 myAnimeId,
                 tituloMyAnime,
                 malIdsRelacionados,
+                progresso,
                 animesRelacionadosPorMalId: animesRelacionadosPorMalId);
 
             var caminhoLog = ImportadorAnimesMyAnimeService.SalvarLogErros(
@@ -971,6 +977,7 @@ public partial class FUC_DetalhesAnime : UserControl
         finally
         {
             Btn_SalvarComoMyAnime.Enabled = true;
+            StatusAtualizado?.Invoke(this, string.Empty);
         }
     }
 
