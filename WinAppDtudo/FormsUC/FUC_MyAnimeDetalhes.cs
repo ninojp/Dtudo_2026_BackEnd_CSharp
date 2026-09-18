@@ -9,6 +9,7 @@ public class FUC_MyAnimeDetalhes : UserControl
 {
     public event EventHandler<int>? CardClicado;
     public event EventHandler<int>? EditarMyAnimeSolicitado;
+    public event EventHandler<int>? MonitorarEstruturaSolicitado;
 
     private readonly int _myAnimeId;
     private readonly ApiMyAnimesService _apiMyAnimesService;
@@ -130,11 +131,15 @@ public class FUC_MyAnimeDetalhes : UserControl
 
         ConfigurarBotaoAcao(_btnSalvarEstrutura);
         ConfigurarBotaoAcao(_btnEditarMyAnime);
+        var monitorar = new Button { Text = "Monitorar Estrutura" };
+        ConfigurarBotaoAcao(monitorar);
+        monitorar.Click += (_, _) => MonitorarEstruturaSolicitado?.Invoke(this, _myAnimeId);
         flpAcoes.Controls.AddRange([
             _lblMyAnimeId,
             _txtMyAnimeId,
             _btnSalvarEstrutura,
-            _btnEditarMyAnime
+            _btnEditarMyAnime,
+            monitorar
         ]);
 
         tlpTopo.Controls.Add(_lblTitulo, 0, 0);

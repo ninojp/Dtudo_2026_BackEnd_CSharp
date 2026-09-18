@@ -20,6 +20,8 @@ public class MyAnimesContext: DbContext
     /// </summary>
     public DbSet<MyAnime> MyAnimes { get; set; }
 
+    public DbSet<MyAnimeMonitoringLocation> MonitoringLocations => Set<MyAnimeMonitoringLocation>();
+
     /// <summary>
     /// Representa a tabela de animes importados da ApiMyAnimeList no banco de dados.
     /// </summary>
@@ -51,6 +53,15 @@ public class MyAnimesContext: DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<MyAnimeMonitoringLocation>(entity =>
+        {
+            entity.ToTable("MyAnimeMonitoringLocations");
+            entity.HasKey(location => location.MyAnimeId);
+            entity.Property(location => location.RootKey).HasMaxLength(100).IsRequired();
+            entity.Property(location => location.RelativePath).HasColumnType("nvarchar(max)").IsRequired();
+            entity.HasOne<MyAnime>().WithOne().HasForeignKey<MyAnimeMonitoringLocation>(location => location.MyAnimeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
         // MalId é a chave primária mas NÃO é auto-incremento (é um ID externo do MyAnimeList)
         modelBuilder.Entity<Anime>()
             .HasKey(a => a.MalId);

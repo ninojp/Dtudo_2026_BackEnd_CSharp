@@ -25,6 +25,8 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     private WindowsHealthNotificationService _healthNotificationService = null!;
     private Frm_DtudoSiteBrowser? _dtudoSiteBrowser;
     private Frm_HealthDashboard? _healthDashboard;
+    private Frm_Monitoramento? _monitoringForm;
+    private readonly ToolStripMenuItem _monitoringMenu = new("Monitoramento local") { Enabled = false };
     private WinAppHealthSnapshot? _lastHealthSnapshot;
     private bool _isApplyingMainLayout;
     private bool _isOpeningDtudoSite;
@@ -35,6 +37,8 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         StartupDiagnostics.Mark("Frm constructor entered");
         StartupDiagnostics.Mark("Before InitializeComponent");
         InitializeComponent();
+        Mnu_Principal.Items.Insert(0, _monitoringMenu);
+        _monitoringMenu.Click += OpenMonitoring;
         StartupDiagnostics.Mark("After InitializeComponent");
         _identityAuthenticationService = new WinAppAuthenticationService(
             browserClient: new WinAppPkceBrowserClient(
@@ -73,6 +77,17 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     }
     //=========================================================
     //Menu MyAnimes - Abrir formulário Frm_MyAnimes.
+    private void OpenMonitoring(object? sender, EventArgs args)
+    {
+        if (!_identityAuthenticationService.IsAuthenticated) return;
+        if (_monitoringForm is null || _monitoringForm.IsDisposed)
+        {
+            _monitoringForm = new Frm_Monitoramento(_identityAuthenticationService);
+            _monitoringForm.Show(this);
+        }
+        else _monitoringForm.Activate();
+    }
+
     private void MnI_MyAnimes_Click(object sender, EventArgs e)
     {
         Frm_MyAnimes formMyAnimes = new(_identityAuthenticationService);
@@ -204,6 +219,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
 
     private void SetAuthenticatedUi(bool isAuthenticated)
     {
+        _monitoringMenu.Enabled = isAuthenticated;
         MnI_Conectar.Enabled = !isAuthenticated;
         MnI_CadastrarUsuario.Enabled = isAuthenticated;
         MnI_MyAnimes.Enabled = isAuthenticated;

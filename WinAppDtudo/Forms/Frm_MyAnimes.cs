@@ -519,6 +519,16 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         };
         ucDetalhes.CardClicado += AbrirDetalhesAnimeLocal;
         ucDetalhes.EditarMyAnimeSolicitado += AbrirEditarMyAnime;
+        ucDetalhes.MonitorarEstruturaSolicitado += (_, collectionId) =>
+        {
+            var name = $"Monitoramento_{collectionId}";
+            var existing = Tbc_MyAnimes.TabPages.Cast<TabPage>().FirstOrDefault(page => page.Name == name);
+            if (existing is not null) { Tbc_MyAnimes.SelectedTab = existing; return; }
+            var monitoringTab = new TabPage($"Estrutura My #{collectionId}") { Name = name };
+            monitoringTab.Controls.Add(new FUC_Monitoramento(_authenticationService, collectionId));
+            Tbc_MyAnimes.TabPages.Add(monitoringTab);
+            Tbc_MyAnimes.SelectedTab = monitoringTab;
+        };
 
         var tabPage = new TabPage
         {

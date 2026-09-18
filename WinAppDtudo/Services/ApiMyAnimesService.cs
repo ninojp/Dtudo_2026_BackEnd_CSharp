@@ -9,6 +9,20 @@ namespace WinAppDtudo.Services;
 
 public class ApiMyAnimesService
 {
+    public async Task<LibDtudo.Shared.Dtos.FileMonitoring.MyAnimeMonitoringLocationDto?> ObterLocalizacaoMonitoramentoAsync(int myAnimeId, CancellationToken token)
+    {
+        using var response = await SendAsync(HttpMethod.Get, $"apiLocal/MyAnime/{myAnimeId}/monitoring-location", null, true, token);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+        await EnsureSuccessStatusCodeAsync(response, token);
+        return await response.Content.ReadFromJsonAsync<LibDtudo.Shared.Dtos.FileMonitoring.MyAnimeMonitoringLocationDto>(_jsonOptions, token);
+    }
+
+    public async Task SalvarLocalizacaoMonitoramentoAsync(int myAnimeId, LibDtudo.Shared.Dtos.FileMonitoring.MyAnimeMonitoringLocationDto location, CancellationToken token)
+    {
+        using var response = await SendJsonAsync(HttpMethod.Put, $"apiLocal/MyAnime/{myAnimeId}/monitoring-location", location, true, token);
+        await EnsureSuccessStatusCodeAsync(response, token);
+    }
+
     private const int MaxResultadosBusca = 100;
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
     private readonly HttpClient _httpClient;

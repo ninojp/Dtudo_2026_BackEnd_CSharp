@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Security.Claims;
 using ApiFileStorage.Configuration;
 using ApiFileStorage.Infrastructure;
+using ApiFileStorage.Monitoring.Data;
 using ApiFileStorage.Services;
 using LibDtudo.Shared.Logging;
 using Microsoft.AspNetCore.Authentication;
@@ -13,6 +14,8 @@ using Serilog;
 using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMonitoringPersistence(builder.Configuration);
 
 builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 {
