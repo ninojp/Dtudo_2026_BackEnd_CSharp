@@ -160,11 +160,8 @@ function Invoke-PackageValidation {
         $arguments += @('-SignToolPath', $SignToolPath)
     }
 
-    $powershell = (Get-Command powershell.exe -ErrorAction SilentlyContinue).Source
-    if ([string]::IsNullOrWhiteSpace($powershell)) {
-        $powershell = (Get-Command pwsh.exe -ErrorAction SilentlyContinue).Source
-    }
-    if ([string]::IsNullOrWhiteSpace($powershell)) {
+    $powershell = Join-Path $PSHOME $(if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh.exe' } else { 'powershell.exe' })
+    if (-not (Test-Path -LiteralPath $powershell -PathType Leaf)) {
         throw 'PowerShell nao esta disponivel para validar o pacote.'
     }
     $json = & $powershell @arguments

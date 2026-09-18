@@ -37,7 +37,8 @@ function Invoke-ScriptCapture {
     $stdoutPath = Join-Path $testRoot "$captureId.out"
     $stderrPath = Join-Path $testRoot "$captureId.err"
     try {
-        $process = Start-Process -FilePath 'powershell.exe' -ArgumentList (@('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $ScriptPath) + $Arguments) -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -Wait -PassThru
+        $executable = Join-Path $PSHOME $(if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh.exe' } else { 'powershell.exe' })
+        $process = Start-Process -FilePath $executable -ArgumentList (@('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $ScriptPath) + $Arguments) -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -Wait -PassThru
         $stdout = if (Test-Path -LiteralPath $stdoutPath) { Get-Content -LiteralPath $stdoutPath -Raw } else { '' }
         $stderr = if (Test-Path -LiteralPath $stderrPath) { Get-Content -LiteralPath $stderrPath -Raw } else { '' }
         return [pscustomobject]@{ ExitCode = [int]$process.ExitCode; Output = ($stdout + $stderr) }

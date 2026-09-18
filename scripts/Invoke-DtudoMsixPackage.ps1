@@ -384,8 +384,10 @@ function Validate-Package {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $archive = [IO.Compression.ZipFile]::OpenRead($packagePath)
     try {
-        foreach ($entryName in @('WinAppDtudo.exe', 'Assets\StoreLogo.png', 'Assets\Square150x150Logo.png', 'Assets\Square44x44Logo.png')) {
-            if ($null -eq $archive.GetEntry($entryName)) {
+        foreach ($entryName in @('WinAppDtudo.exe', 'Assets/StoreLogo.png', 'Assets/Square150x150Logo.png', 'Assets/Square44x44Logo.png')) {
+            $entry = $archive.GetEntry($entryName)
+            if ($null -eq $entry) { $entry = $archive.GetEntry($entryName.Replace('/', '\')) }
+            if ($null -eq $entry) {
                 throw "Arquivo obrigatorio ausente no pacote: $entryName"
             }
         }

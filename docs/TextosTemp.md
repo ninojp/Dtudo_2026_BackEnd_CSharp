@@ -122,9 +122,16 @@ Quero uma implementação PROFISSIONAL, COMPLETA E ROBUSTA.
 
 ===========================================================================
 
+Funcionou de primeira, parabéns.
+Agora quero que associe todas as pastas com o banco de dados local, garantindo que cada estrutura de dados tenha seu respectivo mapeamento e persistência correta, para quando o WinAppDtudo acessar os arquivos, ele consiga refletir corretamente no banco de dados, sem eu ter que clicar manualmente para associar cada pasta.
+
 https://myanimelist.net/anime/64008 NÃO APARECE A IMAGEM CAPA
 
-==========================================================================================================
+==========================================================
+Sync-MyAnimeMonitoringLocations
+O plano final tem 1.869 novos vínculos seguros e preserva o vínculo existente. Restam 16 pastas sem associação segura: nove sem correspondência confirmada, cinco com mais de uma coleção candidata e duas disputando a mesma coleção. Vou aplicar os 1.869 vínculos em uma transação e conferir cada associação antes de confirmá-la.
+
+================================================
 TODOS OS TEXTOS ABAIXO SÃO APENAS PARA USO PESSOAL E NÃO DEVEM SER USADOS POR NENHUMA I.A OU AGENTE DE I.A
 
 Documentação official da api MyAnimeList:  <https://myanimelist.net/apiconfig/references/api/v2#section/Common-parameters>  

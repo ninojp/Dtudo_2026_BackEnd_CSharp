@@ -6,7 +6,7 @@ param(
     [string]$RepositoryRoot,
     [ValidatePattern('^([01][0-9]|2[0-3]):[0-5][0-9]$')]
     [string]$StartTime = '02:00',
-    [string]$PowerShellExecutable = (Join-Path $PSHOME 'powershell.exe')
+    [string]$PowerShellExecutable = (Join-Path $PSHOME $(if ($PSVersionTable.PSEdition -eq 'Core') { 'pwsh.exe' } else { 'powershell.exe' }))
 )
 
 Set-StrictMode -Version 2.0
