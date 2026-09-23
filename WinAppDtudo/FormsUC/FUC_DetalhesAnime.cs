@@ -898,6 +898,11 @@ public partial class FUC_DetalhesAnime : UserControl
 
             var colecao = await _apiMyAnimesService.GarantirMyAnimeColecaoAsync(dto);
             var myAnimeId = colecao.Id;
+            var malIdsParaImportar = malIdsRelacionados
+                .Where(malId => colecao.AnimesMalId.Contains(malId)
+                    && !colecao.AnimesIgnoradosPorOutraColecao.Contains(malId))
+                .Distinct()
+                .ToList();
 
             var importador = new ImportadorAnimesMyAnimeService(
                 _apiMyAnimesService,
@@ -911,7 +916,7 @@ public partial class FUC_DetalhesAnime : UserControl
             var importacao = await importador.ImportarAsync(
                 myAnimeId,
                 tituloMyAnime,
-                malIdsRelacionados,
+                malIdsParaImportar,
                 progresso,
                 animesRelacionadosPorMalId: animesRelacionadosPorMalId);
 
@@ -930,6 +935,13 @@ public partial class FUC_DetalhesAnime : UserControl
 
             var importacaoCompleta = importacao.AnimesComFalha == 0;
 
+            if (colecao.AnimesIgnoradosPorOutraColecao.Count > 0)
+            {
+                mensagemSucesso +=
+                    "\n\nMalIds preservados nas coleções originais (não foram duplicados): " +
+                    string.Join(", ", colecao.AnimesIgnoradosPorOutraColecao.OrderBy(id => id));
+            }
+
             WinAppDtudo.Services.DarkMessageBox.Show(
                 mensagemSucesso,
                 importacaoCompleta ? "Sucesso" : "Concluído com avisos",
@@ -945,7 +957,8 @@ public partial class FUC_DetalhesAnime : UserControl
                 MostrarMyAnimeExistente(myAnimeExistente);
             else
                 WinAppDtudo.Services.DarkMessageBox.Show(
-                    $"Já existe uma coleção MyAnime com o título '{tituloMyAnime}'.",
+                    "Nenhum anime foi adicionado à nova coleção porque todos os MalIds informados " +
+                    "já pertencem às coleções originais.",
                     "Cadastro bloqueado",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -1015,20 +1028,28 @@ public partial class FUC_DetalhesAnime : UserControl
                 return;
             }
 
-            var animesRelacionadosIds = ObterMalIdsAnimesRelacionados();
+            var animesRelacionadosIds = ObterMalIdsAnimesRelacionados()
+                .Where(malId => malId != _animeAtual.MalId)
+                .Distinct()
+                .ToList();
             var dtoAnime = ConversorAnimeDtoService.CriarAdicionaAnimeDto(
                 _animeAtual,
                 myAnimeId,
                 animesRelacionadosIds);
             var animeExistente = await _apiMyAnimesService.ObterAnimePorMalIdAsync(_animeAtual.MalId);
+            var myAnimeIdOriginal = 0;
             if (animeExistente is not null)
             {
                 if (!ConfirmarSubstituicaoAnime())
                     return;
 
+                myAnimeIdOriginal = animeExistente.MyAnimeID;
+                var myAnimeIdParaPreservar = myAnimeIdOriginal > 0 && myAnimeIdOriginal != myAnimeId
+                    ? myAnimeIdOriginal
+                    : myAnimeId;
                 var atualizaAnime = ConversorAnimeDtoService.CriarAtualizaAnimeDto(
                     _animeAtual,
-                    myAnimeId,
+                    myAnimeIdParaPreservar,
                     animesRelacionadosIds);
                 await _apiMyAnimesService.AtualizarAnimeAsync(_animeAtual.MalId, atualizaAnime);
             }
@@ -1037,28 +1058,45 @@ public partial class FUC_DetalhesAnime : UserControl
                 await _apiMyAnimesService.AdicionarAnimeAsync(dtoAnime);
             }
 
-            await _apiMyAnimesService.AssociarAnimeAoMyAnimeAsync(_animeAtual.MalId, myAnimeId);
+            var associacaoAtual = await _apiMyAnimesService.AssociarAnimeAoMyAnimeAsync(
+                _animeAtual.MalId,
+                myAnimeId);
 
-            var malIdsAtualizados = myAnimeExistente.AnimesMalId
-                .Concat(ObterMalIdsRelacionados())
-                .Distinct()
-                .ToList();
+            StatusAtualizado?.Invoke(this,
+                $"Salvando relações diretas de '{_animeAtual.Title ?? _animeAtual.TitleEnglish ?? _animeAtual.MalId.ToString()}'...");
+            var importador = new ImportadorAnimesMyAnimeService(
+                _apiMyAnimesService,
+                myAnimeListApiService: _myAnimeListService);
+            var progresso = new Progress<ProgressoImportacaoAnimes>(p =>
+                StatusAtualizado?.Invoke(this, $"[{p.Percentual}%] {p.Mensagem}"));
+            var importacaoRelacionados = await importador.ImportarAsync(
+                myAnimeId,
+                myAnimeExistente.Titulo,
+                animesRelacionadosIds,
+                progresso);
 
-            if (malIdsAtualizados.Count != myAnimeExistente.AnimesMalId.Count)
+            var mensagemSucesso =
+                $"Anime atual salvo com sucesso e relacionado ao MyAnime ID {myAnimeId}.\n\n" +
+                $"Relações diretas processadas: {animesRelacionadosIds.Count}\n" +
+                $"Relações salvas: {importacaoRelacionados.AnimesSalvos}\n" +
+                $"Relações já existentes ou preservadas: {importacaoRelacionados.AnimesIgnorados}\n" +
+                $"Relações com falha: {importacaoRelacionados.AnimesComFalha}";
+
+            if (associacaoAtual.IgnoradaPorOutraColecao)
             {
-                var atualizaMyAnime = new AtualizaMyAnimeDto
-                {
-                    Titulo = myAnimeExistente.Titulo,
-                    AnimesMalId = malIdsAtualizados
-                };
-                await _apiMyAnimesService.AtualizarMyAnimeAsync(myAnimeId, atualizaMyAnime);
+                mensagemSucesso =
+                    $"Os dados do anime atual foram atualizados, mas sua associação original foi preservada " +
+                    $"no MyAnime ID {associacaoAtual.MyAnimeIdAtual}.\n\n" +
+                    mensagemSucesso;
             }
 
             WinAppDtudo.Services.DarkMessageBox.Show(
-                $"Anime salvo com sucesso e relacionado ao MyAnime ID {myAnimeId}.",
-                "Sucesso",
+                mensagemSucesso,
+                importacaoRelacionados.AnimesComFalha == 0 ? "Sucesso" : "Concluído com avisos",
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+                importacaoRelacionados.AnimesComFalha == 0
+                    ? MessageBoxIcon.Information
+                    : MessageBoxIcon.Warning);
 
             MyAnimeAtualizado?.Invoke(this, myAnimeId);
         }
@@ -1081,6 +1119,7 @@ public partial class FUC_DetalhesAnime : UserControl
         finally
         {
             Btn_SalvarComoAnime.Enabled = true;
+            StatusAtualizado?.Invoke(this, string.Empty);
         }
     }
 

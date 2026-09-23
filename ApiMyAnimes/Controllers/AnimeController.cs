@@ -5,6 +5,7 @@ using ApiMyAnimes.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -60,6 +61,11 @@ public class AnimeController(
         if (malId.HasValue)
         {
             if (malId.Value <= 0) return BadRequest("malId deve ser um número positivo.");
+
+            var myAnimeIdSolicitado = adicionaAnimeDto?.MyAnimeID ?? 0;
+            var myAnimeIdExistente = ObterOutraColecaoQueContemMalId(malId.Value, myAnimeIdSolicitado);
+            if (myAnimeIdExistente.HasValue)
+                return Conflict($"O anime com MalId {malId.Value} já pertence ao MyAnime {myAnimeIdExistente.Value}.");
 
             var animeExistentePorImportacao = context.Animes.FirstOrDefault(a => a.MalId == malId.Value);
             if (animeExistentePorImportacao is not null) return Conflict($"Anime com MalId {malId.Value} já existe.");
@@ -131,6 +137,12 @@ public class AnimeController(
         }
 
         if (adicionaAnimeDto is null) return BadRequest("Corpo da requisição inválido.");
+
+        var myAnimeIdExistentePorLista = ObterOutraColecaoQueContemMalId(
+            adicionaAnimeDto.MalId,
+            adicionaAnimeDto.MyAnimeID);
+        if (myAnimeIdExistentePorLista.HasValue)
+            return Conflict($"O anime com MalId {adicionaAnimeDto.MalId} já pertence ao MyAnime {myAnimeIdExistentePorLista.Value}.");
 
         var animeExistente = context.Animes.FirstOrDefault(a => a.MalId == adicionaAnimeDto.MalId);
         if (animeExistente is not null) return Conflict($"Anime com MalId {adicionaAnimeDto.MalId} já existe.");
@@ -621,6 +633,16 @@ public class AnimeController(
         context.SaveChanges();
 
         return NoContent();
+    }
+
+    private int? ObterOutraColecaoQueContemMalId(int malId, int myAnimeIdAtual)
+    {
+        return context.MyAnimes
+            .AsNoTracking()
+            .Where(colecao => colecao.Id != myAnimeIdAtual)
+            .ToList()
+            .FirstOrDefault(colecao => colecao.AnimesMalId.Contains(malId))?
+            .Id;
     }
 
     private static ObterAnimeDto ParaObterAnimeDto(Anime anime)

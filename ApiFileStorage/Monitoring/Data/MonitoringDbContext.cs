@@ -67,7 +67,7 @@ public sealed class MonitoringDbContext(DbContextOptions<MonitoringDbContext> op
             entity.Property(observation => observation.PreviousRelativePath).HasColumnType("nvarchar(max)");
             entity.Property(observation => observation.Detail).HasMaxLength(2000).IsRequired();
             entity.HasOne<MonitoredLocation>().WithMany().HasForeignKey(observation => observation.LocationId).OnDelete(DeleteBehavior.Restrict);
-            entity.HasIndex(observation => new { observation.LocationId, observation.ObservedAtUtc, observation.Id });
+            entity.HasIndex(observation => new { observation.LocationId, observation.Id });
         });
     }
 

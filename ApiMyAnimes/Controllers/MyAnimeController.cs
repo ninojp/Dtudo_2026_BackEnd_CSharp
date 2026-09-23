@@ -276,9 +276,16 @@ public class MyAnimeController(MyAnimesContext context) : ControllerBase
         var myAnime = context.MyAnimes.FirstOrDefault(a => a.Id == id);
         if (myAnime is null) return NotFound($"Coleção MyAnimes com ID {id} não encontrada.");
 
+        var animesAssociados = context.Animes
+            .Where(anime => anime.MyAnimeID == id)
+            .ToList();
+        foreach (var anime in animesAssociados)
+            anime.MyAnimeID = 0;
+
         context.MyAnimes.Remove(myAnime);
         context.SaveChanges();
-        Console.WriteLine($"Coleção MyAnimes deletada: {myAnime.Titulo}");
+        Console.WriteLine($"Coleção MyAnimes deletada: {myAnime.Titulo}; " +
+            $"referências de {animesAssociados.Count} animes foram limpas.");
         return NoContent();
     }
 

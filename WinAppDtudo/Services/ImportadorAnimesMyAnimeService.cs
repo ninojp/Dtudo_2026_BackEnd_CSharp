@@ -9,14 +9,6 @@ public class ImportadorAnimesMyAnimeService
     private const int MaxTentativasApiMyAnimeList = 3;
     private static readonly TimeSpan DelayTentativaApiMyAnimeList = TimeSpan.FromSeconds(2);
 
-    /// <summary>
-    /// Profundidade máxima de expansão do grafo de relações a partir do anime atual:
-    /// nível 1 = relações diretas, nível 2 = relações dos itens do nível 1 ainda não conhecidos,
-    /// nível 3 = relações dos itens do nível 2 ainda não conhecidos. Itens do nível 3 têm seu
-    /// próprio campo de relações preenchido, mas novos ids descobertos a partir deles não são importados.
-    /// </summary>
-    private const int ProfundidadeMaximaRelacionados = 3;
-
     private readonly ApiMyAnimesService _apiMyAnimesService;
     private readonly MyAnimeListApiService _myAnimeListApiService;
     private readonly Dictionary<int, IReadOnlyCollection<int>?> _relacoesCache = [];
@@ -62,19 +54,15 @@ public class ImportadorAnimesMyAnimeService
             return resultado;
         }
 
-        // Fila de expansão em largura (BFS): os ids iniciais (anime atual + relações diretas)
-        // começam no nível 1. Ao processar cada anime, suas relações reais na ApiMyAnimeList são
-        // consultadas; qualquer id ainda desconhecido é enfileirado para o próximo nível, até o
-        // limite de ProfundidadeMaximaRelacionados.
-        var conhecidos = new HashSet<int>(idsIniciais);
-        var fila = new Queue<(int MalId, int Profundidade)>(idsIniciais.Select(id => (id, 1)));
         var processados = 0;
 
-        while (fila.Count > 0)
+        // A lista recebida já representa o escopo da importação: o anime atual e suas relações
+        // diretas, ou os IDs explicitamente informados pela análise local. Relações descobertas
+        // a partir desses itens nunca ampliam a coleção.
+        foreach (var malId in idsIniciais)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var (malId, profundidade) = fila.Dequeue();
             processados++;
 
             // Busca os detalhes primeiro: o cache da ApiMyAnimeList (chave mal-anime-{id}) fica
@@ -120,35 +108,25 @@ public class ImportadorAnimesMyAnimeService
                 catch (Exception ex)
                 {
                     resultado.AnimesComFalha++;
-                    resultado.ErrosDetalhados.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha ao salvar MalId {malId} (nível {profundidade}) da coleção '{tituloMyAnime}' no DB local: {ex.Message}");
+                    resultado.ErrosDetalhados.Add($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Falha ao salvar MalId {malId} da coleção '{tituloMyAnime}': {ex.Message}");
                 }
             }
 
-            if (profundidade < ProfundidadeMaximaRelacionados && animesRelacionadosIds is not null)
-            {
-                foreach (var novoId in animesRelacionadosIds.OrderBy(id => id))
-                {
-                    if (novoId > 0 && conhecidos.Add(novoId))
-                        fila.Enqueue((novoId, profundidade + 1));
-                }
-            }
-
-            var totalConhecido = processados + fila.Count;
-            var percentual = totalConhecido == 0
-                ? 100
-                : (int)Math.Round((processados / (double)totalConhecido) * 100, MidpointRounding.AwayFromZero);
+            var percentual = (int)Math.Round(
+                (processados / (double)idsIniciais.Count) * 100,
+                MidpointRounding.AwayFromZero);
             progresso?.Report(new ProgressoImportacaoAnimes
             {
                 Percentual = Math.Clamp(percentual, 0, 99),
-                Mensagem = $"Salvando animes da coleção '{tituloMyAnime}': {processados} processados, {fila.Count} na fila " +
-                    $"(MalId {malId}, nível {profundidade}/{ProfundidadeMaximaRelacionados})"
+                Mensagem = $"Salvando animes da coleção '{tituloMyAnime}': {processados}/{idsIniciais.Count} processados " +
+                    $"(MalId {malId}; somente anime atual e relações diretas)"
             });
         }
 
         progresso?.Report(new ProgressoImportacaoAnimes
         {
             Percentual = 100,
-            Mensagem = $"Importação concluída: {processados} animes processados para a coleção '{tituloMyAnime}'."
+            Mensagem = $"Importação concluída: {processados} animes do escopo direto processados para a coleção '{tituloMyAnime}'."
         });
 
         return resultado;
@@ -205,8 +183,8 @@ public class ImportadorAnimesMyAnimeService
     /// <summary>
     /// Resolve os MalIds relacionados de <paramref name="malId"/>. Usa o mapa conhecido (já carregado
     /// pela UI para o anime atualmente visualizado) quando disponível; caso contrário, consulta a
-    /// ApiMyAnimeList diretamente, garantindo que TODO anime importado (incluindo os relacionados de
-    /// segundo grau) tenha seu próprio grafo de relações persistido corretamente.
+    /// ApiMyAnimeList diretamente para preencher os metadados do item explicitamente solicitado.
+    /// O resultado nunca é usado para ampliar a lista de animes da coleção.
     /// </summary>
     private async Task<IReadOnlyCollection<int>?> ObterAnimesRelacionadosAsync(
         int malId,
@@ -301,19 +279,23 @@ public class ImportadorAnimesMyAnimeService
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
         {
             animeFoiCriado = false;
-            if (animesRelacionadosIds is not null)
-            {
-                await _apiMyAnimesService.AtualizarAnimesRelacionadosIdsAsync(
-                    dto.MalId,
-                    animesRelacionadosIds,
-                    cancellationToken);
-            }
         }
 
-        await _apiMyAnimesService.AssociarAnimeAoMyAnimeAsync(
+        var associacao = await _apiMyAnimesService.AssociarAnimeAoMyAnimeAsync(
             dto.MalId,
             myAnimeId,
             cancellationToken);
+
+        if (!animeFoiCriado &&
+            !associacao.IgnoradaPorOutraColecao &&
+            animesRelacionadosIds is not null)
+        {
+            await _apiMyAnimesService.AtualizarAnimesRelacionadosIdsAsync(
+                dto.MalId,
+                animesRelacionadosIds,
+                cancellationToken);
+        }
+
         return animeFoiCriado;
     }
 

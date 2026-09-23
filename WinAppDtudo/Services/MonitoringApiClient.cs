@@ -6,6 +6,7 @@ namespace WinAppDtudo.Services;
 
 public sealed class MonitoringApiClient : IDisposable
 {
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(60);
     private readonly WinAppAuthenticationService authentication;
     private readonly HttpClient client;
 
@@ -15,7 +16,7 @@ public sealed class MonitoringApiClient : IDisposable
         client = new HttpClient(AppConfigurationService.CreateHttpClientHandler())
         {
             BaseAddress = new Uri(AppConfigurationService.ApiFileStorageBaseUrl.TrimEnd('/') + "/api/file-storage/monitoring/"),
-            Timeout = TimeSpan.FromSeconds(30)
+            Timeout = RequestTimeout
         };
     }
 
@@ -25,7 +26,7 @@ public sealed class MonitoringApiClient : IDisposable
     public Task<bool> StopAsync(Guid id, CancellationToken token) => SendAsync<bool>(HttpMethod.Delete, $"sessions/{id}", null, token);
     public Task<bool> RefreshAsync(Guid id, CancellationToken token) => SendAsync<bool>(HttpMethod.Post, $"sessions/{id}/refresh", null, token);
     public Task<MonitoringEventDto[]> EventsAsync(Guid id, long afterId, bool latest, CancellationToken token) =>
-        SendAsync<MonitoringEventDto[]>(HttpMethod.Get, $"sessions/{id}/events?afterId={afterId}&take=500&latest={latest}", null, token);
+        SendAsync<MonitoringEventDto[]>(HttpMethod.Get, $"sessions/{id}/events?afterId={afterId}&take=200&latest={latest}", null, token);
     public Task<MonitoringEntryDto[]> EntriesAsync(Guid id, Guid location, Guid snapshot, long afterId, CancellationToken token) =>
         SendAsync<MonitoringEntryDto[]>(HttpMethod.Get, $"sessions/{id}/entries/{location}?snapshotId={snapshot}&afterId={afterId}&take=1000", null, token);
 
