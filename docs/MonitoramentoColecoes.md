@@ -18,7 +18,8 @@ a tabela `MyAnimeMonitoringLocations` ao `Dtudo2026Db`, pela migracao
 O fluxo passivo esta implementado entre ApiFileStorage, ApiMyAnimes e WinAppDtudo.
 `Monitoring:Enabled` agora e `true`, mas nao inicia coleta no startup. Leitor,
 notificacoes e persistencia sao acionados somente por uma sessao aberta pela tela.
-Nao houve escrita nem nova enumeracao em H:, G: ou J: durante a implementacao.
+Nao houve escrita nas colecoes durante a implementacao; o inventario historico foi
+obtido somente por leitura.
 Os testes usam pastas temporarias fora das colecoes. Validacao visual com login e
 escala de 200% deve ser realizada pelo usuario via Visual Studio 2026.
 
@@ -93,8 +94,8 @@ Testes de comportamento usam EF Core InMemory, que nao substitui testes relacion
 
 ## Regras confirmadas pelo usuario
 
-- Monitorar exclusivamente as colecoes dentro das letras e de `#Dots`.
-- Ignorar totalmente `G:\AnimeX\.ImportanteX` e seus descendentes. E uma area
+- Monitorar exclusivamente as colecoes dentro das letras e de `.Dots`.
+- Ignorar totalmente `H:\AnimeX\.ImportanteX` e seus descendentes. E uma area
   temporaria organizada posteriormente pelo usuario, de forma manual. Nao
   enumerar, monitorar, contabilizar ou gerar alertas sobre essa area.
 - Ignorar pastas de sistema, lixeira e quaisquer outras areas fora das raizes
@@ -104,7 +105,7 @@ Testes de comportamento usam EF Core InMemory, que nao substitui testes relacion
 - A autorizacao mais recente limita a excecao de escrita a adicao de logs de
   monitoramento ou auditoria. Nao presumir autorizacao para manifestos JSON ou
   outros arquivos auxiliares dentro das colecoes. Historico e logs devem ficar
-  fora de H:, G: e J:, em armazenamento proprio da aplicacao. Destino exato,
+  fora de E: e H:, em armazenamento proprio da aplicacao. Destino exato,
   formato, acrescimo de registros e retencao ainda precisam ser definidos.
   Nao sobrescrever arquivos existentes nem escrever na area excluida.
 - Iniciar a coleta somente ao abrir a tela de monitoramento correspondente e
@@ -112,7 +113,7 @@ Testes de comportamento usam EF Core InMemory, que nao substitui testes relacion
   aberta nao autoriza coleta em segundo plano. Fechar o WinApp encerra a coleta.
 - Manter historico das mudancas e consulta ao ultimo estado conhecido, distinguindo
   esse estado do estado atual confirmado.
-- Os tres HDs normalmente devem estar conectados e disponiveis. Se houver falha,
+- Os dois HDs normalmente devem estar conectados e disponiveis. Se houver falha,
   apenas notificar, alertar e registrar o incidente: NENHUM BLOQUEIO de outras
   operacoes ou funcionalidades do aplicativo deve ser introduzido pelo monitor.
 - Exibir alertas somente no novo formulario de monitoramento em tempo real.
@@ -196,24 +197,104 @@ atual. Nao alterar esse comando nesta etapa nem aciona-lo automaticamente pelo m
 
 ## Raizes autorizadas
 
-| Volume | Rotulo | Pastas na raiz do volume |
+| Local | Rotulo | Pastas monitoradas |
 | --- | --- | --- |
-| H: | ANIMACAO | #Dots, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, U |
-| G: | ANIMACAO2 | S, V, W, X, Y, Z |
-| J: | ANIMACAO3 | T |
+| E: | ANIMEs | .Dots, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q |
+| H: | ANIMEs2 | R, S, T, U, V, W, X, Y, Z |
+| H:\AnimeX | AnimeX | .Dots e as letras de A a Z |
 
-Adicionalmente, em `G:\AnimeX`, somente `#Dots` e as letras de A a Z.
-Isso representa 54 raizes de enumeracao permitidas, nunca `G:\AnimeX` inteiro.
-ANIMACAO, ANIMACAO2 e ANIMACAO3 sao rotulos de volume, nao subpastas.
-A capacidade de G: foi confirmada como aproximadamente 3 TB, corrigindo a
-informacao inicial de 4 TB.
+Isso representa 54 raizes de enumeracao permitidas, nunca `H:\AnimeX` inteiro.
+ANIMEs e ANIMEs2 sao rotulos de volume, nao subpastas. `.Dots` substitui o nome
+antigo `#Dots` na nova disposicao.
+
+### Atualizacao dos apontamentos existentes
+
+O script `scripts/Sync-MyAnimeMonitoringLocations.ps1` usa as raizes acima para
+descobrir pastas e associacoes. Ele traduz as chaves da disposicao anterior antes
+de calcular o plano:
+
+| Chave anterior | Chave atual |
+| --- | --- |
+| `H_#Dots` e `H_A` a `H_Q` | `E_.Dots` e `E_A` a `E_Q` |
+| `G_S`, `G_V`, `G_W`, `G_X`, `G_Y`, `G_Z` | `H_S`, `H_V`, `H_W`, `H_X`, `H_Y`, `H_Z` |
+| `J_T` | `H_T` |
+| `X_#Dots` | `X_.Dots` |
+
+`H_R` permanece `H_R` porque R continua fisicamente em `H:\R`. Qualquer
+apontamento intermediario `E_R` deve ser convertido para `H_R`.
+
+As chaves `X_A` a `X_Z` permanecem as mesmas, mas agora resolvem para
+`H:\AnimeX`. O caminho relativo da pasta da colecao nao e alterado.
+
+Executar primeiro a pre-visualizacao e revisar o relatorio gerado fora dos discos
+monitorados. Somente depois aplicar:
+
+```powershell
+pwsh -NoLogo -NoProfile -File .\scripts\Sync-MyAnimeMonitoringLocations.ps1
+pwsh -NoLogo -NoProfile -File .\scripts\Sync-MyAnimeMonitoringLocations.ps1 -Apply
+```
+
+No modo `-Apply`, o script exige a descoberta completa, atualiza apenas
+`dbo.MyAnimeMonitoringLocations` dentro de uma transacao serializavel e verifica
+cada remapeamento antes do commit. Nao altera `MyAnimes`, arquivos ou pastas. Se
+alguma raiz nova estiver indisponivel ou houver erro de leitura, a aplicacao e
+recusada e a transacao nao e confirmada.
+
+### Sincronizacao pelo formulario
+
+O formulario `Monitoramento das colecoes locais` possui o botao `Sincronizar
+colecoes` no escopo geral. Ao clicar, a coleta ativa e pausada temporariamente,
+as 54 raizes sao descobertas por leitura e a coleta e retomada ao final.
+
+As imagens numericas de todas as subpastas sao a evidencia principal. Somente
+IDs positivos presentes no catalogo sao considerados; a colecao com a maior
+quantidade de IDs correspondentes vence quando o resultado e unico. Empates,
+IDs compartilhados e colecoes disputadas ficam pendentes. O nome da pasta e
+usado como fallback ou desempate comparando somente as quatro primeiras
+palavras normalizadas, tolerando truncamento e quantidades diferentes de
+palavras. Pastas sem colecao, raizes indisponiveis e caminhos invalidos nao
+recebem associacao arbitraria.
+
+A descoberta percorre recursivamente as subpastas autorizadas e reconhece
+imagens `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif` e `.bmp`, sem ler o conteudo
+dos arquivos.
+
+Cada execucao e persistida em `MyAnimeMonitoringSyncRuns` e cada raiz, pasta,
+alteracao, pendencia ou erro em `MyAnimeMonitoringSyncEvents`. A aba
+`Sincronizacao` mostra todas as ocorrencias retornadas, e a API permite consultar
+uma execucao pelo seu identificador mesmo depois de fechar o formulario.
+
+As linhas podem ser clicadas para abrir a aba `Estrutura My` da colecao quando o
+evento possui `MyAnimeId`. Erros ficam destacados em vermelho, alteracoes de
+apontamento em azul e inclusoes/vinculos confirmados em verde. O filtro permite
+exibir erros, alteracoes ou atualizacoes, e `Exportar TXT`/`Exportar CSV` grava
+exatamente as linhas atualmente visiveis. Ocorrencias de raiz indisponivel ou de
+pasta ainda sem MyAnime associado permanecem clicaveis, mas nao possuem uma aba
+de estrutura especifica para abrir.
+
+Estados possiveis: `Completed` quando todas as raizes foram processadas,
+`Partial` quando uma ou mais raizes ficaram indisponiveis mas as demais foram
+aplicadas, `Blocked` quando existe erro estrutural que impede qualquer alteracao,
+`Failed` quando houve falha inesperada e `Cancelled` quando a operacao foi
+cancelada. Os eventos persistidos sao
+append-only. Nenhuma etapa de sincronizacao cria, move, renomeia, exclui ou
+altera arquivos e pastas locais.
+
+Antes do primeiro uso do botao, aplicar a migration do catalogo pelo Visual
+Studio ou pelo comando equivalente:
+
+```powershell
+dotnet ef database update --project .\ApiMyAnimes\ApiMyAnimes.csproj --startup-project .\ApiMyAnimes\ApiMyAnimes.csproj
+```
 
 ## Inventario de referencia, com exclusoes aplicadas
 
-Dados recalculados do inventario em memoria, sem nova leitura da area excluida.
+Os dados abaixo sao o inventario historico da disposicao anterior em H:, G: e J:;
+nao representam uma nova leitura apos a redistribuicao para E: e H:. Nao executar
+uma nova enumeracao apenas para atualizar estes numeros.
 Tamanhos sao somas logicas de arquivos, em bytes; TB e GB usam base decimal.
 
-| Volume | Arquivos | Bytes das colecoes |
+| Volume no inventario historico | Arquivos | Bytes das colecoes |
 | --- | ---: | ---: |
 | H: | 29.617 | 7.584.425.992.790 |
 | G: | 14.813 | 2.540.868.638.966 |
@@ -230,7 +311,7 @@ Tamanhos sao somas logicas de arquivos, em bytes; TB e GB usam base decimal.
 - A enumeracao original nao registrou erros nem encontrou pontos de redirecionamento.
 
 O espaco livre observado foi de 415,69 GB (5,20%) em H:, 177,74 GB (5,92%) em G:
-e 150,54 GB (15,05%) em J:. Espaco livre e uma medida do volume inteiro, nao das
+e 150,54 GB (15,05%) em J:, na disposicao historica. Espaco livre e uma medida do volume inteiro, nao das
 colecoes: reflete indiretamente qualquer uso do disco, mesmo fora do escopo.
 Nao atribuir essa ocupacao a pastas excluidas nem inventariar essas pastas.
 
@@ -245,25 +326,11 @@ Todos os itens abaixo estao pendentes de analise. Nao houve correcao automatica.
 | ARQUIVO-ZERO | Arquivo com zero bytes | 6 | Tres legendas, dois videos e um TXT; avaliar individualmente |
 | SEM-VIDEO | Colecao principal candidata sem extensoes de video verificadas | 25 | Nao significa pasta vazia ou colecao incompleta confirmada |
 | JPG-NUMERICO-REPETIDO | Nome numerico JPG repetido | 49 nomes | Nao prova duplicacao de conteudo ou associacao incorreta |
-| ESPACO-LIVRE | Volume com menos de 6% livre na observacao | 2 volumes | H: e G:; limite de alerta definitivo ainda nao escolhido |
+| ESPACO-LIVRE | Volume com menos de 6% livre na observacao historica | 2 volumes | H: e G: na disposicao anterior; limite de alerta definitivo ainda nao escolhido |
 
 O total anterior de 87 caminhos longos incluia itens fora do escopo atual e foi
 substituido por 82. Os totais anteriores de arquivos, bytes e JPG numericos
 tambem foram substituidos pelos valores deste documento.
-
-### Ocorrencias ja identificadas no acervo principal
-
-- Legenda vazia: `H:\M\Metropolis\2001 Metropolis - Filme\Metropolis (BluRay,720p,H264,DTS) - THORA-pob.srt`.
-- Legenda vazia: `H:\M\Manie-Manie Meikyuu Monogatari (Neo Tokyo)\1987 Manie-Manie Meikyuu Monogatari - Filme\Neo Tokyo-eng.srt`.
-- Legenda vazia: `H:\N\Nanatsu no Taizai\2016 Nanatsu no Taizai Seisen no Shirushi - TV\Nanatsu.no.Taizai.Seisen.no.Shirushi.E04.Forma.de.Amor.1080p.WEB-DL.H264.E-AC3.2.0.DUAL-RICKSZ.Por.srt`.
-- Video vazio: `H:\O\One Piece\1999 One Piece - TV\One Piece - 1 East Blue\OpEX_041_SD_ERRO.avi`.
-- Video vazio: `G:\S\Shoujo Kakumei Utena\1997 Shoujo Kakumei Utena - TV\[Judas] Shoujo Kakumei Utena - S01E09.mkv`.
-- TXT vazio na pasta `J:\T\Touhou Project\2015 Hifuu Katsudou Kiroku The Sealed Esoteric History - OVA`.
-- Pasta vazia: `H:\C\Cowboy Bebop\2021 Cowboy Bebop (NetFlix, Live Action) - ONA`.
-- Pasta vazia: `H:\H\Happy Feet\2006 Happy Feet - Filme`.
-- Pasta vazia: `H:\H\Happy Feet\2011 Happy Feet 2 O Pinguim - Filme`.
-- Duas outras pastas vazias foram contabilizadas nas colecoes alfabeticas AnimeX;
-  seus caminhos nao foram transcritos neste documento.
 
 ## Limites e decisoes pendentes
 
@@ -277,7 +344,7 @@ tambem foram substituidos pelos valores deste documento.
 - Retencao do historico e destino adicional de logs tecnicos ainda precisam ser
   definidos. Associacao pasta/MyAnime, intervalos e persistencia SQL Server foram
   implementados. A API usa as permissoes atuais, sem alterar ACLs. Historico fora
-  de H:, G: e J:, ausencia
+  de E: e H:, ausencia
   de bloqueios, coleta vinculada a abertura/fechamento da tela e separacao entre
   escopo geral e por colecao ja sao requisitos confirmados. Identificacao de autoria
   nao faz parte desta etapa.

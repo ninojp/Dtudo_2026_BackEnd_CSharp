@@ -17,11 +17,20 @@ public sealed class MonitoringController(IServiceProvider services, ILogger<Moni
     private string Owner => User.FindFirst("sub")?.Value ?? throw new UnauthorizedAccessException();
     private MonitoringSessions Sessions => services.GetService<MonitoringSessions>()
         ?? throw new MonitoringDisabledException();
+        private CollectionSyncDiscoveryService CollectionSync => services.GetService<CollectionSyncDiscoveryService>()
+            ?? throw new MonitoringDisabledException();
 
     /// <summary>Lista as raizes permitidas sem enumerar os discos.</summary>
     [HttpGet("roots")]
     [ProducesResponseType(typeof(MonitoringRootDto[]), StatusCodes.Status200OK)]
     public ActionResult<MonitoringRootDto[]> Roots() => Ok(MonitoringRoots.Collections().All.Select(root => new MonitoringRootDto(root.Key, root.Path)).ToArray());
+
+        /// <summary>Descobre pastas candidatas e capas numericas sem alterar o acervo local.</summary>
+        [HttpPost("synchronizations/discovery")]
+        [ProducesResponseType(typeof(CollectionSyncDiscoveryDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public Task<ActionResult<CollectionSyncDiscoveryDto>> DiscoverSynchronization(CancellationToken cancellationToken) =>
+            Execute(() => CollectionSync.DiscoverAsync(cancellationToken));
 
     /// <summary>Inicia coleta somente para o escopo solicitado.</summary>
     [HttpPost("sessions")]

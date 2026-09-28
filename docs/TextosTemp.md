@@ -39,13 +39,11 @@ Atualmente (03/09/2026) foram adicionados (através de I.A) diversos novos proje
 ------------------------------------------------------------------------------------------------------------------
 
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca Externa - ApiMyAnimeList", depois de digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimeList é chamada, e retorna os resultados (Cards) da busca. Ao clicar em um Card, abre uma nova ABA (UC) de detalhes do anime clicado, nessa Aba "detalhes do anime" temos o botão "Savar Como MyAnime" que ao ser clicado Salvaos dados da coleção MyAnime (MyAnime, representa a coleção completa de IDs ou seja TODOS os animes relacionados entre si).
+Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca de animes - DB_Local", depois de digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimes é chamada, e retorna os resultados (Cards) da busca. Ao clicar em um Card, abre uma nova ABA (UC) de detalhes do anime clicado, nessa Aba "detalhes do anime" temos o botão "Exibir MyAnime" que ao ser exibe os dados da coleção MyAnime (MyAnime, representa a coleção completa ou seja TODOS os animes relacionados entre si). Nesta ABA "detalhes da Coleção, MyAnime" temos o botão "Monitorar Estrutura" que ao ser clicado deve abrir uma nova ABA (UC) de monitoramento da estrutura local da coleção MyAnime, exibindo a pasta raiz (Myanime) todas as suas subpastas, todos os arquivos e estatísticas relacionadas. Nesta ABA "Monitoramento da Estrutura", onde é exibido a estrutura de pastas e arquivos da coleção MyAnime, Quero Aumentar o tamanho de TODAS as fontes (aumente em 3 pontos, exemplo: se a fonte atual é 9, aumente para 12). Além disso, quero trocar a cor das fontes, as pastas podem continuar amarelo, mas os arquivos internos das pastas devem ser arquivos de imagem na COR Branca, arquivos de vídeo na COR VERDE (o tamanho em bytes no final de cada arquivo deve ser em CINZA, e em Kbytes.). Quero que todas essas alterações sejam aplicadas de forma consistente e que a interface continue responsiva e de fácil leitura.
 
+==================
 
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca de animes - DB_Local", depois de digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimes é chamada, e retorna os resultados (Cards) da busca. Ao clicar em um Card, abre uma nova ABA (UC) de detalhes do anime clicado, nessa Aba "detalhes do anime" temos o botão "Exibir MyAnime" que ao ser exibe os dados da coleção MyAnime (MyAnime, representa a coleção completa ou seja TODOS os animes relacionados entre si). Nesta ABA "detalhes da Coleção, MyAnime" quero cria um novo botão "Monitorar Estrutura" que ao ser clicado deve abrir uma nova ABA (UC) de monitoramento da estrutura da coleção MyAnime, exibindo a pasta raiz (Myanime) todas as suas subpastas, todos os arquivos e estatísticas relacionadas.
-
-Ainda nessa Aba "detalhes do anime" temos o outro botão "Savar Anime" que ao ser clicado Salva todos os dados do Anime atual, Mas deveria salvar também todos os animes relacionados ao Anime atual, Mas atualmente não está fazendo isso corretamente.
+Ficou bom, vamos apenas ajustar a exibição do tamanho dos arquivos de video (em Kbytes), quero exibir o valor em Megabytes (MB). Outra coisa que quero implementar é a função de ao Clicar em uma pasta (nome da pasta exibido na arvore), seja aberto o WINDOWS EXPLORER, na pasta correspondente.
 
 COMO SEMPRE! VOU REPETIR!
 Quero uma implementação PROFISSIONAL, COMPLETA E ROBUSTA.
@@ -56,13 +54,13 @@ https://myanimelist.net/anime/64008 NÃO APARECE A IMAGEM CAPA
 ==========================================================
 ESTÁ É A PARTE MAIS IMPORTANTE DE TUDO QUE ESTOU CRIANDO, LOGO JAMAIS, DE FORMA ALGUMA DEVE SER FEITO QUALQUER TIPO DE ALTERAÇÃO OU MODIFICAÇÃO NAS MINHAS ESTRUTURAS DE DADOS LOCAIS, DEVE SER APENAS LEITURA E MONITORAMENTO.
 
-Atualmente minhas coleções de animes estão armazenadas localmente em 3 HDs diferentes e organizados por LETRAS:  
-H:\(#Dots,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,U), este é o HD H:\ANIMACAO, de 8 Tera Bytes  
-G:\(AnimeX (esta é uma pasta que contém todos os meus animes Hentai, e contém pastas seperados por Letras (#Dots,A,B,C,D,E,F... todas as letras) e dentro TODOS os meus animes hentais)), ainda neste HD temos as outras letras G:\(S,V,W,X,Y,Z), este é o HD G:\ANIMACAO2 de 4 Tera Bytes  
-J:\(apenas a Letra T), este é o HD J:\ANIMACAO3 de 1 Tera Bytes.
+Agora adicionei um novo HD e preciso modificar os endereços (apontamentos) das minhas coleções locais para incluir este novo disco. Agora as ficaram em apenas dois HDs.
+Disco 2 (E:) ANIMEs (E:\.Dots,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R) (#Dots foi trocado para .Dots)
+Disco 0 (H:) ANIMEs2 (H:\(Animex\.Dots,A,B,C,D,E,F... todas as letras),S,T,U,V,X,W,Y,Z)
 
-Sync-MyAnimeMonitoringLocations
-O plano final tem 1.869 novos vínculos seguros e preserva o vínculo existente. Restam 16 pastas sem associação segura: nove sem correspondência confirmada, cinco com mais de uma coleção candidata e duas disputando a mesma coleção. Vou aplicar os 1.869 vínculos em uma transação e conferir cada associação antes de confirmá-la.
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
+Após logar no WinAppDtudo, e acessar a Form MyAnimes, na aba "Busca Externa - ApiMyAnimeList", depois de digitar o nome de um anime e clicar no botão "Buscar", a ApiMyAnimeList é chamada, e retorna os resultados (Cards) da busca. Ao clicar em um Card, abre uma nova ABA (UC) de detalhes do anime clicado, nessa Aba "detalhes do anime" temos o botão "Savar Como MyAnime" que ao ser clicado Salvaos dados da coleção MyAnime (MyAnime, representa a coleção completa de IDs ou seja TODOS os animes relacionados entre si).
+
 
 ===========================================================
 TODOS OS TEXTOS ABAIXO SÃO APENAS PARA USO PESSOAL E NÃO DEVEM SER USADOS POR NENHUMA I.A OU AGENTE DE I.A

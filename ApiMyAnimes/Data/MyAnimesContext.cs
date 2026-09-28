@@ -22,6 +22,10 @@ public class MyAnimesContext: DbContext
 
     public DbSet<MyAnimeMonitoringLocation> MonitoringLocations => Set<MyAnimeMonitoringLocation>();
 
+    public DbSet<MyAnimeMonitoringSyncRun> MonitoringSyncRuns => Set<MyAnimeMonitoringSyncRun>();
+
+    public DbSet<MyAnimeMonitoringSyncEvent> MonitoringSyncEvents => Set<MyAnimeMonitoringSyncEvent>();
+
     /// <summary>
     /// Representa a tabela de animes importados da ApiMyAnimeList no banco de dados.
     /// </summary>
@@ -61,6 +65,29 @@ public class MyAnimesContext: DbContext
             entity.Property(location => location.RelativePath).HasColumnType("nvarchar(max)").IsRequired();
             entity.HasOne<MyAnime>().WithOne().HasForeignKey<MyAnimeMonitoringLocation>(location => location.MyAnimeId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<MyAnimeMonitoringSyncRun>(entity =>
+        {
+            entity.ToTable("MyAnimeMonitoringSyncRuns");
+            entity.HasKey(run => run.Id);
+            entity.Property(run => run.Status).HasMaxLength(30).IsRequired();
+            entity.Property(run => run.Error).HasMaxLength(2000);
+            entity.HasIndex(run => new { run.StartedAtUtc, run.Id });
+        });
+        modelBuilder.Entity<MyAnimeMonitoringSyncEvent>(entity =>
+        {
+            entity.ToTable("MyAnimeMonitoringSyncEvents");
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.Severity).HasMaxLength(20).IsRequired();
+            entity.Property(item => item.Code).HasMaxLength(100).IsRequired();
+            entity.Property(item => item.RootKey).HasMaxLength(100).IsRequired();
+            entity.Property(item => item.RelativePath).HasColumnType("nvarchar(max)").IsRequired();
+            entity.Property(item => item.PreviousRootKey).HasMaxLength(100);
+            entity.Property(item => item.NewRootKey).HasMaxLength(100);
+            entity.Property(item => item.Detail).HasMaxLength(2000).IsRequired();
+            entity.HasOne<MyAnimeMonitoringSyncRun>().WithMany().HasForeignKey(item => item.RunId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(item => new { item.RunId, item.Id });
         });
         // MalId é a chave primária mas NÃO é auto-incremento (é um ID externo do MyAnimeList)
         modelBuilder.Entity<Anime>()
@@ -118,6 +145,12 @@ public class MyAnimesContext: DbContext
         {
             throw new InvalidOperationException(
                 "Security audit events are append-only and cannot be modified or deleted by the application.");
+        }
+        if (ChangeTracker.Entries<MyAnimeMonitoringSyncEvent>()
+            .Any(entry => entry.State is EntityState.Modified or EntityState.Deleted))
+        {
+            throw new InvalidOperationException(
+                "Collection synchronization events are append-only and cannot be modified or deleted by the application.");
         }
     }
 }

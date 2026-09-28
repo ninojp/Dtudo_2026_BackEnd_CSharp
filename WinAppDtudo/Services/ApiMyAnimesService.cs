@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Net.Http.Json;
 using LibDtudo.Shared.Dtos;
+using LibDtudo.Shared.Dtos.FileMonitoring;
 using LibDtudo.Shared.Search;
 using System.Net;
 
@@ -21,6 +22,36 @@ public class ApiMyAnimesService
     {
         using var response = await SendJsonAsync(HttpMethod.Put, $"apiLocal/MyAnime/{myAnimeId}/monitoring-location", location, true, token);
         await EnsureSuccessStatusCodeAsync(response, token);
+    }
+
+    public async Task<CollectionSyncResultDto> SincronizarColecoesAsync(
+        CollectionSyncDiscoveryDto discovery,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await SendJsonAsync(
+            HttpMethod.Post,
+            "apiLocal/MyAnime/monitoring-synchronizations",
+            new CollectionSyncRequest(discovery),
+            requiresAuthentication: true,
+            cancellationToken);
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<CollectionSyncResultDto>(_jsonOptions, cancellationToken)
+            ?? throw new InvalidOperationException("A ApiMyAnimes retornou uma sincronizacao vazia.");
+    }
+
+    public async Task<CollectionSyncResultDto> ObterSincronizacaoColecoesAsync(
+        Guid runId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(
+            HttpMethod.Get,
+            $"apiLocal/MyAnime/monitoring-synchronizations/{runId}",
+            contentFactory: null,
+            requiresAuthentication: true,
+            cancellationToken);
+        await EnsureSuccessStatusCodeAsync(response, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<CollectionSyncResultDto>(_jsonOptions, cancellationToken)
+            ?? throw new InvalidOperationException("A ApiMyAnimes retornou uma sincronizacao vazia.");
     }
 
     private const int MaxResultadosBusca = 100;

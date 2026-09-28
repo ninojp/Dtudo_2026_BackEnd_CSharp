@@ -21,6 +21,8 @@ public sealed class MonitoringApiClient : IDisposable
     }
 
     public Task<MonitoringRootDto[]> RootsAsync(CancellationToken token) => SendAsync<MonitoringRootDto[]>(HttpMethod.Get, "roots", null, token);
+    public Task<CollectionSyncDiscoveryDto> DiscoverCollectionsAsync(CancellationToken token) =>
+        SendAsync<CollectionSyncDiscoveryDto>(HttpMethod.Post, "synchronizations/discovery", null, token);
     public Task<MonitoringSessionDto> StartAsync(StartMonitoringRequest request, CancellationToken token) => SendAsync<MonitoringSessionDto>(HttpMethod.Post, "sessions", request, token);
     public Task<MonitoringSessionDto> HeartbeatAsync(Guid id, CancellationToken token) => SendAsync<MonitoringSessionDto>(HttpMethod.Post, $"sessions/{id}/heartbeat", null, token);
     public Task<bool> StopAsync(Guid id, CancellationToken token) => SendAsync<bool>(HttpMethod.Delete, $"sessions/{id}", null, token);

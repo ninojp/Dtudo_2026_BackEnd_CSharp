@@ -82,7 +82,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         if (!_identityAuthenticationService.IsAuthenticated) return;
         if (_monitoringForm is null || _monitoringForm.IsDisposed)
         {
-            _monitoringForm = new Frm_Monitoramento(_identityAuthenticationService);
+            _monitoringForm = new Frm_Monitoramento(_identityAuthenticationService, OpenMyAnimeStructure);
             _monitoringForm.Show(this);
         }
         else _monitoringForm.Activate();
@@ -92,6 +92,23 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     {
         Frm_MyAnimes formMyAnimes = new(_identityAuthenticationService);
         formMyAnimes.Show();
+    }
+
+    private void OpenMyAnimeStructure(int myAnimeId)
+    {
+        if (!_identityAuthenticationService.IsAuthenticated || myAnimeId <= 0) return;
+        var formMyAnimes = Application.OpenForms.OfType<Frm_MyAnimes>().FirstOrDefault(form => !form.IsDisposed);
+        if (formMyAnimes is null)
+        {
+            formMyAnimes = new Frm_MyAnimes(_identityAuthenticationService);
+            formMyAnimes.Show(this);
+        }
+        else
+        {
+            if (formMyAnimes.WindowState == FormWindowState.Minimized) formMyAnimes.WindowState = FormWindowState.Normal;
+            formMyAnimes.Activate();
+        }
+        formMyAnimes.AbrirEstruturaMyAnime(myAnimeId);
     }
     //Menu MyMusicX - Abrir formulário Frm_MyMusicX.
     private void MnI_MyMusicX_Click(object sender, EventArgs e)

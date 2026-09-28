@@ -3,12 +3,30 @@ namespace LibDtudo.Shared.Dtos.FileMonitoring;
 public static class MonitoringPathPolicy
 {
     public static IReadOnlyList<MonitoringRootDto> CollectionRoots() =>
-        new[] { "#Dots" }.Concat("ABCDEFGHIJKLMNOPQRU".Select(letter => letter.ToString()))
-            .Select(letter => new MonitoringRootDto("H_" + letter, @"H:\" + letter))
-            .Concat("SVWXYZ".Select(letter => new MonitoringRootDto("G_" + letter, @"G:\" + letter)))
-            .Append(new MonitoringRootDto("J_T", @"J:\T"))
-            .Concat(new[] { "#Dots" }.Concat("ABCDEFGHIJKLMNOPQRSTUVWXYZ".Select(letter => letter.ToString()))
-                .Select(letter => new MonitoringRootDto("X_" + letter, @"G:\AnimeX\" + letter))).ToArray();
+        new[] { ".Dots" }.Concat("ABCDEFGHIJKLMNOPQ".Select(letter => letter.ToString()))
+            .Select(letter => new MonitoringRootDto("E_" + letter, @"E:\" + letter))
+            .Concat("RSTUVWXYZ".Select(letter => new MonitoringRootDto("H_" + letter, @"H:\" + letter)))
+            .Concat(new[] { ".Dots" }.Concat("ABCDEFGHIJKLMNOPQRSTUVWXYZ".Select(letter => letter.ToString()))
+                .Select(letter => new MonitoringRootDto("X_" + letter, @"H:\AnimeX\" + letter))).ToArray();
+
+    public static string NormalizeRootKey(string rootKey)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(rootKey);
+        if (rootKey.Equals("H_#Dots", StringComparison.OrdinalIgnoreCase)) return "E_.Dots";
+        if (rootKey.Equals("E_R", StringComparison.OrdinalIgnoreCase)) return "H_R";
+        if (rootKey.Equals("J_T", StringComparison.OrdinalIgnoreCase)) return "H_T";
+        if (rootKey.Equals("X_#Dots", StringComparison.OrdinalIgnoreCase)) return "X_.Dots";
+        if (rootKey.Length == 3 && rootKey.StartsWith("H_", StringComparison.OrdinalIgnoreCase)
+            && "ABCDEFGHIJKLMNOPQ".Contains(char.ToUpperInvariant(rootKey[2])))
+            return "E_" + char.ToUpperInvariant(rootKey[2]);
+        if (rootKey.Length == 3 && rootKey.StartsWith("G_", StringComparison.OrdinalIgnoreCase)
+            && "SVWXYZ".Contains(char.ToUpperInvariant(rootKey[2])))
+            return "H_" + char.ToUpperInvariant(rootKey[2]);
+        return rootKey;
+    }
+
+    public static bool IsCurrentRootKey(string? rootKey) => rootKey is not null
+        && CollectionRoots().Any(root => root.Key.Equals(rootKey, StringComparison.Ordinal));
 
     public static bool IsExcluded(string name) => name.Equals(".ImportanteX", StringComparison.OrdinalIgnoreCase)
         || name.Equals("$RECYCLE.BIN", StringComparison.OrdinalIgnoreCase)

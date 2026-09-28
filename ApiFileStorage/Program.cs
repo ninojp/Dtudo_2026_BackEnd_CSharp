@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Security.Claims;
 using ApiFileStorage.Configuration;
 using ApiFileStorage.Infrastructure;
+using ApiFileStorage.Monitoring;
 using ApiFileStorage.Monitoring.Data;
 using ApiFileStorage.Services;
 using LibDtudo.Shared.Logging;
@@ -56,6 +57,7 @@ builder.Services.AddSingleton<IFileScanner, CompositeFileScanner>();
 builder.Services.AddSingleton<IFileStorageLifecycleService, FileStorageLifecycleService>();
 builder.Services.AddSingleton<FileStorageHealthService>();
 builder.Services.AddHostedService<FileStorageRootValidationHostedService>();
+    builder.Services.AddSingleton<CollectionSyncDiscoveryService>();
 builder.Services.AddHostedService<FileStorageReconciliationHostedService>();
 
 var configuredMaxFileSize = builder.Configuration.GetValue<long?>("FileStorage:Limits:MaxFileSizeBytes")

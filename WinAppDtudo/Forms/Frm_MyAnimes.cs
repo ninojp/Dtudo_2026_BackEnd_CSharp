@@ -519,16 +519,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         };
         ucDetalhes.CardClicado += AbrirDetalhesAnimeLocal;
         ucDetalhes.EditarMyAnimeSolicitado += AbrirEditarMyAnime;
-        ucDetalhes.MonitorarEstruturaSolicitado += (_, collectionId) =>
-        {
-            var name = $"Monitoramento_{collectionId}";
-            var existing = Tbc_MyAnimes.TabPages.Cast<TabPage>().FirstOrDefault(page => page.Name == name);
-            if (existing is not null) { Tbc_MyAnimes.SelectedTab = existing; return; }
-            var monitoringTab = new TabPage($"Estrutura My #{collectionId}") { Name = name };
-            monitoringTab.Controls.Add(new FUC_Monitoramento(_authenticationService, collectionId));
-            Tbc_MyAnimes.TabPages.Add(monitoringTab);
-            Tbc_MyAnimes.SelectedTab = monitoringTab;
-        };
+        ucDetalhes.MonitorarEstruturaSolicitado += (_, collectionId) => AbrirEstruturaMyAnime(collectionId);
 
         var tabPage = new TabPage
         {
@@ -540,6 +531,23 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         tabPage.Controls.Add(ucDetalhes);
         Tbc_MyAnimes.TabPages.Add(tabPage);
         Tbc_MyAnimes.SelectedTab = tabPage;
+    }
+
+    public void AbrirEstruturaMyAnime(int collectionId)
+    {
+        if (collectionId <= 0) return;
+        var name = $"Monitoramento_{collectionId}";
+        var existing = Tbc_MyAnimes.TabPages.Cast<TabPage>().FirstOrDefault(page => page.Name == name);
+        if (existing is not null)
+        {
+            Tbc_MyAnimes.SelectedTab = existing;
+            return;
+        }
+
+        var monitoringTab = new TabPage($"Estrutura My #{collectionId}") { Name = name };
+        monitoringTab.Controls.Add(new FUC_Monitoramento(_authenticationService, collectionId));
+        Tbc_MyAnimes.TabPages.Add(monitoringTab);
+        Tbc_MyAnimes.SelectedTab = monitoringTab;
     }
 
     private void Frm_MyAnimes_Load(object sender, EventArgs e)

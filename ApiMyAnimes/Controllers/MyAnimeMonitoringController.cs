@@ -19,7 +19,9 @@ public sealed class MyAnimeMonitoringController(MyAnimesContext context) : Contr
     public async Task<ActionResult<MyAnimeMonitoringLocationDto>> Get(int myAnimeId, CancellationToken cancellationToken)
     {
         var location = await context.MonitoringLocations.AsNoTracking().FirstOrDefaultAsync(item => item.MyAnimeId == myAnimeId, cancellationToken);
-        return location is null ? NotFound() : Ok(new MyAnimeMonitoringLocationDto(location.RootKey, location.RelativePath));
+        return location is null
+            ? NotFound()
+            : Ok(new MyAnimeMonitoringLocationDto(MonitoringPathPolicy.NormalizeRootKey(location.RootKey), location.RelativePath));
     }
 
     /// <summary>Define explicitamente a localizacao; altera somente o vinculo no banco.</summary>

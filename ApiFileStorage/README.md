@@ -67,7 +67,7 @@ administrador. Inventarios parciais/indisponiveis nao substituem o ultimo comple
 Os testes automatizados usam provedor SQL Server sem conexao para verificar o modelo
 e EF InMemory para comportamento; nao sao substitutos de testes no SQL Server real.
 
-**Nao configurar H:, G:, J: ou suas colecoes em `FileStorage:Roots` para monitoramento.**
+**Nao configurar E:, H: ou suas colecoes em `FileStorage:Roots` para monitoramento.**
 Essa configuracao pertence ao motor abaixo, que inclui reconciliacao com escrita.
 A politica do leitor e separada, em `MonitoringPathPolicy`. O leitor usa handles
 de leitura temporarios para estabilizar diretorios, sem modificar ACLs ou conteudo;

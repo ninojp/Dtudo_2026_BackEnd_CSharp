@@ -99,6 +99,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddTransient<CorrelationIdDelegatingHandler>();
 builder.Services.AddScoped<AnimeBuscaLocalService>();
 builder.Services.AddScoped<AnimeTitleConflictService>();
+builder.Services.AddScoped<MyAnimeMonitoringSynchronizationService>();
 builder.Services.AddScoped<ISecurityAuditWriter, SecurityAuditWriter>();
 
 builder.Services.AddOptions<ApiMyAnimeListOptions>()
