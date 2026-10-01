@@ -6,7 +6,7 @@ namespace WinAppDtudo.Services;
 
 public sealed class MonitoringApiClient : IDisposable
 {
-    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(120);
     private readonly WinAppAuthenticationService authentication;
     private readonly HttpClient client;
 

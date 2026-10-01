@@ -16,7 +16,6 @@ public class FUC_MyAnimeDetalhes : UserControl
     private readonly CriadorDeEstruturas _criadorDeEstruturas;
 
     private readonly Label _lblTitulo;
-    private readonly Label _lblResumo;
     private readonly Label _lblMyAnimeId;
     private readonly TextBox _txtMyAnimeId;
     private readonly Label _lblStatus;
@@ -40,26 +39,14 @@ public class FUC_MyAnimeDetalhes : UserControl
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 3,
+            RowCount = 4,
             BackColor = Color.Black
         };
+        tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-        var tlpTopo = new TableLayoutPanel
-        {
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 3,
-            BackColor = Color.Black,
-            Padding = new Padding(24, 20, 24, 12)
-        };
-        tlpTopo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        for (var row = 0; row < tlpTopo.RowCount; row++)
-            tlpTopo.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
 
         _lblTitulo = new Label
         {
@@ -69,18 +56,9 @@ public class FUC_MyAnimeDetalhes : UserControl
             Font = new Font("Segoe UI Black", 18F, FontStyle.Bold),
             ForeColor = Color.Gold,
             Text = "MyAnime",
-            MinimumSize = new Size(0, 48),
-            TextAlign = ContentAlignment.MiddleLeft
-        };
-
-        _lblResumo = new Label
-        {
-            AutoSize = true,
-            Dock = DockStyle.Top,
-            Font = new Font("Segoe UI", 13F, FontStyle.Regular),
-            ForeColor = Color.Goldenrod,
-            Text = "",
-            Margin = new Padding(0, 0, 0, 12)
+            MinimumSize = new Size(0, 56),
+            TextAlign = ContentAlignment.MiddleLeft,
+            Margin = new Padding(24, 16, 24, 4)
         };
 
         _lblMyAnimeId = new Label
@@ -126,7 +104,7 @@ public class FUC_MyAnimeDetalhes : UserControl
             FlowDirection = FlowDirection.LeftToRight,
             WrapContents = true,
             BackColor = Color.Black,
-            Margin = Padding.Empty
+            Margin = new Padding(24, 0, 24, 4)
         };
 
         ConfigurarBotaoAcao(_btnSalvarEstrutura);
@@ -142,16 +120,12 @@ public class FUC_MyAnimeDetalhes : UserControl
             monitorar
         ]);
 
-        tlpTopo.Controls.Add(_lblTitulo, 0, 0);
-        tlpTopo.Controls.Add(_lblResumo, 0, 1);
-        tlpTopo.Controls.Add(flpAcoes, 0, 2);
-
         _flpCards = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
             AutoScroll = true,
             BackColor = Color.Black,
-            Padding = new Padding(24, 16, 24, 16),
+            Padding = new Padding(24, 0, 24, 16),
             AutoScrollMargin = new Size(12, 12)
         };
 
@@ -159,15 +133,17 @@ public class FUC_MyAnimeDetalhes : UserControl
         {
             Dock = DockStyle.Fill,
             AutoEllipsis = true,
-            TextAlign = ContentAlignment.MiddleLeft,
-            ForeColor = Color.DarkGray,
+            Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+            TextAlign = ContentAlignment.TopCenter,
+            ForeColor = DarkModeColors.TextColor,
             Padding = new Padding(24, 8, 24, 8),
             Text = "—"
         };
 
-        tlpMain.Controls.Add(tlpTopo, 0, 0);
-        tlpMain.Controls.Add(_flpCards, 0, 1);
-        tlpMain.Controls.Add(_lblStatus, 0, 2);
+        tlpMain.Controls.Add(_lblTitulo, 0, 0);
+        tlpMain.Controls.Add(flpAcoes, 0, 1);
+        tlpMain.Controls.Add(_flpCards, 0, 2);
+        tlpMain.Controls.Add(_lblStatus, 0, 3);
 
         Controls.Add(tlpMain);
 
@@ -233,14 +209,13 @@ public class FUC_MyAnimeDetalhes : UserControl
                 .ToList();
 
             _lblTitulo.Text = _myAnimeAtual.Titulo;
-            _lblResumo.Text = $"Animes relacionados: {_animesAtuais.Count}";
             _txtMyAnimeId.Text = _myAnimeAtual.Id.ToString();
 
             PopularCards();
 
             _lblStatus.Text = _animesAtuais.Count == 0
                 ? "⚠️ Nenhum anime relacionado encontrado para esta coleção."
-                : "✅ Coleção carregada.";
+                : $"Esta coleção tem {_animesAtuais.Count} animes relacionados entre si.";
 
             _btnSalvarEstrutura.Enabled = _animesAtuais.Count > 0;
             _btnEditarMyAnime.Enabled = true;

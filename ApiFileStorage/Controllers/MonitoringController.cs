@@ -62,13 +62,24 @@ public sealed class MonitoringController(IServiceProvider services, ILogger<Moni
     public Task<ActionResult<MonitoringEventDto[]>> Events(Guid id, long afterId = 0, int take = 200, bool latest = false, CancellationToken cancellationToken = default) => Execute(async () =>
     {
         if (afterId < 0 || take is < 1 or > 1000) throw new ArgumentException("Paginacao invalida.");
-        var locations = Sessions.Get(id, Owner).Locations.Select(location => location.Id).ToArray();
+        var locations = Sessions.Get(id, Owner).Locations.Select(location => location.Id).Distinct().ToArray();
         var context = services.GetRequiredService<MonitoringDbContext>();
-        var query = context.Observations.AsNoTracking().Where(item => locations.Contains(item.LocationId) && item.Id > afterId);
-        var ordered = latest ? query.OrderByDescending(item => item.Id) : query.OrderBy(item => item.Id);
-        var result = await ordered.Take(take).Select(item => new MonitoringEventDto(item.Id, item.LocationId,
-                item.ObservedAtUtc, item.Source.ToString(), item.Code, item.RelativePath, item.PreviousRelativePath, item.Detail)).ToArrayAsync(cancellationToken);
-        return latest ? result.Reverse().ToArray() : result;
+        var candidates = new List<MonitoringEventDto>();
+        foreach (var locationId in locations)
+        {
+            var query = context.Observations.AsNoTracking()
+                .Where(item => item.LocationId == locationId && item.Id > afterId);
+            var ordered = latest ? query.OrderByDescending(item => item.Id) : query.OrderBy(item => item.Id);
+            var page = await ordered.Take(take).Select(item => new MonitoringEventDto(item.Id, item.LocationId,
+                item.ObservedAtUtc, item.Source.ToString(), item.Code, item.RelativePath, item.PreviousRelativePath, item.Detail))
+                .ToArrayAsync(cancellationToken);
+            candidates.AddRange(page);
+        }
+
+        var merged = latest
+            ? candidates.OrderByDescending(item => item.Id).Take(take).OrderBy(item => item.Id).ToArray()
+            : candidates.OrderBy(item => item.Id).Take(take).ToArray();
+        return merged;
     });
 
     /// <summary>Consulta entradas paginadas do inventario de uma localizacao da sessao.</summary>
@@ -88,6 +99,7 @@ public sealed class MonitoringController(IServiceProvider services, ILogger<Moni
     private async Task<ActionResult<T>> Execute<T>(Func<Task<T>> action)
     {
         try { return Ok(await action()); }
+        catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested) { return new EmptyResult(); }
         catch (MonitoringDisabledException) { return Problem(statusCode: 503, title: "Monitoramento desativado na API."); }
         catch (UnauthorizedAccessException) { return Forbid(); }
         catch (KeyNotFoundException) { return NotFound(); }
