@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using LibDtudo.Shared.Dtos.MyAnimeList;
 using ApiMyAnimeList.Dtos;
 using ApiMyAnimeList.Mappers;
@@ -33,10 +34,11 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
         if (page < 1) return BadRequest(new { message = "O número da página deve ser maior que 0." });
         const int limit = 20;
         try { return Ok(MyAnimeListMapper.MapSearch(await client.SearchAsync(q.Trim(), (page - 1) * limit, limit, cancellationToken), page, limit)); }
-        catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante pesquisa"); return StatusCode(503, new { message = "A API MyAnimeList está temporariamente indisponível." }); }
-        catch (TimeoutRejectedException) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
-        catch (HttpRequestException ex) { logger.LogError(ex, "Erro ao pesquisar anime na MAL"); return StatusCode((int?)ex.StatusCode is >= 400 and <= 599 ? (int)ex.StatusCode.Value : 502, new { message = "Falha ao comunicar com a API MyAnimeList." }); }
+        catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante pesquisa"); return UpstreamUnavailable(StatusCodes.Status503ServiceUnavailable, "MyAnimeList indisponível", "A MyAnimeList está temporariamente indisponível. Tente novamente em instantes."); }
+        catch (TimeoutRejectedException) { return UpstreamUnavailable(StatusCodes.Status504GatewayTimeout, "Tempo limite da MyAnimeList", "A MyAnimeList demorou para responder. Tente novamente em instantes."); }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return UpstreamUnavailable(StatusCodes.Status504GatewayTimeout, "Tempo limite da MyAnimeList", "A MyAnimeList demorou para responder. Tente novamente em instantes."); }
+        catch (SocketException ex) { logger.LogWarning(ex, "Falha de rede ao pesquisar anime na MAL"); return UpstreamUnavailable(StatusCodes.Status503ServiceUnavailable, "MyAnimeList indisponível", "Não foi possível conectar à MyAnimeList. Tente novamente em instantes."); }
+        catch (HttpRequestException ex) { logger.LogWarning(ex, "Falha ao pesquisar anime na MAL"); return UpstreamUnavailable(GetGatewayStatusCode(ex.StatusCode), "MyAnimeList indisponível", "Não foi possível obter resposta da MyAnimeList. Tente novamente em instantes."); }
     }
 
     [HttpGet("{id:int}")]
@@ -50,11 +52,12 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
             var anime = await client.GetAnimeAsync(id, cancellationToken);
             return anime is null ? NotFound(new { message = $"Anime com ID {id} não encontrado." }) : Ok(MyAnimeListMapper.MapDetails(anime));
         }
-        catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante consulta do anime {Id}", id); return StatusCode(503, new { message = "A API MyAnimeList está temporariamente indisponível." }); }
-        catch (TimeoutRejectedException) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
+        catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante consulta do anime {Id}", id); return UpstreamUnavailable(StatusCodes.Status503ServiceUnavailable, "MyAnimeList indisponível", "A MyAnimeList está temporariamente indisponível. Tente novamente em instantes."); }
+        catch (TimeoutRejectedException) { return UpstreamUnavailable(StatusCodes.Status504GatewayTimeout, "Tempo limite da MyAnimeList", "A MyAnimeList demorou para responder. Tente novamente em instantes."); }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return UpstreamUnavailable(StatusCodes.Status504GatewayTimeout, "Tempo limite da MyAnimeList", "A MyAnimeList demorou para responder. Tente novamente em instantes."); }
+        catch (SocketException ex) { logger.LogWarning(ex, "Falha de rede ao obter anime {Id} na MAL", id); return UpstreamUnavailable(StatusCodes.Status503ServiceUnavailable, "MyAnimeList indisponível", "Não foi possível conectar à MyAnimeList. Tente novamente em instantes."); }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return NotFound(new { message = $"Anime com ID {id} não encontrado." }); }
-        catch (HttpRequestException ex) { logger.LogError(ex, "Erro ao obter anime {Id} na MAL", id); return StatusCode(502, new { message = "Falha ao comunicar com a API MyAnimeList." }); }
+        catch (HttpRequestException ex) { logger.LogWarning(ex, "Falha ao obter anime {Id} na MAL", id); return UpstreamUnavailable(GetGatewayStatusCode(ex.StatusCode), "MyAnimeList indisponível", "Não foi possível obter resposta da MyAnimeList. Tente novamente em instantes."); }
     }
 
     [HttpGet("{id:int}/relations")]
@@ -68,10 +71,24 @@ public sealed class MyAnimeListController(MyAnimeListClient client, ILogger<MyAn
             var anime = await client.GetAnimeAsync(id, cancellationToken);
             return anime is null ? NotFound(new { message = $"Anime com ID {id} não encontrado." }) : Ok(MyAnimeListMapper.MapRelations(anime));
         }
-        catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante relações do anime {Id}", id); return StatusCode(503, new { message = "A API MyAnimeList está temporariamente indisponível." }); }
-        catch (TimeoutRejectedException) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return StatusCode(504, new { message = "A API MyAnimeList demorou para responder." }); }
+        catch (BrokenCircuitException) { logger.LogWarning("Circuito da MAL aberto durante relações do anime {Id}", id); return UpstreamUnavailable(StatusCodes.Status503ServiceUnavailable, "MyAnimeList indisponível", "A MyAnimeList está temporariamente indisponível. Tente novamente em instantes."); }
+        catch (TimeoutRejectedException) { return UpstreamUnavailable(StatusCodes.Status504GatewayTimeout, "Tempo limite da MyAnimeList", "A MyAnimeList demorou para responder. Tente novamente em instantes."); }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { return UpstreamUnavailable(StatusCodes.Status504GatewayTimeout, "Tempo limite da MyAnimeList", "A MyAnimeList demorou para responder. Tente novamente em instantes."); }
+        catch (SocketException ex) { logger.LogWarning(ex, "Falha de rede ao obter relações do anime {Id} na MAL", id); return UpstreamUnavailable(StatusCodes.Status503ServiceUnavailable, "MyAnimeList indisponível", "Não foi possível conectar à MyAnimeList. Tente novamente em instantes."); }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound) { return NotFound(new { message = $"Anime com ID {id} não encontrado." }); }
-        catch (HttpRequestException ex) { logger.LogError(ex, "Erro ao obter relações do anime {Id} na MAL", id); return StatusCode(502, new { message = "Falha ao comunicar com a API MyAnimeList." }); }
+        catch (HttpRequestException ex) { logger.LogWarning(ex, "Falha ao obter relações do anime {Id} na MAL", id); return UpstreamUnavailable(GetGatewayStatusCode(ex.StatusCode), "MyAnimeList indisponível", "Não foi possível obter resposta da MyAnimeList. Tente novamente em instantes."); }
     }
+
+    private ObjectResult UpstreamUnavailable(int statusCode, string title, string detail)
+    {
+        Response.Headers["Retry-After"] = statusCode == StatusCodes.Status503ServiceUnavailable ? "30" : "5";
+        return Problem(statusCode: statusCode, title: title, detail: detail);
+    }
+
+    private static int GetGatewayStatusCode(HttpStatusCode? upstreamStatusCode)
+        => upstreamStatusCode is null
+            || upstreamStatusCode == HttpStatusCode.TooManyRequests
+            || (int)upstreamStatusCode.Value >= 500
+                ? StatusCodes.Status503ServiceUnavailable
+                : StatusCodes.Status502BadGateway;
 }

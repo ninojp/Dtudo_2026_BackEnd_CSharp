@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using LibDtudo.Shared.Dtos.MyAnimeList;
 using System.Text.RegularExpressions;
 using WinAppDtudo.Controls;
@@ -173,15 +174,23 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.GatewayTimeout)
         {
-            _lblStatus.Text = "⚠️ ApiMyAnimeList retornou 504 (Gateway Timeout).";
-            _lblPagina.Text = "—";
-            WinAppDtudo.Services.DarkMessageBox.Show("A ApiMyAnimeList demorou para responder (504).\nTente novamente em instantes.", "ApiMyAnimeList indisponível", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MostrarAvisoIndisponibilidade("A MyAnimeList demorou para responder. Tente novamente em instantes.");
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException ex) when (IsFalhaDeDisponibilidade(ex))
         {
-            _lblStatus.Text = "❌ Erro de conexão com ApiMyAnimeList.";
-            _lblPagina.Text = "—";
-            WinAppDtudo.Services.DarkMessageBox.Show($"Não foi possível conectar à ApiMyAnimeList em:\n{MyAnimeListApiService.ApiBase}\n\nDetalhes: {ex.Message}", "Erro de Conexão", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MostrarAvisoIndisponibilidade("A MyAnimeList está temporariamente indisponível. Sua aplicação continua funcionando; tente novamente em instantes.");
+        }
+        catch (HttpRequestException)
+        {
+            MostrarAvisoIndisponibilidade("Não foi possível concluir a consulta à MyAnimeList. Tente novamente em instantes.");
+        }
+        catch (SocketException)
+        {
+            MostrarAvisoIndisponibilidade("A conexão com a MyAnimeList foi interrompida. Tente novamente em instantes.");
+        }
+        catch (OperationCanceledException)
+        {
+            MostrarAvisoIndisponibilidade("A consulta à MyAnimeList excedeu o tempo limite. Tente novamente em instantes.");
         }
         catch (Exception ex)
         {
@@ -256,15 +265,23 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.GatewayTimeout)
         {
-            _lblStatus.Text = "⚠️ ApiMyAnimeList retornou 504 (Gateway Timeout).";
-            _lblPagina.Text = "—";
-            WinAppDtudo.Services.DarkMessageBox.Show("A ApiMyAnimeList demorou para responder (504).\nTente novamente em instantes.", "ApiMyAnimeList indisponível", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MostrarAvisoIndisponibilidade("A MyAnimeList demorou para responder. Tente novamente em instantes.");
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException ex) when (IsFalhaDeDisponibilidade(ex))
         {
-            _lblStatus.Text = "❌ Erro de conexão com ApiMyAnimeList.";
-            _lblPagina.Text = "—";
-            WinAppDtudo.Services.DarkMessageBox.Show($"Não foi possível conectar à ApiMyAnimeList em:\n{MyAnimeListApiService.ApiBase}\n\nDetalhes: {ex.Message}", "Erro de Conexão", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MostrarAvisoIndisponibilidade("A MyAnimeList está temporariamente indisponível. Sua aplicação continua funcionando; tente novamente em instantes.");
+        }
+        catch (HttpRequestException)
+        {
+            MostrarAvisoIndisponibilidade("Não foi possível concluir a consulta à MyAnimeList. Tente novamente em instantes.");
+        }
+        catch (SocketException)
+        {
+            MostrarAvisoIndisponibilidade("A conexão com a MyAnimeList foi interrompida. Tente novamente em instantes.");
+        }
+        catch (OperationCanceledException)
+        {
+            MostrarAvisoIndisponibilidade("A consulta à MyAnimeList excedeu o tempo limite. Tente novamente em instantes.");
         }
         catch (Exception ex)
         {
@@ -277,6 +294,23 @@ public sealed class FUC_ApiMyAnimeListBuscarNome : UserControl
             _carregando = false;
             SetControlesBuscaHabilitados(true);
         }
+    }
+
+    private static bool IsFalhaDeDisponibilidade(HttpRequestException exception)
+        => exception.StatusCode is null
+            or HttpStatusCode.BadGateway
+            or HttpStatusCode.ServiceUnavailable
+            or HttpStatusCode.GatewayTimeout;
+
+    private void MostrarAvisoIndisponibilidade(string mensagem)
+    {
+        _lblStatus.Text = "⚠️ MyAnimeList temporariamente indisponível.";
+        _lblPagina.Text = "—";
+        WinAppDtudo.Services.DarkMessageBox.Show(
+            mensagem,
+            "MyAnimeList indisponível",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Warning);
     }
 
     private void SetControlesBuscaHabilitados(bool habilitado)

@@ -9,8 +9,8 @@ public sealed class MyAnimeListOptions
     public string[] AllowedHosts { get; set; } = ["api.myanimelist.net"];
     public string AllowedPathPrefix { get; set; } = "/v2/";
     public int TimeoutSeconds { get; set; } = 20;
-    public int MaxRetries { get; set; } = 3;
-    public int RetryDelayMilliseconds { get; set; } = 250;
+    public int MaxRetries { get; set; } = 8;
+    public int RetryDelayMilliseconds { get; set; } = 1000;
     public int CacheMinutes { get; set; } = 15;
     public int TotalTimeoutSeconds { get; set; } = 90;
     public double CircuitBreakerFailureRatio { get; set; } = 0.5;
