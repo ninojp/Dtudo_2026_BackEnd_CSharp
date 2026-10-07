@@ -39,8 +39,7 @@ partial class Frm_MyAnimes
         MnI_FecharTodasAbas = new ToolStripMenuItem();
         MnI_FecharAbasAEsquerda = new ToolStripMenuItem();
         MnI_FecharAbasADireita = new ToolStripMenuItem();
-        MnI_DBLocalBuscarAnime = new ToolStripMenuItem();
-        MnI_ApiMyAnimeListBuscarNome = new ToolStripMenuItem();
+        MnI_BuscarAnime = new ToolStripMenuItem();
         Mnu_AnalizarEstruturas = new ToolStripMenuItem();
         Tbc_MyAnimes = new WinAppDtudo.Controls.DarkTabControl();
         Iml_ImagensList = new ImageList(components);
@@ -54,7 +53,7 @@ partial class Frm_MyAnimes
         // 
         Mnu_MenuMyAnimes.BackColor = Color.Black;
         Mnu_MenuMyAnimes.ImageScalingSize = new Size(32, 32);
-        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_DBLocalBuscarAnime, MnI_ApiMyAnimeListBuscarNome, Mnu_AnalizarEstruturas });
+        Mnu_MenuMyAnimes.Items.AddRange(new ToolStripItem[] { Mnu_MenuAbas, MnI_BuscarAnime, Mnu_AnalizarEstruturas });
         Mnu_MenuMyAnimes.Location = new Point(0, 0);
         Mnu_MenuMyAnimes.Name = "Mnu_MenuMyAnimes";
         Mnu_MenuMyAnimes.Padding = new Padding(8, 2, 0, 2);
@@ -132,21 +131,13 @@ partial class Frm_MyAnimes
         MnI_FecharAbasADireita.Text = "Fechar Abas à Direita";
         MnI_FecharAbasADireita.Click += MnI_FecharAbasADireita_Click;
         // 
-        // MnI_DBLocalBuscarAnime
+        // MnI_BuscarAnime
         // 
-        MnI_DBLocalBuscarAnime.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-        MnI_DBLocalBuscarAnime.Image = Properties.Resources.Vvendetta;
-        MnI_DBLocalBuscarAnime.Name = "MnI_DBLocalBuscarAnime";
-        MnI_DBLocalBuscarAnime.Size = new Size(120, 36);
-        MnI_DBLocalBuscarAnime.Text = "DB Local";
-        // 
-        // MnI_ApiMyAnimeListBuscarNome
-        // 
-        MnI_ApiMyAnimeListBuscarNome.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-        MnI_ApiMyAnimeListBuscarNome.Image = Properties.Resources.MyAnimeList_Logo;
-        MnI_ApiMyAnimeListBuscarNome.Name = "MnI_ApiMyAnimeListBuscarNome";
-        MnI_ApiMyAnimeListBuscarNome.Size = new Size(180, 36);
-        MnI_ApiMyAnimeListBuscarNome.Text = "ApiMyAnimeList";
+        MnI_BuscarAnime.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        MnI_BuscarAnime.Image = Properties.Resources.Vvendetta;
+        MnI_BuscarAnime.Name = "MnI_BuscarAnime";
+        MnI_BuscarAnime.Size = new Size(170, 36);
+        MnI_BuscarAnime.Text = "Buscar Anime";
         // 
         // Mnu_AnalizarEstruturas
         // 
@@ -239,7 +230,7 @@ partial class Frm_MyAnimes
     private MenuStrip Mnu_MenuMyAnimes;
     private StatusStrip Ssb_StatusRodape;
     private ToolStripStatusLabel Lbl_StatusRodape;
-    private ToolStripMenuItem MnI_DBLocalBuscarAnime;
+    private ToolStripMenuItem MnI_BuscarAnime;
     private WinAppDtudo.Controls.DarkTabControl Tbc_MyAnimes;
     private ImageList Iml_ImagensList;
     private ToolStripMenuItem Mnu_MenuAbas;
@@ -252,5 +243,4 @@ partial class Frm_MyAnimes
     private ToolStripMenuItem MnI_FecharAbasADireita;
     private ToolStripMenuItem MnI_FormMsgBox;
     private ToolStripMenuItem Mnu_AnalizarEstruturas;
-    private ToolStripMenuItem MnI_ApiMyAnimeListBuscarNome;
 }

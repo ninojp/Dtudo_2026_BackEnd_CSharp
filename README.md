@@ -79,6 +79,53 @@ O WinApp le `WinAppDtudo/appsettings.json` e tambem aceita variaveis:
 - `DTUDO_API_MYANIMELIST_AUTOSTART_URL`
 - `DTUDO_ALLOW_INVALID_CERTIFICATES`
 
+### Busca unificada de animes no WinApp
+
+Na janela MyAnimes, o menu **Buscar Anime** abre uma unica aba de busca. Clicar novamente no
+menu seleciona a aba existente e preserva seu texto, resultados e consulta atual.
+
+- **Busca DB Local** consulta somente a `ApiMyAnimes`, por titulo. Titulos numericos como
+  `86` continuam sendo nomes, nao IDs. A normalizacao de caracteres especiais, a prioridade
+  dos titulos e a ordenacao continuam no mecanismo local existente. O limite continua em
+  100 resultados, com 20 animes por pagina.
+- **Busca ApiMyAnimeList** consulta exclusivamente a `ApiMyAnimeList`. Nomes usam a busca
+  paginada externa; uma entrada composta somente por digitos representa um ID entre
+  1 e 100000, com resultado unico e sem paginacao.
+
+Os dois botoes grandes ficam centralizados acima do label e do input, sem titulo adicional,
+com 100 px de espacamento entre eles. O label mantem suas dimensoes; o campo mantem sua
+fonte e altura, mas sua largura responsiva foi reduzida em 300 px em relacao a primeira
+interface unificada, permanecendo centralizado. O texto digitado nunca e limpo ou reescrito, inclusive apos
+validacao, ausencia de resultados ou erros. Apenas a consulta enviada tem espacos externos
+removidos. Enter no input direciona o foco para os botoes, sem executar uma busca
+automaticamente; a fonte deve ser escolhida explicitamente.
+
+Cada nova busca com entrada valida substitui os cards exibidos, sem combinar resultados locais e
+externos. O botao da fonte atual recebe destaque e o status identifica a origem. O status
+mantem sua fonte e fica centralizado no rodape compacto, entre **Anterior** e **Proximo**,
+no lugar do numero de paginas. Os botoes de paginacao medem 104 x 30 px e exibem texto
+cinza-claro quando inativos; as medidas sao escaladas automaticamente pelo DPI do Windows.
+A navegacao usa a fonte e o texto da consulta enviada, mesmo se o
+input for editado depois; uma nova busca sempre comeca na primeira pagina.
+
+As consultas permanecem em adaptadores separados, reutilizando os servicos HTTP existentes.
+Cards locais usam suas imagens locais e abrem detalhes/colecoes pelo DB_Local e MyAnimeId,
+sem fallback para relacoes ou capas externas. Cards externos usam as imagens e detalhes da
+ApiMyAnimeList. Um mesmo MalId encontrado nas duas fontes continua abrindo detalhes distintos.
+
+Durante uma consulta, ambos os botoes de busca, o input e a paginacao ficam bloqueados para
+evitar concorrencia. Falhas de conexao, timeout e 504 mantem feedback explicito, preservam
+o input e liberam os botoes novamente, sem trocar de fonte automaticamente. Fechar a aba
+cancela sua consulta e descarta respostas tardias; reabrir cria uma nova aba vazia.
+
+Testes focados de layout, fontes, navegacao e comportamento:
+
+Os projetos de teste continuam somente locais, conforme a convencao de [`.gitignore`](.gitignore).
+
+```powershell
+dotnet test .\tests\WinAppDtudo.Tests\WinAppDtudo.Tests.csproj --no-restore --filter "FullyQualifiedName~AnimeSearchLayoutTests|FullyQualifiedName~AnimeSearchSourceTests|FullyQualifiedName~AnimeSearchNavigationTests|FullyQualifiedName~UnifiedAnimeSearchTests|FullyQualifiedName~ApiMyAnimesServiceTests"
+```
+
 ## MyMusicX no DtudoSite
 
 As consultas locais de Colecoes, artistas, releases e faixas usam a fachada autenticada do `DtudoGateway`:

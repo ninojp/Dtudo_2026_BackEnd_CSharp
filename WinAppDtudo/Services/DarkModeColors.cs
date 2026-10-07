@@ -32,6 +32,9 @@ public static class DarkModeColors
     /// <summary>Texto e icones desabilitados.</summary>
     public static Color DisabledTextColor { get; } = Color.FromArgb(120, 86, 10);
 
+    /// <summary>Texto cinza-claro dos botoes de navegacao desabilitados.</summary>
+    public static Color NavigationDisabledTextColor { get; } = Color.Silver;
+
     /// <summary>Borda padrao.</summary>
     public static Color BorderColor { get; } = Color.FromArgb(74, 55, 8);
 

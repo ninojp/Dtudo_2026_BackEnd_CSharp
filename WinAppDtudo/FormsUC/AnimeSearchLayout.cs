@@ -4,14 +4,13 @@ internal static class AnimeSearchLayout
 {
     public static void Build(
         UserControl owner,
-        Label title,
         Label searchLabel,
         TextBox searchTextBox,
-        Button searchButton,
+        Button localSearchButton,
+        Button externalSearchButton,
         Label status,
         FlowLayoutPanel cards,
         Button previousButton,
-        Label pageLabel,
         Button nextButton)
     {
         var mainLayout = new TableLayoutPanel
@@ -23,6 +22,7 @@ internal static class AnimeSearchLayout
             Margin = Padding.Empty,
             Padding = Padding.Empty
         };
+        mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -33,55 +33,61 @@ internal static class AnimeSearchLayout
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             Dock = DockStyle.Top,
             ColumnCount = 1,
-            RowCount = 4,
+            RowCount = 3,
             BackColor = Color.Black,
-            Padding = new Padding(24, 20, 24, 12)
+            Padding = new Padding(24, 20, 24, 12),
+            TabIndex = 0
         };
         headerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         for (var row = 0; row < headerLayout.RowCount; row++)
             headerLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        title.AutoSize = true;
-        title.Dock = DockStyle.Top;
-        title.Margin = new Padding(0, 0, 0, 12);
-
-        searchLabel.AutoSize = true;
-        searchLabel.Dock = DockStyle.Top;
-        searchLabel.Margin = new Padding(0, 0, 0, 4);
-
-        var searchLayout = new TableLayoutPanel
+        var sourceButtons = new FlowLayoutPanel
         {
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            Dock = DockStyle.Top,
-            ColumnCount = 2,
-            RowCount = 1,
-            Margin = Padding.Empty
+            Anchor = AnchorStyles.None,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = new Padding(0, 0, 0, 16),
+            TabIndex = 1
         };
-        searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        searchLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        ConfigureActionButton(localSearchButton);
+        ConfigureActionButton(externalSearchButton);
+        var sourceButtonSize = new Size(
+            Math.Max(260, Math.Max(localSearchButton.MinimumSize.Width, externalSearchButton.MinimumSize.Width)),
+            Math.Max(56, Math.Max(localSearchButton.MinimumSize.Height, externalSearchButton.MinimumSize.Height)));
+        localSearchButton.MinimumSize = sourceButtonSize;
+        externalSearchButton.MinimumSize = sourceButtonSize;
+        localSearchButton.Margin = Padding.Empty;
+        externalSearchButton.Margin = new Padding(100, 0, 0, 0);
+        localSearchButton.TabIndex = 0;
+        externalSearchButton.TabIndex = 1;
+        sourceButtons.Controls.Add(localSearchButton);
+        sourceButtons.Controls.Add(externalSearchButton);
+
+        searchLabel.AutoSize = true;
+        searchLabel.Dock = DockStyle.Top;
+        searchLabel.TextAlign = ContentAlignment.MiddleCenter;
+        searchLabel.Margin = new Padding(0, 0, 0, 4);
 
         searchTextBox.Dock = DockStyle.Fill;
-        searchTextBox.Margin = new Padding(0, 0, 12, 0);
+        // Acrescenta 150 px por lado para reduzir a largura anterior em 300 px.
+        searchTextBox.Margin = new Padding(208, 0, 208, 0);
         searchTextBox.MinimumSize = new Size(0, searchTextBox.PreferredHeight);
-
-        ConfigureActionButton(searchButton);
-        searchButton.Margin = Padding.Empty;
-        searchButton.Dock = DockStyle.Fill;
+        searchTextBox.TabIndex = 0;
 
         status.AutoSize = false;
         status.AutoEllipsis = true;
         status.Dock = DockStyle.Fill;
-        status.MinimumSize = new Size(0, status.Font.Height + 12);
-        status.Margin = new Padding(0, 12, 0, 0);
+        status.TextAlign = ContentAlignment.MiddleCenter;
+        status.MinimumSize = new Size(0, status.Font.Height + 4);
+        status.Margin = new Padding(12, 0, 12, 0);
 
-        searchLayout.Controls.Add(searchTextBox, 0, 0);
-        searchLayout.Controls.Add(searchButton, 1, 0);
-        headerLayout.Controls.Add(title, 0, 0);
+        headerLayout.Controls.Add(sourceButtons, 0, 0);
         headerLayout.Controls.Add(searchLabel, 0, 1);
-        headerLayout.Controls.Add(searchLayout, 0, 2);
-        headerLayout.Controls.Add(status, 0, 3);
+        headerLayout.Controls.Add(searchTextBox, 0, 2);
 
         cards.Dock = DockStyle.Fill;
         cards.AutoScroll = true;
@@ -90,6 +96,7 @@ internal static class AnimeSearchLayout
         cards.BackColor = Color.Black;
         cards.Padding = new Padding(24, 12, 24, 12);
         cards.AutoScrollMargin = new Size(12, 12);
+        cards.TabIndex = 1;
 
         var paginationLayout = new TableLayoutPanel
         {
@@ -99,30 +106,19 @@ internal static class AnimeSearchLayout
             ColumnCount = 3,
             RowCount = 1,
             BackColor = Color.Black,
-            Padding = new Padding(24, 8, 24, 12)
+            Padding = new Padding(24, 4, 24, 4),
+            TabIndex = 2
         };
         paginationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         paginationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         paginationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         paginationLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        ConfigureActionButton(previousButton);
-        ConfigureActionButton(nextButton);
-        previousButton.Enabled = false;
-        nextButton.Enabled = false;
-        previousButton.Dock = DockStyle.Fill;
-        nextButton.Dock = DockStyle.Fill;
-        previousButton.Margin = Padding.Empty;
-        nextButton.Margin = Padding.Empty;
-
-        pageLabel.AutoEllipsis = true;
-        pageLabel.AutoSize = false;
-        pageLabel.Dock = DockStyle.Fill;
-        pageLabel.TextAlign = ContentAlignment.MiddleCenter;
-        pageLabel.Margin = new Padding(12, 0, 12, 0);
+        ConfigureNavigationButton(previousButton);
+        ConfigureNavigationButton(nextButton);
 
         paginationLayout.Controls.Add(previousButton, 0, 0);
-        paginationLayout.Controls.Add(pageLabel, 1, 0);
+        paginationLayout.Controls.Add(status, 1, 0);
         paginationLayout.Controls.Add(nextButton, 2, 0);
 
         mainLayout.Controls.Add(headerLayout, 0, 0);
@@ -139,5 +135,16 @@ internal static class AnimeSearchLayout
             TextRenderer.MeasureText(button.Text, button.Font).Width + 32,
             button.Font.Height + 20);
         button.Padding = new Padding(14, 8, 14, 8);
+    }
+
+    private static void ConfigureNavigationButton(Button button)
+    {
+        button.AutoSize = false;
+        button.MinimumSize = new Size(104, 30);
+        button.Size = button.MinimumSize;
+        button.Padding = new Padding(6, 2, 6, 2);
+        button.Margin = Padding.Empty;
+        button.Dock = DockStyle.Fill;
+        button.Enabled = false;
     }
 }

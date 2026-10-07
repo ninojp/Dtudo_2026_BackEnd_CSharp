@@ -10,17 +10,21 @@ namespace WinAppDtudo.Services;
 /// </summary>
 public sealed class MyAnimeListApiService
 {
-    private static readonly HttpClient HttpClient;
+    private static readonly HttpClient DefaultHttpClient;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
     private readonly WinAppAuthenticationService _authenticationService;
     private readonly ApiMyAnimeListStartupService _startupService;
+    private readonly HttpClient _httpClient;
 
     public MyAnimeListApiService(
         WinAppAuthenticationService? authenticationService = null,
-        ApiMyAnimeListStartupService? startupService = null)
+        ApiMyAnimeListStartupService? startupService = null,
+        HttpClient? httpClient = null)
     {
         _authenticationService = authenticationService ?? new WinAppAuthenticationService();
         _startupService = startupService ?? new ApiMyAnimeListStartupService();
+        _httpClient = httpClient ?? DefaultHttpClient;
+        _httpClient.BaseAddress ??= new Uri(ApiBase.TrimEnd('/') + "/");
     }
 
     public static string ApiBase => AppConfigurationService.ApiMyAnimeListBaseUrl;
@@ -29,7 +33,7 @@ public sealed class MyAnimeListApiService
     {
         var handler = AppConfigurationService.CreateHttpClientHandler();
 
-        HttpClient = new HttpClient(handler)
+        DefaultHttpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri(ApiBase.TrimEnd('/') + "/"),
             Timeout = TimeSpan.FromSeconds(120)
@@ -90,7 +94,7 @@ public sealed class MyAnimeListApiService
         string url,
         CancellationToken cancellationToken) =>
         _authenticationService.SendAuthenticatedAsync(
-            HttpClient,
+            _httpClient,
             _ => new HttpRequestMessage(HttpMethod.Get, url),
             cancellationToken);
 

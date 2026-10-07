@@ -101,7 +101,11 @@ public class ApiMyAnimesService
             ?? throw new InvalidOperationException("A ApiMyAnimes retornou uma colecao vazia.");
     }
 
-    public async Task<ApiAnimesBuscaResult> BuscarAnimesPorTituloAsync(string query, int page = 1, int pageSize = 20)
+    public async Task<ApiAnimesBuscaResult> BuscarAnimesPorTituloAsync(
+        string query,
+        int page = 1,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(query))
             return new ApiAnimesBuscaResult
@@ -115,10 +119,10 @@ public class ApiMyAnimesService
 
         var termoEscapado = Uri.EscapeDataString(query.Trim());
         using var response = await GetAsync(
-            $"apiLocal/Anime/buscar?termo={termoEscapado}&take={MaxResultadosBusca}");
+            $"apiLocal/Anime/buscar?termo={termoEscapado}&take={MaxResultadosBusca}", cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
         var resultados = JsonSerializer.Deserialize<List<ObterAnimeDto>>(json, _jsonOptions) ?? [];
         var totalResultados = Math.Min(resultados.Count, MaxResultadosBusca);
         var tamanhoPagina = Math.Max(1, pageSize);

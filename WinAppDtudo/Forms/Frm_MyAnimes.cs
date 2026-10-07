@@ -14,7 +14,6 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     private readonly ImportadorAnimesMyAnimeService _importadorAnimesMyAnimeService;
     private AnaliseEstruturas? _ultimaAnaliseEstruturas;
     public int _tabIndexMascaras = 0;
-    public int _tabIndexApiMyAnimeListPorNome = 0;
     public Frm_MyAnimes(WinAppAuthenticationService? authenticationService = null)
     {
         _authenticationService = authenticationService ?? new WinAppAuthenticationService();
@@ -23,8 +22,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             _apiMyAnimesService,
             authenticationService: _authenticationService);
         InitializeComponent();
-        MnI_ApiMyAnimeListBuscarNome.Click += MnI_ApiMyAnimeListBuscarNome_Click;
-        MnI_DBLocalBuscarAnime.Click += MnI_DBLocalBuscarAnime_Click;
+        MnI_BuscarAnime.Click += MnI_BuscarAnime_Click;
         Tbc_MyAnimes.Selected += Tbc_MyAnimes_Selected;
         Tbc_MyAnimes.ShowCloseButtons = true;
         // Aplicar o tema Dark Mode ao formulário e seus componentes
@@ -52,52 +50,44 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         Lbl_StatusRodape.Text = mensagem;
     }
 
-    private void MnI_DBLocalBuscarAnime_Click(object? sender, EventArgs e)
+    private void MnI_BuscarAnime_Click(object? sender, EventArgs e)
     {
-        var ucBuscaLocal = new FUC_DBLocalBuscarAnime(_apiMyAnimesService)
+        var tabExistente = Tbc_MyAnimes.TabPages
+            .Cast<TabPage>().FirstOrDefault(page => page.Name == "BuscarAnime");
+        if (tabExistente is not null)
         {
-            Dock = DockStyle.Fill
-        };
-        ucBuscaLocal.AnimeLocalSelecionado += AbrirDetalhesAnimeLocal;
+            Tbc_MyAnimes.SelectedTab = tabExistente;
+            return;
+        }
 
-        var tabPage = new TabPage
-        {
-            Text = "DBLocal Animes",
-            Name = "DBLocal_Animes",
-            ImageIndex = ObterIndiceIconeAba(MnI_DBLocalBuscarAnime)
-        };
-        tabPage.Controls.Add(ucBuscaLocal);
-        Tbc_MyAnimes.TabPages.Add(tabPage);
-        Tbc_MyAnimes.SelectedTab = tabPage;
-    }
-
-    private void MnI_ApiMyAnimeListBuscarNome_Click(object? sender, EventArgs e)
-    {
-        _tabIndexApiMyAnimeListPorNome++;
+        TabPage? tabPage = null;
         try
         {
-            var ucBuscaApiMyAnimeList = new FUC_ApiMyAnimeListBuscarNome(_authenticationService)
+            tabPage = new TabPage
+            {
+                Text = "Buscar Anime",
+                Name = "BuscarAnime",
+                ImageIndex = ObterIndiceIconeAba(MnI_BuscarAnime)
+            };
+            var ucBusca = new FUC_BuscarAnime(_apiMyAnimesService, _authenticationService)
             {
                 Dock = DockStyle.Fill
             };
-
-            ucBuscaApiMyAnimeList.AnimeMyAnimeListSelecionado += AbrirDetalhesAnimeMyAnimeList;
-
-            TabPage tabPage = new()
-            {
-                Text = "ApiMyAnimeList",
-                Name = $"ApiMyAnimeList_{_tabIndexApiMyAnimeListPorNome}",
-                ImageIndex = ObterIndiceIconeAba(MnI_ApiMyAnimeListBuscarNome),
-            };
-
-            tabPage.Controls.Add(ucBuscaApiMyAnimeList);
+            ucBusca.AnimeLocalSelecionado += AbrirDetalhesAnimeLocal;
+            ucBusca.AnimeMyAnimeListSelecionado += AbrirDetalhesAnimeMyAnimeList;
+            tabPage.Controls.Add(ucBusca);
             Tbc_MyAnimes.TabPages.Add(tabPage);
             Tbc_MyAnimes.SelectedTab = tabPage;
         }
         catch (Exception ex)
         {
-            _tabIndexApiMyAnimeListPorNome = Math.Max(0, _tabIndexApiMyAnimeListPorNome - 1);
-            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao abrir a aba ApiMyAnimeList:\n{ex.Message}",
+            if (tabPage is not null)
+            {
+                Tbc_MyAnimes.TabPages.Remove(tabPage);
+                if (tabPage.Controls.OfType<FUC_BuscarAnime>().Any())
+                    tabPage.Dispose();
+            }
+            WinAppDtudo.Services.DarkMessageBox.Show($"Erro ao abrir a aba Buscar Anime:\n{ex.Message}",
                 "Erro",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -287,17 +277,26 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
 
     private int ObterIndiceIconeAba(ToolStripMenuItem menuItem)
     {
-        if (menuItem.Image is null)
-            return -1;
-
         var key = string.IsNullOrWhiteSpace(menuItem.Name)
             ? $"TabIcon_{menuItem.Text}"
             : menuItem.Name;
+        return ObterIndiceIconeAba(key, menuItem.Image);
+    }
+
+    private int ObterIndiceIconeAnime(bool consultaLocal) => ObterIndiceIconeAba(
+        consultaLocal ? "DBLocal" : "ApiMyAnimeList",
+        consultaLocal ? Properties.Resources.Vvendetta : Properties.Resources.MyAnimeList_Logo);
+
+    private int ObterIndiceIconeAba(string key, Image? image)
+    {
+        if (image is null)
+            return -1;
+
         var existingIndex = Iml_ImagensList.Images.IndexOfKey(key);
         if (existingIndex >= 0)
             return existingIndex;
 
-        Iml_ImagensList.Images.Add(key, new Bitmap(menuItem.Image));
+        Iml_ImagensList.Images.Add(key, new Bitmap(image));
         return Iml_ImagensList.Images.IndexOfKey(key);
     }
 
@@ -348,10 +347,11 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     //=============================================================================
     void ApagaAbaAtual(TabPage tabPage)
     {
-        if (Tbc_MyAnimes.SelectedTab != null)
-        {
-            Tbc_MyAnimes.TabPages.Remove(tabPage);
-        }
+        if (!Tbc_MyAnimes.TabPages.Contains(tabPage))
+            return;
+
+        Tbc_MyAnimes.TabPages.Remove(tabPage);
+        tabPage.Dispose();
     }
 
     //=============================================================================
@@ -402,7 +402,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = consultaLocal ? $"DB #{malId}" : $" #{malId}",
             Name = tabName,
-            ImageIndex = ObterIndiceIconeAba(consultaLocal ? MnI_DBLocalBuscarAnime : MnI_ApiMyAnimeListBuscarNome),
+            ImageIndex = ObterIndiceIconeAnime(consultaLocal),
         };
         tabPage.Controls.Add(ucDetalhes);
         Tbc_MyAnimes.TabPages.Add(tabPage);
@@ -441,7 +441,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = $"Editar #{malId}",
             Name = tabName,
-            ImageIndex = ObterIndiceIconeAba(MnI_DBLocalBuscarAnime)
+            ImageIndex = ObterIndiceIconeAnime(consultaLocal: true)
         };
 
         tabPage.Controls.Add(ucEditar);
@@ -475,7 +475,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = $"Editar My #{myAnimeId}",
             Name = tabName,
-            ImageIndex = ObterIndiceIconeAba(MnI_DBLocalBuscarAnime)
+            ImageIndex = ObterIndiceIconeAnime(consultaLocal: true)
         };
 
         tabPage.Controls.Add(ucEditar);
@@ -525,7 +525,7 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
         {
             Text = $"My #{myAnimeId}",
             Name = tabName,
-            ImageIndex = ObterIndiceIconeAba(MnI_DBLocalBuscarAnime)
+            ImageIndex = ObterIndiceIconeAnime(consultaLocal: true)
         };
 
         tabPage.Controls.Add(ucDetalhes);
