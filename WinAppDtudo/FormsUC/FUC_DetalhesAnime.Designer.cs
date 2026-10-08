@@ -14,8 +14,12 @@ partial class FUC_DetalhesAnime
     /// </summary>
     protected override void Dispose(bool disposing)
     {
-        if (disposing && (components != null))
-            components.Dispose();
+        if (disposing)
+        {
+            Pbx_Capa.Image?.Dispose();
+            Pbx_Capa.Image = null;
+            components?.Dispose();
+        }
         base.Dispose(disposing);
     }
 
@@ -34,7 +38,7 @@ partial class FUC_DetalhesAnime
         Lbl_TituloJapones = new SelectableTextLabel();
         Lbl_Carregando = new Label();
         Pnl_Conteudo = new Panel();
-        Pnl_Info = new Panel();
+        Pnl_Info = new AnimeDetailsContentPanel();
         Pnl_Esquerda = new Panel();
         Pnl_Acoes = new Panel();
         Btn_SalvarComoAnime = new Button();
@@ -161,7 +165,7 @@ partial class FUC_DetalhesAnime
         // 
         // Pnl_Info
         // 
-        Pnl_Info.AutoScroll = true;
+        Pnl_Info.AutoScroll = false;
         Pnl_Info.BackColor = WinAppDtudo.Services.DarkModeColors.ActiveTabBackgroundColor;
         Pnl_Info.Dock = DockStyle.Fill;
         Pnl_Info.Location = new Point(600, 250);
@@ -173,7 +177,7 @@ partial class FUC_DetalhesAnime
         // 
         // Pnl_Esquerda
         // 
-        Pnl_Esquerda.BackColor = Color.FromArgb(243, 244, 250);
+        Pnl_Esquerda.BackColor = WinAppDtudo.Services.DarkModeColors.ActiveTabBackgroundColor;
         Pnl_Esquerda.Controls.Add(Pnl_Acoes);
         Pnl_Esquerda.Controls.Add(Pnl_Stats);
         Pnl_Esquerda.Controls.Add(Pbx_Capa);
@@ -385,5 +389,5 @@ partial class FUC_DetalhesAnime
     private Label Lbl_Popularidade;
     private Label Lbl_Episodios;
     private Label Lbl_TempoPorEpisodio;
-    private Panel Pnl_Info;
+    private AnimeDetailsContentPanel Pnl_Info;
 }

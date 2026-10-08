@@ -56,6 +56,13 @@ public static class DarkModeColors
     /// <summary>Cor de sucesso.</summary>
     public static Color SuccessColor { get; } = Color.FromArgb(16, 176, 112);
 
+    public static Color AnimeLocalAccentColor { get; } = Color.LimeGreen;
+
+    public static Color AnimeMyAnimeListAccentColor { get; } = Color.FromArgb(0, 122, 204);
+
+    public static Color GetAnimeDetailAccentColor(bool consultaLocal) =>
+        consultaLocal ? AnimeLocalAccentColor : AnimeMyAnimeListAccentColor;
+
     /// <summary>Cor de erro.</summary>
     public static Color ErrorColor { get; } = Color.FromArgb(240, 76, 76);
 

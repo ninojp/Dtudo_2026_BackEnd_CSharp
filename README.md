@@ -113,6 +113,49 @@ Cards locais usam suas imagens locais e abrem detalhes/colecoes pelo DB_Local e 
 sem fallback para relacoes ou capas externas. Cards externos usam as imagens e detalhes da
 ApiMyAnimeList. Um mesmo MalId encontrado nas duas fontes continua abrindo detalhes distintos.
 
+#### Identidade visual e layout dos detalhes
+
+Os detalhes compartilham o mesmo controle, com uma identidade por fonte:
+
+| Fonte | Cor padrao |
+| --- | --- |
+| DB Local / ApiMyAnimes | Verde `#10B070`, reutilizando a paleta escura |
+| ApiMyAnimeList | Azul VS Code `#007ACC` |
+
+O cabecalho da aba exibe somente o icone da fonte, `#MalId` e o botao de fechar,
+sem o prefixo visual `DB`. Icone, texto e fechamento usam a cor da fonte em
+abas ativas e inativas; a borda da aba ativa tambem acompanha sua fonte.
+A recoloracao dos icones preserva transparencia e contraste interno dos logos.
+O nome acessivel identifica a fonte sem recolocar o prefixo no titulo visual. Os nomes internos
+das abas continuam distinguindo as fontes, evitando misturar animes com o mesmo ID.
+A largura do cabecalho acompanha o texto, a fonte, o icone, o fechamento e o DPI;
+titulos maiores, como o da busca, nao ficam presos a uma largura unica.
+Essa configuracao e idempotente: somente valores diferentes sao aplicados.
+Ajustes que podem recriar o controle nativo sao adiados para fora de
+`HandleCreated`, evitando reentrada e travamento ao abrir MyAnimes com o
+Dark Mode nativo do Windows. As etapas de construcao do formulario tambem
+sao registradas pelo mecanismo existente de diagnostico de inicializacao.
+
+Clique e segure no cabecalho fora do `X`, arraste ate a posicao indicada e solte
+para reorganizar as abas. O limite de movimento do Windows evita iniciar arraste
+num clique simples. A movimentacao permanece dentro da mesma janela e preserva
+os controles, a selecao e os dados carregados; o `X` e os menus de fechamento
+continuam funcionando sobre a ordem atual.
+
+Titulos, estatisticas, rotulos, descricoes e separadores dos tres blocos usam
+a cor da fonte, mesmo apos reaplicar o tema ou adicionar conteudo dinamico.
+Botoes, links e cards clicaveis mantem Gold. Fundos permanecem em Dark Mode.
+
+Ha apenas uma rolagem vertical para a pagina inteira, quando necessaria.
+Informacoes, estatisticas e cards relacionados nao possuem rolagem interna.
+Os cards quebram em novas linhas sem limite artificial de altura; metadados
+alternam entre duas e uma coluna, e textos longos ajustam a altura a largura
+disponivel. Em janelas estreitas, a coluna de informacoes fica abaixo da capa
+e das estatisticas. Redimensionar ou alternar abas reorganiza os mesmos
+controles, sem baixar novamente as capas nem refazer a consulta.
+As relacoes locais continuam usando exclusivamente DB_Local/MyAnimeId; as
+externas permanecem na ApiMyAnimeList.
+
 Durante uma consulta, ambos os botoes de busca, o input e a paginacao ficam bloqueados para
 evitar concorrencia. Falhas de conexao, timeout e 504 mantem feedback explicito, preservam
 o input e liberam os botoes novamente, sem trocar de fonte automaticamente. Fechar a aba
@@ -124,7 +167,17 @@ Os projetos de teste continuam somente locais, conforme a convencao de [`.gitign
 
 ```powershell
 dotnet test .\tests\WinAppDtudo.Tests\WinAppDtudo.Tests.csproj --no-restore --filter "FullyQualifiedName~AnimeSearchLayoutTests|FullyQualifiedName~AnimeSearchSourceTests|FullyQualifiedName~AnimeSearchNavigationTests|FullyQualifiedName~UnifiedAnimeSearchTests|FullyQualifiedName~ApiMyAnimesServiceTests"
+dotnet test .\tests\WinAppDtudo.Tests\WinAppDtudo.Tests.csproj --no-restore --filter "FullyQualifiedName~AnimeDetailLayoutTests|FullyQualifiedName~DarkTabControlTests|FullyQualifiedName~MyAnimesFormStartupTests"
 ```
+
+Os testes de detalhes verificam as duas fontes, persistencia das cores, Gold
+das acoes, titulos longos, campos opcionais, muitas relacoes, redimensionamento,
+abas ocultas, preservacao das capas e ausencia de barras internas/horizontais.
+Os testes de abas verificam largura real do conteudo, icones coloridos, arraste,
+limite de movimento, fechamento e preservacao dos controles e da selecao.
+Os testes de inicializacao abrem o formulario MyAnimes real com estilos
+visuais e Dark Mode nativo, verificam callbacks da UI, o menu Buscar Anime
+e a estabilidade do handle apos reaplicacoes de tema e configuracao.
 
 ## MyMusicX no DtudoSite
 

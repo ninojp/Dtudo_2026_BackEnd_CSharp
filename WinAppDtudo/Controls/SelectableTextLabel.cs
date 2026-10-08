@@ -6,7 +6,7 @@ namespace WinAppDtudo.Controls;
 public sealed class SelectableTextLabel : Label
 {
     private readonly ToolStripMenuItem _copiarMenuItem;
-    private const TextFormatFlags TextFlags = TextFormatFlags.NoPadding | TextFormatFlags.WordBreak;
+    private const TextFormatFlags TextFlags = TextFormatFlags.NoPadding | TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix;
     private int _selectionAnchor;
     private int _selectionStart;
     private int _selectionLength;
@@ -156,5 +156,6 @@ public sealed class SelectableTextLabel : Label
     }
 
     private int MedirTexto(string texto)
-        => TextRenderer.MeasureText(texto, Font, Size.Empty, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine).Width;
+        => TextRenderer.MeasureText(texto, Font, Size.Empty,
+            TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix).Width;
 }

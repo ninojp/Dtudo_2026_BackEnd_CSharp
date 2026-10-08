@@ -13,7 +13,7 @@ namespace WinAppDtudo.FormsUC;
 /// UserControl que exibe todos os detalhes disponíveis de um anime.
 /// O modo externo consulta a ApiMyAnimeList; o modo local consulta apenas o DB_Local.
 /// </summary>
-public partial class FUC_DetalhesAnime : UserControl
+public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
 {
     /// <summary>Disparado quando o usuário clica em um mini card de anime relacionado. O argumento é o MalId.</summary>
     public event EventHandler<int>? CardClicado;
@@ -29,11 +29,6 @@ public partial class FUC_DetalhesAnime : UserControl
     private readonly WinAppAuthenticationService _authenticationService;
     private readonly int _malId;
     private readonly bool _consultaLocal;
-    private int _yOffset;
-    private int _colunaDetalhe;
-    private int _alturaLinhaDetalhe;
-    private Label? _ultimoCampoDetalhe;
-    private Label? _ultimoValorDetalhe;
     private AnimeDetails? _animeAtual;
     private List<AnimeRelationEntry> _animesRelacionados = [];
 
@@ -54,7 +49,7 @@ public partial class FUC_DetalhesAnime : UserControl
         _authenticationService = authenticationService ?? new WinAppAuthenticationService();
         _myAnimeListService = new MyAnimeListApiService(_authenticationService);
         _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService(_authenticationService);
-        ConfigurarColunaDeDetalhes();
+        ConfigurarLayoutDaPagina();
         Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
         Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
         Btn_ExibirMyAnime.Click += (_, _) =>
@@ -77,15 +72,18 @@ public partial class FUC_DetalhesAnime : UserControl
             Btn_ExibirMyAnime.Visible = true;
             Btn_EditarAnime.Visible = true;
         }
-        Pnl_Header.Resize += (_, _) => OrganizarTitulosDoCabecalho();
         Load += async (_, _) =>
         {
-            OrganizarTitulosDoCabecalho();
+            if (_carregamentoIniciado)
+                return;
+            _carregamentoIniciado = true;
+            PerformLayout();
             await CarregarAsync();
         };
         // Melhora renderização do UserControl
         DoubleBuffered = true;
         ThemeManager.ApplyDarkModeToUserControl(this);
+        AplicarFundoDaAba();
     }
     // ===================================================================
     /// <summary>
@@ -188,6 +186,7 @@ public partial class FUC_DetalhesAnime : UserControl
         bool exibirRelacoes,
         IReadOnlyList<ObterAnimeDto> relacoesLocais)
     {
+        _animeAtual = anime;
         var anoLancamento = ExtrairAnoLancamentoPeloAired(anime.Aired);
         // Header
         Lbl_TituloAnime.Text = anime.Title ?? $"Anime #{anime.MalId}";
@@ -212,99 +211,60 @@ public partial class FUC_DetalhesAnime : UserControl
             ? $"🎭 {string.Join(" • ", generos)}"
             : string.Empty;
         Lbl_Generos.Visible = generos.Count > 0;
-        int larguraDisponivel = Math.Max(200, Pnl_Stats.ClientSize.Width - Pnl_Stats.Padding.Horizontal - 20);
-        int esquerda = Math.Max(Pnl_Stats.Padding.Left, (Pnl_Stats.ClientSize.Width - larguraDisponivel) / 2);
-        Lbl_EstatisticasRapidas.Location = new Point(esquerda, Pnl_Stats.Padding.Top);
-        Lbl_EstatisticasRapidas.Width = larguraDisponivel;
-        Lbl_EstatisticasRapidas.TextAlign = ContentAlignment.MiddleCenter;
-        Lbl_Generos.Width = larguraDisponivel;
-        Lbl_Generos.Height = generos.Count > 0
-            ? Math.Max(35, TextRenderer.MeasureText(
-                Lbl_Generos.Text,
-                Lbl_Generos.Font,
-                new Size(larguraDisponivel, int.MaxValue),
-                TextFormatFlags.WordBreak).Height + 4)
-            : 0;
-        Lbl_Generos.Location = new Point(esquerda, 0);
-        Lbl_Episodios.Width = larguraDisponivel;
-        Lbl_Episodios.TextAlign = ContentAlignment.MiddleCenter;
-        Lbl_TempoPorEpisodio.Width = larguraDisponivel;
-        Lbl_TempoPorEpisodio.TextAlign = ContentAlignment.MiddleCenter;
-        Lbl_Generos.TextAlign = ContentAlignment.MiddleCenter;
         Lbl_Episodios.Text = anime.Episodes is > 0 ? $"📺 {anime.Episodes} ep." : string.Empty;
         Lbl_TempoPorEpisodio.Text = !string.IsNullOrWhiteSpace(anime.Duration) ? $"⏱ {anime.Duration}" : string.Empty;
-        const int espacamentoVertical = 5;
-        int proximaLinha = Lbl_EstatisticasRapidas.Bottom + espacamentoVertical;
-        Lbl_Episodios.Location = new Point(esquerda, proximaLinha);
-        proximaLinha = Lbl_Episodios.Bottom + espacamentoVertical;
-        Lbl_TempoPorEpisodio.Location = new Point(esquerda, proximaLinha);
-        proximaLinha = Lbl_TempoPorEpisodio.Bottom + espacamentoVertical;
-        Lbl_Generos.Location = new Point(esquerda, proximaLinha);
         Btn_ExibirMyAnime.Visible = _consultaLocal && anime.MyAnimeID > 0;
-        const int larguraBotaoMyAnime = 300;
-        int larguraBotao = Math.Min(larguraBotaoMyAnime, larguraDisponivel);
-        int esquerdaBotao = (Pnl_Stats.ClientSize.Width - larguraBotao) / 2;
-        Btn_ExibirMyAnime.Location = new Point(esquerdaBotao, Lbl_Generos.Visible ? Lbl_Generos.Bottom + 30 : Lbl_TempoPorEpisodio.Bottom + 30);
-        Btn_ExibirMyAnime.Width = larguraBotao;
-        Btn_EditarAnime.Location = new Point(esquerdaBotao, Btn_ExibirMyAnime.Bottom + 12);
-        Btn_EditarAnime.Width = larguraBotao;
         Btn_EditarAnime.Visible = _consultaLocal;
 
-        // Painel direito: detalhes dinâmicos
         Pnl_Info.SuspendLayout();
-        Pnl_Info.Controls.Clear();
-        _yOffset = 10;
-        _colunaDetalhe = 0;
-        _alturaLinhaDetalhe = 0;
-        _ultimoCampoDetalhe = null;
-        _ultimoValorDetalhe = null;
+        try
+        {
+            Pnl_Info.ClearContent();
+            if (_consultaLocal)
+                AdicionarRelacoesLocais(relacoesLocais);
+            else if (exibirRelacoes)
+                AdicionarRelacoes(relacoes);
 
-        int larguraColuna = Math.Max((Pnl_Info.ClientSize.Width - 20) / 2, 350);
-        int larguraValor = Math.Max(larguraColuna - 160, 180);
-        
-        if (_consultaLocal)
-            AdicionarRelacoesLocais(relacoesLocais);
-        else if (exibirRelacoes)
-            AdicionarRelacoes(relacoes);
+            AdicionarDetalhe("Mal ID", anime.MalId.ToString());
+            if (_consultaLocal && anime.MyAnimeID > 0)
+                AdicionarDetalhe("MyAnime ID", anime.MyAnimeID.ToString());
+            AdicionarDetalhe("Fonte", anime.Source);
+            AdicionarDetalhe("Classificação", anime.Rating);
+            AdicionarDetalhe("Exibição", anime.Aired);
+            if (!string.IsNullOrWhiteSpace(anime.Season) && anoLancamento.HasValue)
+                AdicionarDetalhe("Temporada", anime.Season);
+            if (anime.Score.HasValue)
+                AdicionarDetalhe("Votos da pontuação", anime.ScoredBy?.ToString("N0"));
+            AdicionarDetalhe("Rank", anime.Rank?.ToString());
+            AdicionarDetalhe("Popularidade", anime.Popularity?.ToString());
+            AdicionarDetalhe("Membros", anime.Members?.ToString("N0"));
+            AdicionarDetalhe("Favoritos", anime.Favorites?.ToString("N0"));
+            if (anime.Studios?.Count > 0)
+                AdicionarDetalhe("Estúdios", string.Join(", ", anime.Studios));
+            if (anime.Producers?.Count > 0)
+                AdicionarDetalhe("Produtoras", string.Join(", ", anime.Producers));
+            if (anime.Licensors?.Count > 0)
+                AdicionarDetalhe("Licenciadores", string.Join(", ", anime.Licensors));
+            if (anime.Themes?.Count > 0)
+                AdicionarDetalhe("Temas", string.Join(", ", anime.Themes));
+            if (anime.Demographics?.Count > 0)
+                AdicionarDetalhe("Público-alvo", string.Join(", ", anime.Demographics));
+            if (anime.ExplicitGenres?.Count > 0)
+                AdicionarDetalhe("Gêneros +18", string.Join(", ", anime.ExplicitGenres));
+            if (!string.IsNullOrWhiteSpace(anime.Trailer))
+                AdicionarLink("Trailer", anime.Trailer);
+            if (!string.IsNullOrWhiteSpace(anime.Url))
+                AdicionarLink("MAL URL", anime.Url);
 
-        AdicionarDetalhe("Mal ID", anime.MalId.ToString(), larguraValor);
-        if (_consultaLocal && anime.MyAnimeID > 0)
-            AdicionarDetalhe("MyAnime ID", anime.MyAnimeID.ToString(), larguraValor);
-        AdicionarDetalhe("Fonte", anime.Source, larguraValor);
-        AdicionarDetalhe("Classificação", anime.Rating, larguraValor);
-        AdicionarDetalhe("Exibição", anime.Aired, larguraValor);
-        if (!string.IsNullOrWhiteSpace(anime.Season) && anoLancamento.HasValue)
-            AdicionarDetalhe("Temporada", anime.Season, larguraValor);
-        if (anime.Score.HasValue)
-            AdicionarDetalhe("Votos da pontuação", anime.ScoredBy?.ToString("N0"), larguraValor);
-        AdicionarDetalhe("Rank", anime.Rank?.ToString(), larguraValor);
-        AdicionarDetalhe("Popularidade", anime.Popularity?.ToString(), larguraValor);
-        AdicionarDetalhe("Membros", anime.Members?.ToString("N0"), larguraValor);
-        AdicionarDetalhe("Favoritos", anime.Favorites?.ToString("N0"), larguraValor);
-        if (anime.Studios?.Count > 0)
-            AdicionarDetalhe("Estúdios", string.Join(", ", anime.Studios), larguraValor);
-        if (anime.Producers?.Count > 0)
-            AdicionarDetalhe("Produtoras", string.Join(", ", anime.Producers), larguraValor);
-        if (anime.Licensors?.Count > 0)
-            AdicionarDetalhe("Licenciadores", string.Join(", ", anime.Licensors), larguraValor);
-        if (anime.Themes?.Count > 0)
-            AdicionarDetalhe("Temas", string.Join(", ", anime.Themes), larguraValor);
-        if (anime.Demographics?.Count > 0)
-            AdicionarDetalhe("Público-alvo", string.Join(", ", anime.Demographics), larguraValor);
-        if (anime.ExplicitGenres?.Count > 0)
-            AdicionarDetalhe("Gêneros +18", string.Join(", ", anime.ExplicitGenres), larguraValor);
-        if (!string.IsNullOrWhiteSpace(anime.Trailer))
-            AdicionarLink("Trailer", anime.Trailer, larguraValor);
-        if (!string.IsNullOrWhiteSpace(anime.Url))
-            AdicionarLink("MAL URL", anime.Url, larguraValor);
-
-        AdicionarSeparador(larguraValor);
-        //AdicionarRelacoes(relacoes);
-        AdicionarTextoLongo("Sinopse", anime.Synopsis, larguraValor, exibirTitulo: false);
-        AdicionarTextoLongo("Contexto / Fundo", anime.Background, larguraValor);
-
-        Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
-        Pnl_Info.ResumeLayout(true);
+            AdicionarSeparador();
+            AdicionarTextoLongo("Sinopse", anime.Synopsis, exibirTitulo: false);
+            AdicionarTextoLongo("Contexto / Fundo", anime.Background);
+        }
+        finally
+        {
+            Pnl_Info.ResumeLayout(true);
+        }
+        PerformLayout();
     }
 
     private void ConfigurarTitulosSecundarios(AnimeDetails anime)
@@ -321,7 +281,6 @@ public partial class FUC_DetalhesAnime : UserControl
         Lbl_Sinonimo.Visible = !string.IsNullOrWhiteSpace(Lbl_Sinonimo.Text);
         Lbl_TituloJapones.Visible = !string.IsNullOrWhiteSpace(Lbl_TituloJapones.Text);
         AplicarFundoDaAba();
-        OrganizarTitulosDoCabecalho();
     }
 
     private void OrganizarTitulosDoCabecalho()
@@ -331,9 +290,9 @@ public partial class FUC_DetalhesAnime : UserControl
 
         int larguraUtil = Pnl_Header.ClientSize.Width -
             Pnl_Header.Padding.Left - Pnl_Header.Padding.Right;
-        int espacamentoHorizontal = 20;
-        int espacamentoVertical = 6;
-        int larguraColuna = larguraUtil >= 900
+        int espacamentoHorizontal = LogicalToDeviceUnits(20);
+        int espacamentoVertical = LogicalToDeviceUnits(6);
+        int larguraColuna = larguraUtil >= LogicalToDeviceUnits(900)
             ? Math.Max(1, (larguraUtil - espacamentoHorizontal) / 2)
             : larguraUtil;
         int xEsquerda = Pnl_Header.Padding.Left;
@@ -341,17 +300,17 @@ public partial class FUC_DetalhesAnime : UserControl
         int yAtual = Pnl_Header.Padding.Top;
 
         int alturaTitulo = CalcularAlturaTitulo(Lbl_TituloAnime, larguraColuna);
-        int alturaIngles = Lbl_TituloIngles.Visible
+        int alturaIngles = !string.IsNullOrWhiteSpace(Lbl_TituloIngles.Text)
             ? CalcularAlturaTitulo(Lbl_TituloIngles, larguraColuna)
             : 0;
-        int alturaSinonimo = Lbl_Sinonimo.Visible
+        int alturaSinonimo = !string.IsNullOrWhiteSpace(Lbl_Sinonimo.Text)
             ? CalcularAlturaTitulo(Lbl_Sinonimo, larguraColuna)
             : 0;
-        int alturaJapones = Lbl_TituloJapones.Visible
+        int alturaJapones = !string.IsNullOrWhiteSpace(Lbl_TituloJapones.Text)
             ? CalcularAlturaTitulo(Lbl_TituloJapones, larguraColuna)
             : 0;
 
-        if (larguraUtil >= 900)
+        if (larguraUtil >= LogicalToDeviceUnits(900))
         {
             int alturaPrimeiraLinha = Math.Max(alturaTitulo, alturaIngles);
             PosicionarTitulo(Lbl_TituloAnime, xEsquerda, yAtual, larguraColuna, alturaPrimeiraLinha);
@@ -386,25 +345,25 @@ public partial class FUC_DetalhesAnime : UserControl
         int espacamentoVertical)
     {
         PosicionarTitulo(label, x, y, largura, altura);
-        return label.Visible ? y + altura + espacamentoVertical : y;
+        return !string.IsNullOrWhiteSpace(label.Text) ? y + altura + espacamentoVertical : y;
     }
 
     private static void PosicionarTitulo(SelectableTextLabel label, int x, int y, int largura, int altura)
     {
         label.Location = new Point(x, y);
-        label.Size = new Size(largura, label.Visible ? Math.Max(1, altura) : 1);
+        label.Size = new Size(largura, !string.IsNullOrWhiteSpace(label.Text) ? Math.Max(1, altura) : 1);
     }
 
-    private static int CalcularAlturaTitulo(SelectableTextLabel label, int largura)
+    private int CalcularAlturaTitulo(SelectableTextLabel label, int largura)
     {
-        if (!label.Visible)
+        if (string.IsNullOrWhiteSpace(label.Text))
             return 0;
 
-        return Math.Max(34, TextRenderer.MeasureText(
+        return Math.Max(LogicalToDeviceUnits(34), TextRenderer.MeasureText(
             label.Text,
             label.Font,
             new Size(Math.Max(1, largura), int.MaxValue),
-            TextFormatFlags.NoPadding | TextFormatFlags.WordBreak).Height + 6);
+            TextFormatFlags.NoPadding | TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix).Height + LogicalToDeviceUnits(6));
     }
 
     private void AplicarFundoDaAba()
@@ -422,61 +381,6 @@ public partial class FUC_DetalhesAnime : UserControl
         Lbl_TituloIngles.BackColor = fundo;
         Lbl_Sinonimo.BackColor = fundo;
         Lbl_TituloJapones.BackColor = fundo;
-    }
-
-    private void ConfigurarColunaDeDetalhes()
-    {
-        Pnl_Esquerda.SuspendLayout();
-        Pnl_Esquerda.Controls.Remove(Pbx_Capa);
-        Pnl_Esquerda.Controls.Remove(Pnl_Stats);
-        Pnl_Esquerda.Controls.Remove(Pnl_Acoes);
-
-        var layoutColuna = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 3,
-            BackColor = DarkModeColors.ActiveTabBackgroundColor,
-            Padding = new Padding(12)
-        };
-        layoutColuna.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        layoutColuna.RowStyles.Add(new RowStyle(SizeType.Percent, 56F));
-        layoutColuna.RowStyles.Add(new RowStyle(SizeType.Percent, 44F));
-        layoutColuna.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-        Pbx_Capa.Dock = DockStyle.Fill;
-        Pbx_Capa.Margin = new Padding(0, 0, 0, 12);
-        Pbx_Capa.MinimumSize = new Size(0, 160);
-
-        Pnl_Stats.Dock = DockStyle.Fill;
-        Pnl_Stats.AutoScroll = true;
-        Pnl_Stats.Margin = new Padding(0, 0, 0, 12);
-
-        Pnl_Acoes.AutoSize = true;
-        Pnl_Acoes.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        Pnl_Acoes.Dock = DockStyle.Fill;
-        Pnl_Acoes.Padding = Padding.Empty;
-        ConfigurarBotaoAcao(Btn_SalvarComoMyAnime);
-        ConfigurarBotaoAcao(Btn_SalvarComoAnime);
-        Btn_SalvarComoMyAnime.Dock = DockStyle.Top;
-        Btn_SalvarComoAnime.Dock = DockStyle.Top;
-
-        layoutColuna.Controls.Add(Pbx_Capa, 0, 0);
-        layoutColuna.Controls.Add(Pnl_Stats, 0, 1);
-        layoutColuna.Controls.Add(Pnl_Acoes, 0, 2);
-        Pnl_Esquerda.Controls.Add(layoutColuna);
-        Pnl_Esquerda.ResumeLayout(true);
-    }
-
-    private static void ConfigurarBotaoAcao(Button button)
-    {
-        button.AutoSize = true;
-        button.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        button.MinimumSize = new Size(
-            TextRenderer.MeasureText(button.Text, button.Font).Width + 28,
-            button.Font.Height + 18);
-        button.Padding = new Padding(12, 8, 12, 8);
-        button.Margin = new Padding(0, 0, 0, 8);
     }
 
     private async Task CarregarCapaAsync(AnimeDetails anime)
@@ -517,40 +421,28 @@ public partial class FUC_DetalhesAnime : UserControl
     }
     // ===================================================================
 
-    private void AdicionarDetalhe(string campo, string? valor, int larguraValor)
+    private void AdicionarDetalhe(string campo, string? valor)
     {
         if (string.IsNullOrWhiteSpace(valor)) return;
-        AdicionarParDeLabels(campo, valor, Color.Gold, larguraValor, isLink: false);
+        AdicionarParDeLabels(campo, valor, isLink: false);
     }
 
-    private void AdicionarLink(string campo, string url, int larguraValor)
+    private void AdicionarLink(string campo, string url)
     {
         if (string.IsNullOrWhiteSpace(url)) return;
-        AdicionarParDeLabels(campo, url, Color.RoyalBlue, larguraValor, isLink: true);
+        AdicionarParDeLabels(campo, url, isLink: true);
     }
 
-    private void AdicionarParDeLabels(string campo, string valor, Color corValor,
-        int larguraValor, bool isLink)
+    private void AdicionarParDeLabels(string campo, string valor, bool isLink)
     {
-        int alturaValor = Math.Max(
-            34,
-            TextRenderer.MeasureText(
-                valor,
-                new Font("Segoe UI", 10F, isLink ? FontStyle.Underline : FontStyle.Regular),
-                new Size(larguraValor, int.MaxValue),
-                TextFormatFlags.WordBreak).Height + 4);
-
-        int larguraColuna = larguraValor + 160;
-        int xColuna = 4 + (_colunaDetalhe * larguraColuna);
         var lblCampo = new Label
         {
             AutoSize = false,
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-            ForeColor = Color.Gold,
-            Location = new Point(xColuna, _yOffset + 2),
-            Size = new Size(150, alturaValor),
+            ForeColor = AccentColor,
             Text = campo + ":",
-            TextAlign = ContentAlignment.MiddleRight
+            TextAlign = ContentAlignment.MiddleRight,
+            UseMnemonic = false
         };
 
         var lblValor = new Label
@@ -558,9 +450,7 @@ public partial class FUC_DetalhesAnime : UserControl
             AutoSize = false,
             Font = new Font("Segoe UI", 10F,
                 isLink ? FontStyle.Underline : FontStyle.Regular),
-            ForeColor = corValor,
-            Location = new Point(xColuna + 154, _yOffset + 2),
-            Size = new Size(larguraValor, alturaValor),
+            ForeColor = isLink ? DarkModeColors.TextColor : AccentColor,
             Text = valor,
             TextAlign = ContentAlignment.MiddleLeft,
             Cursor = isLink ? Cursors.Hand : Cursors.Default,
@@ -577,123 +467,65 @@ public partial class FUC_DetalhesAnime : UserControl
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(urlCapturada)
                         { UseShellExecute = true });
                 }
-                catch { }
+                catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+                {
+                    DarkMessageBox.Show($"Não foi possível abrir o link.\n\nDetalhes: {ex.Message}",
+                        "Erro ao abrir link", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             };
         }
-        Pnl_Info.Controls.Add(lblCampo);
-        Pnl_Info.Controls.Add(lblValor);
-        lblCampo.BackColor = Pnl_Info.BackColor;
-        lblCampo.ForeColor = Color.Gold;
-        lblValor.BackColor = Pnl_Info.BackColor;
-        lblValor.ForeColor = corValor;
-
-        if (_colunaDetalhe == 0)
-        {
-            _ultimoCampoDetalhe = lblCampo;
-            _ultimoValorDetalhe = lblValor;
-            _alturaLinhaDetalhe = alturaValor;
-            _colunaDetalhe = 1;
-        }
-        else
-        {
-            _alturaLinhaDetalhe = Math.Max(_alturaLinhaDetalhe, alturaValor);
-            _ultimoCampoDetalhe!.Height = _alturaLinhaDetalhe;
-            _ultimoValorDetalhe!.Height = _alturaLinhaDetalhe;
-            lblCampo.Height = _alturaLinhaDetalhe;
-            lblValor.Height = _alturaLinhaDetalhe;
-            _yOffset += _alturaLinhaDetalhe + 12;
-            _colunaDetalhe = 0;
-            _alturaLinhaDetalhe = 0;
-            _ultimoCampoDetalhe = null;
-            _ultimoValorDetalhe = null;
-        }
+        Pnl_Info.AddDetail(lblCampo, lblValor);
     }
 
-    private void FinalizarLinhaDetalhes()
-    {
-        if (_colunaDetalhe == 0) return;
-
-        _yOffset += _alturaLinhaDetalhe + 12;
-        _colunaDetalhe = 0;
-        _alturaLinhaDetalhe = 0;
-        _ultimoCampoDetalhe = null;
-        _ultimoValorDetalhe = null;
-    }
-
-    private void AdicionarTextoLongo(string campo, string? texto, int larguraValor, bool exibirTitulo = true)
+    private void AdicionarTextoLongo(string campo, string? texto, bool exibirTitulo = true)
     {
         if (string.IsNullOrWhiteSpace(texto)) return;
-        FinalizarLinhaDetalhes();
-        _yOffset += 12;
-        int topoSecao = _yOffset;
-        int topoTexto = topoSecao;
         if (exibirTitulo)
         {
             var lblCampo = new Label
             {
                 AutoSize = false,
                 Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                ForeColor = Color.Gold,
-                Location = new Point(4, topoSecao),
-                Size = new Size(2 * larguraValor + 148, 32),
+                ForeColor = AccentColor,
                 Text = campo + ":",
-                TextAlign = ContentAlignment.MiddleLeft
+                TextAlign = ContentAlignment.MiddleLeft,
+                UseMnemonic = false
             };
-            Pnl_Info.Controls.Add(lblCampo);
-            topoTexto = lblCampo.Bottom + 28;
+            Pnl_Info.AddSection(lblCampo, spaceBefore: 12, spaceAfter: 12);
         }
 
-        int larguraTexto = Math.Max(2 * larguraValor + 148, 450);
-        int alturaTexto = Math.Max(60, TextRenderer.MeasureText(
-            texto, new Font("Segoe UI", 9.5F), new Size(larguraTexto - 24, int.MaxValue),
-            TextFormatFlags.WordBreak).Height + 28);
         var lblTexto = new Label
         {
             AutoSize = false,
             Font = new Font("Segoe UI", 9.5F),
-            ForeColor = Color.FromArgb(255, 115, 0),
+            ForeColor = AccentColor,
             BackColor = Pnl_Info.BackColor,
-            Location = new Point(8, topoTexto),
-            Size = new Size(larguraTexto, alturaTexto),
+            MinimumSize = new Size(0, LogicalToDeviceUnits(60)),
             Text = texto,
-            TextAlign = ContentAlignment.TopCenter
+            TextAlign = ContentAlignment.TopCenter,
+            UseMnemonic = false
         };
-        Pnl_Info.Controls.Add(lblTexto);
-        _yOffset = lblTexto.Bottom + 18;
-        AdicionarSeparador(larguraValor);
+        Pnl_Info.AddSection(lblTexto, spaceBefore: exibirTitulo ? 0 : 12, spaceAfter: 18);
+        AdicionarSeparador();
     }
 
-    private void AdicionarSeparador(int larguraValor)
+    private void AdicionarSeparador()
     {
-        FinalizarLinhaDetalhes();
         var sep = new Panel
         {
-            BackColor = Color.LightSteelBlue,
-            Location = new Point(20, _yOffset),
-            Size = new Size(2 * larguraValor + 148, 1)
+            Height = LogicalToDeviceUnits(2)
         };
-        Pnl_Info.Controls.Add(sep);
-        _yOffset += 10;
+        sep.Paint += (_, e) =>
+        {
+            using var pen = new Pen(AccentColor);
+            e.Graphics.DrawLine(pen, 0, 0, sep.ClientSize.Width, 0);
+        };
+        Pnl_Info.AddSection(sep, spaceAfter: 10);
     }
     // ===================================================================
 
     private void AdicionarRelacoes(List<AnimeRelationGroup> relacoes)
     {
-        int larguraSecao = Math.Max(Pnl_Info.ClientSize.Width - 12, 370);
-
-        var lblTituloSecao = new Label
-        {
-            AutoSize = false,
-            Font = new Font("Segoe UI", 15F, FontStyle.Bold),
-            ForeColor = Color.Gold,
-            Location = new Point(4, _yOffset),
-            Size = new Size(larguraSecao, 100),
-            Text = "🔗 Animes Relacionados:",
-            TextAlign = ContentAlignment.MiddleCenter
-        };
-        Pnl_Info.Controls.Add(lblTituloSecao);
-        _yOffset += lblTituloSecao.Height + 8;
-
         var entradasAnime = relacoes
             .SelectMany(g => g.Entry ?? [])
             .Where(e => e.MalId > 0)
@@ -701,177 +533,70 @@ public partial class FUC_DetalhesAnime : UserControl
 
         _animesRelacionados = entradasAnime;
 
-        if (entradasAnime.Count == 0)
-        {
-            var lblSemRel = new Label
-            {
-                AutoSize = false,
-                Font = new Font("Segoe UI", 13F, FontStyle.Italic),
-                ForeColor = Color.Gold,
-                Location = new Point(4, _yOffset),
-                Size = new Size(larguraSecao, 100),
-                Text = "Nenhum anime relacionado ao atual foi encontrado.",
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            Pnl_Info.SuspendLayout();
-            Pnl_Info.Controls.Add(lblSemRel);
-            _yOffset += lblSemRel.Height + 24;
-            Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
-            Pnl_Info.ResumeLayout(true);
-            return;
-        }
-
-        int larguraContainer = Math.Max(Pnl_Info.ClientSize.Width - 16, 370);
-        int larguraFlp = CalcularLarguraRelacoes(larguraContainer);
-
-        var pnlRelacoes = new Panel
-        {
-            Location = new Point(4, _yOffset),
-            Size = new Size(larguraContainer, 390),
-            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-            BackColor = Pnl_Info.BackColor,
-            AutoScroll = true,
-            Padding = new Padding(8),
-            BorderStyle = BorderStyle.None
-        };
-
-        var flp = new FlowLayoutPanel
-        {
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            WrapContents = true,
-            FlowDirection = FlowDirection.LeftToRight,
-            Width = larguraFlp,
-            MinimumSize = new Size(larguraFlp, 0),
-            MaximumSize = new Size(larguraFlp, 0),
-            Padding = new Padding(4),
-            Margin = new Padding(0),
-            BackColor = Pnl_Info.BackColor
-        };
-
+        var cards = new List<UC_MiniAnimeCard>();
         foreach (var entry in entradasAnime)
         {
             var card = new UC_MiniAnimeCard();
             card.CarregarDados(entry);
             card.CardClicado += (s, id) => CardClicado?.Invoke(this, id);
-            flp.Controls.Add(card);
+            cards.Add(card);
         }
-
-        Pnl_Info.SuspendLayout();
-        pnlRelacoes.Controls.Add(flp);
-        Pnl_Info.Controls.Add(pnlRelacoes);
-        AplicarFundoRelacoes(pnlRelacoes, flp);
-        flp.CreateControl();
-        int alturaEstimada = flp.GetPreferredSize(new Size(larguraFlp, 0)).Height;
-        int alturaContainer = Math.Clamp(alturaEstimada + pnlRelacoes.Padding.Vertical + 2, 390, 1200);
-        pnlRelacoes.Height = alturaContainer;
-        ConfigurarScrollVerticalRelacoes(pnlRelacoes, alturaEstimada);
-        _yOffset += alturaContainer + 12;
-        Pnl_Info.AutoScrollMinSize = new Size(0, _yOffset + 20);
-        Pnl_Info.ResumeLayout(true);
+        AdicionarCardsRelacionados(cards, "Nenhum anime relacionado ao atual foi encontrado.");
     }
 
     private void AdicionarRelacoesLocais(IReadOnlyList<ObterAnimeDto> animes)
     {
-        int larguraSecao = Math.Max(Pnl_Info.ClientSize.Width - 12, 370);
-        var lblTituloSecao = new Label
-        {
-            AutoSize = false,
-            Font = new Font("Segoe UI", 15F, FontStyle.Bold),
-            ForeColor = Color.Gold,
-            Location = new Point(4, _yOffset),
-            Size = new Size(larguraSecao, 100),
-            Text = "🔗 Animes relacionados:",
-            TextAlign = ContentAlignment.MiddleCenter
-        };
-        Pnl_Info.Controls.Add(lblTituloSecao);
-        _yOffset += lblTituloSecao.Height + 8;
-
         var animesValidos = animes.Where(anime => anime.MalId > 0).ToList();
-        if (animesValidos.Count == 0)
-        {
-            var lblSemRelacoes = new Label
-            {
-                AutoSize = false,
-                Font = new Font("Segoe UI", 13F, FontStyle.Italic),
-                ForeColor = Color.Gold,
-                Location = new Point(4, _yOffset),
-                Size = new Size(larguraSecao, 100),
-                Text = "Nenhum anime relacionado foi encontrado no DB_Local.",
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            Pnl_Info.Controls.Add(lblSemRelacoes);
-            _yOffset += lblSemRelacoes.Height + 24;
-            return;
-        }
-
-        int larguraContainer = Math.Max(Pnl_Info.ClientSize.Width - 16, 370);
-        int larguraFlp = CalcularLarguraRelacoes(larguraContainer);
-        var pnlRelacoes = new Panel
-        {
-            Location = new Point(4, _yOffset),
-            Size = new Size(larguraContainer, 390),
-            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-            BackColor = Pnl_Info.BackColor,
-            AutoScroll = true,
-            Padding = new Padding(8),
-            BorderStyle = BorderStyle.None
-        };
-        var flp = new FlowLayoutPanel
-        {
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            WrapContents = true,
-            FlowDirection = FlowDirection.LeftToRight,
-            Width = larguraFlp,
-            MinimumSize = new Size(larguraFlp, 0),
-            MaximumSize = new Size(larguraFlp, 0),
-            Padding = new Padding(4),
-            Margin = new Padding(0),
-            BackColor = Pnl_Info.BackColor
-        };
-
+        var cards = new List<UC_MiniAnimeCard>();
         foreach (var anime in animesValidos)
         {
             var card = new UC_MiniAnimeCard();
             card.CarregarDadosLocal(anime);
             card.CardClicado += (_, malId) => CardClicado?.Invoke(this, malId);
-            flp.Controls.Add(card);
+            cards.Add(card);
+        }
+        AdicionarCardsRelacionados(cards, "Nenhum anime relacionado foi encontrado no DB_Local.");
+    }
+
+    private void AdicionarCardsRelacionados(IReadOnlyList<UC_MiniAnimeCard> cards, string mensagemSemRelacoes)
+    {
+        var titulo = new Label
+        {
+            Font = new Font("Segoe UI", 15F, FontStyle.Bold),
+            ForeColor = AccentColor,
+            MinimumSize = new Size(0, LogicalToDeviceUnits(52)),
+            Text = "🔗 Animes relacionados:",
+            TextAlign = ContentAlignment.MiddleCenter,
+            UseMnemonic = false
+        };
+        Pnl_Info.AddSection(titulo, spaceAfter: 8);
+
+        if (cards.Count == 0)
+        {
+            Pnl_Info.AddSection(new Label
+            {
+                Font = new Font("Segoe UI", 13F, FontStyle.Italic),
+                ForeColor = AccentColor,
+                MinimumSize = new Size(0, LogicalToDeviceUnits(52)),
+                Text = mensagemSemRelacoes,
+                TextAlign = ContentAlignment.MiddleCenter,
+                UseMnemonic = false
+            }, spaceAfter: 24);
+            return;
         }
 
-        pnlRelacoes.Controls.Add(flp);
-        Pnl_Info.Controls.Add(pnlRelacoes);
-        AplicarFundoRelacoes(pnlRelacoes, flp);
-        flp.CreateControl();
-        int alturaEstimada = flp.GetPreferredSize(new Size(larguraFlp, 0)).Height;
-        pnlRelacoes.Height = Math.Clamp(alturaEstimada + pnlRelacoes.Padding.Vertical + 2, 390, 1200);
-        ConfigurarScrollVerticalRelacoes(pnlRelacoes, alturaEstimada);
-        _yOffset += pnlRelacoes.Height + 12;
-    }
-
-    private void AplicarFundoRelacoes(Panel pnlRelacoes, FlowLayoutPanel flp)
-    {
-        pnlRelacoes.BackColor = Pnl_Info.BackColor;
-        flp.BackColor = Pnl_Info.BackColor;
-        WindowsDarkMode.ApplyTo(pnlRelacoes);
-        WindowsDarkMode.ApplyTo(flp);
-    }
-
-    private static int CalcularLarguraRelacoes(int larguraContainer)
-    {
-        return Math.Max(
-            larguraContainer - 16 - SystemInformation.VerticalScrollBarWidth - 12,
-            220);
-    }
-
-    private static void ConfigurarScrollVerticalRelacoes(Panel pnlRelacoes, int alturaConteudo)
-    {
-        pnlRelacoes.AutoScrollMinSize = new Size(
-            0,
-            Math.Max(0, alturaConteudo + pnlRelacoes.Padding.Vertical + 2));
-        pnlRelacoes.HorizontalScroll.Enabled = false;
-        pnlRelacoes.HorizontalScroll.Visible = false;
-        pnlRelacoes.HorizontalScroll.Maximum = 0;
+        var flp = new FlowLayoutPanel
+        {
+            Name = "Flp_AnimesRelacionados",
+            AutoScroll = false,
+            WrapContents = true,
+            FlowDirection = FlowDirection.LeftToRight,
+            Padding = new Padding(LogicalToDeviceUnits(4)),
+            Margin = Padding.Empty,
+            BackColor = Pnl_Info.BackColor
+        };
+        flp.Controls.AddRange(cards.Cast<Control>().ToArray());
+        Pnl_Info.AddSection(flp);
     }
 
     private async void Btn_SalvarComoMyAnime_Click(object? sender, EventArgs e)
@@ -1321,6 +1046,7 @@ public partial class FUC_DetalhesAnime : UserControl
 
     private void MostrarCarregando(bool carregando)
     {
+        _carregando = carregando;
         if (carregando)
         {
             Lbl_Carregando.Visible = true;
@@ -1333,5 +1059,6 @@ public partial class FUC_DetalhesAnime : UserControl
             Pnl_Conteudo.BringToFront();
             Lbl_Carregando.Visible = false;
         }
+        PerformLayout();
     }
 }

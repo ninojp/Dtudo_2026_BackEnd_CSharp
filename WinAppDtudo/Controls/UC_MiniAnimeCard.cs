@@ -22,6 +22,33 @@ public partial class UC_MiniAnimeCard : UserControl
         ThemeManager.ApplyDarkModeToUserControl(this);
     }
 
+    public override Size GetPreferredSize(Size proposedSize)
+    {
+        var width = proposedSize.Width > 0
+            ? Math.Min(LogicalToDeviceUnits(200), proposedSize.Width)
+            : LogicalToDeviceUnits(200);
+        var imageWidth = Math.Max(1, Math.Min(LogicalToDeviceUnits(190), width - LogicalToDeviceUnits(2)));
+        var imageHeight = (int)Math.Round(imageWidth * 250D / 190);
+        return new Size(width, imageHeight + LogicalToDeviceUnits(100));
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        if (Pbx_Capa is null || Lbl_MalId is null || Lbl_Nome is null)
+            return;
+
+        var margin = LogicalToDeviceUnits(1);
+        var textWidth = Math.Max(1, ClientSize.Width - margin * 2);
+        var imageWidth = Math.Min(LogicalToDeviceUnits(190), textWidth);
+        Pbx_Capa.SetBounds((ClientSize.Width - imageWidth) / 2, LogicalToDeviceUnits(5),
+            imageWidth, (int)Math.Round(imageWidth * 250D / 190));
+        Lbl_MalId.SetBounds(margin, Pbx_Capa.Bottom + LogicalToDeviceUnits(5),
+            textWidth, LogicalToDeviceUnits(25));
+        Lbl_Nome.SetBounds(margin, Lbl_MalId.Bottom, textWidth,
+            Math.Max(1, ClientSize.Height - Lbl_MalId.Bottom - LogicalToDeviceUnits(5)));
+    }
+
     public void CarregarDadosLocal(ObterAnimeDto anime)
     {
         _malId = anime.MalId;

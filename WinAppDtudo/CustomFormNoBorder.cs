@@ -11,6 +11,7 @@ public class CustomFormNoBorder : Form
 {
     private const int WM_NCHITTEST = 0x84;
     private const int WM_NCLBUTTONDOWN = 0xA1;
+    private const int WM_SHOWWINDOW = 0x0018;
     private const int WM_EXITSIZEMOVE = 0x0232;
     private const int HT_CAPTION = 0x2;
     private const int HTCLIENT = 0x1;
@@ -188,7 +189,69 @@ public class CustomFormNoBorder : Form
             return;
         }
 
+        if (m.Msg == WM_SHOWWINDOW && this is Frm_MyAnimes myAnimesForm)
+        {
+            LogWindowHandleDiagnostics(myAnimesForm);
+
+            try
+            {
+                base.WndProc(ref m);
+            }
+            catch (Exception exception)
+            {
+                Services.StartupDiagnostics.Record("Frm_MyAnimes WM_SHOWWINDOW", exception);
+                throw;
+            }
+
+            Services.StartupDiagnostics.Mark(
+                $"MyAnimes WM_SHOWWINDOW base returned visible={myAnimesForm.Visible} handleCreated={myAnimesForm.IsHandleCreated} bounds={myAnimesForm.Bounds} windowState={myAnimesForm.WindowState}");
+            return;
+        }
+
         base.WndProc(ref m);
+    }
+
+    private static void LogWindowHandleDiagnostics(Form form)
+    {
+        LogControlHandle("MyAnimes", form);
+
+        if (form.Owner is not null)
+            LogControlHandle("Owner", form.Owner);
+
+        LogChildHandles(form);
+    }
+
+    private static void LogChildHandles(Control parent)
+    {
+        foreach (Control child in parent.Controls)
+        {
+            LogControlHandle("Child", child);
+            LogChildHandles(child);
+        }
+    }
+
+    private static void LogControlHandle(string role, Control control)
+    {
+        if (!control.IsHandleCreated)
+        {
+            Services.StartupDiagnostics.Mark(
+                $"HWND_DIAG role={role} control={control.GetType().FullName} name={control.Name} handle=not-created");
+            return;
+        }
+
+        var handle = control.Handle;
+        var isWindow = IsWindow(handle);
+        var parentHandle = isWindow ? GetParent(handle) : IntPtr.Zero;
+        var dpi = isWindow ? GetDpiForWindow(handle) : 0;
+        uint processId = 0;
+        uint threadId = 0;
+        if (isWindow)
+            threadId = GetWindowThreadProcessId(handle, out processId);
+
+        Services.StartupDiagnostics.Mark(
+            $"HWND_DIAG role={role} control={control.GetType().FullName} name={control.Name} " +
+            $"handle=0x{handle.ToInt64():X} valid={isWindow} parent=0x{parentHandle.ToInt64():X} " +
+            $"dpi={dpi} thread={threadId} process={processId}");
     }
 
     protected override void Dispose(bool disposing)
@@ -287,6 +350,18 @@ public class CustomFormNoBorder : Form
         IntPtr lprcUpdate,
         IntPtr hrgnUpdate,
         RedrawWindowFlags flags);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetParent(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
     [Flags]
     private enum RedrawWindowFlags : uint

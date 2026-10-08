@@ -38,8 +38,8 @@ public static class ThemeManager
             return;
 
         WindowsDarkMode.ApplyTo(userControl);
-        userControl.BackColor = DarkModeColors.BackgroundColor;
-        userControl.ForeColor = DarkModeColors.TextColor;
+        userControl.BackColor = GetSurfaceColor(userControl);
+        userControl.ForeColor = GetTextColor(userControl);
         HookDynamicChildren(userControl);
         ApplyDarkModeToControls(userControl.Controls);
     }
@@ -138,13 +138,13 @@ public static class ThemeManager
                 return;
 
             case Panel or FlowLayoutPanel or TableLayoutPanel:
-                control.BackColor = DarkModeColors.BackgroundColor;
-                control.ForeColor = DarkModeColors.TextColor;
+                control.BackColor = GetSurfaceColor(control);
+                control.ForeColor = GetTextColor(control);
                 return;
 
             case GroupBox:
-                control.BackColor = DarkModeColors.BackgroundColor;
-                control.ForeColor = DarkModeColors.TextColor;
+                control.BackColor = GetSurfaceColor(control);
+                control.ForeColor = GetTextColor(control);
                 return;
         }
 
@@ -156,7 +156,7 @@ public static class ThemeManager
     {
         tabPage.UseVisualStyleBackColor = false;
         tabPage.BackColor = DarkModeColors.ActiveTabBackgroundColor;
-        tabPage.ForeColor = DarkModeColors.TextColor;
+        tabPage.ForeColor = GetTextColor(tabPage);
         HookDynamicChildren(tabPage);
         ApplyDarkModeToControls(tabPage.Controls);
         ApplyActiveTabSurfaceToContent(tabPage);
@@ -209,10 +209,12 @@ public static class ThemeManager
     {
         tabControl.BackColor = DarkModeColors.BackgroundColor;
         tabControl.ForeColor = DarkModeColors.TextColor;
-        tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
 
+        // DarkTabControl paints its own tabs. Changing DrawMode on an unparented
+        // TabControl can eagerly create a native HWND before its Form parent exists.
         if (tabControl is not DarkTabControl)
         {
+            tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl.DrawItem -= DrawDarkTabItem;
             tabControl.DrawItem += DrawDarkTabItem;
         }
@@ -301,7 +303,9 @@ public static class ThemeManager
         button.FlatAppearance.MouseOverBackColor = DarkModeColors.HoverColor;
         button.FlatAppearance.MouseDownBackColor = DarkModeColors.SelectionColor;
         button.UseVisualStyleBackColor = false;
-        button.ForeColor = Color.White;
+        button.ForeColor = FindAccentColor(button, respectInteractiveContent: false).IsEmpty
+            ? Color.White
+            : DarkModeColors.TextColor;
         button.ImageAlign = ContentAlignment.MiddleLeft;
         button.TextImageRelation = TextImageRelation.ImageBeforeText;
         button.BackColor = isImageOnly ? Color.Transparent : DarkModeColors.AccentColor;
@@ -309,8 +313,40 @@ public static class ThemeManager
 
     private static void ApplyLabel(Label label)
     {
-        label.BackColor = Color.Transparent;
-        label.ForeColor = label.Enabled ? DarkModeColors.TextColor : DarkModeColors.DisabledTextColor;
+        label.BackColor = label is SelectableTextLabel &&
+            !FindAccentColor(label, respectInteractiveContent: false).IsEmpty
+                ? DarkModeColors.ActiveTabBackgroundColor
+                : Color.Transparent;
+        label.ForeColor = GetTextColor(label);
+    }
+
+    private static Color GetTextColor(Control control)
+    {
+        if (!control.Enabled)
+            return DarkModeColors.DisabledTextColor;
+
+        var accent = FindAccentColor(control, respectInteractiveContent: true);
+        return accent.IsEmpty ? DarkModeColors.TextColor : accent;
+    }
+
+    private static Color GetSurfaceColor(Control control) =>
+        FindAccentColor(control, respectInteractiveContent: false).IsEmpty
+            ? DarkModeColors.BackgroundColor
+            : DarkModeColors.ActiveTabBackgroundColor;
+
+    private static Color FindAccentColor(Control control, bool respectInteractiveContent)
+    {
+        for (Control? current = control; current is not null; current = current.Parent)
+        {
+            if (respectInteractiveContent &&
+                (current is Button or LinkLabel || current.Cursor == Cursors.Hand))
+                return Color.Empty;
+
+            if (current is IThemeAccentProvider provider)
+                return provider.AccentColor;
+        }
+
+        return Color.Empty;
     }
 
     private static void ApplyLinkLabel(LinkLabel linkLabel)

@@ -90,8 +90,25 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
 
     private void MnI_MyAnimes_Click(object sender, EventArgs e)
     {
+        StartupDiagnostics.Mark("MyAnimes: open request queued after menu click");
+        BeginInvoke(new Action(OpenMyAnimes));
+    }
+
+    private void OpenMyAnimes()
+    {
+        if (IsDisposed || !IsHandleCreated)
+            return;
+
+        StartupDiagnostics.Mark("MyAnimes: deferred open started");
         Frm_MyAnimes formMyAnimes = new(_identityAuthenticationService);
-        formMyAnimes.Show();
+        formMyAnimes.VisibleChanged += (_, _) => StartupDiagnostics.Mark(
+            $"MyAnimes VisibleChanged visible={formMyAnimes.Visible} handleCreated={formMyAnimes.IsHandleCreated} bounds={formMyAnimes.Bounds} windowState={formMyAnimes.WindowState}");
+        formMyAnimes.Shown += (_, _) => StartupDiagnostics.Mark(
+            $"MyAnimes Shown visible={formMyAnimes.Visible} handleCreated={formMyAnimes.IsHandleCreated} bounds={formMyAnimes.Bounds} windowState={formMyAnimes.WindowState}");
+        StartupDiagnostics.Mark("MyAnimes: before Show(owner)");
+        formMyAnimes.Show(this);
+        StartupDiagnostics.Mark(
+            $"MyAnimes: Show returned visible={formMyAnimes.Visible} handleCreated={formMyAnimes.IsHandleCreated} bounds={formMyAnimes.Bounds} windowState={formMyAnimes.WindowState}");
     }
 
     private void OpenMyAnimeStructure(int myAnimeId)

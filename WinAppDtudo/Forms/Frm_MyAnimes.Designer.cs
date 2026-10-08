@@ -41,7 +41,12 @@ partial class Frm_MyAnimes
         MnI_FecharAbasADireita = new ToolStripMenuItem();
         MnI_BuscarAnime = new ToolStripMenuItem();
         Mnu_AnalizarEstruturas = new ToolStripMenuItem();
-        Tbc_MyAnimes = new WinAppDtudo.Controls.DarkTabControl();
+        Tbc_MyAnimes = new WinAppDtudo.Controls.DarkTabControl
+        {
+            AutoSizeTabHeaders = true,
+            ShowCloseButtons = true,
+            AllowTabReordering = true
+        };
         Iml_ImagensList = new ImageList(components);
         Ssb_StatusRodape = new StatusStrip();
         Lbl_StatusRodape = new ToolStripStatusLabel();
@@ -153,19 +158,17 @@ partial class Frm_MyAnimes
         Tbc_MyAnimes.AccessibleName = "Controle de Abas";
         Tbc_MyAnimes.AllowDrop = true;
         Tbc_MyAnimes.Dock = DockStyle.Fill;
-        Tbc_MyAnimes.DrawMode = TabDrawMode.OwnerDrawFixed;
-        Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        Tbc_MyAnimes.Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Regular, GraphicsUnit.Point, 0);
         Tbc_MyAnimes.ForeColor = Color.Gold;
         Tbc_MyAnimes.ImageList = Iml_ImagensList;
         Tbc_MyAnimes.ImeMode = ImeMode.On;
-        Tbc_MyAnimes.ItemSize = new Size(200, 50);
+        Tbc_MyAnimes.ItemSize = new Size(0, 50);
         Tbc_MyAnimes.Location = new Point(0, 40);
         Tbc_MyAnimes.Margin = new Padding(0);
         Tbc_MyAnimes.Name = "Tbc_MyAnimes";
-        Tbc_MyAnimes.Padding = new Point(10, 6);
-        Tbc_MyAnimes.SelectedIndex = 0;
+        Tbc_MyAnimes.Padding = new Point(19, 6);
         Tbc_MyAnimes.Size = new Size(1272, 652);
-        Tbc_MyAnimes.SizeMode = TabSizeMode.Fixed;
+        Tbc_MyAnimes.SizeMode = TabSizeMode.Normal;
         Tbc_MyAnimes.TabIndex = 1;
         Tbc_MyAnimes.MouseDown += Tbc_MyAnimes_MouseDown;
         // 
@@ -214,7 +217,7 @@ partial class Frm_MyAnimes
         MainMenuStrip = Mnu_MenuMyAnimes;
         Margin = new Padding(2);
         Name = "Frm_MyAnimes";
-        StartPosition = FormStartPosition.CenterScreen;
+        StartPosition = FormStartPosition.CenterParent;
         Text = "MyAnimes - Abas";
         Load += Frm_MyAnimes_Load;
         Mnu_MenuMyAnimes.ResumeLayout(false);

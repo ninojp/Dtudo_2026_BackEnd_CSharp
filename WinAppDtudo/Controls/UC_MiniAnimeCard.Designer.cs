@@ -12,8 +12,12 @@ partial class UC_MiniAnimeCard
     /// </summary>
     protected override void Dispose(bool disposing)
     {
-        if (disposing && (components != null))
-            components.Dispose();
+        if (disposing)
+        {
+            Pbx_Capa.Image?.Dispose();
+            Pbx_Capa.Image = null;
+            components?.Dispose();
+        }
         base.Dispose(disposing);
     }
 
@@ -79,8 +83,8 @@ partial class UC_MiniAnimeCard
         //
         // UC_MiniAnimeCard
         //
-        AutoScaleDimensions = new SizeF(12F, 25F);
-        AutoScaleMode = AutoScaleMode.Font;
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         BackColor = Color.FromArgb(247, 248, 252);
         Controls.Add(Pbx_Capa);
         Controls.Add(Lbl_MalId);

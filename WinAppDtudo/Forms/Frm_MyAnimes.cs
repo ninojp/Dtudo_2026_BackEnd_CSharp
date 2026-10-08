@@ -1,5 +1,6 @@
 using WinAppDtudo.Forms;
 using WinAppDtudo.FormsUC;
+using WinAppDtudo.Controls;
 using WinAppDtudo.Services;
 using System.Net;
 
@@ -16,20 +17,35 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
     public int _tabIndexMascaras = 0;
     public Frm_MyAnimes(WinAppAuthenticationService? authenticationService = null)
     {
+        StartupDiagnostics.Mark("Frm_MyAnimes: construction started");
         _authenticationService = authenticationService ?? new WinAppAuthenticationService();
         _apiMyAnimesService = new ApiMyAnimesService(_authenticationService);
         _importadorAnimesMyAnimeService = new ImportadorAnimesMyAnimeService(
             _apiMyAnimesService,
             authenticationService: _authenticationService);
+        StartupDiagnostics.Mark("Frm_MyAnimes: initializing controls");
         InitializeComponent();
+        foreach (Control control in Controls)
+        {
+            var controlName = control.Name;
+            var controlType = control.GetType().FullName;
+            control.HandleCreated += (_, _) => StartupDiagnostics.Mark(
+                $"MYANIMES_ROOT_HANDLE_CREATED name={controlName} type={controlType}");
+        }
+        StartupDiagnostics.Mark("Frm_MyAnimes: configuring tab headers");
         MnI_BuscarAnime.Click += MnI_BuscarAnime_Click;
         Tbc_MyAnimes.Selected += Tbc_MyAnimes_Selected;
         Tbc_MyAnimes.ShowCloseButtons = true;
+        Tbc_MyAnimes.AutoSizeTabHeaders = true;
+        Tbc_MyAnimes.AllowTabReordering = true;
+        StartupDiagnostics.Mark("Frm_MyAnimes: applying dark theme");
         // Aplicar o tema Dark Mode ao formulário e seus componentes
         ThemeManager.ApplyDarkModeToForm(this);
+        StartupDiagnostics.Mark("Frm_MyAnimes: configuring borderless window");
         // Inicializa o formulário customizado sem barra de título
         InitializeCustomFormNoBorder(Mnu_MenuMyAnimes);
         AddControlButtonsToMenuStrip(Mnu_MenuMyAnimes);
+        StartupDiagnostics.Mark("Frm_MyAnimes: construction completed");
     }
 
     /// <summary>
@@ -398,11 +414,13 @@ public partial class Frm_MyAnimes : CustomFormNoBorder
             _ = AtualizarAbaMyAnimeAsync(myAnimeId);
         };
         ucDetalhes.StatusAtualizado += (_, mensagem) => AtualizarStatusRodape(mensagem);
-        var tabPage = new TabPage
+        var tabPage = new AccentTabPage(DarkModeColors.GetAnimeDetailAccentColor(consultaLocal))
         {
-            Text = consultaLocal ? $"DB #{malId}" : $" #{malId}",
+            Text = $"#{malId}",
+            HeaderText = $"#{malId}",
             Name = tabName,
-            ImageIndex = ObterIndiceIconeAnime(consultaLocal),
+            AccessibleName = $"Anime #{malId} - {(consultaLocal ? "DB Local" : "ApiMyAnimeList")}",
+            ImageIndex = -1,
         };
         tabPage.Controls.Add(ucDetalhes);
         Tbc_MyAnimes.TabPages.Add(tabPage);

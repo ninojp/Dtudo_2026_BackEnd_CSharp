@@ -39,24 +39,33 @@ Atualmente (03/09/2026) foram adicionados (através de I.A) diversos novos proje
 ------------------------------------------------------------------------------------------------------------------
 
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Após logar no WinAppDtudo, e acessar a Form MyAnimes, atualmente temos duas formas de buscar animes:  
-Busca local - No menu "DB Local" acessamos a aba (UC, Busca de animes - DB_Local, ApiMyAnimes que consulta o banco de dados local)
-Busca Externa - No menu "ApiMyAnimeList" acessamos a aba (UC, Busca Externa - ApiMyAnimeList), que consulta a API externa MyAnimeList.
-Percebi que VISUALMENTE, estas duas "Abas" são muito semelhantes, o que muda é apenas a fonte dos dados: uma busca no banco de dados local e a outra na API externa MyAnimeList.  
-Então agora quero unificar (remover as abas separadas, e criar uma única aba de busca unificada) minhas duas buscas na mesma aba, Mas mantendo TODA LÓGICA SEPARADA, garantindo a distinção clara entre os resultados locais e externos, através de dois botões distintos: "Busca DB Local" e "Busca ApiMyAnimeList" mas na mesma interface (aba), usando o mesmo Campo de input. Ou seja, após colar o texto no INPUT, o usuário deve escolher qual fonte deseja consultar clicando no botão correspondente (independentemente da busca realizada, com resulttado ou sem, deve manter o texto no input, para que possa ser reutilizado facilmente em outra busca).
-Vamos precisar de algumas mudanças visuais e estruturais na interface do usuário para acomodar essa unificação de buscas. os menus "DB Local" e "ApiMyAnimeList", agora será apenas um "Buscar Anime".  
-A aba unificada não precisa de titulo (Busca de animes - DB_Local), no lugar disso, terá apenas os dois botões (grandes e destacados) centralizados. O label "Digite o nome ou ID do anime" e o campo de input devem permanecer com os MESMOS tamanhos, mas agora centralizados na interface. A frase de status (abaixo do input), agora deve ser colocado no final da aba (manter o tamanho da fonte), entre os botões "Anterior" e "Próximo", também deve ser centralizada (a paginação não precisa mais exibir o numero de páginas, no seu lugar, agora deve aparecer as mensagens de status).
+Após logar no WinAppDtudo, e acessar o Form MyAnimes, Clicando no menu "Buscar Anime", será aberta a aba unificada de busca, onde o usuário poderá escolher entre buscar no DB Local ou na ApiMyAnimeList. Após fazer uma busca, temos os Cards exibindo os resultados correspondentes à fonte selecionada, após clicar em um Card, será aberta a aba de detalhes do anime clicado (cada aba tem seu próprio UC, mas um layout semelhante).  
+
+Nas abas de detalhes do anime, temos um layout com três blocos pricipais: topo (com os 4 tipos de titulo), lateral esquerda (capa, informações adicionais e botões), e lateral direita (cards de animes relacionados ao atual e demais descrições do anime).  
+  
+Na aba, uc de detalhes do anime DB Local (ApiMyAnimes), quero trocar o tom da cor verde atual para um tom de verde igual ao usado para exibir os arquivos de video, na aba exibir estrutura de arquivos, aqui neste projeto.  
+
+No campo titulo da aba (onde exibe o icone (agora quero remover o icone), #id e o X de fechar a aba), vamos aumentar o tamanho da fonte do #ID e diminuir o tamanho da fonte do X de fechar a aba. O COMPRIMENTO do campo titulo deve se ajustar automaticamente ao conteúdo, (inclusive diminuir de tamanho quando tiver pouco conteúdo).
+
+o campo titulo da aba NÃO ESTÁ SE AJUSTANDO CORRETAMENTE AO CONTEÚDO. O tamanho da fonte ficou bom, mas numeros com mais de 3 dígitos acabam sendo cortados e exibe ... no final, o espaço entre o final do #ID e o X de fechar a aba está muito grande.
+
+OK Funcionou. para a aba, uc de detalhes do anime DB Local (ApiMyAnimes)
+Agora quero o mesmo comportamento (remover o icone e os três pontos ...) para o campo titulo da aba de detalhes do anime na aba, da ApiMyAnimeList.
+
+
+
+Dentro de cada aba de detalhes do anime, o layout deve refletir a identidade visual definida para a aba. Ou seja, os blocos de topo, lateral esquerda e lateral direita devem ter elementos que utilizem as cores padrão da aba (VERDE para DB Local e AZUL para ApiMyAnimeList), garantindo uma consistência visual em toda a interface (textos fixos, icones, devem usar a cor padrão da aba, enquanto elementos interativos podem manter o tom Gold atual).  
+O bloco Lateral DIREITA, precisa ser corrigido, atualmente ele exibe Barras de rolagem vertical e horizontais desnecessárias. Todo o conteudo da aba deve se ajustar automaticamente ao tamanho do bloco, evitando a necessidade de rolagem desnecessária (internas ao próprio bloco), garantindo uma experiência de usuário mais limpa e organizada com uma unica barra de rolagem a nível da aba inteira.
 
 COMO SEMPRE! VOU REPETIR!
-Quero uma implementação PROFISSIONAL, COMPLETA E ROBUSTA (mesmo que precise de mais tempo ou reformular grandes partes do código, me avise sobre as alterações necessárias neste caso).
+Quero uma implementação PROFISSIONAL, COMPLETA E ROBUSTA (mesmo que precise de mais tempo ou reformular grandes partes do projeto, me avise sobre as alterações necessárias neste caso).
 Implemente ou modifique a documentação do projeto conforme necessário.
 Se tiver qualquer duvida me pergunte antes de começar a implementar.
 
-ok, a implementação funcionou, agora quero apenas aumentar o espaço entre os botões "Busca DB Local" e "Busca ApiMyAnimeList" (100 pixels).  
-O Campo de input deve ter um comprimento MENOR (300 pixels de largura), para se ajustar melhor à nova disposição centralizada da interface.  
-A ultima linha, onde temos os botões "Anterior" e "Próximo" devemos DIMINUIR sua altura da LINHA e tamanho dos botões em geral (altura e comprimento, a cor do texto dos botões inativos deve ser mais clara, cinza).
+O problema continua, o FormMyAnimes, abre no monitor padrão (monitor 2, 3840x2160, escala 250%), mas quando tento executar no monitor 3 (monitor 3, 1920x1080, escala 175%)
+Após clicar no menu para abrir o form MyAnimes, a aplicação para de responder, continua aberta, mas não responde a nenhum comando, nem mesmo o botão de fechar.
 
-Outro, Problema do botão editar que fica abaixo, não visível
+O Problema do botão editar que fica abaixo, não visível
 
 Ao clicar em um Card, abre uma nova ABA (UC) de detalhes do anime clicado, nessa Aba "detalhes do anime" temos o botão "Savar Como MyAnime" que ao ser clicado Salvaos dados da coleção MyAnime (MyAnime, representa a coleção completa de IDs ou seja TODOS os animes relacionados entre si).
 
