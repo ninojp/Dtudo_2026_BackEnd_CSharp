@@ -109,8 +109,21 @@ public sealed class AnimeDetailsContentPanel : Panel
             case FlowLayoutPanel cards:
                 cards.AutoScroll = false;
                 cards.AutoSize = false;
+                // Cards em formato pôster dividem a largura em colunas iguais, sem sobras na lateral direita.
+                var posterGap = LogicalToDeviceUnits(12);
+                var posterWidth = UC_MiniAnimeCard.CalcularGrade(
+                    Math.Max(1, width - cards.Padding.Horizontal), posterGap,
+                    LogicalToDeviceUnits(150), LogicalToDeviceUnits(200)).LarguraCard;
                 foreach (Control card in cards.Controls)
                 {
+                    if (card is UC_MiniAnimeCard { FormatoPoster: true } poster)
+                    {
+                        // Margens só à direita e abaixo: a grade fica rente à borda esquerda da coluna.
+                        poster.Margin = new Padding(0, 0, posterGap, posterGap);
+                        poster.Size = poster.CalcularTamanhoParaLargura(posterWidth);
+                        continue;
+                    }
+
                     var availableWidth = Math.Max(1, width - cards.Padding.Horizontal - card.Margin.Horizontal);
                     card.Size = card.GetPreferredSize(new Size(availableWidth, 0));
                 }

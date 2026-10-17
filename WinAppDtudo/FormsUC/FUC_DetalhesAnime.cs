@@ -50,6 +50,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
         _myAnimeListService = new MyAnimeListApiService(_authenticationService);
         _apiMyAnimesService = apiMyAnimesService ?? new ApiMyAnimesService(_authenticationService);
         ConfigurarLayoutDaPagina();
+        AplicarCoresDosElementosFixos();
         Btn_SalvarComoMyAnime.Click += Btn_SalvarComoMyAnime_Click;
         Btn_SalvarComoAnime.Click += Btn_SalvarComoAnime_Click;
         Btn_ExibirMyAnime.Click += (_, _) =>
@@ -212,7 +213,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
             : string.Empty;
         Lbl_Generos.Visible = generos.Count > 0;
         Lbl_Episodios.Text = anime.Episodes is > 0 ? $"📺 {anime.Episodes} ep." : string.Empty;
-        Lbl_TempoPorEpisodio.Text = !string.IsNullOrWhiteSpace(anime.Duration) ? $"⏱ {anime.Duration}" : string.Empty;
+        Lbl_TempoPorEpisodio.Text = !string.IsNullOrWhiteSpace(anime.Duration) ? $"⏱️ {anime.Duration}" : string.Empty;
         Btn_ExibirMyAnime.Visible = _consultaLocal && anime.MyAnimeID > 0;
         Btn_EditarAnime.Visible = _consultaLocal;
 
@@ -283,7 +284,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
         AplicarFundoDaAba();
     }
 
-    private void OrganizarTitulosDoCabecalho()
+    private void OrganizarTitulosDoCabecalho(ColunasDaPagina colunas)
     {
         if (Pnl_Header.ClientSize.Width <= Pnl_Header.Padding.Horizontal)
             return;
@@ -292,42 +293,61 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
             Pnl_Header.Padding.Left - Pnl_Header.Padding.Right;
         int espacamentoHorizontal = LogicalToDeviceUnits(20);
         int espacamentoVertical = LogicalToDeviceUnits(6);
-        int larguraColuna = larguraUtil >= LogicalToDeviceUnits(900)
-            ? Math.Max(1, (larguraUtil - espacamentoHorizontal) / 2)
-            : larguraUtil;
+
+        // O cabeçalho acompanha as colunas do corpo: principal e sinônimos centralizados sobre a capa;
+        // inglês e japonês começam à esquerda da coluna direita. No modo empilhado, todos ficam centralizados.
+        bool duasColunas = colunas.LadoALado;
         int xEsquerda = Pnl_Header.Padding.Left;
-        int xDireita = xEsquerda + larguraColuna + espacamentoHorizontal;
+        int larguraEsquerda;
+        int larguraDireita;
+        int xDireita;
+        if (duasColunas)
+        {
+            larguraEsquerda = colunas.LarguraEsquerda;
+            larguraDireita = colunas.LarguraDireita;
+            xDireita = colunas.XDireita;
+        }
+        else
+        {
+            larguraEsquerda = larguraDireita = duasColunas
+                ? Math.Max(1, (larguraUtil - espacamentoHorizontal) / 2)
+                : larguraUtil;
+            xDireita = xEsquerda + larguraEsquerda + espacamentoHorizontal;
+        }
+
+        bool centralizarEsquerda = true;
+        bool centralizarDireita = !duasColunas;
         int yAtual = Pnl_Header.Padding.Top;
 
-        int alturaTitulo = CalcularAlturaTitulo(Lbl_TituloAnime, larguraColuna);
+        int alturaTitulo = CalcularAlturaTitulo(Lbl_TituloAnime, larguraEsquerda);
         int alturaIngles = !string.IsNullOrWhiteSpace(Lbl_TituloIngles.Text)
-            ? CalcularAlturaTitulo(Lbl_TituloIngles, larguraColuna)
+            ? CalcularAlturaTitulo(Lbl_TituloIngles, larguraDireita)
             : 0;
         int alturaSinonimo = !string.IsNullOrWhiteSpace(Lbl_Sinonimo.Text)
-            ? CalcularAlturaTitulo(Lbl_Sinonimo, larguraColuna)
+            ? CalcularAlturaTitulo(Lbl_Sinonimo, larguraEsquerda)
             : 0;
         int alturaJapones = !string.IsNullOrWhiteSpace(Lbl_TituloJapones.Text)
-            ? CalcularAlturaTitulo(Lbl_TituloJapones, larguraColuna)
+            ? CalcularAlturaTitulo(Lbl_TituloJapones, larguraDireita)
             : 0;
 
-        if (larguraUtil >= LogicalToDeviceUnits(900))
+        if (duasColunas)
         {
             int alturaPrimeiraLinha = Math.Max(alturaTitulo, alturaIngles);
-            PosicionarTitulo(Lbl_TituloAnime, xEsquerda, yAtual, larguraColuna, alturaPrimeiraLinha);
-            PosicionarTitulo(Lbl_TituloIngles, xDireita, yAtual, larguraColuna, alturaPrimeiraLinha);
+            PosicionarTitulo(Lbl_TituloAnime, xEsquerda, yAtual, larguraEsquerda, alturaPrimeiraLinha, centralizarEsquerda);
+            PosicionarTitulo(Lbl_TituloIngles, xDireita, yAtual, larguraDireita, alturaPrimeiraLinha, centralizarDireita);
 
             yAtual += alturaPrimeiraLinha + espacamentoVertical;
             int alturaSegundaLinha = Math.Max(alturaSinonimo, alturaJapones);
-            PosicionarTitulo(Lbl_Sinonimo, xEsquerda, yAtual, larguraColuna, alturaSegundaLinha);
-            PosicionarTitulo(Lbl_TituloJapones, xDireita, yAtual, larguraColuna, alturaSegundaLinha);
+            PosicionarTitulo(Lbl_Sinonimo, xEsquerda, yAtual, larguraEsquerda, alturaSegundaLinha, centralizarEsquerda);
+            PosicionarTitulo(Lbl_TituloJapones, xDireita, yAtual, larguraDireita, alturaSegundaLinha, centralizarDireita);
             yAtual += alturaSegundaLinha;
         }
         else
         {
-            yAtual = PosicionarTituloEmLinhaUnica(Lbl_TituloAnime, xEsquerda, yAtual, larguraColuna, alturaTitulo, espacamentoVertical);
-            yAtual = PosicionarTituloEmLinhaUnica(Lbl_TituloIngles, xEsquerda, yAtual, larguraColuna, alturaIngles, espacamentoVertical);
-            yAtual = PosicionarTituloEmLinhaUnica(Lbl_Sinonimo, xEsquerda, yAtual, larguraColuna, alturaSinonimo, espacamentoVertical);
-            yAtual = PosicionarTituloEmLinhaUnica(Lbl_TituloJapones, xEsquerda, yAtual, larguraColuna, alturaJapones, espacamentoVertical);
+            yAtual = PosicionarTituloEmLinhaUnica(Lbl_TituloAnime, xEsquerda, yAtual, larguraEsquerda, alturaTitulo, espacamentoVertical, centralizarEsquerda);
+            yAtual = PosicionarTituloEmLinhaUnica(Lbl_TituloIngles, xEsquerda, yAtual, larguraEsquerda, alturaIngles, espacamentoVertical, centralizarDireita);
+            yAtual = PosicionarTituloEmLinhaUnica(Lbl_Sinonimo, xEsquerda, yAtual, larguraEsquerda, alturaSinonimo, espacamentoVertical, centralizarEsquerda);
+            yAtual = PosicionarTituloEmLinhaUnica(Lbl_TituloJapones, xEsquerda, yAtual, larguraEsquerda, alturaJapones, espacamentoVertical, centralizarDireita);
             yAtual -= espacamentoVertical;
         }
 
@@ -342,14 +362,16 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
         int y,
         int largura,
         int altura,
-        int espacamentoVertical)
+        int espacamentoVertical,
+        bool centralizar)
     {
-        PosicionarTitulo(label, x, y, largura, altura);
+        PosicionarTitulo(label, x, y, largura, altura, centralizar);
         return !string.IsNullOrWhiteSpace(label.Text) ? y + altura + espacamentoVertical : y;
     }
 
-    private static void PosicionarTitulo(SelectableTextLabel label, int x, int y, int largura, int altura)
+    private static void PosicionarTitulo(SelectableTextLabel label, int x, int y, int largura, int altura, bool centralizar)
     {
+        label.TextAlign = centralizar ? ContentAlignment.MiddleCenter : ContentAlignment.MiddleLeft;
         label.Location = new Point(x, y);
         label.Size = new Size(largura, !string.IsNullOrWhiteSpace(label.Text) ? Math.Max(1, altura) : 1);
     }
@@ -359,11 +381,19 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
         if (string.IsNullOrWhiteSpace(label.Text))
             return 0;
 
-        return Math.Max(LogicalToDeviceUnits(34), TextRenderer.MeasureText(
-            label.Text,
-            label.Font,
-            new Size(Math.Max(1, largura), int.MaxValue),
-            TextFormatFlags.NoPadding | TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix).Height + LogicalToDeviceUnits(6));
+        return Math.Max(LogicalToDeviceUnits(34), label.MedirAltura(largura) + LogicalToDeviceUnits(6));
+    }
+
+    private void AplicarCoresDosElementosFixos()
+    {
+        Lbl_Carregando.AccentColor = CorDosElementosFixos;
+
+        foreach (var rotulo in new[] { Lbl_EstatisticasRapidas, Lbl_Episodios, Lbl_TempoPorEpisodio, Lbl_Generos })
+        {
+            rotulo.ForeColor = AccentColor;
+            rotulo.IconColor = DarkModeColors.TextColor;
+            rotulo.IconFontSize = TamanhoIconeInformacao;
+        }
     }
 
     private void AplicarFundoDaAba()
@@ -385,6 +415,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
 
     private async Task CarregarCapaAsync(AnimeDetails anime)
     {
+        _capaIndisponivel = false;
         var urls = new[]
         {
             anime.Images?.Jpg?.LargeImageUrl,
@@ -411,6 +442,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
                 var anterior = Pbx_Capa.Image;
                 Pbx_Capa.Image = image;
                 anterior?.Dispose();
+                PerformLayout();
             }
             if (Pbx_Capa.InvokeRequired)
                 Pbx_Capa.BeginInvoke(AplicarImagem);
@@ -418,6 +450,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
                 AplicarImagem();
             return;
         }
+        MarcarCapaIndisponivel();
     }
     // ===================================================================
 
@@ -435,11 +468,11 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
 
     private void AdicionarParDeLabels(string campo, string valor, bool isLink)
     {
-        var lblCampo = new Label
+        var lblCampo = new AccentLabel
         {
+            AccentColor = CorDosElementosFixos,
             AutoSize = false,
             Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-            ForeColor = AccentColor,
             Text = campo + ":",
             TextAlign = ContentAlignment.MiddleRight,
             UseMnemonic = false
@@ -482,11 +515,11 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
         if (string.IsNullOrWhiteSpace(texto)) return;
         if (exibirTitulo)
         {
-            var lblCampo = new Label
+            var lblCampo = new AccentLabel
             {
+                AccentColor = CorDosElementosFixos,
                 AutoSize = false,
                 Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                ForeColor = AccentColor,
                 Text = campo + ":",
                 TextAlign = ContentAlignment.MiddleLeft,
                 UseMnemonic = false
@@ -517,7 +550,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
         };
         sep.Paint += (_, e) =>
         {
-            using var pen = new Pen(AccentColor);
+            using var pen = new Pen(CorDosElementosFixos);
             e.Graphics.DrawLine(pen, 0, 0, sep.ClientSize.Width, 0);
         };
         Pnl_Info.AddSection(sep, spaceAfter: 10);
@@ -536,7 +569,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
         var cards = new List<UC_MiniAnimeCard>();
         foreach (var entry in entradasAnime)
         {
-            var card = new UC_MiniAnimeCard();
+            var card = new UC_MiniAnimeCard { FormatoPoster = true };
             card.CarregarDados(entry);
             card.CardClicado += (s, id) => CardClicado?.Invoke(this, id);
             cards.Add(card);
@@ -550,7 +583,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
         var cards = new List<UC_MiniAnimeCard>();
         foreach (var anime in animesValidos)
         {
-            var card = new UC_MiniAnimeCard();
+            var card = new UC_MiniAnimeCard { FormatoPoster = true };
             card.CarregarDadosLocal(anime);
             card.CardClicado += (_, malId) => CardClicado?.Invoke(this, malId);
             cards.Add(card);
@@ -560,10 +593,11 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
 
     private void AdicionarCardsRelacionados(IReadOnlyList<UC_MiniAnimeCard> cards, string mensagemSemRelacoes)
     {
-        var titulo = new Label
+        var titulo = new AccentLabel
         {
+            AccentColor = CorDosElementosFixos,
+            IconColor = CorDosElementosFixos,
             Font = new Font("Segoe UI", 15F, FontStyle.Bold),
-            ForeColor = AccentColor,
             MinimumSize = new Size(0, LogicalToDeviceUnits(52)),
             Text = "🔗 Animes relacionados:",
             TextAlign = ContentAlignment.MiddleCenter,
@@ -573,10 +607,10 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
 
         if (cards.Count == 0)
         {
-            Pnl_Info.AddSection(new Label
+            Pnl_Info.AddSection(new AccentLabel
             {
+                AccentColor = CorDosElementosFixos,
                 Font = new Font("Segoe UI", 13F, FontStyle.Italic),
-                ForeColor = AccentColor,
                 MinimumSize = new Size(0, LogicalToDeviceUnits(52)),
                 Text = mensagemSemRelacoes,
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -591,7 +625,7 @@ public partial class FUC_DetalhesAnime : UserControl, IThemeAccentProvider
             AutoScroll = false,
             WrapContents = true,
             FlowDirection = FlowDirection.LeftToRight,
-            Padding = new Padding(LogicalToDeviceUnits(4)),
+            Padding = cards.Any(card => card.FormatoPoster) ? Padding.Empty : new Padding(LogicalToDeviceUnits(4)),
             Margin = Padding.Empty,
             BackColor = Pnl_Info.BackColor
         };

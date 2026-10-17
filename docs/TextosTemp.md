@@ -38,34 +38,35 @@ Atualmente (03/09/2026) foram adicionados (através de I.A) diversos novos proje
 
 ------------------------------------------------------------------------------------------------------------------
 
+TROCAR TODOS OS MINI CARDS POR CARDS
+
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
 Após logar no WinAppDtudo, e acessar o Form MyAnimes, Clicando no menu "Buscar Anime", será aberta a aba unificada de busca, onde o usuário poderá escolher entre buscar no DB Local ou na ApiMyAnimeList. Após fazer uma busca, temos os Cards exibindo os resultados correspondentes à fonte selecionada, após clicar em um Card, será aberta a aba de detalhes do anime clicado (cada aba tem seu próprio UC, mas um layout semelhante).  
 
 Nas abas de detalhes do anime, temos um layout com três blocos pricipais: topo (com os 4 tipos de titulo), lateral esquerda (capa, informações adicionais e botões), e lateral direita (cards de animes relacionados ao atual e demais descrições do anime).  
   
-Na aba, uc de detalhes do anime DB Local (ApiMyAnimes), quero trocar o tom da cor verde atual para um tom de verde igual ao usado para exibir os arquivos de video, na aba exibir estrutura de arquivos, aqui neste projeto.  
+Na aba, uc de detalhes do anime DB Local (ApiMyAnimes).
+Quero primeiro diminuir o tamanho da imagem de capa do anime na aba de detalhes do anime DB Local (ApiMyAnimes).
+Abaixo da imagem de capa, agora deve vir o botão "Exibir MyAnime".  
+Abaixo do botão "Exibir MyAnime", deve vir o restante das informações (Ano, Tipo, Episódios, Generos), como antes (mas com o espaço entre as linhas MENOR).
+Abaixo das informações, agora deve vir o botão "Editar Anime".
 
-No campo titulo da aba (onde exibe o icone (agora quero remover o icone), #id e o X de fechar a aba), vamos aumentar o tamanho da fonte do #ID e diminuir o tamanho da fonte do X de fechar a aba. O COMPRIMENTO do campo titulo deve se ajustar automaticamente ao conteúdo, (inclusive diminuir de tamanho quando tiver pouco conteúdo).
+Vamos continuar ajustando o layout e a disposição dos elementos na aba de detalhes do anime DB Local (ApiMyAnimes), quando terminar, ai sim faremos o mesmo para a aba de detalhes do anime da ApiMyAnimeList.  
 
-o campo titulo da aba NÃO ESTÁ SE AJUSTANDO CORRETAMENTE AO CONTEÚDO. O tamanho da fonte ficou bom, mas numeros com mais de 3 dígitos acabam sendo cortados e exibe ... no final, o espaço entre o final do #ID e o X de fechar a aba está muito grande.
+Na coluna esquerda (máximo de 420). Com a capa menor sobra espaço lateral. Eu quero que a coluna esquerda fique mais estreita, e de mais espaço aos cards relacionados.  
 
-OK Funcionou. para a aba, uc de detalhes do anime DB Local (ApiMyAnimes)
-Agora quero o mesmo comportamento (remover o icone e os três pontos ...) para o campo titulo da aba de detalhes do anime na aba, da ApiMyAnimeList.
+Os dois Titulos ACIMA da imagem de capa agora devem ficar centralizados.  
 
+Abaixo do botão "Exibir MyAnime", antes de cada label de informação (Ano, Tipo, Episódios, Generos), tem um icone correspondente ao tipo de informação (por exemplo, um icone de calendário para o Ano, um icone de filme para o Tipo, um icone de episódio para os Episódios e um icone de etiqueta para os Generos), Agora quero que a cor destes icones seja a cor padrão do WinAppDtudo (Gold) e também todos outros elementos fixos da aba de detalhes do anime (exemplo, icone e texto "Animes relacionados", Mal ID:, Fonte:, Exibição:, as linhas de separação entre sinopse e fundo).
 
+O tamanho da moldura dos mini cards (o tamanho em geral) deve ser ajustado para se adequar ao novo layout, garantindo que fiquem proporcionais e visualmente agradáveis dentro da coluna direita.
 
-Dentro de cada aba de detalhes do anime, o layout deve refletir a identidade visual definida para a aba. Ou seja, os blocos de topo, lateral esquerda e lateral direita devem ter elementos que utilizem as cores padrão da aba (VERDE para DB Local e AZUL para ApiMyAnimeList), garantindo uma consistência visual em toda a interface (textos fixos, icones, devem usar a cor padrão da aba, enquanto elementos interativos podem manter o tom Gold atual).  
-O bloco Lateral DIREITA, precisa ser corrigido, atualmente ele exibe Barras de rolagem vertical e horizontais desnecessárias. Todo o conteudo da aba deve se ajustar automaticamente ao tamanho do bloco, evitando a necessidade de rolagem desnecessária (internas ao próprio bloco), garantindo uma experiência de usuário mais limpa e organizada com uma unica barra de rolagem a nível da aba inteira.
 
 COMO SEMPRE! VOU REPETIR!
 Quero uma implementação PROFISSIONAL, COMPLETA E ROBUSTA (mesmo que precise de mais tempo ou reformular grandes partes do projeto, me avise sobre as alterações necessárias neste caso).
 Implemente ou modifique a documentação do projeto conforme necessário.
 Se tiver qualquer duvida me pergunte antes de começar a implementar.
 
-O problema continua, o FormMyAnimes, abre no monitor padrão (monitor 2, 3840x2160, escala 250%), mas quando tento executar no monitor 3 (monitor 3, 1920x1080, escala 175%)
-Após clicar no menu para abrir o form MyAnimes, a aplicação para de responder, continua aberta, mas não responde a nenhum comando, nem mesmo o botão de fechar.
-
-O Problema do botão editar que fica abaixo, não visível
 
 Ao clicar em um Card, abre uma nova ABA (UC) de detalhes do anime clicado, nessa Aba "detalhes do anime" temos o botão "Savar Como MyAnime" que ao ser clicado Salvaos dados da coleção MyAnime (MyAnime, representa a coleção completa de IDs ou seja TODOS os animes relacionados entre si).
 
@@ -107,6 +108,8 @@ FROM Animes;
 1. Adicionar logging centralizado (Serilog)
 2. Docker Compose para orquestrar ambos os serviços
 3.
+
+O problema continua, o FormMyAnimes, abre no monitor padrão (monitor 2, 3840x2160, escala 250%), mas quando tento executar no monitor 3 (monitor 3, 1920x1080, escala 175%)
 
 Estou recebendo este aviso (Este projeto está definido para abrir o Designer WinForms no modo sem Reconhecimento de DPI.)
 recebo o aviso: A escala na tela principal está definida como 200%. Considere abrir o WinForm Designer no modo DPI-Unaware.

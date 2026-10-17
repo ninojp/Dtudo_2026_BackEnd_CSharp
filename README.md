@@ -142,8 +142,10 @@ num clique simples. A movimentacao permanece dentro da mesma janela e preserva
 os controles, a selecao e os dados carregados; o `X` e os menus de fechamento
 continuam funcionando sobre a ordem atual.
 
-Titulos, estatisticas, rotulos, descricoes e separadores dos tres blocos usam
-a cor da fonte, mesmo apos reaplicar o tema ou adicionar conteudo dinamico.
+Os dados do anime (titulos, estatisticas, valores e descricoes) seguem a cor da
+fonte da origem, mesmo apos reaplicar o tema ou adicionar conteudo dinamico.
+Legendas, titulos de secao, separadores e icones usam Gold. Os icones das
+estatisticas têm tamanho uniforme de 9 pt; o texto ao lado continua com a cor da fonte.
 Botoes, links e cards clicaveis mantem Gold. Fundos permanecem em Dark Mode.
 
 Ha apenas uma rolagem vertical para a pagina inteira, quando necessaria.
@@ -155,6 +157,35 @@ e das estatisticas. Redimensionar ou alternar abas reorganiza os mesmos
 controles, sem baixar novamente as capas nem refazer a consulta.
 As relacoes locais continuam usando exclusivamente DB_Local/MyAnimeId; as
 externas permanecem na ApiMyAnimeList.
+
+Nas duas fontes, a coluna esquerda e compacta e segue a mesma ordem: capa
+reduzida (ate 240 x 340 px, escalados pelo DPI), botao principal, informacoes
+(ano, tipo e score na mesma linha; episodios; duracao; generos) com pouco espaco
+entre as linhas e botao final. No DB Local, os botoes sao **Exibir MyAnime** e
+**Editar Anime**; na ApiMyAnimeList, **Salvar Como MyAnime** fica antes das
+informacoes e **Salvar Anime** depois delas. A capa e centralizada, preserva a
+proporcao da imagem carregada e o layout e refeito quando o download termina.
+Enquanto a imagem carrega, o espaco de uma capa vertical fica reservado para
+evitar saltos; se o anime nao tiver capa ou o download falhar, a capa e recolhida
+e os botoes sobem para o topo da coluna. Linhas sem dado e o botao Exibir MyAnime,
+quando o anime nao pertence a um MyAnime, nao deixam espacos vazios.
+O limite da capa e a largura compartilhada com os botoes ficam nas constantes
+`LarguraConteudoColuna` e `AlturaMaximaCapa` de
+[`FUC_DetalhesAnime.Layout.cs`](WinAppDtudo/FormsUC/FUC_DetalhesAnime.Layout.cs).
+
+Nas duas fontes, a coluna esquerda e estreita (300 px logicos) para dar espaco aos
+cards relacionados. No topo, titulo principal e sinonimos ficam centralizados sobre
+a capa e ingles/japones comecam no inicio da coluna direita; em janelas estreitas,
+quando as colunas ficam empilhadas, os quatro titulos ficam centralizados.
+Legendas como Mal ID: e Fonte:, titulos e mensagens de Animes relacionados, titulos
+de secao e separadores usam o Gold padrao do WinAppDtudo. Como a captura mostrou
+os emojis tintados pela cor dos dados, os icones usam o fallback Gold
+(`IconTextLabel.IconColor` igual a `DarkModeColors.TextColor`) e tamanho uniforme de 9 pt;
+titulos, valores e sinopse seguem a cor da fonte, e links continuam Gold. Os mini cards das duas fontes usam
+moldura proporcional de poster, em grade alinhada a esquerda que preenche a coluna
+(cards de 150 a 200 px logicos com 12 px de espaco). Eles posicionam tudo em pixels
+do DPI atual e nao usam o autoescalonamento do WinForms, que fazia a imagem estourar
+a moldura em DPI alto.
 
 Durante uma consulta, ambos os botoes de busca, o input e a paginacao ficam bloqueados para
 evitar concorrencia. Falhas de conexao, timeout e 504 mantem feedback explicito, preservam
@@ -170,9 +201,14 @@ dotnet test .\tests\WinAppDtudo.Tests\WinAppDtudo.Tests.csproj --no-restore --fi
 dotnet test .\tests\WinAppDtudo.Tests\WinAppDtudo.Tests.csproj --no-restore --filter "FullyQualifiedName~AnimeDetailLayoutTests|FullyQualifiedName~DarkTabControlTests|FullyQualifiedName~MyAnimesFormStartupTests"
 ```
 
-Os testes de detalhes verificam as duas fontes, persistencia das cores, Gold
-das acoes, titulos longos, campos opcionais, muitas relacoes, redimensionamento,
-abas ocultas, preservacao das capas e ausencia de barras internas/horizontais.
+Os testes de detalhes verificam as duas fontes, persistencia das cores, icones
+Gold e de tamanho uniforme, alinhamento do cabecalho em telas largas e estreitas, titulos longos,
+campos opcionais, muitas relacoes, redimensionamento, abas ocultas, preservacao
+das capas e ausencia de barras internas/horizontais. Tambem cobrem a coluna
+coluna esquerda compartilhada (ordem capa, botao principal, informacoes compactas
+e botao final), a capa proporcional, reservada ou recolhida e seu carregamento
+assincrono, os cards em formato poster, a grade responsiva, a centralizacao do texto
+selecionavel e o AutoScaleMode.None dos mini cards.
 Os testes de abas verificam largura real do conteudo, icones coloridos, arraste,
 limite de movimento, fechamento e preservacao dos controles e da selecao.
 Os testes de inicializacao abrem o formulario MyAnimes real com estilos

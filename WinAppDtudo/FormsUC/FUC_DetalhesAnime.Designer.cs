@@ -36,7 +36,7 @@ partial class FUC_DetalhesAnime
         Lbl_TituloIngles = new SelectableTextLabel();
         Lbl_Sinonimo = new SelectableTextLabel();
         Lbl_TituloJapones = new SelectableTextLabel();
-        Lbl_Carregando = new Label();
+        Lbl_Carregando = new AccentLabel();
         Pnl_Conteudo = new Panel();
         Pnl_Info = new AnimeDetailsContentPanel();
         Pnl_Esquerda = new Panel();
@@ -46,10 +46,10 @@ partial class FUC_DetalhesAnime
         Btn_ExibirMyAnime = new Button();
         Btn_EditarAnime = new Button();
         Pnl_Stats = new Panel();
-        Lbl_EstatisticasRapidas = new Label();
-        Lbl_Generos = new Label();
-        Lbl_Episodios = new Label();
-        Lbl_TempoPorEpisodio = new Label();
+        Lbl_EstatisticasRapidas = new IconTextLabel();
+        Lbl_Generos = new IconTextLabel();
+        Lbl_Episodios = new IconTextLabel();
+        Lbl_TempoPorEpisodio = new IconTextLabel();
         Pbx_Capa = new PictureBox();
         Lbl_Rank = new Label();
         Lbl_Popularidade = new Label();
@@ -373,7 +373,7 @@ partial class FUC_DetalhesAnime
     private SelectableTextLabel Lbl_TituloIngles;
     private SelectableTextLabel Lbl_Sinonimo;
     private SelectableTextLabel Lbl_TituloJapones;
-    private Label Lbl_Carregando;
+    private AccentLabel Lbl_Carregando;
     private Panel Pnl_Conteudo;
     private Panel Pnl_Esquerda;
     private Panel Pnl_Acoes;
@@ -383,11 +383,11 @@ partial class FUC_DetalhesAnime
     private Button Btn_EditarAnime;
     private PictureBox Pbx_Capa;
     private Panel Pnl_Stats;
-    private Label Lbl_EstatisticasRapidas;
-    private Label Lbl_Generos;
+    private IconTextLabel Lbl_EstatisticasRapidas;
+    private IconTextLabel Lbl_Generos;
     private Label Lbl_Rank;
     private Label Lbl_Popularidade;
-    private Label Lbl_Episodios;
-    private Label Lbl_TempoPorEpisodio;
+    private IconTextLabel Lbl_Episodios;
+    private IconTextLabel Lbl_TempoPorEpisodio;
     private AnimeDetailsContentPanel Pnl_Info;
 }

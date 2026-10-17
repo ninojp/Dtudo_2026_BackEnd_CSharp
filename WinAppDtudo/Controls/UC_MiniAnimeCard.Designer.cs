@@ -83,8 +83,7 @@ partial class UC_MiniAnimeCard
         //
         // UC_MiniAnimeCard
         //
-        AutoScaleDimensions = new SizeF(96F, 96F);
-        AutoScaleMode = AutoScaleMode.Dpi;
+        AutoScaleMode = AutoScaleMode.None;
         BackColor = Color.FromArgb(247, 248, 252);
         Controls.Add(Pbx_Capa);
         Controls.Add(Lbl_MalId);
