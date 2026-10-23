@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -5,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ApiFileStorage.Monitoring.Data.Migrations;
 
 /// <inheritdoc />
+[DbContext(typeof(MonitoringDbContext))]
+[Migration("20260918001316_OptimizeObservationCursor")]
 public partial class OptimizeObservationCursor : Migration
 {
     /// <inheritdoc />

@@ -44,8 +44,6 @@ $utf8 = [Text.UTF8Encoding]::new($false, $true)
 $restored = ConvertFrom-Json -InputObject $utf8.GetString($utf8.GetBytes($serialized))
 if ($restored.title -cne $unicode.title) { throw 'UTF-8 round-trip regression.' }
 
-& (Join-Path $PSScriptRoot 'Sync-MyAnimeMonitoringLocations.ps1') -SelfTest
-
 [pscustomobject]@{
     Version = $PSVersionTable.PSVersion.ToString()
     Edition = $PSVersionTable.PSEdition

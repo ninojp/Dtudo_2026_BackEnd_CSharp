@@ -11,7 +11,13 @@ internal static class Program
     static void Main()
     {
         StartupDiagnostics.Mark("Main entered");
+        Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
         Application.ThreadException += (_, eventArgs) => ShowStartupException("UI thread", eventArgs.Exception);
+        TaskScheduler.UnobservedTaskException += (_, eventArgs) =>
+        {
+            eventArgs.SetObserved();
+            ReportBackgroundException(eventArgs.Exception);
+        };
         AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) =>
         {
             if (eventArgs.ExceptionObject is Exception exception)
@@ -45,11 +51,34 @@ internal static class Program
         }
     }
 
+    private static void ReportBackgroundException(Exception exception)
+    {
+        // Tarefas nao observadas podem falhar fora da thread da UI; o dialogo so e exibido pela UI.
+        if (Application.OpenForms.Count > 0 && Application.OpenForms[0] is { IsHandleCreated: true } form)
+        {
+            form.BeginInvoke(new Action(() => ShowStartupException("Background task", exception)));
+            return;
+        }
+
+        StartupDiagnostics.Record("Background task", exception);
+    }
+
     private static void ShowStartupException(string source, Exception exception)
     {
         StartupDiagnostics.Record(source, exception);
         try
         {
+            if (IsNetworkFailure(exception))
+            {
+                MessageBox.Show(
+                    "Falha de conexao com a rede ou com a API.\n\nVerifique a internet/VPN e tente novamente.\n\n" +
+                    $"Detalhes: {exception.GetBaseException().Message}\n\nLog: {StartupDiagnostics.LogPath}",
+                    "Falha de conexao",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
             var momentoErro = source == "Startup"
                 ? "durante a inicializacao"
                 : "durante a execucao";
@@ -63,4 +92,11 @@ internal static class Program
         {
         }
     }
+
+    private static bool IsNetworkFailure(Exception exception) => exception switch
+    {
+        AggregateException aggregate => aggregate.InnerExceptions.Count > 0 && aggregate.InnerExceptions.All(IsNetworkFailure),
+        HttpRequestException or System.Net.Sockets.SocketException or TimeoutException or TaskCanceledException => true,
+        _ => exception.InnerException is { } inner && IsNetworkFailure(inner)
+    };
 }

@@ -3,11 +3,11 @@ namespace LibDtudo.Shared.Dtos.FileMonitoring;
 public static class MonitoringPathPolicy
 {
     public static IReadOnlyList<MonitoringRootDto> CollectionRoots() =>
-        new[] { ".Dots" }.Concat("ABCDEFGHIJKLMNOPQ".Select(letter => letter.ToString()))
+        new[] { ".Dots" }.Concat("ABCDEFGHIJKL".Select(letter => letter.ToString()))
             .Select(letter => new MonitoringRootDto("E_" + letter, @"E:\" + letter))
-            .Concat("RSTUVWXYZ".Select(letter => new MonitoringRootDto("H_" + letter, @"H:\" + letter)))
+            .Concat("MNOPQRSTUVWXYZ".Select(letter => new MonitoringRootDto("H_" + letter, @"H:\" + letter)))
             .Concat(new[] { ".Dots" }.Concat("ABCDEFGHIJKLMNOPQRSTUVWXYZ".Select(letter => letter.ToString()))
-                .Select(letter => new MonitoringRootDto("X_" + letter, @"H:\AnimeX\" + letter))).ToArray();
+                .Select(letter => new MonitoringRootDto("X_" + letter, @"G:\Animex\" + letter))).ToArray();
 
     public static string NormalizeRootKey(string rootKey)
     {
@@ -17,8 +17,11 @@ public static class MonitoringPathPolicy
         if (rootKey.Equals("J_T", StringComparison.OrdinalIgnoreCase)) return "H_T";
         if (rootKey.Equals("X_#Dots", StringComparison.OrdinalIgnoreCase)) return "X_.Dots";
         if (rootKey.Length == 3 && rootKey.StartsWith("H_", StringComparison.OrdinalIgnoreCase)
-            && "ABCDEFGHIJKLMNOPQ".Contains(char.ToUpperInvariant(rootKey[2])))
+            && "ABCDEFGHIJKL".Contains(char.ToUpperInvariant(rootKey[2])))
             return "E_" + char.ToUpperInvariant(rootKey[2]);
+        if (rootKey.Length == 3 && rootKey.StartsWith("E_", StringComparison.OrdinalIgnoreCase)
+            && "MNOPQ".Contains(char.ToUpperInvariant(rootKey[2])))
+            return "H_" + char.ToUpperInvariant(rootKey[2]);
         if (rootKey.Length == 3 && rootKey.StartsWith("G_", StringComparison.OrdinalIgnoreCase)
             && "SVWXYZ".Contains(char.ToUpperInvariant(rootKey[2])))
             return "H_" + char.ToUpperInvariant(rootKey[2]);

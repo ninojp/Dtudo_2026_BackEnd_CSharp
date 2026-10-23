@@ -2,6 +2,11 @@
 
 ## Estado
 
+Reorganizacao dos discos em 2026-10-22: E: passou a conter `.Dots` e as letras A a L;
+H: passou a conter as letras M a Z; o antigo `H:\AnimeX` passou a ser `G:\Animex`
+(volume ANIMEsTemp). A politica das 54 raizes e os apontamentos foram atualizados
+conforme a secao Raizes autorizadas.
+
 Levantamento de requisitos e inventario de metadados em 2026-09-17.
 Primeira etapa de persistencia implementada na ApiFileStorage: contexto EF Core,
 modelo, consultas paginadas de entradas, gravacao de inventarios e migracao inicial.
@@ -14,6 +19,11 @@ e esta em User Secrets da ApiFileStorage, sob `ConnectionStrings:FileMonitoring`
 Na primeira etapa o catalogo nao foi alterado. Na integracao foi adicionada somente
 a tabela `MyAnimeMonitoringLocations` ao `Dtudo2026Db`, pela migracao
 `AddMyAnimeMonitoringLocation`, sem alteracao dos registros existentes de MyAnime.
+No banco `DtudoFileMonitoring`, a migracao `OptimizeObservationCursor` foi aplicada com
+`dotnet ef database update`, apos backup previo. Ela troca o indice
+`IX_Observations_LocationId_ObservedAtUtc_Id` por `IX_Observations_LocationId_Id`, usado
+pela leitura paginada de observacoes. Os contadores de Observations, Locations e Snapshots
+nao mudaram.
 
 O fluxo passivo esta implementado entre ApiFileStorage, ApiMyAnimes e WinAppDtudo.
 `Monitoring:Enabled` agora e `true`, mas nao inicia coleta no startup. Leitor,
@@ -47,8 +57,11 @@ Testes de comportamento usam EF Core InMemory, que nao substitui testes relacion
   diretorio para evitar troca por juncoes. Nao abre conteudo de videos nem calcula hashes.
 - O contexto EF rejeita alteracoes/exclusoes de registros; as FKs nao tem exclusao em
   cascata. Essa protecao nao e uma barreira contra comandos SQL diretos de administrador.
-- Nao ha migrations automaticas na inicializacao nem acesso ao banco no startup pela
-  nova camada. A conexao exige o banco dedicado e rejeita AttachDBFilename.
+- Nao ha migrations automaticas de schema na inicializacao. A unica escrita no startup e
+  a migracao de `RootKey` (`MonitoringRootKeyMigration`), descrita na secao de atualizacao.
+  Ela ainda nao foi executada no banco real; roda no proximo startup da ApiFileStorage
+  somente com `Monitoring:Enabled=true`. A conexao exige o banco dedicado e rejeita
+  AttachDBFilename.
 - Nao adicionar colecoes a `FileStorage:Roots`: essas raizes pertencem ao motor existente
   de escrita/reconciliacao. O leitor usa `MonitoringPathPolicy`, independente desse motor.
 
@@ -95,7 +108,7 @@ Testes de comportamento usam EF Core InMemory, que nao substitui testes relacion
 ## Regras confirmadas pelo usuario
 
 - Monitorar exclusivamente as colecoes dentro das letras e de `.Dots`.
-- Ignorar totalmente `H:\AnimeX\.ImportanteX` e seus descendentes. E uma area
+- Ignorar totalmente `G:\Animex\.ImportanteX` e seus descendentes.
   temporaria organizada posteriormente pelo usuario, de forma manual. Nao
   enumerar, monitorar, contabilizar ou gerar alertas sobre essa area.
 - Ignorar pastas de sistema, lixeira e quaisquer outras areas fora das raizes
@@ -105,7 +118,7 @@ Testes de comportamento usam EF Core InMemory, que nao substitui testes relacion
 - A autorizacao mais recente limita a excecao de escrita a adicao de logs de
   monitoramento ou auditoria. Nao presumir autorizacao para manifestos JSON ou
   outros arquivos auxiliares dentro das colecoes. Historico e logs devem ficar
-  fora de E: e H:, em armazenamento proprio da aplicacao. Destino exato,
+  fora de E:, G: e H:, em armazenamento proprio da aplicacao.
   formato, acrescimo de registros e retencao ainda precisam ser definidos.
   Nao sobrescrever arquivos existentes nem escrever na area excluida.
 - Iniciar a coleta somente ao abrir a tela de monitoramento correspondente e
@@ -199,46 +212,48 @@ atual. Nao alterar esse comando nesta etapa nem aciona-lo automaticamente pelo m
 
 | Local | Rotulo | Pastas monitoradas |
 | --- | --- | --- |
-| E: | ANIMEs | .Dots, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q |
-| H: | ANIMEs2 | R, S, T, U, V, W, X, Y, Z |
-| H:\AnimeX | AnimeX | .Dots e as letras de A a Z |
+| E: | ANIMEs | .Dots, A, B, C, D, E, F, G, H, I, J, K, L |
+| H: | ANIMEs2 | M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z |
+| G:\Animex | ANIMEsTemp | .Dots e as letras de A a Z |
 
-Isso representa 54 raizes de enumeracao permitidas, nunca `H:\AnimeX` inteiro.
-ANIMEs e ANIMEs2 sao rotulos de volume, nao subpastas. `.Dots` substitui o nome
-antigo `#Dots` na nova disposicao.
+Isso representa 54 raizes de enumeracao permitidas, nunca `G:\Animex` inteiro.
+ANIMEs, ANIMEs2 e ANIMEsTemp sao rotulos de volume, nao subpastas.
+O antigo `#Dots` passou a ser `.Dots` na nova disposicao.
 
 ### Atualizacao dos apontamentos existentes
 
-O script `scripts/Sync-MyAnimeMonitoringLocations.ps1` usa as raizes acima para
-descobrir pastas e associacoes. Ele traduz as chaves da disposicao anterior antes
-de calcular o plano:
+A sincronizacao usa as raizes acima para descobrir pastas e associacoes. As chaves
+da disposicao anterior sao traduzidas antes de calcular o plano:
 
 | Chave anterior | Chave atual |
 | --- | --- |
-| `H_#Dots` e `H_A` a `H_Q` | `E_.Dots` e `E_A` a `E_Q` |
+| `H_#Dots` e `H_A` a `H_L` | `E_.Dots` e `E_A` a `E_L` |
+| `E_M` a `E_Q` | `H_M` a `H_Q` |
+| `E_R` | `H_R` |
 | `G_S`, `G_V`, `G_W`, `G_X`, `G_Y`, `G_Z` | `H_S`, `H_V`, `H_W`, `H_X`, `H_Y`, `H_Z` |
 | `J_T` | `H_T` |
 | `X_#Dots` | `X_.Dots` |
 
-`H_R` permanece `H_R` porque R continua fisicamente em `H:\R`. Qualquer
-apontamento intermediario `E_R` deve ser convertido para `H_R`.
-
+As chaves `H_M` a `H_Q` e `H_R` a `H_Z` ja sao raizes atuais e permanecem iguais.
 As chaves `X_A` a `X_Z` permanecem as mesmas, mas agora resolvem para
-`H:\AnimeX`. O caminho relativo da pasta da colecao nao e alterado.
+`G:\Animex`. O caminho relativo da pasta da colecao nao e alterado.
 
-Executar primeiro a pre-visualizacao e revisar o relatorio gerado fora dos discos
-monitorados. Somente depois aplicar:
+Na `ApiFileStorage`, a tabela `monitoring.Locations` e append-only. Na inicializacao,
+quando `Monitoring:Enabled=true`, `MonitoringRootKeyMigration` regrava somente a coluna
+`RootKey` das chaves legadas para as atuais, em uma unica transacao, por `UPDATE` em
+massa. Ids e datas nao mudam, entao inventarios e observacoes continuam referenciando as
+mesmas localizacoes. E a unica excecao a regra append-only. Ela e idempotente (apos a
+primeira execucao o plano fica vazio), registra cada traducao no log e, em caso de falha,
+registra erro e a aplicacao continua iniciando; nesse intervalo a leitura traduz chaves
+legadas (`MonitoringRoots.Resolve` e DTOs de saida). Ao reutilizar um registro antigo,
+a sessao continua apontando para a mesma linha.
 
-```powershell
-pwsh -NoLogo -NoProfile -File .\scripts\Sync-MyAnimeMonitoringLocations.ps1
-pwsh -NoLogo -NoProfile -File .\scripts\Sync-MyAnimeMonitoringLocations.ps1 -Apply
-```
-
-No modo `-Apply`, o script exige a descoberta completa, atualiza apenas
-`dbo.MyAnimeMonitoringLocations` dentro de uma transacao serializavel e verifica
-cada remapeamento antes do commit. Nao altera `MyAnimes`, arquivos ou pastas. Se
-alguma raiz nova estiver indisponivel ou houver erro de leitura, a aplicacao e
-recusada e a transacao nao e confirmada.
+A unica via de execucao e o botao `Sincronizar colecoes` do formulario (ver a
+secao seguinte). A descoberta e somente leitura. A aplicacao atualiza apenas
+`dbo.MyAnimeMonitoringLocations` na `ApiMyAnimes`, dentro de uma transacao
+serializavel, verificando cada remapeamento antes do commit. Nao altera `MyAnimes`,
+arquivos ou pastas. Se alguma raiz nova estiver indisponivel ou houver erro de
+leitura, a aplicacao e recusada e a transacao nao e confirmada.
 
 ### Sincronizacao pelo formulario
 

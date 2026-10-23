@@ -22,7 +22,7 @@ public sealed class MonitoringRoots
 
     public string Resolve(string rootKey, string relativePath)
     {
-        if (!roots.TryGetValue(rootKey, out var root))
+        if (!roots.TryGetValue(MonitoringPathPolicy.NormalizeRootKey(rootKey), out var root))
             throw new ArgumentException("Raiz de monitoramento desconhecida.");
         if (!MonitoringPathPolicy.IsValidRelativePath(relativePath, allowEmpty: true))
             throw new ArgumentException("Caminho relativo invalido.");

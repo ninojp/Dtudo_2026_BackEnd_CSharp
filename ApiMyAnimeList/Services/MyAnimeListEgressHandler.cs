@@ -79,7 +79,19 @@ public sealed class MyAnimeListEgressHandler(IOptions<MyAnimeListOptions> option
             throw new MyAnimeListEgressException("A conexao da API MyAnimeList foi bloqueada pela allowlist de egress.");
         }
 
-        var addresses = await Dns.GetHostAddressesAsync(host, cancellationToken);
+        IPAddress[] addresses;
+        try
+        {
+            addresses = await Dns.GetHostAddressesAsync(host, cancellationToken);
+        }
+        catch (SocketException exception)
+        {
+            throw new HttpRequestException(
+                HttpRequestError.NameResolutionError,
+                "Nao foi possivel resolver o DNS da API MyAnimeList. Verifique a conexao de rede/VPN.",
+                exception);
+        }
+
         if (addresses.Length == 0 || addresses.Any(address => !IsGloballyRoutable(address)))
         {
             throw new MyAnimeListEgressException("A resolucao DNS da API MyAnimeList retornou um destino nao publico.");

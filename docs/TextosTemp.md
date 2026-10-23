@@ -43,24 +43,23 @@ TROCAR TODOS OS MINI CARDS POR CARDS
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
 Após logar no WinAppDtudo, e acessar o Form MyAnimes, Clicando no menu "Buscar Anime", será aberta a aba unificada de busca, onde o usuário poderá escolher entre buscar no DB Local ou na ApiMyAnimeList. Após fazer uma busca, temos os Cards exibindo os resultados correspondentes à fonte selecionada, após clicar em um Card, será aberta a aba de detalhes do anime clicado (cada aba tem seu próprio UC, mas um layout semelhante).  
 
-Nas abas de detalhes do anime, temos um layout com três blocos pricipais: topo (com os 4 tipos de titulo), lateral esquerda (capa, informações adicionais e botões), e lateral direita (cards de animes relacionados ao atual e demais descrições do anime).  
-  
-Na aba, uc de detalhes do anime DB Local (ApiMyAnimes).
-Quero primeiro diminuir o tamanho da imagem de capa do anime na aba de detalhes do anime DB Local (ApiMyAnimes).
-Abaixo da imagem de capa, agora deve vir o botão "Exibir MyAnime".  
-Abaixo do botão "Exibir MyAnime", deve vir o restante das informações (Ano, Tipo, Episódios, Generos), como antes (mas com o espaço entre as linhas MENOR).
-Abaixo das informações, agora deve vir o botão "Editar Anime".
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
+Tem uma parte importante que faz a gestão das coleções locais, MyAnimes (coleção completa de animes relacionados entre si), ou seja analiza e monitora meus arquivos locais (estruturas de pastas e arquivos, neste computador local), garantindo que todas as alterações e adições sejam devidamente registradas e refletidas na coleção (banco de dados local).
+Atualmente minha estrutura local (no sistema) estava organizada assim:
+Disco 2 (E:) ANIMEs (E:\.Dots,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R)
+Disco 0 (H:) ANIMEs2 (H:\(Animex\.Dots,A,B,C,D,E,F... todas as letras),S,T,U,V,X,W,Y,Z)
 
-Vamos continuar ajustando o layout e a disposição dos elementos na aba de detalhes do anime DB Local (ApiMyAnimes), quando terminar, ai sim faremos o mesmo para a aba de detalhes do anime da ApiMyAnimeList.  
+Agora adicionei um novo HD e preciso modificar (já modifiquei as pastas, já organizei as letras nos discos), no meu sistema, os novos endereços (apontamentos) das minhas coleções locais para incluir este novo disco e letras modificadas de lugar (HD). Agora estão assim:
+Disco 2 (E:) ANIMEs (E:\.Dots,A,B,C,D,E,F,G,H,I,J,K,L)
+Disco 0 (H:) ANIMEs2 (H:\M,N,O,P,Q,R,S,T,U,V,X,W,Y,Z)
+Disco 1 (G:) ANIMEsTemp (G:\Animex\.Dots,A,B,C... todas as letras)
 
-Na coluna esquerda (máximo de 420). Com a capa menor sobra espaço lateral. Eu quero que a coluna esquerda fique mais estreita, e de mais espaço aos cards relacionados.  
+Na pasta Docs estão armazenados os arquivos de documentação do projeto, "Monitoramento das colecoes" (atualize este arquivo conforme necessário) locais e demais informações relevantes para o desenvolvimento e manutenção do sistema.
 
-Os dois Titulos ACIMA da imagem de capa agora devem ficar centralizados.  
+Na verdade não deveria ter um arquivo Script "Sync-MyAnimeMonitoringLocations.ps1", rodanda numa pasta separada, fora de um projeto C#!
+Este código deveria estar dentro de uma estrutura de pastas dentro de uma Api (no meu  ver seria dentro da ApiFileStorage)
 
-Abaixo do botão "Exibir MyAnime", antes de cada label de informação (Ano, Tipo, Episódios, Generos), tem um icone correspondente ao tipo de informação (por exemplo, um icone de calendário para o Ano, um icone de filme para o Tipo, um icone de episódio para os Episódios e um icone de etiqueta para os Generos), Agora quero que a cor destes icones seja a cor padrão do WinAppDtudo (Gold) e também todos outros elementos fixos da aba de detalhes do anime (exemplo, icone e texto "Animes relacionados", Mal ID:, Fonte:, Exibição:, as linhas de separação entre sinopse e fundo).
-
-O tamanho da moldura dos mini cards (o tamanho em geral) deve ser ajustado para se adequar ao novo layout, garantindo que fiquem proporcionais e visualmente agradáveis dentro da coluna direita.
-
+RAFAÇA TUDO QUE FOR NECESSÁRIO!
 
 COMO SEMPRE! VOU REPETIR!
 Quero uma implementação PROFISSIONAL, COMPLETA E ROBUSTA (mesmo que precise de mais tempo ou reformular grandes partes do projeto, me avise sobre as alterações necessárias neste caso).

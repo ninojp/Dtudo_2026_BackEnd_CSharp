@@ -1,3 +1,4 @@
+using ApiFileStorage.Monitoring.Relocation;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -21,6 +22,7 @@ public static class MonitoringPersistence
         services.AddScoped<MonitoringInventoryStore>();
         services.AddSingleton(MonitoringRoots.Collections());
         services.AddSingleton<MonitoringReader>();
+        services.AddHostedService<MonitoringRootKeyMigration>();
         services.AddSingleton<MonitoringSessions>();
         services.AddHostedService(provider => provider.GetRequiredService<MonitoringSessions>());
         return services;

@@ -17,14 +17,14 @@ public sealed class MonitoringSessions(IServiceScopeFactory scopeFactory, Monito
     {
         if (request.RelativePath is null || (request.RootKey is null && request.RelativePath.Length != 0)) throw new ArgumentException("Escopo geral nao aceita caminho relativo.");
         var targets = request.RootKey is null ? roots.All.Select(root => (root.Key, Path: "")).ToArray()
-            : new[] { (Key: request.RootKey, Path: request.RelativePath) };
+            : new[] { (Key: MonitoringPathPolicy.NormalizeRootKey(request.RootKey), Path: request.RelativePath) };
         foreach (var target in targets) roots.Resolve(target.Key, target.Path);
         await starts.WaitAsync(cancellationToken);
         try
         {
             if (sessions.Count >= 4) throw new InvalidOperationException("Limite de sessoes de monitoramento atingido.");
             foreach (var existing in sessions.Values)
-                if (existing.Locations.Any(location => targets.Any(target => target.Key == location.RootKey
+                if (existing.Locations.Any(location => targets.Any(target => target.Key == MonitoringPathPolicy.NormalizeRootKey(location.RootKey)
                     && Overlaps(target.Path, location.RelativePath))))
                     throw new InvalidOperationException("Este escopo ja esta sendo monitorado. Feche a outra tela de monitoramento antes de abrir esta.");
             using var scope = scopeFactory.CreateScope();
@@ -32,7 +32,8 @@ public sealed class MonitoringSessions(IServiceScopeFactory scopeFactory, Monito
             var locations = new List<MonitoredLocation>();
             foreach (var target in targets)
             {
-                var location = await context.Locations.FirstOrDefaultAsync(item => item.RootKey == target.Key && item.RelativePath == target.Path, cancellationToken);
+                var location = (await context.Locations.Where(item => item.RelativePath == target.Path).ToListAsync(cancellationToken))
+                    .FirstOrDefault(item => string.Equals(MonitoringPathPolicy.NormalizeRootKey(item.RootKey), target.Key, StringComparison.OrdinalIgnoreCase));
                 if (location is null)
                 {
                     location = new MonitoredLocation { Id = Guid.NewGuid(), RootKey = target.Key, RelativePath = target.Path, RegisteredAtUtc = DateTimeOffset.UtcNow };
@@ -112,7 +113,7 @@ public sealed class MonitoringSessions(IServiceScopeFactory scopeFactory, Monito
                     foreach (var location in session.Locations)
                     {
                         token.ThrowIfCancellationRequested();
-                        session.State = "Inventariando " + location.RootKey + "\\" + location.RelativePath;
+                        session.State = "Inventariando " + MonitoringPathPolicy.NormalizeRootKey(location.RootKey) + "\\" + location.RelativePath;
                         TryWatch(location);
                         var result = reader.Read(location, token);
                         using var scope = scopeFactory.CreateScope();
@@ -135,7 +136,7 @@ public sealed class MonitoringSessions(IServiceScopeFactory scopeFactory, Monito
                         context.Observations.AddRange(observations);
                         await store.AppendSnapshotAsync(result.Snapshot, token);
                         var display = result.Snapshot.Completion == InventoryCompletion.Unavailable && previous is not null ? previous : result.Snapshot;
-                        session.Views[location.Id] = new MonitoringLocationDto(location.Id, location.RootKey, location.RelativePath,
+                        session.Views[location.Id] = new MonitoringLocationDto(location.Id, MonitoringPathPolicy.NormalizeRootKey(location.RootKey), location.RelativePath,
                             display.Id, result.Snapshot.Completion.ToString(), display.FileCount, display.DirectoryCount, display.TotalBytes, display.FinishedAtUtc);
                         var pendingEvents = new List<MonitoringObservation>();
                         while (pendingEvents.Count < 500 && session.Events.Reader.TryRead(out var pendingEvent)) pendingEvents.Add(pendingEvent);
@@ -275,7 +276,7 @@ public sealed class MonitoringSessions(IServiceScopeFactory scopeFactory, Monito
     }
     private static MonitoringSessionDto View(Session session) => new(session.Id, session.State, session.Error,
         session.InventoryOutdated, session.Locations.Select(location => session.Views.TryGetValue(location.Id, out var view) ? view
-            : new MonitoringLocationDto(location.Id, location.RootKey, location.RelativePath, null, "Pendente", 0, 0, 0, null)).ToArray());
+            : new MonitoringLocationDto(location.Id, MonitoringPathPolicy.NormalizeRootKey(location.RootKey), location.RelativePath, null, "Pendente", 0, 0, 0, null)).ToArray());
 
     private sealed class Session(string owner, List<MonitoredLocation> locations)
     {

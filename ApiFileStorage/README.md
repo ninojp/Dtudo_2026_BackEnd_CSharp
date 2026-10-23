@@ -21,9 +21,12 @@ O modulo `Monitoring/Data` e independente do motor de escrita existente. Usa EF 
 Armazena localizacoes, inventarios, entradas e observacoes. Caminhos sao relativos,
 sem truncamento em 260 caracteres; consultas de entradas usam paginacao por ID.
 
-`Monitoring:Enabled=true` disponibiliza o monitor, mas nao inicia coleta. A migracao
-nao e aplicada automaticamente e o registro dos servicos nao abre conexoes no startup.
-Leitura e watchers existem somente enquanto houver sessao aberta pela interface.
+`Monitoring:Enabled=true` disponibiliza o monitor, mas nao inicia coleta. A migracao de
+schema nao e aplicada automaticamente; a migracao `OptimizeObservationCursor` foi aplicada
+manualmente no banco real, com backup previo. No startup,
+escrita e `MonitoringRootKeyMigration`, que regrava `RootKey` legado (excecao controlada
+a regra append-only; idempotente, transacional e registrada em log). Leitura e watchers
+existem somente enquanto houver sessao aberta pela interface.
 
 Endpoints sob `/api/file-storage/monitoring`, autenticados com permissao e escopo
 `filesystem.command`:
