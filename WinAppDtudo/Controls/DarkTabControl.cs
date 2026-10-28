@@ -95,6 +95,10 @@ public class DarkTabControl : TabControl
         ForeColor = DarkModeColors.TextColor;
     }
 
+    /// <summary>Indica se a aba no indice informado exibe (e aceita clique em) um botao de fechar.</summary>
+    public bool HasCloseButton(int tabIndex) =>
+        ShowCloseButtons && tabIndex >= 0 && tabIndex < TabCount && TabPages[tabIndex] is not PinnedTabPage;
+
     public Rectangle GetCloseButtonBounds(int tabIndex)
     {
         var tabRect = GetTabRect(tabIndex);
@@ -113,8 +117,9 @@ public class DarkTabControl : TabControl
             throw new ArgumentException("The tab must belong to this control.", nameof(tabPage));
         ArgumentOutOfRangeException.ThrowIfNegative(targetIndex);
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(targetIndex, TabCount);
-        if (TabPages.IndexOf(tabPage) == targetIndex)
+        if (tabPage is PinnedTabPage || TabPages.IndexOf(tabPage) == targetIndex)
             return;
+        targetIndex = Math.Max(targetIndex, CountLeadingPinnedTabs());
 
         var selectedTab = SelectedTab;
         _reorderingTabs = true;
@@ -213,6 +218,7 @@ public class DarkTabControl : TabControl
         ResetDragState();
         var index = GetTabIndexAt(e.Location);
         var candidate = AllowTabReordering && e.Button == MouseButtons.Left && index >= 0 &&
+            TabPages[index] is not PinnedTabPage &&
             (!ShowCloseButtons || !GetCloseButtonBounds(index).Contains(e.Location))
                 ? TabPages[index]
                 : null;
@@ -315,7 +321,7 @@ public class DarkTabControl : TabControl
         if (display.Width <= 0 || display.Height <= 0)
             return;
 
-        using var surfaceBrush = new SolidBrush(DarkModeColors.ActiveTabBackgroundColor);
+        using var surfaceBrush = new SolidBrush(ResolvePageSurfaceColor(SelectedTab));
         graphics.FillRectangle(surfaceBrush, display);
     }
 
@@ -325,7 +331,7 @@ public class DarkTabControl : TabControl
         var tabRect = GetTabRect(index);
         var selected = index == SelectedIndex;
 
-        var background = selected ? DarkModeColors.ActiveTabBackgroundColor : DarkModeColors.BackgroundSecondaryColor;
+        var background = selected ? ResolvePageSurfaceColor(tabPage) : DarkModeColors.BackgroundSecondaryColor;
         var foreground = GetTabForeground(tabPage, selected);
 
         using var backgroundBrush = new SolidBrush(background);
@@ -337,7 +343,7 @@ public class DarkTabControl : TabControl
             -LogicalToDeviceUnits(TabHeaderVerticalInset));
         PaintTabImage(graphics, tabPage, ref contentRect);
 
-        if (ShowCloseButtons)
+        if (HasCloseButton(index))
         {
             var closeRect = GetCloseButtonBounds(index);
             PaintCloseButton(graphics, closeRect, foreground);
@@ -407,12 +413,18 @@ public class DarkTabControl : TabControl
         graphics.DrawLines(pen, points);
     }
 
+    /// <summary>Cor de fundo da pagina: a propria de <see cref="PinnedTabPage"/> (se definida) ou a padrao das abas.</summary>
+    public static Color ResolvePageSurfaceColor(TabPage? tabPage) =>
+        tabPage is PinnedTabPage { SurfaceColor.IsEmpty: false } pinned
+            ? pinned.SurfaceColor
+            : DarkModeColors.ActiveTabBackgroundColor;
+
     private void ApplySelectedTabPageBackColor()
     {
         foreach (TabPage tabPage in TabPages)
         {
             tabPage.UseVisualStyleBackColor = false;
-            tabPage.BackColor = DarkModeColors.ActiveTabBackgroundColor;
+            tabPage.BackColor = ResolvePageSurfaceColor(tabPage);
             tabPage.ForeColor = tabPage is IThemeAccentProvider provider
                 ? provider.AccentColor
                 : DarkModeColors.TextColor;
@@ -662,9 +674,17 @@ public class DarkTabControl : TabControl
         }
 
         var tabPage = e.Data.GetData(TabPageDragDataFormat) as TabPage;
-        return tabPage is not null && TabPages.Contains(tabPage)
+        return tabPage is not null and not PinnedTabPage && TabPages.Contains(tabPage)
             ? tabPage
             : null;
+    }
+
+    private int CountLeadingPinnedTabs()
+    {
+        var count = 0;
+        while (count < TabCount && TabPages[count] is PinnedTabPage)
+            count++;
+        return count;
     }
 
     private void UpdateDropTarget(DragEventArgs e)
@@ -687,7 +707,10 @@ public class DarkTabControl : TabControl
                 }
             }
             if (_dropInsertionIndex >= 0)
+            {
+                _dropInsertionIndex = Math.Max(_dropInsertionIndex, CountLeadingPinnedTabs());
                 e.Effect = DragDropEffects.Move;
+            }
         }
         Invalidate();
     }

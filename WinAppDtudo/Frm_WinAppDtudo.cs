@@ -1,15 +1,25 @@
+using WinAppDtudo.Controls;
 using WinAppDtudo.Forms;
+using WinAppDtudo.FormsUC;
 using WinAppDtudo.Services;
 
 namespace WinAppDtudo;
 
 /// <summary>
-/// Frm_WinAppDtudo é a classe principal do aplicativo WinForms, representando o formulário principal da aplicação Dtudo.
+/// Frm_WinAppDtudo é a janela principal do WinAppDtudo. As funcionalidades (MyAnimes, Monitoramento, MyMusicX,
+/// Painel de Saúde, Administração de Usuários, DtudoWebView2, Nino T.I e a aba fixa "Início" com os atalhos) abrem
+/// como abas de <see cref="Tbc_Principal"/>, cada uma com seu UserControl.
 /// </summary>
 public partial class Frm_WinAppDtudo : CustomFormNoBorder
 {
-    private const float DesignWidth = 1272F;
-    private const float DesignContentHeight = 652F;
+    public const string InicioTabKey = "Inicio";
+    public const string MonitoramentoTabKey = "Monitoramento";
+    public const string NinoTITabKey = "NinoTI";
+    public const string MyMusicXTabKey = "MyMusicX";
+    public const string PainelSaudeTabKey = "PainelSaude";
+    public const string AdministracaoTabKey = "AdministracaoIdentity";
+    public const string DtudoWebViewTabKeyPrefix = "DtudoWebView:";
+
     private readonly WinAppAuthenticationService _identityAuthenticationService;
     private readonly ApiFileStorageStartupService _apiFileStorageStartupService = new();
     private readonly ApiMyAnimesHealthCheckService _apiMyAnimesHealthCheckService;
@@ -23,12 +33,11 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     private readonly DtudoSiteStartupService _dtudoSiteStartupService;
     private readonly System.Windows.Forms.Timer _healthRefreshTimer = new() { Interval = 60_000 };
     private WindowsHealthNotificationService _healthNotificationService = null!;
-    private Frm_DtudoSiteBrowser? _dtudoSiteBrowser;
-    private Frm_HealthDashboard? _healthDashboard;
-    private Frm_Monitoramento? _monitoringForm;
-    private readonly ToolStripMenuItem _monitoringMenu = new("Monitoramento local") { Enabled = false };
+    private readonly TabWorkspace _workspace;
+    private readonly MyAnimesTabController _myAnimesController;
+    private readonly FUC_Inicio _inicio = new();
     private WinAppHealthSnapshot? _lastHealthSnapshot;
-    private bool _isApplyingMainLayout;
+    private int _webViewTabCounter;
     private bool _isOpeningDtudoSite;
     private bool _isRefreshingHealth;
 
@@ -37,12 +46,17 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         StartupDiagnostics.Mark("Frm constructor entered");
         StartupDiagnostics.Mark("Before InitializeComponent");
         InitializeComponent();
-        Mnu_Principal.Items.Insert(0, _monitoringMenu);
-        _monitoringMenu.Click += OpenMonitoring;
         StartupDiagnostics.Mark("After InitializeComponent");
         _identityAuthenticationService = new WinAppAuthenticationService(
             browserClient: new WinAppPkceBrowserClient(
                 browserLauncher: OpenWinAppLoginAsync));
+        _workspace = new TabWorkspace(Tbc_Principal);
+        _myAnimesController = new MyAnimesTabController(
+            this,
+            _workspace,
+            _identityAuthenticationService,
+            UpdateStatusFooter);
+        _myAnimesController.AnaliseEmAndamentoAlterada += MyAnimesController_AnaliseEmAndamentoAlterada;
         _apiMyAnimesHealthCheckService = new ApiMyAnimesHealthCheckService(_identityAuthenticationService);
         _apiMyAnimesStartupService = new ApiMyAnimesStartupService(_apiMyAnimesHealthCheckService);
         _apiMusicXHealthCheckService = new ApiMusicXHealthCheckService(_identityAuthenticationService);
@@ -63,6 +77,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         StartupDiagnostics.Mark("After custom form initialization");
 
         //Opções de inicialização do formulário, após a inicialização dos componentes.
+        MnI_Monitoramento.Enabled = false;
         MnI_MyAnimes.Enabled = false;
         MnI_MyMusicX.Enabled = false;
         MnI_NinoTI.Enabled = false;
@@ -70,81 +85,177 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         MnI_CadastrarUsuario.Enabled = false;
         MnI_Saude.Enabled = false;
 
-        InitializeMainLayout();
-        StartupDiagnostics.Mark("After main layout initialization");
+        InitializeHomeTab();
+        StartupDiagnostics.Mark("After home tab initialization");
+        Shown += Frm_WinAppDtudo_Shown;
         FormClosing += Frm_WinAppDtudo_FormClosing;
         FormClosed += Frm_WinAppDtudo_FormClosed;
     }
-    //=========================================================
-    //Menu MyAnimes - Abrir formulário Frm_MyAnimes.
-    private void OpenMonitoring(object? sender, EventArgs args)
-    {
-        if (!_identityAuthenticationService.IsAuthenticated) return;
-        if (_monitoringForm is null || _monitoringForm.IsDisposed)
-        {
-            _monitoringForm = new Frm_Monitoramento(_identityAuthenticationService, OpenMyAnimeStructure);
-            _monitoringForm.Show(this);
-        }
-        else _monitoringForm.Activate();
-    }
 
-    private void MnI_MyAnimes_Click(object sender, EventArgs e)
+    /// <summary>
+    /// Atualiza o texto da barra de status no rodapé, usada para reportar progresso de operações
+    /// demoradas sem bloquear a interface com um diálogo modal.
+    /// </summary>
+    public void UpdateStatusFooter(string message)
     {
-        StartupDiagnostics.Mark("MyAnimes: open request queued after menu click");
-        BeginInvoke(new Action(OpenMyAnimes));
-    }
-
-    private void OpenMyAnimes()
-    {
-        if (IsDisposed || !IsHandleCreated)
+        if (IsDisposed)
             return;
 
-        StartupDiagnostics.Mark("MyAnimes: deferred open started");
-        Frm_MyAnimes formMyAnimes = new(_identityAuthenticationService);
-        formMyAnimes.VisibleChanged += (_, _) => StartupDiagnostics.Mark(
-            $"MyAnimes VisibleChanged visible={formMyAnimes.Visible} handleCreated={formMyAnimes.IsHandleCreated} bounds={formMyAnimes.Bounds} windowState={formMyAnimes.WindowState}");
-        formMyAnimes.Shown += (_, _) => StartupDiagnostics.Mark(
-            $"MyAnimes Shown visible={formMyAnimes.Visible} handleCreated={formMyAnimes.IsHandleCreated} bounds={formMyAnimes.Bounds} windowState={formMyAnimes.WindowState}");
-        StartupDiagnostics.Mark("MyAnimes: before Show(owner)");
-        formMyAnimes.Show(this);
-        StartupDiagnostics.Mark(
-            $"MyAnimes: Show returned visible={formMyAnimes.Visible} handleCreated={formMyAnimes.IsHandleCreated} bounds={formMyAnimes.Bounds} windowState={formMyAnimes.WindowState}");
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => UpdateStatusFooter(message));
+            return;
+        }
+
+        Lbl_StatusRodape.Text = message;
+    }
+
+    //=========================================================
+    // Aba "Início": fundo e atalhos que antes ficavam diretamente na janela principal. Aparece somente enquanto
+    // nenhuma outra aba estiver aberta (ver TabWorkspace.SetHomePage) e usa fundo preto.
+    private void InitializeHomeTab()
+    {
+        var inicioPage = new PinnedTabPage
+        {
+            Name = InicioTabKey,
+            Text = "Início",
+            AccessibleName = "Início",
+            SurfaceColor = Color.Black,
+            ImageIndex = _workspace.GetImageIndex(InicioTabKey, Properties.Resources.YingYang_HD)
+        };
+        inicioPage.Controls.Add(_inicio);
+        _workspace.SetHomePage(inicioPage);
+        _inicio.DefinirAcessoLiberado(_identityAuthenticationService.IsAuthenticated);
+
+        _inicio.DtudoSiteSolicitado += async (_, _) => await ExecuteDtudoSiteActionAsync(OpenDtudoSiteInGoogleChromeAsync);
+        _inicio.MyAnimesSolicitado += (_, _) => RequireAuthentication(_myAnimesController.AbrirBuscarAnime);
+        _inicio.MyMusicXSolicitado += (_, _) => RequireAuthentication(OpenMyMusicX);
+        _inicio.NinoTISolicitado += (_, _) => RequireAuthentication(OpenNinoTI);
+    }
+
+    // Os atalhos da tela inicial seguem a mesma regra dos menus: só funcionam com o usuário autenticado.
+    private void RequireAuthentication(Action action)
+    {
+        if (IsDisposed)
+            return;
+
+        if (!_identityAuthenticationService.IsAuthenticated)
+        {
+            DarkMessageBox.Show(
+                "Conecte-se pelo menu Arquivo > Conectar para acessar esta funcionalidade.",
+                "WinAppDtudo",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            return;
+        }
+
+        action();
+    }
+
+    //=========================================================
+    // Menu Arquivo > Monitoramento local - aba única com o acompanhamento das estruturas.
+    private void MnI_Monitoramento_Click(object? sender, EventArgs args)
+    {
+        if (!_identityAuthenticationService.IsAuthenticated) return;
+
+        _workspace.OpenOrActivate(MonitoramentoTabKey, () =>
+        {
+            var page = new TabPage("Monitoramento local")
+            {
+                Name = MonitoramentoTabKey,
+                ImageIndex = _workspace.GetImageIndex("Monitoramento", Properties.Resources.RadioAtivo)
+            };
+            page.Controls.Add(new FUC_Monitoramento(
+                _identityAuthenticationService,
+                openMyAnimeStructure: OpenMyAnimeStructure));
+            return page;
+        });
+    }
+
+    //Menu MyAnimes > Buscar Anime - abre (ou reativa) a aba de busca.
+    private void MnI_BuscarAnime_Click(object? sender, EventArgs e)
+    {
+        RequireAuthentication(_myAnimesController.AbrirBuscarAnime);
+    }
+
+    //Menu MyAnimes > Analizar Pastas - analisa uma pasta e cadastra os MyAnimes.
+    private async void MnI_AnalizarPastas_Click(object? sender, EventArgs e)
+    {
+        if (!_identityAuthenticationService.IsAuthenticated)
+            return;
+
+        await _myAnimesController.AnalizarPastasAsync();
+    }
+
+    private void MyAnimesController_AnaliseEmAndamentoAlterada(object? sender, EventArgs e)
+    {
+        if (IsDisposed)
+            return;
+
+        MnI_AnalizarPastas.Enabled = !_myAnimesController.AnaliseEmAndamento;
     }
 
     private void OpenMyAnimeStructure(int myAnimeId)
     {
         if (!_identityAuthenticationService.IsAuthenticated || myAnimeId <= 0) return;
-        var formMyAnimes = Application.OpenForms.OfType<Frm_MyAnimes>().FirstOrDefault(form => !form.IsDisposed);
-        if (formMyAnimes is null)
-        {
-            formMyAnimes = new Frm_MyAnimes(_identityAuthenticationService);
-            formMyAnimes.Show(this);
-        }
-        else
-        {
-            if (formMyAnimes.WindowState == FormWindowState.Minimized) formMyAnimes.WindowState = FormWindowState.Normal;
-            formMyAnimes.Activate();
-        }
-        formMyAnimes.AbrirEstruturaMyAnime(myAnimeId);
+        _myAnimesController.AbrirEstruturaMyAnime(myAnimeId);
     }
-    //Menu MyMusicX - Abrir formulário Frm_MyMusicX.
+
+    //Menu MyMusicX - abre (ou reativa) a aba MyMusicX.
     private void MnI_MyMusicX_Click(object sender, EventArgs e)
     {
-        Frm_MyMusicX formMyMusicX = new(_identityAuthenticationService);
-        formMyMusicX.Show();
+        OpenMyMusicX();
     }
-    //Menu NinoTI - Abrir formulário Frm_NinoTI.
+
+    private void OpenMyMusicX()
+    {
+        _workspace.OpenOrActivate(MyMusicXTabKey, () =>
+        {
+            var page = new TabPage("MyMusicX")
+            {
+                Name = MyMusicXTabKey,
+                ImageIndex = _workspace.GetImageIndex(MyMusicXTabKey, Properties.Resources.violaoEmChamas)
+            };
+            page.Controls.Add(new FUC_MyMusicX(_identityAuthenticationService));
+            return page;
+        });
+    }
+
+    //Menu NinoTI - abre a aba Nino T.I.
     private void MnI_NinoTI_Click(object sender, EventArgs e)
     {
-        Frm_NinoTI formNinoTI = new();
-        formNinoTI.Show();
+        OpenNinoTI();
+    }
+
+    private void OpenNinoTI()
+    {
+        _workspace.OpenOrActivate(NinoTITabKey, () =>
+        {
+            var page = new TabPage("Nino T.I")
+            {
+                Name = NinoTITabKey,
+                ImageIndex = _workspace.GetImageIndex("NinoTI", Properties.Resources.OlhoBRHacker1024)
+            };
+            page.Controls.Add(new FUC_NinoTI());
+            return page;
+        });
     }
     //==============================================================
-    //Menu Cadastrar Usuario - abrir a administracao protegida do Identity.
+    //Menu Cadastrar Usuario - abre (ou reativa) a aba de administração protegida do Identity.
     private void MnI_CadastrarUsuario_Click(object sender, EventArgs e)
     {
-        using var formAdministration = new Frm_IdentityAdministration(_identityAuthenticationService);
-        formAdministration.ShowDialog(this);
+        if (!_identityAuthenticationService.IsAuthenticated) return;
+
+        _workspace.OpenOrActivate(AdministracaoTabKey, () =>
+        {
+            var page = new TabPage("Administração de Usuários")
+            {
+                Name = AdministracaoTabKey,
+                ImageIndex = _workspace.GetImageIndex(AdministracaoTabKey, Properties.Resources.CaveraMetal)
+            };
+            page.Controls.Add(new FUC_IdentityAdministration(_identityAuthenticationService));
+            return page;
+        });
     }
     //Menu Conectar - iniciar autenticacao dentro do WinAppDtudo.
     private async void MnI_Conectar_Click(object sender, EventArgs e)
@@ -253,7 +364,8 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
 
     private void SetAuthenticatedUi(bool isAuthenticated)
     {
-        _monitoringMenu.Enabled = isAuthenticated;
+        _inicio.DefinirAcessoLiberado(isAuthenticated);
+        MnI_Monitoramento.Enabled = isAuthenticated;
         MnI_Conectar.Enabled = !isAuthenticated;
         MnI_CadastrarUsuario.Enabled = isAuthenticated;
         MnI_MyAnimes.Enabled = isAuthenticated;
@@ -269,13 +381,9 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         _healthRefreshTimer.Stop();
         _lastHealthSnapshot = null;
         _healthNotificationService.Reset();
-        foreach (Form form in Application.OpenForms.Cast<Form>().ToList())
-        {
-            if (form != this)
-            {
-                form.Close();
-            }
-        }
+        _workspace.CloseAll();
+        _workspace.Activate(InicioTabKey);
+        UpdateStatusFooter(string.Empty);
     }
 
     private async void MnI_Saude_Click(object? sender, EventArgs e)
@@ -290,29 +398,33 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             return;
         }
 
-        if (_healthDashboard is null || _healthDashboard.IsDisposed)
+        var page = _workspace.OpenOrActivate(PainelSaudeTabKey, () =>
         {
-            _healthDashboard = new Frm_HealthDashboard(_healthMonitoringService);
-            _healthDashboard.FormClosed += HealthDashboard_FormClosed;
-            _healthDashboard.Show(this);
-        }
-        else
-        {
-            if (_healthDashboard.WindowState == FormWindowState.Minimized)
+            var healthPage = new TabPage("Painel de Saúde")
             {
-                _healthDashboard.WindowState = FormWindowState.Normal;
-            }
+                Name = PainelSaudeTabKey,
+                ImageIndex = _workspace.GetImageIndex(PainelSaudeTabKey, Properties.Resources.CaveraMetal)
+            };
+            healthPage.Controls.Add(new FUC_PainelSaude(_healthMonitoringService));
+            return healthPage;
+        });
 
-            _healthDashboard.Activate();
+        var panel = FindHealthPanel(page);
+        if (panel is null)
+        {
+            return;
         }
 
         if (_lastHealthSnapshot is not null)
         {
-            _healthDashboard.ApplySnapshot(_lastHealthSnapshot);
+            panel.ApplySnapshot(_lastHealthSnapshot);
         }
 
-        await _healthDashboard.RefreshAsync(_formClosingCancellationTokenSource.Token);
+        await panel.RefreshAsync(_formClosingCancellationTokenSource.Token);
     }
+
+    private static FUC_PainelSaude? FindHealthPanel(TabPage? page) =>
+        page?.Controls.OfType<FUC_PainelSaude>().FirstOrDefault();
 
     private async void HealthRefreshTimer_Tick(object? sender, EventArgs e)
     {
@@ -343,10 +455,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
                 _healthNotificationService.Notify(snapshot);
             }
 
-            if (_healthDashboard is not null && !_healthDashboard.IsDisposed)
-            {
-                _healthDashboard.ApplySnapshot(snapshot);
-            }
+            FindHealthPanel(_workspace.Find(PainelSaudeTabKey))?.ApplySnapshot(snapshot);
         }
         catch (OperationCanceledException) when (_formClosingCancellationTokenSource.IsCancellationRequested)
         {
@@ -420,65 +529,14 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         await OpenHealthDashboardAsync();
     }
 
-    private void HealthDashboard_FormClosed(object? sender, FormClosedEventArgs e)
-    {
-        if (ReferenceEquals(sender, _healthDashboard))
-        {
-            _healthDashboard = null;
-        }
-    }
     //Menu Sair - Fechar a aplicação Toda.
     private void MnI_Sair_Click(object sender, EventArgs e)
     {
         Application.Exit();
     }
-    //===========================================================================================
-    //Captura o evento MouseDown do formulário Frm_WinAppDtudo e exibe um menu de contexto ao clicar com o botão direito do mouse.
-    private void Frm_WinAppDtudo_MouseDown(object sender, MouseEventArgs e)
-    {
-        if (e.Button == MouseButtons.Right)
-        {
-            //string message = $"MouseDown, na posição ({e.X}, {e.Y}) com o botão {e.Button}";
-            //WinAppDtudo.Services.DarkMessageBox.Show(message);
-            ContextMenuStrip contextMenu = new();
-            ToolStripMenuItem menuFlutuanteItem1 = CriaMenuFlutuanteItem("Opção 1", "CaveraMetal");
-            ToolStripMenuItem menuFlutuanteItem2 = CriaMenuFlutuanteItem("Opção 2", "CaveraMetal");
-            ToolStripMenuItem menuFlutuanteItem3 = CriaMenuFlutuanteItem("Opção 3", "CaveraMetal");
-            contextMenu.Items.Add(menuFlutuanteItem1);
-            contextMenu.Items.Add(menuFlutuanteItem2);
-            contextMenu.Items.Add(menuFlutuanteItem3);
-            contextMenu.Show(this, new Point(e.X, e.Y));
-            menuFlutuanteItem1.Click += new EventHandler(MenuFlutuanteItem1_Click);
-            menuFlutuanteItem2.Click += new EventHandler(MenuFlutuanteItem2_Click);
-            menuFlutuanteItem3.Click += new EventHandler(MenuFlutuanteItem3_Click);
-        }
-    }
-    private static ToolStripMenuItem CriaMenuFlutuanteItem(string textMenuItem, string imageName)
-    {
-        ToolStripMenuItem menuFlutuanteItem = new(textMenuItem);
-        if (Properties.Resources.ResourceManager.GetObject(imageName) is Image imgMenuItem)
-        { menuFlutuanteItem.Image = imgMenuItem; }
-        return menuFlutuanteItem;
-    }
-    void MenuFlutuanteItem1_Click(object? sender, EventArgs e)
-    {
-        WinAppDtudo.Services.DarkMessageBox.Show("Opção 1 selecionada");
-    }
-    void MenuFlutuanteItem2_Click(object? sender, EventArgs e)
-    {
-        WinAppDtudo.Services.DarkMessageBox.Show("Opção 2 selecionada");
-    }
-    void MenuFlutuanteItem3_Click(object? sender, EventArgs e)
-    {
-        WinAppDtudo.Services.DarkMessageBox.Show("Opção 3 selecionada");
-    }
     //=================================================================
-    private async void Btn_DtudoSite_Click(object sender, EventArgs e)
-    {
-        await ExecuteDtudoSiteActionAsync(OpenDtudoSiteInGoogleChromeAsync);
-    }
-
-    private async void MnI_DtudoSite_Click(object sender, EventArgs e)
+    //Menu DtudoSite > DtudoWebView2 - abre o DtudoSite em uma nova aba com WebView2.
+    private async void MnI_DtudoWebView_Click(object sender, EventArgs e)
     {
         await ExecuteDtudoSiteActionAsync(OpenDtudoSiteInWebViewAsync);
     }
@@ -489,7 +547,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             return;
 
         _isOpeningDtudoSite = true;
-        Btn_DtudoSite.Enabled = false;
+        _inicio.DefinirDtudoSiteOcupado(true);
         MnI_DtudoSite.Enabled = false;
         var wasUsingWaitCursor = UseWaitCursor;
         UseWaitCursor = true;
@@ -519,7 +577,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             if (!IsDisposed)
             {
                 UseWaitCursor = wasUsingWaitCursor;
-                Btn_DtudoSite.Enabled = true;
+                _inicio.DefinirDtudoSiteOcupado(false);
                 MnI_DtudoSite.Enabled = true;
             }
 
@@ -556,21 +614,34 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             return;
         }
 
-        if (_dtudoSiteBrowser is null || _dtudoSiteBrowser.IsDisposed)
-        {
-            _dtudoSiteBrowser = new Frm_DtudoSiteBrowser(startUri);
-            _dtudoSiteBrowser.FormClosed += DtudoSiteBrowser_FormClosed;
-            _dtudoSiteBrowser.Show(this);
-        }
-        else
-        {
-            if (_dtudoSiteBrowser.WindowState == FormWindowState.Minimized)
-                _dtudoSiteBrowser.WindowState = FormWindowState.Normal;
+        OpenDtudoWebViewTab(startUri);
+    }
 
-            _dtudoSiteBrowser.Activate();
-        }
+    // Cada página web ocupa a sua própria aba; "Nova guia" e links que abrem nova janela criam outra aba.
+    private void OpenDtudoWebViewTab(Uri uri)
+    {
+        if (IsDisposed)
+            return;
 
-        await _dtudoSiteBrowser.OpenNewTabAsync(startUri, cancellationToken);
+        var key = $"{DtudoWebViewTabKeyPrefix}{++_webViewTabCounter}";
+        _workspace.OpenOrActivate(key, () =>
+        {
+            var page = new TabPage("DtudoSite")
+            {
+                Name = key,
+                ToolTipText = uri.AbsoluteUri,
+                ImageIndex = _workspace.GetImageIndex("DtudoWebView", Properties.Resources.DtudoFireLogo)
+            };
+            var webView = new FUC_DtudoWebView(uri);
+            webView.TitleChanged += (_, e) =>
+            {
+                page.Text = e.Title;
+                page.ToolTipText = e.ToolTip;
+            };
+            webView.NewTabRequested += (_, target) => OpenDtudoWebViewTab(target);
+            page.Controls.Add(webView);
+            return page;
+        });
     }
 
     private bool TryGetDtudoSiteStartUri(out Uri startUri)
@@ -593,12 +664,6 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             DarkMessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 
-    private void DtudoSiteBrowser_FormClosed(object? sender, FormClosedEventArgs e)
-    {
-        if (ReferenceEquals(sender, _dtudoSiteBrowser))
-            _dtudoSiteBrowser = null;
-    }
-
     private void Frm_WinAppDtudo_FormClosing(object? sender, FormClosingEventArgs e)
     {
         _formClosingCancellationTokenSource.Cancel();
@@ -608,7 +673,10 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     {
         _healthRefreshTimer.Stop();
         _healthRefreshTimer.Dispose();
-        _healthDashboard?.Close();
+        _myAnimesController.AnaliseEmAndamentoAlterada -= MyAnimesController_AnaliseEmAndamentoAlterada;
+        _myAnimesController.Dispose();
+        _workspace.CloseAll();
+        _workspace.Dispose();
         _healthNotificationService.Dispose();
         _healthMonitoringService.Dispose();
         _dtudoSiteStartupService.Dispose();
@@ -616,61 +684,8 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         _identityAuthenticationService.Dispose();
     }
 
-    private void Btn_MyAnimesForm_Click(object sender, EventArgs e)
-    {
-        Frm_MyAnimes formMyAnimes = new(_identityAuthenticationService);
-        formMyAnimes.Show();
-    }
-
-    private void Btn_NinoTIForm_Click(object sender, EventArgs e)
-    {
-        Frm_NinoTI formNinoTI = new();
-        formNinoTI.Show();
-    }
-
-    private void Btn_MyMusicxForm_Click(object sender, EventArgs e)
-    {
-        Frm_MyMusicX formMyMusicX = new();
-        formMyMusicX.Show();
-    }
-
-    private void InitializeMainLayout()
-    {
-        ConfigureLayoutControl(Lbl_Titulo);
-        ConfigureLayoutControl(Btn_DtudoSite);
-        ConfigureLayoutControl(Btn_MyAnimesForm);
-        ConfigureLayoutControl(Btn_MyMusicxForm);
-        ConfigureLayoutControl(Btn_NinoTIForm);
-        ConfigureLayoutControl(Lbl_DescricaoMyMusicX);
-        ConfigureLayoutControl(Lbl_DescricaoMyAnimes);
-        ConfigureLayoutControl(label1);
-        ConfigureLayoutControl(label2);
-
-        Resize += Frm_WinAppDtudo_Resize;
-        DpiChanged += Frm_WinAppDtudo_DpiChanged;
-        Shown += Frm_WinAppDtudo_Shown;
-        ApplyMainLayout();
-    }
-
-    private static void ConfigureLayoutControl(Control control)
-    {
-        control.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-        control.Dock = DockStyle.None;
-    }
-
-    private void Frm_WinAppDtudo_Resize(object? sender, EventArgs e)
-    {
-        ApplyMainLayout();
-    }
-
-    private void Frm_WinAppDtudo_DpiChanged(object? sender, EventArgs e)
-    {
-        ApplyMainLayout();
-    }
-
     private async void Frm_WinAppDtudo_Shown(object? sender, EventArgs e)
     {
-        ApplyMainLayout();
         try
         {
             await _apiFileStorageStartupService.EnsureReadyAsync(
@@ -684,59 +699,4 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             StartupDiagnostics.Record("ApiFileStorage startup", exception);
         }
     }
-
-    private void ApplyMainLayout()
-    {
-        if (_isApplyingMainLayout || IsDisposed || ClientSize.Width <= 0 || ClientSize.Height <= 0)
-            return;
-
-        _isApplyingMainLayout = true;
-        SuspendLayout();
-        try
-        {
-            var contentTop = Mnu_Principal.Visible ? Mnu_Principal.Bottom : 0;
-            var contentWidth = ClientSize.Width;
-            var contentHeight = Math.Max(1, ClientSize.Height - contentTop);
-            var scale = Math.Min(contentWidth / DesignWidth, contentHeight / DesignContentHeight);
-            var offsetX = (contentWidth - DesignWidth * scale) / 2F;
-            var offsetY = contentTop + (contentHeight - DesignContentHeight * scale) / 2F;
-
-            SetScaledBounds(Lbl_Titulo, 801F, 12F, 296F, 90F, scale, offsetX, offsetY);
-            SetScaledBounds(Btn_DtudoSite, 280F, 85F, 242F, 86F, scale, offsetX, offsetY);
-            SetScaledBounds(label2, 333F, 51F, 157F, 42F, scale, offsetX, offsetY);
-            SetScaledBounds(Btn_NinoTIForm, 1044F, 233F, 144F, 120F, scale, offsetX, offsetY);
-            SetScaledBounds(label1, 1058F, 204F, 111F, 37F, scale, offsetX, offsetY);
-            SetScaledBounds(Btn_MyMusicxForm, 86F, 322F, 85F, 213F, scale, offsetX, offsetY);
-            SetScaledBounds(Lbl_DescricaoMyMusicX, 42F, 537F, 160F, 53F, scale, offsetX, offsetY);
-            SetScaledBounds(Btn_MyAnimesForm, 532F, 420F, 272F, 232F, scale, offsetX, offsetY);
-            SetScaledBounds(Lbl_DescricaoMyAnimes, 588F, 385F, 157F, 46F, scale, offsetX, offsetY);
-        }
-        finally
-        {
-            ResumeLayout(false);
-        }
-
-        _isApplyingMainLayout = false;
-    }
-
-    private static void SetScaledBounds(
-        Control control,
-        float x,
-        float y,
-        float width,
-        float height,
-        float scale,
-        float offsetX,
-        float offsetY)
-    {
-        var bounds = new Rectangle(
-            (int)Math.Round(offsetX + x * scale),
-            (int)Math.Round(offsetY + y * scale),
-            Math.Max(1, (int)Math.Round(width * scale)),
-            Math.Max(1, (int)Math.Round(height * scale)));
-
-        if (control.Bounds != bounds)
-            control.Bounds = bounds;
-    }
-
 }

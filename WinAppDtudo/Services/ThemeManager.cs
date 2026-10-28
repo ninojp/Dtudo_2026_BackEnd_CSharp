@@ -155,7 +155,7 @@ public static class ThemeManager
     public static void ApplyDarkModeToTabPage(TabPage tabPage)
     {
         tabPage.UseVisualStyleBackColor = false;
-        tabPage.BackColor = DarkModeColors.ActiveTabBackgroundColor;
+        tabPage.BackColor = DarkTabControl.ResolvePageSurfaceColor(tabPage);
         tabPage.ForeColor = GetTextColor(tabPage);
         HookDynamicChildren(tabPage);
         ApplyDarkModeToControls(tabPage.Controls);

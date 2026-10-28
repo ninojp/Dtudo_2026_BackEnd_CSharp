@@ -11,8 +11,14 @@ public class CustomFormNoBorder : Form
 {
     private const int WM_NCHITTEST = 0x84;
     private const int WM_NCLBUTTONDOWN = 0xA1;
-    private const int WM_SHOWWINDOW = 0x0018;
     private const int WM_EXITSIZEMOVE = 0x0232;
+    private const int WM_GETMINMAXINFO = 0x0024;
+    private const int WM_WINDOWPOSCHANGED = 0x0047;
+    private const int ParkedWindowCoordinate = -30000;
+    private const int WS_MAXIMIZEBOX = 0x00010000;
+    private const int WS_MINIMIZEBOX = 0x00020000;
+    private const int WS_SYSMENU = 0x00080000;
+    private const int MONITOR_DEFAULTTONEAREST = 2;
     private const int HT_CAPTION = 0x2;
     private const int HTCLIENT = 0x1;
     private const int HTLEFT = 0xA;
@@ -27,6 +33,7 @@ public class CustomFormNoBorder : Form
     private const int BorderThickness = 1;
 
     private MenuStrip? _dragMenuStrip;
+    private IntPtr _lastVisibleMonitor;
     private bool _formDragHandlerAttached;
 
     public CustomFormNoBorder()
@@ -38,6 +45,18 @@ public class CustomFormNoBorder : Form
             | ControlStyles.OptimizedDoubleBuffer
             | ControlStyles.AllPaintingInWmPaint,
             true);
+    }
+
+    protected override CreateParams CreateParams
+    {
+        get
+        {
+            var createParams = base.CreateParams;
+            // Sem borda e sem ControlBox o WinForms remove estes estilos, e o botao da barra de tarefas deixa de
+            // minimizar/restaurar a janela ao ser clicado.
+            createParams.Style |= WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
+            return createParams;
+        }
     }
 
     [DllImport("user32.dll")]
@@ -164,6 +183,20 @@ public class CustomFormNoBorder : Form
 
     protected override void WndProc(ref Message m)
     {
+        if (m.Msg == WM_GETMINMAXINFO)
+        {
+            base.WndProc(ref m);
+            LimitMaximizedBoundsToWorkingArea(m.HWnd, m.LParam);
+            return;
+        }
+
+        if (m.Msg == WM_WINDOWPOSCHANGED)
+        {
+            base.WndProc(ref m);
+            RememberVisibleMonitor(m.HWnd);
+            return;
+        }
+
         if (m.Msg == WM_EXITSIZEMOVE)
         {
             base.WndProc(ref m);
@@ -189,69 +222,7 @@ public class CustomFormNoBorder : Form
             return;
         }
 
-        if (m.Msg == WM_SHOWWINDOW && this is Frm_MyAnimes myAnimesForm)
-        {
-            LogWindowHandleDiagnostics(myAnimesForm);
-
-            try
-            {
-                base.WndProc(ref m);
-            }
-            catch (Exception exception)
-            {
-                Services.StartupDiagnostics.Record("Frm_MyAnimes WM_SHOWWINDOW", exception);
-                throw;
-            }
-
-            Services.StartupDiagnostics.Mark(
-                $"MyAnimes WM_SHOWWINDOW base returned visible={myAnimesForm.Visible} handleCreated={myAnimesForm.IsHandleCreated} bounds={myAnimesForm.Bounds} windowState={myAnimesForm.WindowState}");
-            return;
-        }
-
         base.WndProc(ref m);
-    }
-
-    private static void LogWindowHandleDiagnostics(Form form)
-    {
-        LogControlHandle("MyAnimes", form);
-
-        if (form.Owner is not null)
-            LogControlHandle("Owner", form.Owner);
-
-        LogChildHandles(form);
-    }
-
-    private static void LogChildHandles(Control parent)
-    {
-        foreach (Control child in parent.Controls)
-        {
-            LogControlHandle("Child", child);
-            LogChildHandles(child);
-        }
-    }
-
-    private static void LogControlHandle(string role, Control control)
-    {
-        if (!control.IsHandleCreated)
-        {
-            Services.StartupDiagnostics.Mark(
-                $"HWND_DIAG role={role} control={control.GetType().FullName} name={control.Name} handle=not-created");
-            return;
-        }
-
-        var handle = control.Handle;
-        var isWindow = IsWindow(handle);
-        var parentHandle = isWindow ? GetParent(handle) : IntPtr.Zero;
-        var dpi = isWindow ? GetDpiForWindow(handle) : 0;
-        uint processId = 0;
-        uint threadId = 0;
-        if (isWindow)
-            threadId = GetWindowThreadProcessId(handle, out processId);
-
-        Services.StartupDiagnostics.Mark(
-            $"HWND_DIAG role={role} control={control.GetType().FullName} name={control.Name} " +
-            $"handle=0x{handle.ToInt64():X} valid={isWindow} parent=0x{parentHandle.ToInt64():X} " +
-            $"dpi={dpi} thread={threadId} process={processId}");
     }
 
     protected override void Dispose(bool disposing)
@@ -344,24 +315,133 @@ public class CustomFormNoBorder : Form
             | RedrawWindowFlags.Frame);
     }
 
+    // Janelas sem borda maximizam sobre a tela inteira, cobrindo a barra de tarefas; aqui o tamanho e a posicao
+    // maximizados passam a ser a area de trabalho do monitor onde a janela esta.
+    private void LimitMaximizedBoundsToWorkingArea(IntPtr windowHandle, IntPtr minMaxInfoPointer)
+    {
+        var monitor = ResolveMonitor(windowHandle);
+        var monitorInfo = new MonitorInfo { Size = Marshal.SizeOf<MonitorInfo>() };
+        if (monitor == IntPtr.Zero || !GetMonitorInfo(monitor, ref monitorInfo))
+            return;
+
+        var minMaxInfo = Marshal.PtrToStructure<MinMaxInfo>(minMaxInfoPointer);
+        var work = monitorInfo.WorkArea;
+        var bounds = monitorInfo.MonitorArea;
+        minMaxInfo.MaxPosition = new NativePoint { X = work.Left - bounds.Left, Y = work.Top - bounds.Top };
+        minMaxInfo.MaxSize = new NativePoint { X = work.Right - work.Left, Y = work.Bottom - work.Top };
+        minMaxInfo.MaxTrackSize = minMaxInfo.MaxSize;
+        Marshal.StructureToPtr(minMaxInfo, minMaxInfoPointer, false);
+    }
+
+    // Minimizada, a janela fica estacionada em (-32000,-32000) (tambem durante a restauracao, quando ela ja nao e
+    // "iconic" mas ainda nao foi reposicionada) e o monitor "mais proximo" seria qualquer um; ao restaurar a partir
+    // da barra de tarefas isso fazia a janela maximizada voltar com a area de trabalho de outro monitor.
+    // Nesse caso vale o ultimo monitor em que a janela esteve visivel.
+    private IntPtr ResolveMonitor(IntPtr windowHandle)
+    {
+        if (IsParked(windowHandle))
+        {
+            if (_lastVisibleMonitor != IntPtr.Zero)
+                return _lastVisibleMonitor;
+
+            var placement = new WindowPlacement { Length = Marshal.SizeOf<WindowPlacement>() };
+            if (GetWindowPlacement(windowHandle, ref placement))
+            {
+                var normalPosition = placement.NormalPosition;
+                var monitorFromPlacement = MonitorFromRect(ref normalPosition, MONITOR_DEFAULTTONEAREST);
+                if (monitorFromPlacement != IntPtr.Zero)
+                    return monitorFromPlacement;
+            }
+        }
+
+        return MonitorFromWindow(windowHandle, MONITOR_DEFAULTTONEAREST);
+    }
+
+    private void RememberVisibleMonitor(IntPtr windowHandle)
+    {
+        if (IsParked(windowHandle))
+            return;
+
+        var monitor = MonitorFromWindow(windowHandle, MONITOR_DEFAULTTONEAREST);
+        if (monitor != IntPtr.Zero)
+            _lastVisibleMonitor = monitor;
+    }
+
+    private bool IsParked(IntPtr windowHandle) =>
+        WindowState == FormWindowState.Minimized
+        || IsIconic(windowHandle)
+        || (GetWindowRect(windowHandle, out var rect) && rect.Left <= ParkedWindowCoordinate);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetWindowRect(IntPtr hWnd, out NativeRect rect);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hWnd, int flags);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromRect(ref NativeRect rect, int flags);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsIconic(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetWindowPlacement(IntPtr hWnd, ref WindowPlacement placement);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo monitorInfo);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativePoint
+    {
+        public int X;
+        public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WindowPlacement
+    {
+        public int Length;
+        public int Flags;
+        public int ShowCommand;
+        public NativePoint MinPosition;
+        public NativePoint MaxPosition;
+        public NativeRect NormalPosition;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MinMaxInfo
+    {
+        public NativePoint Reserved;
+        public NativePoint MaxSize;
+        public NativePoint MaxPosition;
+        public NativePoint MinTrackSize;
+        public NativePoint MaxTrackSize;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct MonitorInfo
+    {
+        public int Size;
+        public NativeRect MonitorArea;
+        public NativeRect WorkArea;
+        public int Flags;
+    }
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool RedrawWindow(
         IntPtr hWnd,
         IntPtr lprcUpdate,
         IntPtr hrgnUpdate,
         RedrawWindowFlags flags);
-
-    [DllImport("user32.dll")]
-    private static extern bool IsWindow(IntPtr hWnd);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetParent(IntPtr hWnd);
-
-    [DllImport("user32.dll")]
-    private static extern uint GetDpiForWindow(IntPtr hWnd);
-
-    [DllImport("user32.dll")]
-    private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
     [Flags]
     private enum RedrawWindowFlags : uint

@@ -1,8 +1,11 @@
 using WinAppDtudo.Services;
 
-namespace WinAppDtudo.Forms;
+namespace WinAppDtudo.FormsUC;
 
-public sealed class Frm_HealthDashboard : Form
+/// <summary>
+/// Conteudo da aba "Painel de Saude": estado operacional das fontes monitoradas e alertas.
+/// </summary>
+public sealed class FUC_PainelSaude : UserControl
 {
     private readonly WinAppHealthMonitoringService _healthService;
     private readonly DataGridView _healthGrid = new();
@@ -12,21 +15,15 @@ public sealed class Frm_HealthDashboard : Form
     private readonly CancellationTokenSource _closingCancellation = new();
     private bool _isRefreshing;
 
-    public Frm_HealthDashboard(WinAppHealthMonitoringService healthService)
+    public FUC_PainelSaude(WinAppHealthMonitoringService healthService)
     {
         _healthService = healthService ?? throw new ArgumentNullException(nameof(healthService));
-        Text = "Painel de saude e alertas";
-        StartPosition = FormStartPosition.CenterParent;
-        ClientSize = new Size(1280, 760);
-        MinimumSize = new Size(960, 560);
-        AutoScaleMode = AutoScaleMode.Dpi;
-        FormBorderStyle = FormBorderStyle.Sizable;
-        MaximizeBox = true;
-        MinimizeBox = false;
+        Name = "FUC_PainelSaude";
+        Dock = DockStyle.Fill;
+        MinimumSize = new Size(640, 360);
 
         BuildLayout();
-        ThemeManager.ApplyDarkModeToForm(this);
-        FormClosed += (_, _) => _closingCancellation.Cancel();
+        ThemeManager.ApplyDarkModeToUserControl(this);
     }
 
     public async Task RefreshAsync(CancellationToken cancellationToken = default)

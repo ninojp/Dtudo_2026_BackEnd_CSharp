@@ -57,7 +57,7 @@
 ### Execucao anterior (Etapa 28)
 
 - Objetivo: executar exclusivamente a Etapa 28 no Development local, sem iniciar a Etapa 29.
-- Evidencia principal: `docs/security/ETAPA_28_PAINEL_SAUDE_ALERTAS.md`, `WinAppDtudo/Services/WinAppHealthMonitoringService.cs`, `WinAppDtudo/Forms/Frm_HealthDashboard.cs` e `ApiFileStorage/Controllers/FileStorageHealthController.cs`.
+`WinAppDtudo/FormsUC/FUC_PainelSaude.cs`
 - Arquivos alterados neste checkpoint: probes autenticados e estados do WinApp; configuracao do escopo `health.read`; endpoint operacional restrito da ApiFileStorage; painel Dark Mode, menu, polling, NotifyIcon e testes. Nenhum banco, migration, Production, certificado real ou segredo foi alterado.
 - Consultas: Identity `/health/ready`, ApiMyAnimes `/apiLocal/Health`, ApiMyAnimeList `/ApiMyAnimeList/health` e ApiFileStorage `/api/file-storage/health` usam bearer da sessao WinApp e timeout por fonte. O storage devolve somente estado, bytes, scanner e contagens; caminhos fisicos nao sao serializados.
 - Alertas: o painel exibe servicos, sessao/scanner, certificados TLS, espaco, backup diario e quarentena. A notificacao Windows deduplica somente estados criticos e usa texto generico; timeout ou fonte indisponivel vira estado local e nao encerra o WinApp.

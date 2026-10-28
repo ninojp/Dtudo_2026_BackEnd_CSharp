@@ -211,6 +211,9 @@
   <data name="DtudoFireLogo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DtudoFireLogo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DtudoSiteShortcut" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DtudoSiteShortcut.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="animes" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animes.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

@@ -79,9 +79,49 @@ O WinApp le `WinAppDtudo/appsettings.json` e tambem aceita variaveis:
 - `DTUDO_API_MYANIMELIST_AUTOSTART_URL`
 - `DTUDO_ALLOW_INVALID_CERTIFICATES`
 
+### Janela principal com abas
+
+O WinApp usa uma unica janela principal (`Frm_WinAppDtudo`). As funcionalidades abrem como abas do
+`Tbc_Principal` (`DarkTabControl`), cada uma com seu proprio `UserControl`, em vez de janelas separadas.
+
+- **Inicio** e uma aba de boas-vindas (`PinnedTabPage`, fundo preto, sem botao de fechar e nao arrastavel).
+  Aparece somente enquanto nao ha outra aba aberta: abrir qualquer aba a remove e fechar a ultima aba
+  (ou desconectar) a exibe novamente (`TabWorkspace.SetHomePage`). Contem o fundo e os atalhos
+  (`FUC_Inicio`: DtudoSite, MyAnimes, MyMusicX e Nino T.I). Antes de conectar, as imagens ficam em
+  preto e branco e nao podem ser clicadas; apos conectar os atalhos sao liberados e voltam a ser coloridos
+  (`FUC_Inicio.DefinirAcessoLiberado`).
+- **Janela maximizada** respeita a area de trabalho do monitor (nao cobre a barra de tarefas do
+  Windows 11) e o clique no icone da barra de tarefas minimiza/restaura a janela
+  (`CustomFormNoBorder`: estilos `WS_MINIMIZEBOX`/`WS_SYSMENU` e tratamento de `WM_GETMINMAXINFO`).
+  Ao restaurar a janela minimizada, o estado e o tamanho anteriores voltam no mesmo monitor
+  (enquanto minimizada, usa-se o ultimo monitor em que ela esteve visivel).
+- **MyAnimes** e um menu com os submenus **Buscar Anime** e **Analizar Pastas**. Buscar Anime abre a
+  aba de busca; Analizar Pastas executa a analise com progresso no rodape (`Ssb_StatusRodape`) e e
+  bloqueada enquanto estiver em andamento. Detalhes, edicao, MyAnime (`My #id`) e estrutura de pastas
+  tambem sao abas (lista plana, sem abas aninhadas), orquestradas por
+  [`MyAnimesTabController`](WinAppDtudo/Services/MyAnimesTabController.cs).
+- **Menu principal**: `Arquivo`, `MyAnimes`, `DtudoSite`, `MyMusicX` e `NinoTI`.
+  - **Arquivo** (submenu): Monitoramento local, Cadastrar Usuario, Painel de Saude, Conectar, Desconectar e Sair.
+  - **DtudoSite** (submenu): **DtudoWebView2**. O atalho DtudoSite da aba Inicio continua abrindo o Google Chrome.
+- **Monitoramento local**, **Nino T.I**, **MyMusicX**, **Painel de Saude** e **Administracao de Usuarios**
+  abrem como abas unicas (`FUC_Monitoramento`, `FUC_NinoTI`, `FUC_MyMusicX`, `FUC_PainelSaude`,
+  `FUC_IdentityAdministration`); clicar de novo no menu reativa a aba existente. O Painel de Saude recebe o
+  ultimo estado e as atualizacoes periodicas enquanto estiver aberto.
+- **DtudoWebView2** abre cada pagina web em uma aba propria (`FUC_DtudoWebView`, WebView2 com Voltar, Avancar,
+  Atualizar e Nova guia). O titulo da aba acompanha o titulo do documento; **Nova guia** e links que abrem
+  nova janela criam outra aba da janela principal. Fechar a aba descarta o WebView2.
+- O fechamento de abas fica somente no `X` da aba, no clique do botao do meio e no
+  menu de contexto (botao direito): Fechar aba, Fechar outras abas, Fechar abas a direita, a esquerda
+  e Fechar todas as abas (a aba Inicio nao possui comandos de fechamento).
+- `TabWorkspace` ([`Controls/TabWorkspace.cs`](WinAppDtudo/Controls/TabWorkspace.cs)) e o helper
+  reutilizavel: `OpenOrActivate(chave, fabrica)` reaproveita a aba pela chave (`Name`), e fechar uma aba
+  descarta o controle e cancela suas operacoes. Novas funcionalidades devem usar esse helper.
+- Continuam como dialogos modais (nao sao funcionalidades): importacao Discogs, progresso de operacao,
+  confirmacao de desconexao (`Frm_Questao`) e login.
+
 ### Busca unificada de animes no WinApp
 
-Na janela MyAnimes, o menu **Buscar Anime** abre uma unica aba de busca. Clicar novamente no
+Na janela principal, o menu **MyAnimes > Buscar Anime** abre uma unica aba de busca. Clicar novamente no
 menu seleciona a aba existente e preserva seu texto, resultados e consulta atual.
 
 - **Busca DB Local** consulta somente a `ApiMyAnimes`, por titulo. Titulos numericos como
@@ -139,7 +179,7 @@ sao registradas pelo mecanismo existente de diagnostico de inicializacao.
 Clique e segure no cabecalho fora do `X`, arraste ate a posicao indicada e solte
 para reorganizar as abas. O limite de movimento do Windows evita iniciar arraste
 num clique simples. A movimentacao permanece dentro da mesma janela e preserva
-os controles, a selecao e os dados carregados; o `X` e os menus de fechamento
+os controles, a selecao e os dados carregados; o `X` e o menu de contexto de fechamento
 continuam funcionando sobre a ordem atual.
 
 Os dados do anime (titulos, estatisticas, valores e descricoes) seguem a cor da
@@ -198,7 +238,7 @@ Os projetos de teste continuam somente locais, conforme a convencao de [`.gitign
 
 ```powershell
 dotnet test .\tests\WinAppDtudo.Tests\WinAppDtudo.Tests.csproj --no-restore --filter "FullyQualifiedName~AnimeSearchLayoutTests|FullyQualifiedName~AnimeSearchSourceTests|FullyQualifiedName~AnimeSearchNavigationTests|FullyQualifiedName~UnifiedAnimeSearchTests|FullyQualifiedName~ApiMyAnimesServiceTests"
-dotnet test .\tests\WinAppDtudo.Tests\WinAppDtudo.Tests.csproj --no-restore --filter "FullyQualifiedName~AnimeDetailLayoutTests|FullyQualifiedName~DarkTabControlTests|FullyQualifiedName~MyAnimesFormStartupTests"
+dotnet test .\tests\WinAppDtudo.Tests\WinAppDtudo.Tests.csproj --no-restore --filter "FullyQualifiedName~AnimeDetailLayoutTests|FullyQualifiedName~DarkTabControlTests|FullyQualifiedName~MyAnimesFormStartupTests|FullyQualifiedName~TabWorkspaceTests|FullyQualifiedName~MainWindowTabsTests"
 ```
 
 Os testes de detalhes verificam as duas fontes, persistencia das cores, icones
@@ -211,9 +251,12 @@ assincrono, os cards em formato poster, a grade responsiva, a centralizacao do t
 selecionavel e o AutoScaleMode.None dos mini cards.
 Os testes de abas verificam largura real do conteudo, icones coloridos, arraste,
 limite de movimento, fechamento e preservacao dos controles e da selecao.
-Os testes de inicializacao abrem o formulario MyAnimes real com estilos
-visuais e Dark Mode nativo, verificam callbacks da UI, o menu Buscar Anime
-e a estabilidade do handle apos reaplicacoes de tema e configuracao.
+Os testes de inicializacao abrem e fecham a aba de busca repetidamente num
+`DarkTabControl` com handle real e Dark Mode nativo, verificam callbacks da UI
+e a estabilidade do handle apos reaplicacoes de tema e configuracao. Os testes de
+`TabWorkspace` e da janela principal cobrem reaproveitamento por chave, aba Inicio fixa,
+comandos de fechamento, selecao apos fechar, icones do cabecalho, submenus de MyAnimes e
+os atalhos de `FUC_Inicio`.
 
 ## MyMusicX no DtudoSite
 

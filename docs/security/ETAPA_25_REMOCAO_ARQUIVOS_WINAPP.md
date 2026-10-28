@@ -38,7 +38,7 @@ Concluida no Development local em 2026-08-07. A Etapa 26 nao foi iniciada.
 - `WinAppDtudo/Services/CriadorDeEstruturas.cs`
 - `WinAppDtudo/Services/ImageLoaderService.cs`
 - `WinAppDtudo/Services/AppConfigurationService.cs`
-- `WinAppDtudo/Forms/Frm_MyAnimes.cs`
+- `WinAppDtudo/Services/MyAnimesTabController.cs`
 - `WinAppDtudo/FormsUC/FUC_MyAnimeDetalhes.cs`
 - `WinAppDtudo/appsettings.json`
 - `ApiIdentity/appsettings.json`

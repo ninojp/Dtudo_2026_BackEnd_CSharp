@@ -38,34 +38,21 @@ Atualmente (03/09/2026) foram adicionados (através de I.A) diversos novos proje
 
 ------------------------------------------------------------------------------------------------------------------
 
-TROCAR TODOS OS MINI CARDS POR CARDS
+ok está funcionando.
+Agora quero que migre MyMusicX, Painel de Saúde, DtudoWebView2 e administração de usuários para abas.  
+Atualmente o menu principal é: monitoramento local, Arquivo, MyAnimes, MyMusicX, NinoTI, DtudoWebView.  
+Agora quero que seja: Arquivo (subMenu, monitoramento local), MyAnimes, DtudoSite (subMenu, DtudoWebView) MyMusicX, NinoTI
 
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Após logar no WinAppDtudo, e acessar o Form MyAnimes, Clicando no menu "Buscar Anime", será aberta a aba unificada de busca, onde o usuário poderá escolher entre buscar no DB Local ou na ApiMyAnimeList. Após fazer uma busca, temos os Cards exibindo os resultados correspondentes à fonte selecionada, após clicar em um Card, será aberta a aba de detalhes do anime clicado (cada aba tem seu próprio UC, mas um layout semelhante).  
-
-Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
-Tem uma parte importante que faz a gestão das coleções locais, MyAnimes (coleção completa de animes relacionados entre si), ou seja analiza e monitora meus arquivos locais (estruturas de pastas e arquivos, neste computador local), garantindo que todas as alterações e adições sejam devidamente registradas e refletidas na coleção (banco de dados local).
-Atualmente minha estrutura local (no sistema) estava organizada assim:
-Disco 2 (E:) ANIMEs (E:\.Dots,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R)
-Disco 0 (H:) ANIMEs2 (H:\(Animex\.Dots,A,B,C,D,E,F... todas as letras),S,T,U,V,X,W,Y,Z)
-
-Agora adicionei um novo HD e preciso modificar (já modifiquei as pastas, já organizei as letras nos discos), no meu sistema, os novos endereços (apontamentos) das minhas coleções locais para incluir este novo disco e letras modificadas de lugar (HD). Agora estão assim:
-Disco 2 (E:) ANIMEs (E:\.Dots,A,B,C,D,E,F,G,H,I,J,K,L)
-Disco 0 (H:) ANIMEs2 (H:\M,N,O,P,Q,R,S,T,U,V,X,W,Y,Z)
-Disco 1 (G:) ANIMEsTemp (G:\Animex\.Dots,A,B,C... todas as letras)
-
-Na pasta Docs estão armazenados os arquivos de documentação do projeto, "Monitoramento das colecoes" (atualize este arquivo conforme necessário) locais e demais informações relevantes para o desenvolvimento e manutenção do sistema.
-
-Na verdade não deveria ter um arquivo Script "Sync-MyAnimeMonitoringLocations.ps1", rodanda numa pasta separada, fora de um projeto C#!
-Este código deveria estar dentro de uma estrutura de pastas dentro de uma Api (no meu  ver seria dentro da ApiFileStorage)
-
-RAFAÇA TUDO QUE FOR NECESSÁRIO!
 
 COMO SEMPRE! VOU REPETIR!
 Quero uma implementação PROFISSIONAL, COMPLETA E ROBUSTA (mesmo que precise de mais tempo ou reformular grandes partes do projeto, me avise sobre as alterações necessárias neste caso).
 Implemente ou modifique a documentação do projeto conforme necessário.
 Se tiver qualquer duvida me pergunte antes de começar a implementar.
 
+TROCAR TODOS OS MINI CARDS POR CARDS
+
+Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
+Após logar no WinAppDtudo, e acessar o Form MyAnimes, Clicando no menu "Buscar Anime", será aberta a aba unificada de busca, onde o usuário poderá escolher entre buscar no DB Local ou na ApiMyAnimeList. Após fazer uma busca, temos os Cards exibindo os resultados correspondentes à fonte selecionada, após clicar em um Card, será aberta a aba de detalhes do anime clicado (cada aba tem seu próprio UC, mas um layout semelhante).  
 
 Ao clicar em um Card, abre uma nova ABA (UC) de detalhes do anime clicado, nessa Aba "detalhes do anime" temos o botão "Savar Como MyAnime" que ao ser clicado Salvaos dados da coleção MyAnime (MyAnime, representa a coleção completa de IDs ou seja TODOS os animes relacionados entre si).
 
@@ -74,9 +61,10 @@ https://myanimelist.net/anime/64008 NÃO APARECE A IMAGEM CAPA
 ==========================================================
 ESTÁ É A PARTE MAIS IMPORTANTE DE TUDO QUE ESTOU CRIANDO, LOGO JAMAIS, DE FORMA ALGUMA DEVE SER FEITO QUALQUER TIPO DE ALTERAÇÃO OU MODIFICAÇÃO NAS MINHAS ESTRUTURAS DE DADOS LOCAIS, DEVE SER APENAS LEITURA E MONITORAMENTO.
 
-Agora adicionei um novo HD e preciso modificar os endereços (apontamentos) das minhas coleções locais para incluir este novo disco. Agora as ficaram em apenas dois HDs.
-Disco 2 (E:) ANIMEs (E:\.Dots,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R)
-Disco 0 (H:) ANIMEs2 (H:\(Animex\.Dots,A,B,C,D,E,F... todas as letras),S,T,U,V,X,W,Y,Z)
+Agora adicionei um novo HD e preciso modificar (já modifiquei as pastas, já organizei as letras nos discos), no meu sistema, os novos endereços (apontamentos) das minhas coleções locais para incluir este novo disco e letras modificadas de lugar (HD). Agora estão assim:
+Disco 2 (E:) ANIMEs (E:\.Dots,A,B,C,D,E,F,G,H,I,J,K,L)
+Disco 0 (H:) ANIMEs2 (H:\M,N,O,P,Q,R,S,T,U,V,X,W,Y,Z)
+Disco 1 (G:) ANIMEsTemp (G:\Animex\.Dots,A,B,C... todas as letras)
 
 ===========================================================
 TODOS OS TEXTOS ABAIXO SÃO APENAS PARA USO PESSOAL E NÃO DEVEM SER USADOS POR NENHUMA I.A OU AGENTE DE I.A

@@ -1,8 +1,12 @@
+using WinAppDtudo.Forms;
 using WinAppDtudo.Services;
 
-namespace WinAppDtudo.Forms;
+namespace WinAppDtudo.FormsUC;
 
-public partial class Frm_MyMusicX : CustomFormNoBorder
+/// <summary>
+/// Conteudo da aba "MyMusicX": colecoes locais, migracao do JSON legado e acesso a busca Discogs.
+/// </summary>
+public sealed class FUC_MyMusicX : UserControl
 {
     private readonly WinAppAuthenticationService? _authenticationService;
     private readonly ApiMusicXService _apiMusicXService;
@@ -20,38 +24,22 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
     private bool _isRefreshing;
     private bool _isImporting;
 
-    public Frm_MyMusicX(
+    public FUC_MyMusicX(
         WinAppAuthenticationService? authenticationService = null,
         ApiMusicXService? apiMusicXService = null,
         LegacyMusicCollectionMigrationService? legacyMigrationService = null)
     {
-        InitializeComponent();
+        Name = "FUC_MyMusicX";
+        Dock = DockStyle.Fill;
         _authenticationService = authenticationService;
         _apiMusicXService = apiMusicXService ?? new ApiMusicXService(authenticationService);
         _legacyMigrationService = legacyMigrationService ?? new LegacyMusicCollectionMigrationService(_apiMusicXService);
         (_apiStatusLabel, _refreshButton, _importButton, _cancelImportButton, _dryRunCheckBox, _discogsButton, _collectionsListView, _operationLog) = CreateMusicSurface();
-        abrirToolStripMenuItem.Text = "Migrar JSON legado";
-        abrirToolStripMenuItem.Click += ImportLegacyButton_Click;
-        Load += Frm_MyMusicX_Load;
-        FormClosed += Frm_MyMusicX_FormClosed;
-        // Aplicar o tema Dark Mode ao formulário e seus componentes
-        ThemeManager.ApplyDarkModeToForm(this);
-        // Inicializa o formulário customizado sem barra de título
-        MenuStrip? menuStrip = this.Controls.OfType<MenuStrip>().FirstOrDefault();
-        if (menuStrip != null)
-        {
-            InitializeCustomFormNoBorder(menuStrip);
-            AddControlButtonsToMenuStrip(menuStrip);
-        }
-        else
-        {
-            InitializeCustomFormNoBorder();
-        }
-
-        Mnu_MenuMyMusiX.BringToFront();
+        Load += FUC_MyMusicX_Load;
+        ThemeManager.ApplyDarkModeToUserControl(this);
     }
 
-    private async void Frm_MyMusicX_Load(object? sender, EventArgs e)
+    private async void FUC_MyMusicX_Load(object? sender, EventArgs e)
     {
         await RefreshCollectionsAsync();
     }
@@ -71,7 +59,7 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         using var form = new Frm_DiscogsImport(
             _authenticationService,
             apiMusicXService: _apiMusicXService);
-        form.ShowDialog(this);
+        form.ShowDialog(FindForm());
     }
 
     private async Task RefreshCollectionsAsync()
@@ -117,7 +105,7 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         }
         catch (Exception exception)
         {
-            StartupDiagnostics.Record("Frm_MyMusicX leitura ApiMusicX", exception);
+            StartupDiagnostics.Record("FUC_MyMusicX leitura ApiMusicX", exception);
             _apiStatusLabel.Text = "ApiMusicX: falha inesperada.";
             AppendOperationLog("Falha inesperada registrada sem expor credenciais.");
         }
@@ -150,7 +138,7 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
             dialog.FileName = Path.GetFileName(defaultPath);
         }
 
-        if (dialog.ShowDialog(this) != DialogResult.OK)
+        if (dialog.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
         }
@@ -159,7 +147,7 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         if (!dryRun)
         {
             var confirmation = DarkMessageBox.Show(
-                this,
+                FindForm(),
                 "A importacao real enviara dados normalizados para a ApiMusicX. " +
                 "Nenhum arquivo de musica sera criado, movido ou excluido. Deseja continuar?",
                 "Confirmar importacao da Colecao",
@@ -455,7 +443,6 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         _discogsButton.Enabled = canStart;
         _dryRunCheckBox.Enabled = canStart;
         _cancelImportButton.Enabled = _isImporting;
-        abrirToolStripMenuItem.Enabled = canStart;
     }
 
     private static string? FindLegacyJsonPath()
@@ -475,30 +462,14 @@ public partial class Frm_MyMusicX : CustomFormNoBorder
         return null;
     }
 
-    private void Frm_MyMusicX_FormClosed(object? sender, FormClosedEventArgs e)
+    protected override void Dispose(bool disposing)
     {
-        _closingCancellationTokenSource.Cancel();
-        _migrationCancellationTokenSource?.Cancel();
+        if (disposing)
+        {
+            _closingCancellationTokenSource.Cancel();
+            _migrationCancellationTokenSource?.Cancel();
+        }
+
+        base.Dispose(disposing);
     }
-    //Menu Windows - Exibir janelas em cascata.
-    private void CascataToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        this.LayoutMdi(MdiLayout.Cascade);
-    }
-    //Menu Windows - Exibir janelas na horizontal.
-    private void HorizontalToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        this.LayoutMdi(MdiLayout.TileHorizontal);
-    }
-    //Menu Windows - Exibir janelas em vertical.
-    private void VerticalToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        this.LayoutMdi(MdiLayout.TileVertical);
-    }
-    //private void FormTestToolStripMenuItem_Click(object sender, EventArgs e)
-    //{
-    //    Frm_FormTest formTest = new();
-    //    formTest.MdiParent = this;
-    //    formTest.Show();
-    //}
 }

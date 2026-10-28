@@ -33,7 +33,7 @@ O grupo `/identity/admin` exige a permissao `identity.provision`. Cada mutacao t
 - sessao e dispositivo ativos;
 - grant de step-up para `identity.provision` no mesmo contexto.
 
-O formulario `Frm_IdentityAdministration` reutiliza a infraestrutura Dark Mode existente e oferece leitura de contas, papeis, permissoes, dispositivos e sessoes, alem de provisionamento, atribuicao de papel, bloqueio e revogacao.
+A aba de administracao `FUC_IdentityAdministration` (UserControl aberto pelo menu Arquivo > Cadastrar Usuario)
 
 ## Persistencia e revogacao
 

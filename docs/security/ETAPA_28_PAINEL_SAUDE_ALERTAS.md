@@ -15,7 +15,7 @@
   - `ApiFileStorage/api/file-storage/health`.
 - `health.read` foi incluido nos scopes do cliente WinApp e no seeder/configuracao do `ApiIdentity`. O health check anterior de `ApiMyAnimes` passou a reutilizar a sessao autenticada quando fornecida.
 - `FileStorageHealthService` expõe somente estado operacional, bytes de `DriveInfo`, reserva minima, estado de scanner e contagens de journals da quarentena/lixeira. A rota exige `permission:health.read` e scope `health.read` e nao devolve caminhos fisicos.
-- O painel `Frm_HealthDashboard` usa `ThemeManager`, `DarkModeColors`, `DataGridView` somente leitura, layout ancorado/dock e `AutoScaleMode.Dpi`. Exibe estados `Operacional`, `Aviso`, `Critico` e `Indisponivel`.
+- O painel `FUC_PainelSaude` (aba "Painel de Saude" da janela principal) usa
 - O formulario principal habilita o painel somente apos autenticacao, atualiza sob demanda e por timer de 60 segundos, e mantem cada fonte independente. `WindowsHealthNotificationService` usa `NotifyIcon`, deduplica a assinatura dos estados criticos e nao inclui detalhes sensiveis na mensagem.
 - O backup local usa `DTUDO_BACKUP_ROOT` ou configuracao externa, verifica manifesto, hash SHA-256, tipo e idade de 24 horas. Raiz ausente ou sem permissao e mostrada como indisponivel.
 

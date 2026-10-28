@@ -1,8 +1,11 @@
 using WinAppDtudo.Services;
 
-namespace WinAppDtudo.Forms;
+namespace WinAppDtudo.FormsUC;
 
-public sealed class Frm_IdentityAdministration : Form
+/// <summary>
+/// Conteudo da aba "Administracao de Usuarios": contas, roles, dispositivos e sessoes do Identity.
+/// </summary>
+public sealed class FUC_IdentityAdministration : UserControl
 {
     private readonly IdentityAdministrationApiClient _client;
     private readonly WinAppAuthenticationService _authenticationService;
@@ -19,21 +22,18 @@ public sealed class Frm_IdentityAdministration : Form
     private readonly CancellationTokenSource _closingCancellation = new();
     private bool _isLoading;
 
-    public Frm_IdentityAdministration(WinAppAuthenticationService authenticationService)
+    public FUC_IdentityAdministration(WinAppAuthenticationService authenticationService)
     {
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         _client = new IdentityAdministrationApiClient(authenticationService);
 
-        Text = "Administracao do Identity";
-        StartPosition = FormStartPosition.CenterParent;
-        ClientSize = new Size(1280, 780);
-        MinimumSize = new Size(960, 620);
-        AutoScaleMode = AutoScaleMode.Dpi;
+        Name = "FUC_IdentityAdministration";
+        Dock = DockStyle.Fill;
+        MinimumSize = new Size(640, 420);
 
         BuildLayout();
-        ThemeManager.ApplyDarkModeToForm(this);
+        ThemeManager.ApplyDarkModeToUserControl(this);
         Load += async (_, _) => await LoadDataAsync();
-        FormClosed += (_, _) => _closingCancellation.Cancel();
     }
 
     private void BuildLayout()
@@ -284,6 +284,7 @@ public sealed class Frm_IdentityAdministration : Form
             }
 
             DarkMessageBox.Show(
+                FindForm(),
                 "Conta criada com sucesso. A conta ja pode iniciar sessao com a senha informada.",
                 "Provisionamento concluido",
                 MessageBoxButtons.OK,
@@ -550,6 +551,11 @@ public sealed class Frm_IdentityAdministration : Form
 
     private void SetBusy(bool busy)
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+
         UseWaitCursor = busy;
         foreach (Control control in Controls)
         {
