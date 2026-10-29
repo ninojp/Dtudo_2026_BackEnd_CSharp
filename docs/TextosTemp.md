@@ -38,11 +38,29 @@ Atualmente (03/09/2026) foram adicionados (através de I.A) diversos novos proje
 
 ------------------------------------------------------------------------------------------------------------------
 
-ok está funcionando.
-Agora quero que migre MyMusicX, Painel de Saúde, DtudoWebView2 e administração de usuários para abas.  
-Atualmente o menu principal é: monitoramento local, Arquivo, MyAnimes, MyMusicX, NinoTI, DtudoWebView.  
-Agora quero que seja: Arquivo (subMenu, monitoramento local), MyAnimes, DtudoSite (subMenu, DtudoWebView) MyMusicX, NinoTI
+Agora eu preciso fazer 3 implementações importantes, mas estou em dúvida por onde começo, quero apenas uma opinião na ordem que devo começar e dicas para facilitar a implementação, que será TODA feita por I.A:
 
+1. Documentar toda solução e seus projetos, na pasta Docs, atualmente temos a documentação toda bagunçada, uma subpasta "security" com arquivos criados na implementação da parte de segurançao, 
+que agora devem ser reorganizados, classificados e separados.  
+Na pasta docs não quero mais subpastas apenas arquivos .md com a documentação ORGANIZADA por projetos, ou seja um arquivo .md para cada projeto e um .md para a as especificações da Solução (todo o projeto). 
+Meu arquivo TextosTemp.md deve permanecer intocado (não mexa, arquivo pessoal temporario, para lidar as I.As, apenas visualize se necessário).
+
+2. implementar um sistema que quando o usuario estiver dentro do site (para entrar no site, atualmente é obrigatório login), 
+na página que lista os cards dos animes, em todos os Cards apareça (no meio da lateral esquerda, flutuando sobre a imagem, em linha vertical)
+os NOVOS ICONES:
+ - Icone olho, representando se o anime já foi visto (assistido) por este usuario atual,
+icone na cor cinza para animes não visto, icone na cor azul para parcialmente visto e icone na cor verde para anime 100% visto (todos os episódios vistos).
+
+ - Icone pasta, representando se este anime consta (existe uma estrutura, pasta, subpastas e arquivos de video DENTRO) na minha estrutura de pastas e arquivos (atualmente já temos um sistema que relaciona minha estrutura de pastas locais (ApiFileStorage, minhas coleções de animes) ao meu banco de dados, ApiMyAnimes)
+icone na cor cinza para pasta do anime não existe ou não foi encontrada (préviamente registrada), icone na cor azul para parcialmente existente, 
+tem a estrutura de pastas, mas dentro das pastas não tem os arquivos de video, na mesma quantidade de episódios do anime atual (essa parte vai precisar ser toda elabora, na ApiFileStorage e),
+icone na cor VERDE para tem a estrutura de pastas, e dentro TEM as subpastas com todos os arquivos de video dentro, na mesma quantidade de episódios do anime atual
+
+ - Icone Gostei (mão com polegar para cima ou para baixo), detalhes serão passado depois na hora da implementação...
+
+ - Icone Play, para iniciar (reproduzir) a playlist com os episódios. apenas o icone na primeira etapa, esta função será implementada separadamente por ultimo.
+
+3. Atualmente meu front end DtudoSite, está feito em React, Vite, javaScript. Quero REFAZE-LO completamente em React, Next.Js, TypeScript. Mas quero manter toda mesma a logina e exatamente o mesmo visual, aparencia.
 
 COMO SEMPRE! VOU REPETIR!
 Quero uma implementação PROFISSIONAL, COMPLETA E ROBUSTA (mesmo que precise de mais tempo ou reformular grandes partes do projeto, me avise sobre as alterações necessárias neste caso).
@@ -50,6 +68,8 @@ Implemente ou modifique a documentação do projeto conforme necessário.
 Se tiver qualquer duvida me pergunte antes de começar a implementar.
 
 TROCAR TODOS OS MINI CARDS POR CARDS
+
+MONITORAMENTO LOCAL NÃO DEVE MAIS INICIAR AO ABRIR A ABA, DEVE SER INICIADO MANUALMENTE
 
 Neste meu projeto C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\
 Após logar no WinAppDtudo, e acessar o Form MyAnimes, Clicando no menu "Buscar Anime", será aberta a aba unificada de busca, onde o usuário poderá escolher entre buscar no DB Local ou na ApiMyAnimeList. Após fazer uma busca, temos os Cards exibindo os resultados correspondentes à fonte selecionada, após clicar em um Card, será aberta a aba de detalhes do anime clicado (cada aba tem seu próprio UC, mas um layout semelhante).  

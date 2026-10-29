@@ -54,7 +54,14 @@ export const useAuth = () => {
 
     useEffect(() => {
         const controller = new AbortController();
-        refreshSession(controller.signal).catch(() => undefined);
+        const carregar = async () => {
+            try {
+                await refreshSession(controller.signal);
+            } catch {
+                // Requisicao cancelada ao desmontar.
+            }
+        };
+        carregar();
 
         return () => controller.abort();
     }, [refreshSession]);

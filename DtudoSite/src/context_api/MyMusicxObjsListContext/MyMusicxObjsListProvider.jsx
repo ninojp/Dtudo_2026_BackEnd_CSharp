@@ -11,10 +11,7 @@ export default function MyMusicxObjsListProvider({ children }) {
     const [error, setError] = useState(null);
     const [totalCount, setTotalCount] = useState(0);
 
-    const fetchAllObjsMyMusicx = useCallback(async (signal) => {
-        setIsLoading(true);
-        setError(null);
-
+    const carregarColecoes = useCallback(async (signal) => {
         try {
             const response = await listAllMusicCollections({ signal });
             if (!signal?.aborted) {
@@ -41,12 +38,25 @@ export default function MyMusicxObjsListProvider({ children }) {
         }
     }, []);
 
+    const fetchAllObjsMyMusicx = useCallback((signal) => {
+        setIsLoading(true);
+        setError(null);
+        return carregarColecoes(signal);
+    }, [carregarColecoes]);
+
     useEffect(() => {
         const controller = new AbortController();
-        fetchAllObjsMyMusicx(controller.signal).catch(() => undefined);
+        const carregar = async () => {
+            try {
+                await carregarColecoes(controller.signal);
+            } catch {
+                // Requisicao cancelada ao desmontar.
+            }
+        };
+        carregar();
 
         return () => controller.abort();
-    }, [fetchAllObjsMyMusicx]);
+    }, [carregarColecoes]);
 
     return (
         <MyMusicxObjsListContext.Provider value={

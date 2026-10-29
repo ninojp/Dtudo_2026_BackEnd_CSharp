@@ -56,6 +56,12 @@ export default function AnimesDetalhes() {
     );
     const anime = animeDaLista || animeRemoto;
 
+    if (animeDaLista && (animeRemoto || isLoading || error)) {
+        setAnimeRemoto(null);
+        setIsLoading(false);
+        setError(null);
+    }
+
     const animesRelacionados = useMemo(() => obterAnimesRelacionados({
         animeAtual: anime,
         incluirAdultos: isAuthenticated,
@@ -73,14 +79,7 @@ export default function AnimesDetalhes() {
             return;
         }
 
-        if (animeDaLista) {
-            setAnimeRemoto(null);
-            setIsLoading(false);
-            setError(null);
-            return;
-        }
-
-        if (listaCarregando) return;
+        if (animeDaLista || listaCarregando) return;
 
         const controller = new AbortController();
         let ativo = true;

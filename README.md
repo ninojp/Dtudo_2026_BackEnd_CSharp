@@ -34,8 +34,6 @@ Tambem e possivel executar `npm run serv` diretamente na raiz; o wrapper local e
 Os scripts das APIs verificam os respectivos health checks antes de executar `dotnet run`.
 Se uma API ja estiver aberta, por exemplo pelo Visual Studio ou pelo WinApp, o script reaproveita a instancia existente e evita erro de porta ocupada.
 
-Scripts antigos baseados em `ApiNode` foram mantidos com prefixo `legacy:*`.
-
 Health checks locais:
 
 - `GET https://localhost:63980/apiLocal/Health`
@@ -102,7 +100,11 @@ O WinApp usa uma unica janela principal (`Frm_WinAppDtudo`). As funcionalidades 
   [`MyAnimesTabController`](WinAppDtudo/Services/MyAnimesTabController.cs).
 - **Menu principal**: `Arquivo`, `MyAnimes`, `DtudoSite`, `MyMusicX` e `NinoTI`.
   - **Arquivo** (submenu): Monitoramento local, Cadastrar Usuario, Painel de Saude, Conectar, Desconectar e Sair.
-  - **DtudoSite** (submenu): **DtudoWebView2**. O atalho DtudoSite da aba Inicio continua abrindo o Google Chrome.
+    **Cadastrar Usuario** abre (ou reativa) a aba de Administracao de Usuarios ja na secao **Contas**, com o foco
+    no formulario de provisionamento (a mesma funcionalidade protegida por TOTP; nao existe mais um formulario
+    separado de cadastro).
+  - **DtudoSite** (submenu): **DtudoWebView2** (abre o site em uma aba) e **Site no Navegador** (mesmo
+    comportamento do atalho DtudoSite da aba Inicio: sobe os servicos locais e abre o Google Chrome).
 - **Monitoramento local**, **Nino T.I**, **MyMusicX**, **Painel de Saude** e **Administracao de Usuarios**
   abrem como abas unicas (`FUC_Monitoramento`, `FUC_NinoTI`, `FUC_MyMusicX`, `FUC_PainelSaude`,
   `FUC_IdentityAdministration`); clicar de novo no menu reativa a aba existente. O Painel de Saude recebe o

@@ -14,11 +14,14 @@ export default function CardReleaseDetalhes({ releaseId, id }) {
     const [retryNumber, setRetryNumber] = useState(0);
     const selectedReleaseId = releaseId ?? id;
 
+    if (!selectedReleaseId && (releaseDetails || isLoading || error)) {
+        setReleaseDetails(null);
+        setIsLoading(false);
+        setError(null);
+    }
+
     useEffect(() => {
-        if (!selectedReleaseId) {
-            setReleaseDetails(null);
-            return;
-        }
+        if (!selectedReleaseId) return;
 
         const controller = new AbortController();
         const fetchReleaseDetails = async () => {

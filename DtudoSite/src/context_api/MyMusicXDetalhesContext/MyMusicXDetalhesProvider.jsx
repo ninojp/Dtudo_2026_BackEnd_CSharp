@@ -12,11 +12,16 @@ export default function MyMusicXDetalhesProvider({ children }) {
     const [currentDisplayIdState, setCurrentDisplayId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [idCarregado, setIdCarregado] = useState(id);
 
-    const fetchCollectionDetails = useCallback(async (signal) => {
+    if (idCarregado !== id) {
+        setIdCarregado(id);
+        setCurrentDisplayId(null);
         setIsLoading(true);
         setError(null);
+    }
 
+    const carregarColecao = useCallback(async (signal) => {
         try {
             const collection = await getMusicCollection(id, { signal });
             if (!signal?.aborted) {
@@ -41,13 +46,25 @@ export default function MyMusicXDetalhesProvider({ children }) {
         }
     }, [id]);
 
+    const fetchCollectionDetails = useCallback((signal) => {
+        setIsLoading(true);
+        setError(null);
+        return carregarColecao(signal);
+    }, [carregarColecao]);
+
     useEffect(() => {
-        setCurrentDisplayId(null);
         const controller = new AbortController();
-        fetchCollectionDetails(controller.signal).catch(() => undefined);
+        const carregar = async () => {
+            try {
+                await carregarColecao(controller.signal);
+            } catch {
+                // Requisicao cancelada ao trocar de colecao ou desmontar.
+            }
+        };
+        carregar();
 
         return () => controller.abort();
-    }, [fetchCollectionDetails]);
+    }, [carregarColecao]);
 
     const currentDisplayId = useMemo(() => {
         if (currentDisplayIdState) return currentDisplayIdState;

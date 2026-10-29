@@ -21,6 +21,8 @@ public sealed class FUC_IdentityAdministration : UserControl
     private readonly Label _statusLabel = new();
     private readonly CancellationTokenSource _closingCancellation = new();
     private bool _isLoading;
+    private TabControl? _sections;
+    private TabPage? _accountsTab;
 
     public FUC_IdentityAdministration(WinAppAuthenticationService authenticationService)
     {
@@ -34,6 +36,18 @@ public sealed class FUC_IdentityAdministration : UserControl
         BuildLayout();
         ThemeManager.ApplyDarkModeToUserControl(this);
         Load += async (_, _) => await LoadDataAsync();
+    }
+
+    /// <summary>
+    /// Leva o usuario ao formulario de provisionamento de conta (secao "Contas") e foca o campo de usuario.
+    /// </summary>
+    public void FocusProvisioning()
+    {
+        if (_sections is null || _accountsTab is null)
+            return;
+
+        _sections.SelectedTab = _accountsTab;
+        _userNameInput.Focus();
     }
 
     private void BuildLayout()
@@ -70,7 +84,9 @@ public sealed class FUC_IdentityAdministration : UserControl
         _statusLabel.Text = "Pronto.";
 
         var tabs = new TabControl { Dock = DockStyle.Fill, Padding = new Point(16, 8) };
-        tabs.TabPages.Add(BuildAccountsTab());
+        _sections = tabs;
+        _accountsTab = BuildAccountsTab();
+        tabs.TabPages.Add(_accountsTab);
         tabs.TabPages.Add(BuildRolesTab());
         tabs.TabPages.Add(BuildDevicesTab());
         tabs.TabPages.Add(BuildSessionsTab());

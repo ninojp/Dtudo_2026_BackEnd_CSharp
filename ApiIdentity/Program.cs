@@ -212,8 +212,8 @@ builder.Services.AddSingleton<IFido2>(serviceProvider =>
     var options = serviceProvider.GetRequiredService<IOptions<IdentityMfaOptions>>().Value;
     return new Fido2(new Fido2Configuration
     {
-        ServerDomain = options.RelyingPartyDomain,
-        ServerName = options.RelyingPartyName,
+        RPID = options.RelyingPartyDomain,
+        RPName = options.RelyingPartyName,
         Origins = options.Origins.ToHashSet(StringComparer.Ordinal),
         Timeout = (uint)options.Fido2TimeoutMilliseconds,
         TimestampDriftTolerance = options.Fido2TimestampDriftMilliseconds,

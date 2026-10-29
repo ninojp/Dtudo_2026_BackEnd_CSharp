@@ -38,15 +38,16 @@ export default function MyMusicXBuscar() {
     const releasesAbortRef = useRef(null);
     const releaseDetailsAbortRef = useRef(null);
 
+    if ((artistQuery.trim().length < 2 || selectedArtist) && (artistSuggestions.length > 0 || isSearchingArtists)) {
+        setArtistSuggestions([]);
+        setIsSearchingArtists(false);
+    }
+
     useEffect(() => {
         const query = artistQuery.trim();
         artistSearchAbortRef.current?.abort();
 
-        if (query.length < 2 || selectedArtist) {
-            setArtistSuggestions([]);
-            setIsSearchingArtists(false);
-            return undefined;
-        }
+        if (query.length < 2 || selectedArtist) return undefined;
 
         const controller = new AbortController();
         artistSearchAbortRef.current = controller;

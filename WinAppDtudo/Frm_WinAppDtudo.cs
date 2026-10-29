@@ -241,12 +241,12 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
         });
     }
     //==============================================================
-    //Menu Cadastrar Usuario - abre (ou reativa) a aba de administração protegida do Identity.
+    //Menu Cadastrar Usuario - abre (ou reativa) a aba de administração protegida do Identity já no formulário de provisionamento.
     private void MnI_CadastrarUsuario_Click(object sender, EventArgs e)
     {
         if (!_identityAuthenticationService.IsAuthenticated) return;
 
-        _workspace.OpenOrActivate(AdministracaoTabKey, () =>
+        var administrationTab = _workspace.OpenOrActivate(AdministracaoTabKey, () =>
         {
             var page = new TabPage("Administração de Usuários")
             {
@@ -256,6 +256,7 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
             page.Controls.Add(new FUC_IdentityAdministration(_identityAuthenticationService));
             return page;
         });
+        administrationTab.Controls.OfType<FUC_IdentityAdministration>().FirstOrDefault()?.FocusProvisioning();
     }
     //Menu Conectar - iniciar autenticacao dentro do WinAppDtudo.
     private async void MnI_Conectar_Click(object sender, EventArgs e)
@@ -539,6 +540,12 @@ public partial class Frm_WinAppDtudo : CustomFormNoBorder
     private async void MnI_DtudoWebView_Click(object sender, EventArgs e)
     {
         await ExecuteDtudoSiteActionAsync(OpenDtudoSiteInWebViewAsync);
+    }
+
+    //Menu DtudoSite > Site no Navegador - mesmo comportamento do atalho DtudoSite da aba Início (Google Chrome).
+    private async void MnI_SiteNoNavegador_Click(object sender, EventArgs e)
+    {
+        await ExecuteDtudoSiteActionAsync(OpenDtudoSiteInGoogleChromeAsync);
     }
 
     private async Task ExecuteDtudoSiteActionAsync(Func<CancellationToken, Task> action)

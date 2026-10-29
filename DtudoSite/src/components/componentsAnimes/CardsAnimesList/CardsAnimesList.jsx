@@ -9,7 +9,8 @@ import AuthContext from '../../../context_api/AuthContext/AuthContext';
 import FiltrarPorGenero from '../../FiltrarPorGenero/FiltrarPorGenero';
 import FiltrarPorLetra from '../../FiltrarPorLetra/FiltrarPorLetra';
 import FiltrarPorAno from '../../FiltrarPorAno/FiltrarPorAno';
-import FiltrarPorTipo, { TIPO_FILTRO_PADRAO, TIPO_FILTRO_TODOS } from '../../FiltrarPorTipo/FiltrarPorTipo';
+import FiltrarPorTipo from '../../FiltrarPorTipo/FiltrarPorTipo';
+import { TIPO_FILTRO_PADRAO, TIPO_FILTRO_TODOS } from '../../FiltrarPorTipo/tiposAnime';
 import CardAnime from '../CardAnime/CardAnime';
 import { ehAnimeAdulto, obterAnoAnime, obterGenerosAnime, obterIdAnime, obterTipoCanonicoAnime, obterTituloAnime, TIPOS_PRINCIPAIS_ANIME } from '@dtudo-anime-content';
 import { buscarAnimesDaApiLocalPorTermo } from '../../../services/apiMyAnimes';
@@ -28,16 +29,22 @@ export default function CardsAnimesList() {
     const [isSearching, setIsSearching] = useState(false);
     const [searchError, setSearchError] = useState(null);
     const [mostrarAdultos, setMostrarAdultos] = useState(false);
+    const termoBusca = searchTerm.trim();
+    const [termoBuscaAnterior, setTermoBuscaAnterior] = useState(termoBusca);
+
+    if (termoBuscaAnterior !== termoBusca) {
+        setTermoBuscaAnterior(termoBusca);
+        if (!termoBusca) {
+            setSearchResults([]);
+            setSearchError(null);
+            setIsSearching(false);
+        }
+    }
 
     useEffect(() => {
         const termo = searchTerm.trim();
 
-        if (!termo) {
-            setSearchResults([]);
-            setSearchError(null);
-            setIsSearching(false);
-            return undefined;
-        }
+        if (!termo) return undefined;
 
         const controller = new AbortController();
         let ativo = true;

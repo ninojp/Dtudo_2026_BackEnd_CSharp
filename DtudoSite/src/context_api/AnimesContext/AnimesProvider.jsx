@@ -12,13 +12,14 @@ export default function AnimesProvider({ children }) {
     const [tentativa, setTentativa] = useState(0);
     const recarregarAnimes = useCallback(() => setTentativa((valor) => valor + 1), []);
 
+    if (!isAuthenticated && (listObjsDetalhesAnimes.length > 0 || isLoading || error)) {
+        setListObjsDetalhesAnimes([]);
+        setIsLoading(false);
+        setError(null);
+    }
+
     useEffect(() => {
-        if (!isAuthenticated) {
-            setListObjsDetalhesAnimes([]);
-            setIsLoading(false);
-            setError(null);
-            return undefined;
-        }
+        if (!isAuthenticated) return undefined;
 
         const controller = new AbortController();
         let ativo = true;

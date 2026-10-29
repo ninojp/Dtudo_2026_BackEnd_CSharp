@@ -44,6 +44,7 @@ partial class Frm_WinAppDtudo
         MnI_NinoTI = new ToolStripMenuItem();
         MnI_DtudoSite = new ToolStripMenuItem();
         MnI_DtudoWebView = new ToolStripMenuItem();
+        MnI_SiteNoNavegador = new ToolStripMenuItem();
         Tbc_Principal = new WinAppDtudo.Controls.DarkTabControl
         {
             AutoSizeTabHeaders = true,
@@ -180,7 +181,7 @@ partial class Frm_WinAppDtudo
         // 
         // MnI_DtudoSite
         // 
-        MnI_DtudoSite.DropDownItems.AddRange(new ToolStripItem[] { MnI_DtudoWebView });
+        MnI_DtudoSite.DropDownItems.AddRange(new ToolStripItem[] { MnI_DtudoWebView, MnI_SiteNoNavegador });
         MnI_DtudoSite.Image = Properties.Resources.DtudoFireLogo;
         MnI_DtudoSite.Name = "MnI_DtudoSite";
         MnI_DtudoSite.Size = new Size(150, 36);
@@ -194,6 +195,15 @@ partial class Frm_WinAppDtudo
         MnI_DtudoWebView.Size = new Size(231, 38);
         MnI_DtudoWebView.Text = "DtudoWebView2";
         MnI_DtudoWebView.Click += MnI_DtudoWebView_Click;
+        // 
+        // MnI_SiteNoNavegador
+        // 
+        MnI_SiteNoNavegador.ForeColor = Color.Gold;
+        MnI_SiteNoNavegador.Image = Properties.Resources.DtudoFireLogo;
+        MnI_SiteNoNavegador.Name = "MnI_SiteNoNavegador";
+        MnI_SiteNoNavegador.Size = new Size(231, 38);
+        MnI_SiteNoNavegador.Text = "Site no Navegador";
+        MnI_SiteNoNavegador.Click += MnI_SiteNoNavegador_Click;
         // 
         // Tbc_Principal
         // 
@@ -270,6 +280,7 @@ partial class Frm_WinAppDtudo
     private ToolStripMenuItem MnI_Desconectar;
     private ToolStripMenuItem MnI_DtudoSite;
     private ToolStripMenuItem MnI_DtudoWebView;
+    private ToolStripMenuItem MnI_SiteNoNavegador;
     private ToolStripMenuItem MnI_Monitoramento;
     private WinAppDtudo.Controls.DarkTabControl Tbc_Principal;
     private StatusStrip Ssb_StatusRodape;

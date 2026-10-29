@@ -7,7 +7,8 @@ namespace WinAppDtudo.Controls;
 public class DarkTabControl : TabControl
 {
     private const int DefaultCloseButtonSize = 24;
-    private const string TabPageDragDataFormat = "WinAppDtudo.TabPage";
+    /// <summary>Formato de dados do arrastar-e-soltar usado para reordenar abas dentro do proprio controle.</summary>
+    public const string TabPageDragDataFormat = "WinAppDtudo.TabPage";
     private const int TabHeaderHorizontalInset = 8;
     private const int TabHeaderVerticalInset = 4;
     private const int TabImageTextSpacing = 6;

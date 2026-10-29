@@ -180,7 +180,7 @@ O cliente externo usa `MyAnimeList:BaseUrl`, `ClientId`, timeout, cache e tentat
 | WinApp | Aceita certificado invalido somente no codigo compilado com `DEBUG` quando flag esta ativa | O padrao de desenvolvimento nao deve ser reutilizado em producao; validacao operacional nao feita |
 | Clientes HTTP | Timeouts, cache e retries locais em alguns fluxos | Nao ha correlacao, circuit breaker ou politica uniforme observada |
 | Autenticacao | Hash de senha no arquivo e token aleatorio retornado no login | Token nao e validado por middleware; registro e consulta por ID sao publicos |
-| Arquivos | Extensoes de imagem permitidas no analisador e decodificacao ImageSharp | Nao ha quarentena, scanner, limite central, reparse protection ou servico de arquivos |
+| Arquivos | Extensoes de imagem permitidas no analisador e decodificacao SkiaSharp (fallback GDI+, limite de 40 MP por imagem) | Nao ha quarentena, scanner, limite central, reparse protection ou servico de arquivos |
 
 ## 10. Lacunas e perguntas abertas
 

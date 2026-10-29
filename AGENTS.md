@@ -6,7 +6,7 @@ Treat this repository as one full-stack workspace, not as separate apps.
 
 - Repository root is the source of truth.
 - Visual Studio may open `LibDtudo.Shared.slnx`, but `DtudoSite/`, `ApiMyAnimes/`, `ApiMyAnimeList/`, `LibDtudo.Shared/`, and `WinAppDtudo/` are all part of the same product.
-- `ApiNode/` is legacy and should be ignored unless a task explicitly asks for one of its remaining utilities.
+- `ApiNode/` was removed from the repository; do not recreate it or reference it. The Discogs proxy was replaced by `ApiDiscogs` and `DtudoGateway`.
 - Backend targets .NET 10.
 
 ## Main areas
@@ -19,14 +19,6 @@ Treat this repository as one full-stack workspace, not as separate apps.
 - Router: `DtudoSite/src/router/DtudoRouter.jsx`
 - Shared state: `DtudoSite/src/context_api/`
 - Feature areas: `MyAnimes`, `Animes`, `Animex`, `MyMusicX`, `NinoTI`, `auth`
-
-### Legacy Node utilities
-
-- Path: `ApiNode/`
-- Local JSON server data: `ApiNode/db/animacoes.json`
-- Legacy migration utilities only; the Discogs proxy was retired after the ApiDiscogs and gateway migration.
-- Inspect remaining scripts only when the current request clearly depends on legacy data migration behavior.
-
 
 ## Working rules
 

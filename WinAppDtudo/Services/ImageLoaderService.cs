@@ -1,6 +1,7 @@
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text.Json;
-using SixLabors.ImageSharp;
+using SkiaSharp;
 using DrawingImage = System.Drawing.Image;
 
 namespace WinAppDtudo.Services;
@@ -17,6 +18,7 @@ public static class ImageLoaderService
     private static readonly SemaphoreSlim _myAnimeListRequestLock = new(1, 1);
     private static readonly Dictionary<int, Task<IReadOnlyList<string>>> _myAnimeListCoverUrls = [];
     private static readonly Lock _myAnimeListCoverUrlsLock = new();
+    private const long MaxPixelsPorImagem = 40_000_000;
 
     static ImageLoaderService()
     {
@@ -79,19 +81,73 @@ public static class ImageLoaderService
         return null;
     }
 
-    private static DrawingImage? DecodificarImagem(byte[] bytes)
+    /// <summary>
+    /// Decodifica os bytes em um <see cref="Bitmap"/> independente do stream de origem.
+    /// O SkiaSharp cobre JPEG, PNG, WebP, GIF e BMP (o GDI+ nao le WebP); o GDI+ e o fallback para TIFF e ICO.
+    /// </summary>
+    internal static DrawingImage? DecodificarImagem(byte[] bytes)
+    {
+        // Rejeita imagens com dimensoes absurdas antes de alocar memoria (protecao contra decompression bomb).
+        var limites = SKBitmap.DecodeBounds(bytes);
+        if ((long)limites.Width * limites.Height > MaxPixelsPorImagem)
+            return null;
+
+        return DecodificarComSkia(bytes) ?? DecodificarComGdi(bytes);
+    }
+
+    private static Bitmap? DecodificarComSkia(byte[] bytes)
     {
         try
         {
-            using var imagem = SixLabors.ImageSharp.Image.Load(bytes);
-            using var png = new MemoryStream();
-            imagem.SaveAsPng(png);
-            png.Position = 0;
+            var info = SKBitmap.DecodeBounds(bytes);
+            if (info.Width <= 0 || info.Height <= 0)
+                return null;
 
+            using var origem = SKBitmap.Decode(bytes, new SKImageInfo(
+                info.Width, info.Height, SKColorType.Bgra8888, SKAlphaType.Premul));
+            if (origem is null)
+                return null;
+
+            var bitmap = new Bitmap(origem.Width, origem.Height, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+            var area = new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height);
+            var dados = bitmap.LockBits(area, System.Drawing.Imaging.ImageLockMode.WriteOnly, bitmap.PixelFormat);
+            try
+            {
+                // Copia linha a linha porque o stride do Bitmap pode diferir do stride do SKBitmap.
+                var linhaBytes = origem.Width * 4;
+                var linha = new byte[linhaBytes];
+                var origemPtr = origem.GetPixels();
+                for (var y = 0; y < origem.Height; y++)
+                {
+                    Marshal.Copy(origemPtr + (nint)((long)y * origem.RowBytes), linha, 0, linhaBytes);
+                    Marshal.Copy(linha, 0, dados.Scan0 + (nint)((long)y * dados.Stride), linhaBytes);
+                }
+            }
+            finally
+            {
+                bitmap.UnlockBits(dados);
+            }
+
+            return bitmap;
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or OutOfMemoryException)
+        {
+            return null;
+        }
+    }
+
+    private static Bitmap? DecodificarComGdi(byte[] bytes)
+    {
+        try
+        {
+            using var stream = new MemoryStream(bytes);
             using var decodificada = DrawingImage.FromStream(
-                png,
+                stream,
                 useEmbeddedColorManagement: false,
                 validateImageData: true);
+
+            if ((long)decodificada.Width * decodificada.Height > MaxPixelsPorImagem)
+                return null;
 
             var bitmap = new Bitmap(
                 decodificada.Width,
@@ -102,11 +158,7 @@ public static class ImageLoaderService
             graphics.DrawImage(decodificada, new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height));
             return bitmap;
         }
-        catch (UnknownImageFormatException)
-        {
-            return null;
-        }
-        catch (ArgumentException)
+        catch (Exception ex) when (ex is ArgumentException or OutOfMemoryException)
         {
             return null;
         }

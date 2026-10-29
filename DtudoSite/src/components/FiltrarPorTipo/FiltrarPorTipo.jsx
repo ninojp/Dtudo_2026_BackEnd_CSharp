@@ -1,18 +1,5 @@
 import styles from './FiltrarPorTipo.module.css';
-
-export const TIPO_FILTRO_PADRAO = 'PADRAO';
-export const TIPO_FILTRO_TODOS = 'TODOS';
-
-export const OPCOES_TIPO_ANIME = [
-    ['TV', 'Series (TV)'],
-    ['OVA', 'OVA'],
-    ['ONA', 'ONA'],
-    ['MOVIE', 'Filme'],
-    ['SPECIAL', 'Special / TV Special'],
-    ['MUSIC', 'Music'],
-    ['CM', 'CM'],
-    ['PV', 'PV'],
-];
+import { OPCOES_TIPO_ANIME, TIPO_FILTRO_PADRAO, TIPO_FILTRO_TODOS } from './tiposAnime';
 
 export default function FiltrarPorTipo({ tipoSelecionado, setTipoSelecionado }) {
     return (
