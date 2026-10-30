@@ -17,10 +17,183 @@ namespace ApiMyAnimes.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ApiMyAnimes.Data.AnimeEpisodeWatch", b =>
+                {
+                    b.Property<string>("AccountId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<int>("MalId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EpisodeNumber")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("WatchedAtUtc")
+                        .HasPrecision(7)
+                        .HasColumnType("datetime2(7)");
+
+                    b.HasKey("AccountId", "MalId", "EpisodeNumber");
+
+                    b.ToTable("AnimeEpisodeWatches", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AnimeEpisodeWatches_EpisodeNumber", "[EpisodeNumber] >= 1");
+
+                            t.HasCheckConstraint("CK_AnimeEpisodeWatches_MalId", "[MalId] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("ApiMyAnimes.Data.AnimeFolderRefreshItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Detail")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("MalId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MyAnimeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("State")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int?>("VideoCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunId", "Id");
+
+                    b.ToTable("AnimeFolderRefreshItems", (string)null);
+                });
+
+            modelBuilder.Entity("ApiMyAnimes.Data.AnimeFolderRefreshRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("Failed")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("FinishedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("MyAnimeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NotFound")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProcessedAnimes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RequestedBy")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("TotalAnimes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Unavailable")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Updated")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StartedAtUtc", "Id");
+
+                    b.ToTable("AnimeFolderRefreshRuns", (string)null);
+                });
+
+            modelBuilder.Entity("ApiMyAnimes.Data.AnimeFolderStatus", b =>
+                {
+                    b.Property<int>("MalId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CheckedAtUtc")
+                        .HasPrecision(7)
+                        .HasColumnType("datetime2(7)");
+
+                    b.Property<int?>("ExpectedEpisodes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MyAnimeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelativePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RootKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<bool>("Truncated")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("VideoCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("MalId");
+
+                    b.HasIndex("MyAnimeId");
+
+                    b.ToTable("AnimeFolderStatus", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AnimeFolderStatus_MalId", "[MalId] > 0");
+
+                            t.HasCheckConstraint("CK_AnimeFolderStatus_State", "[State] IN ('none', 'partial', 'complete')");
+
+                            t.HasCheckConstraint("CK_AnimeFolderStatus_VideoCount", "[VideoCount] >= 0");
+                        });
+                });
 
             modelBuilder.Entity("ApiMyAnimes.Data.MyAnimeMonitoringLocation", b =>
                 {
@@ -374,6 +547,15 @@ namespace ApiMyAnimes.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MyAnimes");
+                });
+
+            modelBuilder.Entity("ApiMyAnimes.Data.AnimeFolderRefreshItem", b =>
+                {
+                    b.HasOne("ApiMyAnimes.Data.AnimeFolderRefreshRun", null)
+                        .WithMany()
+                        .HasForeignKey("RunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApiMyAnimes.Data.MyAnimeMonitoringLocation", b =>

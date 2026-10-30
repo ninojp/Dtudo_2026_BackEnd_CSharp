@@ -15,8 +15,8 @@ using DtudoGateway.Configuration;
 using DtudoGateway.Infrastructure;
 using Yarp.ReverseProxy;
 
-const string CookieScheme = "BffCookie";
-const string OpenIdConnectScheme = "oidc";
+const string CookieScheme = GatewayAuthenticationSchemes.Cookie;
+const string OpenIdConnectScheme = GatewayAuthenticationSchemes.OpenIdConnect;
 const string BffPolicy = "gateway-bff";
 
 var builder = WebApplication.CreateBuilder(args);
@@ -122,6 +122,7 @@ if (OperatingSystem.IsWindows())
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<IGatewayTokenRefresher, GatewayTokenRefresher>();
 builder.Services.AddSingleton<ServerSideTicketStore>();
 builder.Services.AddAntiforgery(options =>
 {
@@ -153,9 +154,14 @@ var authenticationBuilder = builder.Services.AddAuthentication(options =>
     options.SlidingExpiration = true;
     options.LoginPath = "/bff/login";
     options.LogoutPath = null;
+    options.Events.OnValidatePrincipal = GatewayCookieTokenEvents.ValidatePrincipalAsync;
     options.Events.OnRedirectToLogin = context =>
     {
-        if (context.Request.Path.StartsWithSegments("/bff"))
+        // Redirecionar um POST/XHR para o login nao tem efeito util: responde 401 para o site tratar.
+        // O progresso pessoal (watch) e sempre consumido via XHR, inclusive no GET.
+        if (context.Request.Path.StartsWithSegments("/bff")
+            || GatewayRouteConfiguration.IsAnimeWatchPath(context.Request.Path)
+            || !HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return Task.CompletedTask;
@@ -201,11 +207,11 @@ builder.Services.PostConfigure<CookieAuthenticationOptions>(CookieScheme, option
         options.NonceCookie.IsEssential = true;
         options.Events.OnRedirectToIdentityProvider = context =>
         {
-            context.ProtocolMessage.IssuerAddress = BuildPublicUrl(
+            // SetParameter guarda um unico valor por chave e sobrescreveria resource; por isso todos os
+            // recursos entram na query do IssuerAddress, que o handler preserva ao anexar os demais parametros.
+            context.ProtocolMessage.IssuerAddress = BuildAuthorizeAddress(
                 configuredGatewayOptions,
-                "/identity/connect/authorize")
-                + "?resource=urn%3Adtudo%3Aapi-discogs";
-            context.ProtocolMessage.SetParameter("resource", "urn:dtudo:api-musicx");
+                configuredOpenIdConnectOptions.Resources);
             context.ProtocolMessage.RedirectUri = BuildPublicUrl(
                 configuredGatewayOptions,
                 context.Options.CallbackPath.Value!);
@@ -274,6 +280,11 @@ builder.Services.AddAuthorization(options =>
         policy.AddAuthenticationSchemes(CookieScheme);
         policy.RequireAuthenticatedUser();
     });
+    options.AddPolicy(GatewayRouteConfiguration.AuthenticatedMutationPolicy, policy =>
+    {
+        policy.AddAuthenticationSchemes(CookieScheme);
+        policy.RequireAuthenticatedUser();
+    });
 });
 
 builder.Services.AddReverseProxy()
@@ -336,8 +347,7 @@ if (!app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.Use(async (context, next) =>
 {
-    if (context.Request.Path.StartsWithSegments("/api/catalog/music")
-        || context.Request.Path.StartsWithSegments("/api/external/discogs"))
+    if (GatewayAccessTokenRoutes.RequiresAccessToken(context.Request))
     {
         context.Request.Headers.Remove("Authorization");
         var accessToken = await context.GetTokenAsync(CookieScheme, "access_token");
@@ -350,6 +360,7 @@ app.Use(async (context, next) =>
     await next(context);
 });
 app.UseAuthorization();
+app.UseGatewayRequestProtection();
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
@@ -410,7 +421,7 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
         });
     }).RequireAuthorization(BffPolicy);
 
-    app.MapPost("/bff/logout", async (HttpContext context, IAntiforgery antiforgery) =>
+    app.MapPost("/bff/logout", async (HttpContext context, IAntiforgery antiforgery, IGatewayTokenRefresher tokenRefresher) =>
     {
         if (!RedirectAllowlist.TryGetAllowedRedirect(
                 context.Request.Query["returnUrl"].ToString(),
@@ -427,6 +438,12 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             await context.Response.WriteAsJsonAsync(new { error = "invalid_csrf" });
             return;
+        }
+
+        var refreshToken = await context.GetTokenAsync(CookieScheme, "refresh_token");
+        if (!string.IsNullOrWhiteSpace(refreshToken))
+        {
+            await tokenRefresher.RevokeRefreshTokenAsync(refreshToken, context.RequestAborted);
         }
 
         await context.SignOutAsync(CookieScheme);
@@ -447,6 +464,11 @@ static bool IsAuthenticationPath(PathString path) =>
 
 static string BuildPublicUrl(GatewayOptions options, string path) =>
     options.PublicOrigin.TrimEnd('/') + "/" + path.TrimStart('/');
+
+static string BuildAuthorizeAddress(GatewayOptions options, IEnumerable<string> resources) =>
+    BuildPublicUrl(options, "/identity/connect/authorize")
+    + "?"
+    + string.Join("&", resources.Select(resource => "resource=" + Uri.EscapeDataString(resource)));
 
 static string BuildFrontendRedirect(GatewayOptions options, string redirect)
 {

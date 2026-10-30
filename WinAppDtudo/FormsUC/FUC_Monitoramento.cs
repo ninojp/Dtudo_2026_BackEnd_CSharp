@@ -13,10 +13,7 @@ public sealed class FUC_Monitoramento : UserControl
     {
         ".apng", ".avif", ".bmp", ".gif", ".heic", ".heif", ".ico", ".jfif", ".jpe", ".jpeg", ".jpg", ".png", ".svg", ".tif", ".tiff", ".webp"
     };
-    private static readonly HashSet<string> videoExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".3g2", ".3gp", ".asf", ".avi", ".divx", ".flv", ".m2ts", ".m2v", ".m4v", ".mkv", ".mov", ".mp4", ".mpe", ".mpeg", ".mpg", ".mts", ".ogv", ".rm", ".rmvb", ".ts", ".vob", ".webm", ".wmv"
-    };
+    private static readonly IReadOnlySet<string> videoExtensions = EpisodeVideoPolicy.VideoExtensions;
 
     private readonly MonitoringApiClient client;
     private readonly ApiMyAnimesService catalog;

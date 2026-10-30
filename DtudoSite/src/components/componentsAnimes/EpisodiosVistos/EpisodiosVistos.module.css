@@ -1,0 +1,103 @@
+.sectionEpisodios {
+    --episodioVisto: var(--corProgramacao, #00c86f);
+
+    margin: 0 0 1.5rem;
+    color: var(--hTituloColor);
+}
+
+.rotuloSecao {
+    margin: 0 0 0.9rem;
+    color: var(--pTextColor);
+    font-size: clamp(1.15rem, 1.35vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.divResumo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.divBotoes {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btnAcao {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #315f9e;
+    border-radius: 4px;
+    background: transparent;
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.btnAcao:hover:not(:disabled) {
+    background-color: rgba(49, 95, 158, 0.25);
+}
+
+.btnAcao:disabled,
+.btnEpisodio:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.gradeEpisodios {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2.6rem, 1fr));
+    gap: 0.35rem;
+    max-height: 22rem;
+    margin: 0;
+    padding: 0.25rem;
+    overflow-y: auto;
+    border: var(--bordaPadrao);
+    list-style: none;
+}
+
+.btnEpisodio {
+    width: 100%;
+    padding: 0.3rem 0;
+    border: 1px solid #315f9e;
+    border-radius: 4px;
+    background-color: #041832;
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.btnEpisodio:focus-visible,
+.btnAcao:focus-visible {
+    outline: 2px solid var(--episodioVisto);
+    outline-offset: 1px;
+}
+
+.episodioVisto {
+    border-color: var(--episodioVisto);
+    background-color: rgba(0, 200, 111, 0.22);
+    color: var(--episodioVisto);
+    font-weight: 700;
+}
+
+.aviso,
+.erro {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.aviso {
+    color: var(--pTextColor);
+}
+
+.erro {
+    color: #ff8a8a;
+}

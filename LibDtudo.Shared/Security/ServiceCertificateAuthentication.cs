@@ -5,6 +5,14 @@ using System.Text.Json.Serialization;
 
 namespace LibDtudo.Shared.Security;
 
+/// <summary>Escopos que um client de serviço pode pedir para UMA audiência (recurso).</summary>
+public sealed class ServiceAudienceGrant
+{
+    public string Audience { get; set; } = string.Empty;
+
+    public string[] Scopes { get; set; } = [];
+}
+
 public sealed class ServiceClientCertificateBinding
 {
     public string ClientId { get; set; } = string.Empty;
@@ -13,9 +21,58 @@ public sealed class ServiceClientCertificateBinding
 
     public DateTimeOffset? PreviousCertificateAcceptedUntilUtc { get; set; }
 
+    /// <summary>
+    /// Concessões por audiência: cada escopo só vale para a audiência em que foi concedido. Forma preferida e
+    /// obrigatória quando o client acessa mais de uma audiência.
+    /// </summary>
+    public ServiceAudienceGrant[] AllowedGrants { get; set; } = [];
+
+    /// <summary>Forma legada, válida apenas com UMA audiência (sem ambiguidade). Não combinar com <see cref="AllowedGrants"/>.</summary>
     public string[] AllowedScopes { get; set; } = [];
 
+    /// <summary>Forma legada, válida apenas com UMA audiência (sem ambiguidade). Não combinar com <see cref="AllowedGrants"/>.</summary>
     public string[] AllowedAudiences { get; set; } = [];
+
+    /// <summary>
+    /// Concessões efetivas (audiência → escopos). Vazio quando a configuração é ambígua (legado com várias
+    /// audiências) ou mistura as duas formas; nesse caso nada é concedido.
+    /// </summary>
+    public IReadOnlyList<ServiceAudienceGrant> GetEffectiveGrants()
+    {
+        var hasGrants = AllowedGrants.Length > 0;
+        var hasLegacy = AllowedScopes.Length > 0 || AllowedAudiences.Length > 0;
+        if (hasGrants)
+        {
+            return hasLegacy ? [] : AllowedGrants;
+        }
+
+        return AllowedAudiences.Length == 1 && AllowedScopes.Length > 0
+            ? [new ServiceAudienceGrant { Audience = AllowedAudiences[0], Scopes = AllowedScopes }]
+            : [];
+    }
+
+    /// <summary>
+    /// Valida a forma das concessões: audiências URI absolutas e exclusivas, escopos não vazios e exclusivos por
+    /// audiência, sem misturar a forma legada com <see cref="AllowedGrants"/>.
+    /// </summary>
+    public bool HasValidGrants()
+    {
+        var grants = GetEffectiveGrants();
+        return grants.Count > 0
+            && grants.All(grant =>
+                !string.IsNullOrWhiteSpace(grant.Audience)
+                && Uri.TryCreate(grant.Audience, UriKind.Absolute, out _)
+                && grant.Scopes.Length > 0
+                && grant.Scopes.All(scope => !string.IsNullOrWhiteSpace(scope))
+                && grant.Scopes.Distinct(StringComparer.Ordinal).Count() == grant.Scopes.Length)
+            && grants.Select(grant => grant.Audience).Distinct(StringComparer.Ordinal).Count() == grants.Count;
+    }
+
+    /// <summary>Escopos concedidos para a audiência, ou <c>null</c> se a audiência não é permitida a este client.</summary>
+    public IReadOnlyCollection<string>? FindScopesForAudience(string audience) =>
+        GetEffectiveGrants()
+            .FirstOrDefault(grant => string.Equals(grant.Audience, audience, StringComparison.Ordinal))
+            ?.Scopes;
 }
 
 public sealed class ServiceCertificateStoreOptions
@@ -65,8 +122,7 @@ public sealed class ServiceClientCredentialsOptions
         ClientId = ClientId,
         CertificateThumbprints = CertificateThumbprints,
         PreviousCertificateAcceptedUntilUtc = PreviousCertificateAcceptedUntilUtc,
-        AllowedScopes = Scopes,
-        AllowedAudiences = [Audience]
+        AllowedGrants = [new ServiceAudienceGrant { Audience = Audience, Scopes = Scopes }]
     };
 }
 
@@ -190,13 +246,14 @@ public sealed class ServiceTokenRequestValidator
             return new(false, FailureReason: certificateResult.FailureReason);
         }
 
-        if (!binding.AllowedAudiences.Contains(request.Audience, StringComparer.Ordinal))
+        var allowedScopes = binding.FindScopesForAudience(request.Audience);
+        if (allowedScopes is null)
         {
             return new(false, FailureReason: "audience-not-allowed");
         }
 
         if (request.Scopes.Count == 0
-            || request.Scopes.Any(scope => !binding.AllowedScopes.Contains(scope, StringComparer.Ordinal)))
+            || request.Scopes.Any(scope => !allowedScopes.Contains(scope, StringComparer.Ordinal)))
         {
             return new(false, FailureReason: "scope-not-allowed");
         }

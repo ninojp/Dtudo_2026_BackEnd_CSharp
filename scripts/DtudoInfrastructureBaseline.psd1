@@ -49,8 +49,10 @@
                     CertificateThumbprint = ''
                     PreviousCertificateThumbprint = ''
                     PreviousCertificateAcceptedUntilUtc = ''
-                    AllowedScopes = @('service.mal.read')
-                    AllowedAudiences = @('urn:dtudo:api-my-animelist')
+                    AllowedGrants = @(
+                        @{ Audience = 'urn:dtudo:api-my-animelist'; Scopes = @('service.mal.read') }
+                        @{ Audience = 'urn:dtudo:api-file-storage'; Scopes = @('filesystem.command') }
+                    )
                 }
             )
             DatabaseAccess = @(
@@ -114,8 +116,10 @@
                     CertificateThumbprint = ''
                     PreviousCertificateThumbprint = ''
                     PreviousCertificateAcceptedUntilUtc = ''
-                    AllowedScopes = @('service.mal.read')
-                    AllowedAudiences = @('urn:dtudo:api-my-animelist')
+                    AllowedGrants = @(
+                        @{ Audience = 'urn:dtudo:api-my-animelist'; Scopes = @('service.mal.read') }
+                        @{ Audience = 'urn:dtudo:api-file-storage'; Scopes = @('filesystem.command') }
+                    )
                 }
             )
             DatabaseAccess = @(
@@ -181,8 +185,10 @@
                     CertificateThumbprint = ''
                     PreviousCertificateThumbprint = ''
                     PreviousCertificateAcceptedUntilUtc = ''
-                    AllowedScopes = @('service.mal.read')
-                    AllowedAudiences = @('urn:dtudo:api-my-animelist')
+                    AllowedGrants = @(
+                        @{ Audience = 'urn:dtudo:api-my-animelist'; Scopes = @('service.mal.read') }
+                        @{ Audience = 'urn:dtudo:api-file-storage'; Scopes = @('filesystem.command') }
+                    )
                 }
             )
             DatabaseAccess = @(

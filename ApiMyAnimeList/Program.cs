@@ -68,11 +68,7 @@ builder.Services.AddOptions<ServiceTokenIssuerOptions>()
                     && client.CertificateThumbprints.Length is >= 1 and <= 2
                     && client.CertificateThumbprints.All(value =>
                         value.Length == 40 && value.All(char.IsAsciiHexDigit))
-                    && client.AllowedScopes.Length > 0
-                    && client.AllowedScopes.Distinct(StringComparer.Ordinal).Count() == client.AllowedScopes.Length
-                    && client.AllowedAudiences.Length > 0
-                    && client.AllowedAudiences.All(value => Uri.TryCreate(value, UriKind.Absolute, out _))
-                    && client.AllowedAudiences.Distinct(StringComparer.Ordinal).Count() == client.AllowedAudiences.Length
+                    && client.HasValidGrants()
                     && client.CertificateThumbprints.Distinct(StringComparer.OrdinalIgnoreCase).Count() == client.CertificateThumbprints.Length)
                 && options.Clients.Select(client => client.ClientId)
                     .Distinct(StringComparer.Ordinal).Count() == options.Clients.Length

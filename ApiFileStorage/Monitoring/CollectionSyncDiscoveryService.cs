@@ -128,7 +128,7 @@ public sealed class CollectionSyncDiscoveryService(MonitoringRoots roots)
         }
     }
 
-    private static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp"
     };

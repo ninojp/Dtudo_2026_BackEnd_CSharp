@@ -19,8 +19,9 @@ public sealed class MonitoringController(IServiceProvider services, ILogger<Moni
         ?? throw new MonitoringDisabledException();
         private CollectionSyncDiscoveryService CollectionSync => services.GetService<CollectionSyncDiscoveryService>()
             ?? throw new MonitoringDisabledException();
+    private AnimeFolderScanService AnimeFolderScanner => services.GetRequiredService<AnimeFolderScanService>();
 
-    /// <summary>Lista as raizes permitidas sem enumerar os discos.</summary>
+    /// <summary>Lista as raizes permitidas
     [HttpGet("roots")]
     [ProducesResponseType(typeof(MonitoringRootDto[]), StatusCodes.Status200OK)]
     public ActionResult<MonitoringRootDto[]> Roots() => Ok(MonitoringRoots.Collections().All.Select(root => new MonitoringRootDto(root.Key, root.Path)).ToArray());
@@ -31,6 +32,26 @@ public sealed class MonitoringController(IServiceProvider services, ILogger<Moni
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public Task<ActionResult<CollectionSyncDiscoveryDto>> DiscoverSynchronization(CancellationToken cancellationToken) =>
             Execute(() => CollectionSync.DiscoverAsync(cancellationToken));
+
+    /// <summary>
+    /// Conta, sob demanda e sem sessao de monitoramento, os videos de episodio da pasta de um anime.
+    /// Leitura limitada (profundidade, arquivos e tempo); nao grava historico e nao devolve caminho fisico.
+    /// </summary>
+    [HttpPost("anime-folders/scan")]
+    [ProducesResponseType(typeof(AnimeFolderScanResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public Task<ActionResult<AnimeFolderScanResponse>> ScanAnimeFolder(AnimeFolderScanRequest request, CancellationToken cancellationToken) =>
+        Execute(() => AnimeFolderScanner.ScanAsync(request, cancellationToken));
+
+    /// <summary>
+    /// Lista as pastas de anime (subpastas de 1o nivel) de uma pasta de colecao com os MalIds das capas numericas do
+    /// 1o nivel de cada uma. Somente leitura, limitada e sem caminho fisico.
+    /// </summary>
+    [HttpPost("anime-folders/discovery")]
+    [ProducesResponseType(typeof(AnimeFolderDiscoveryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public Task<ActionResult<AnimeFolderDiscoveryResponse>> DiscoverAnimeFolders(AnimeFolderDiscoveryRequest request, CancellationToken cancellationToken) =>
+        Execute(() => AnimeFolderScanner.DiscoverAsync(request, cancellationToken));
 
     /// <summary>Inicia coleta somente para o escopo solicitado.</summary>
     [HttpPost("sessions")]

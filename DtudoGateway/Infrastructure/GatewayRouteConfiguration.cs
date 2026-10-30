@@ -10,6 +10,34 @@ public static class GatewayRouteConfiguration
     public const string IdentityClusterId = "api-identity-oidc";
     public const string AnonymousPolicy = "gateway-anonymous";
     public const string AuthenticatedCatalogPolicy = "gateway-authenticated-catalog";
+    public const string AuthenticatedMutationPolicy = "gateway-authenticated-mutation";
+    public const string RequireCsrfMetadataKey = "Dtudo.RequireCsrf";
+    public const string MaxBodyBytesMetadataKey = "Dtudo.MaxRequestBodyBytes";
+    public const string AllowEmptyBodyMetadataKey = "Dtudo.AllowEmptyBody";
+    public const string AnimeStatusPublicPath = "/api/catalog/animes/status";
+    public const long AnimeStatusMaxBodyBytes = 16 * 1024;
+    public const string AnimeWatchRoutePrefix = "anime-watch-";
+    public const long AnimeWatchEpisodesMaxBodyBytes = 64 * 1024;
+    public const long AnimeWatchBodylessMaxBodyBytes = 1024;
+
+    /// <summary>Indica se o caminho e do progresso pessoal de episodios: <c>/api/catalog/animes/{id}/watch[/episodes|/all]</c>.</summary>
+    public static bool IsAnimeWatchPath(PathString path)
+    {
+        var segments = (path.Value ?? string.Empty).Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length is < 5 or > 6
+            || !segments[0].Equals("api", StringComparison.OrdinalIgnoreCase)
+            || !segments[1].Equals("catalog", StringComparison.OrdinalIgnoreCase)
+            || !segments[2].Equals("animes", StringComparison.OrdinalIgnoreCase)
+            || !int.TryParse(segments[3], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out _)
+            || !segments[4].Equals("watch", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return segments.Length == 5
+            || segments[5].Equals("episodes", StringComparison.OrdinalIgnoreCase)
+            || segments[5].Equals("all", StringComparison.OrdinalIgnoreCase);
+    }
 
     public static IReadOnlyList<RouteConfig> CreateRoutes()
     {
@@ -18,6 +46,12 @@ public static class GatewayRouteConfiguration
             CreateExactRoute("catalog-animes-list", "/api/catalog/animes", "/apiLocal/Anime"),
             CreateExactRoute("catalog-animes-search", "/api/catalog/animes/search", "/apiLocal/Anime/buscar"),
             CreateExactRoute("catalog-animes-relacionados", "/api/catalog/animes/relacionados", "/apiLocal/Anime/relacionados"),
+            CreateAnimeStatusRoute(),
+            CreateAnimeWatchRoute("get", HttpMethods.Get, "watch", requireCsrf: false),
+            CreateAnimeWatchRoute("clear", HttpMethods.Delete, "watch", requireCsrf: true),
+            CreateAnimeWatchRoute("mark-episodes", HttpMethods.Put, "watch/episodes", requireCsrf: true, hasBody: true),
+            CreateAnimeWatchRoute("unmark-episodes", HttpMethods.Delete, "watch/episodes", requireCsrf: true, hasBody: true),
+            CreateAnimeWatchRoute("mark-all", HttpMethods.Put, "watch/all", requireCsrf: true),
             CreateParameterizedRoute("catalog-anime-by-id", "/api/catalog/animes/{id:int}", "/apiLocal/Anime/{id}"),
             CreateExactRoute("catalog-collections-list", "/api/catalog/collections", "/apiLocal/MyAnime"),
             CreateParameterizedRoute("catalog-collection-by-id", "/api/catalog/collections/{id:int}", "/apiLocal/MyAnime/{id}"),
@@ -158,6 +192,75 @@ public static class GatewayRouteConfiguration
             }
         }
     ];
+
+    private static RouteConfig CreateAnimeStatusRoute() =>
+        new()
+        {
+            RouteId = "catalog-animes-status",
+            ClusterId = CatalogClusterId,
+            AuthorizationPolicy = AuthenticatedMutationPolicy,
+            Match = new RouteMatch
+            {
+                Path = AnimeStatusPublicPath,
+                Methods = [HttpMethods.Post]
+            },
+            Metadata = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [RequireCsrfMetadataKey] = bool.TrueString,
+                [MaxBodyBytesMetadataKey] = AnimeStatusMaxBodyBytes.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            },
+            Transforms =
+            [
+                .. CreateTransforms(
+                    "/apiLocal/Anime/status",
+                    removeAuthorizationHeader: false),
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["RequestHeaderRemove"] = "X-CSRF-TOKEN"
+                }
+            ]
+        };
+
+    private static RouteConfig CreateAnimeWatchRoute(
+        string name,
+        string method,
+        string suffix,
+        bool requireCsrf,
+        bool hasBody = false)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (requireCsrf)
+        {
+            metadata[RequireCsrfMetadataKey] = bool.TrueString;
+            metadata[AllowEmptyBodyMetadataKey] = bool.TrueString;
+            metadata[MaxBodyBytesMetadataKey] = (hasBody ? AnimeWatchEpisodesMaxBodyBytes : AnimeWatchBodylessMaxBodyBytes)
+                .ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        var transforms = new List<IReadOnlyDictionary<string, string>>(
+            CreateTransforms("/apiLocal/Anime/{id}/" + suffix, usePathPattern: true, removeAuthorizationHeader: false));
+        if (requireCsrf)
+        {
+            transforms.Add(new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["RequestHeaderRemove"] = "X-CSRF-TOKEN"
+            });
+        }
+
+        return new RouteConfig
+        {
+            RouteId = AnimeWatchRoutePrefix + name,
+            ClusterId = CatalogClusterId,
+            AuthorizationPolicy = AuthenticatedMutationPolicy,
+            Match = new RouteMatch
+            {
+                Path = "/api/catalog/animes/{id:int}/" + suffix,
+                Methods = [method]
+            },
+            Metadata = metadata,
+            Transforms = transforms
+        };
+    }
 
     private static RouteConfig CreateExactRoute(
         string routeId,

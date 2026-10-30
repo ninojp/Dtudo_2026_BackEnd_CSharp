@@ -76,7 +76,7 @@ A politica do leitor e separada, em `MonitoringPathPolicy`. O leitor usa handles
 de leitura temporarios para estabilizar diretorios, sem modificar ACLs ou conteudo;
 esses handles podem impedir brevemente renomeacao/exclusao concorrente do diretorio.
 Requisitos, limites e progresso completos em
-[MonitoramentoColecoes](../docs/MonitoramentoColecoes.md).
+[ApiFileStorage](../docs/24_ApiFileStorage.md).
 
 ## Configurar uma raiz do motor existente
 

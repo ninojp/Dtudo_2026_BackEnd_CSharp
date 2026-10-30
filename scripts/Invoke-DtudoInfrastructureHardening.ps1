@@ -169,7 +169,7 @@ function Assert-Baseline {
         $serviceClientIds = @($currentEnvironment.ServiceCertificates | ForEach-Object { $_.ClientId })
         Assert-UniqueValues -Values $serviceClientIds -Description "client IDs de servico do ambiente $($currentEnvironment.Name)"
         foreach ($certificateBinding in @($currentEnvironment.ServiceCertificates)) {
-            foreach ($requiredCertificateProperty in @('ClientId', 'ServiceRole', 'StoreName', 'StoreLocation', 'PrivateKeyPrincipal', 'CertificateThumbprint', 'PreviousCertificateThumbprint', 'PreviousCertificateAcceptedUntilUtc', 'AllowedScopes', 'AllowedAudiences')) {
+            foreach ($requiredCertificateProperty in @('ClientId', 'ServiceRole', 'StoreName', 'StoreLocation', 'PrivateKeyPrincipal', 'CertificateThumbprint', 'PreviousCertificateThumbprint', 'PreviousCertificateAcceptedUntilUtc', 'AllowedGrants')) {
                 if (-not $certificateBinding.ContainsKey($requiredCertificateProperty)) {
                     throw "Binding de certificado incompleto no ambiente $($currentEnvironment.Name): $requiredCertificateProperty."
                 }
@@ -185,15 +185,22 @@ function Assert-Baseline {
             if ([string]::IsNullOrWhiteSpace($certificateBinding.PrivateKeyPrincipal)) {
                 throw "Principal ACL ausente no ambiente $($currentEnvironment.Name)."
             }
-            if (@($certificateBinding.AllowedScopes).Count -eq 0 -or @($certificateBinding.AllowedAudiences).Count -eq 0) {
-                throw "Scopes/audiences ausentes no binding de certificado do ambiente $($currentEnvironment.Name)."
+            if (@($certificateBinding.AllowedGrants).Count -eq 0) {
+                throw "AllowedGrants (audience -> escopos) ausente no binding de certificado do ambiente $($currentEnvironment.Name)."
             }
-            foreach ($audience in @($certificateBinding.AllowedAudiences)) {
+            $grantAudiences = @()
+            foreach ($grant in @($certificateBinding.AllowedGrants)) {
                 $parsedAudience = $null
-                if (-not [Uri]::TryCreate([string]$audience, [UriKind]::Absolute, [ref]$parsedAudience)) {
+                if (-not [Uri]::TryCreate([string]$grant.Audience, [UriKind]::Absolute, [ref]$parsedAudience)) {
                     throw "Audience de certificado invalido no ambiente $($currentEnvironment.Name)."
                 }
+                if (@($grant.Scopes).Count -eq 0 -or @($grant.Scopes | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -gt 0) {
+                    throw "Escopos ausentes ou vazios para a audience $($grant.Audience) no ambiente $($currentEnvironment.Name)."
+                }
+                Assert-UniqueValues -Values @($grant.Scopes) -Description "escopos da audience $($grant.Audience) no ambiente $($currentEnvironment.Name)"
+                $grantAudiences += [string]$grant.Audience
             }
+            Assert-UniqueValues -Values $grantAudiences -Description "audiences do client $($certificateBinding.ClientId) no ambiente $($currentEnvironment.Name)"
         }
         if ($currentEnvironment.Sql.TcpEnabled) {
             throw "TCP do SQL deve permanecer desabilitado na baseline: $($currentEnvironment.Name)."

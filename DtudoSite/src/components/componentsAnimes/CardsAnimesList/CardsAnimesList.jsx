@@ -14,6 +14,7 @@ import { TIPO_FILTRO_PADRAO, TIPO_FILTRO_TODOS } from '../../FiltrarPorTipo/tipo
 import CardAnime from '../CardAnime/CardAnime';
 import { ehAnimeAdulto, obterAnoAnime, obterGenerosAnime, obterIdAnime, obterTipoCanonicoAnime, obterTituloAnime, TIPOS_PRINCIPAIS_ANIME } from '@dtudo-anime-content';
 import { buscarAnimesDaApiLocalPorTermo } from '../../../services/apiMyAnimes';
+import { useAnimeStatus } from '../../../hooks/useAnimeStatus';
 
 export default function CardsAnimesList() {
     const { listObjsDetalhesAnimes, isLoading, error, recarregarAnimes } = useContext(AnimesContext);
@@ -127,6 +128,8 @@ export default function CardsAnimesList() {
         return filteredItems.slice(start, start + limit);
     }, [filteredItems, page, limit, totalPages]);
 
+    const statusPorMalId = useAnimeStatus(paginatedItems.map(obterIdAnime));
+
     const handleSearch = useCallback((valor) => {
         setSearchTerm(valor);
         setPage(1);
@@ -191,7 +194,7 @@ export default function CardsAnimesList() {
             <div className={styles.divContainerListaCardsAnimes}>
                 {paginatedItems?.map((animePg) => (
                     <Link key={obterIdAnime(animePg)} to={`/animes/animes-detalhes/${obterIdAnime(animePg)}`}>
-                        <CardAnime anime={animePg} />
+                        <CardAnime anime={animePg} status={statusPorMalId[obterIdAnime(animePg)]} />
                     </Link>
                 ))}
             </div>

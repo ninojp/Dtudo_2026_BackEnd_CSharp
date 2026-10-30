@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
@@ -17,6 +18,8 @@ using Serilog.Events;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMonitoringPersistence(builder.Configuration);
+// As raizes so leem disco: ficam disponiveis para descoberta e varredura de pasta mesmo sem o banco de monitoramento.
+builder.Services.TryAddSingleton(MonitoringRoots.Collections());
 
 builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 {
@@ -58,6 +61,11 @@ builder.Services.AddSingleton<IFileStorageLifecycleService, FileStorageLifecycle
 builder.Services.AddSingleton<FileStorageHealthService>();
 builder.Services.AddHostedService<FileStorageRootValidationHostedService>();
     builder.Services.AddSingleton<CollectionSyncDiscoveryService>();
+builder.Services.AddOptions<AnimeFolderScanOptions>()
+    .Bind(builder.Configuration.GetSection(AnimeFolderScanOptions.SectionName))
+    .Validate(AnimeFolderScanOptions.IsValid, "Monitoring:AnimeFolderScan possui valores invalidos.")
+    .ValidateOnStart();
+builder.Services.AddSingleton<AnimeFolderScanService>();
 builder.Services.AddHostedService<FileStorageReconciliationHostedService>();
 
 var configuredMaxFileSize = builder.Configuration.GetValue<long?>("FileStorage:Limits:MaxFileSizeBytes")

@@ -2,7 +2,9 @@
 
 ## Working conventions
 
-- Prefer reusing existing components, contexts, hooks, services, and routes before creating new ones.
+- O projeto principal é o `WinAppDtudo`: é por ele que o proprietário consulta, cadastra e manipula dados, faz consultas externas e executa os demais projetos. Ele deve controlar o banco local (via `ApiMyAnimes`) e os arquivos em disco (via `ApiFileStorage`). O projeto é pessoal, de um único desenvolvedor, sem versão de produção; não propor controle de versão avançado, CI ou implantação.
+- A documentação fica em `docs\` (somente arquivos `.md`, sem subpastas, um por projeto: `00_Solucao.md`, `01_Solucao_Seguranca.md`, `02_Solucao_Operacao.md`, `10_`/`11_` apps, `20_`–`26_` APIs, `30_LibDtudo.Shared.md`). Atualize o arquivo do projeto afetado ao mudar comportamento. Não altere `docs\TextosTemp.md` (arquivo pessoal temporário).
+- Prefer reusing
 - Keep file and folder names consistent with the current project structure.
 - Preserve the current architecture unless the user explicitly asks for a refactor.
 - When refactoring controllers in this repository, preserve and correct existing XML/Swagger comments instead of removing them.

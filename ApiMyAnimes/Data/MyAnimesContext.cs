@@ -36,6 +36,18 @@ public class MyAnimesContext: DbContext
     /// </summary>
     public DbSet<SecurityAuditEvent> SecurityAuditEvents { get; set; }
 
+    /// <summary>
+    /// Episodios vistos por usuario. Dado pessoal isolado por <see cref="AnimeEpisodeWatch.AccountId"/>.
+    /// </summary>
+    public DbSet<AnimeEpisodeWatch> AnimeEpisodeWatches => Set<AnimeEpisodeWatch>();
+
+    /// <summary>Ultimo status persistido da pasta de cada anime (calculado sob demanda).</summary>
+    public DbSet<AnimeFolderStatus> AnimeFolderStatuses => Set<AnimeFolderStatus>();
+
+    public DbSet<AnimeFolderRefreshRun> AnimeFolderRefreshRuns => Set<AnimeFolderRefreshRun>();
+
+    public DbSet<AnimeFolderRefreshItem> AnimeFolderRefreshItems => Set<AnimeFolderRefreshItem>();
+
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         EnsureAuditEventsAppendOnly();
@@ -96,6 +108,60 @@ public class MyAnimesContext: DbContext
         modelBuilder.Entity<Anime>()
             .Property(a => a.MalId)
             .ValueGeneratedNever(); // Desabilita auto-incremento
+
+        modelBuilder.Entity<AnimeEpisodeWatch>(entity =>
+        {
+            entity.ToTable("AnimeEpisodeWatches", table =>
+            {
+                table.HasCheckConstraint("CK_AnimeEpisodeWatches_MalId", "[MalId] > 0");
+                table.HasCheckConstraint("CK_AnimeEpisodeWatches_EpisodeNumber", "[EpisodeNumber] >= 1");
+            });
+            // A chave composta tambem serve as consultas por (AccountId, MalId): o indice clusterizado cobre esse prefixo.
+            entity.HasKey(watch => new { watch.AccountId, watch.MalId, watch.EpisodeNumber });
+            entity.Property(watch => watch.AccountId)
+                .HasMaxLength(AnimeEpisodeWatch.AccountIdMaxLength)
+                .IsRequired();
+            entity.Property(watch => watch.WatchedAtUtc)
+                .HasPrecision(7)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<AnimeFolderStatus>(entity =>
+        {
+            entity.ToTable("AnimeFolderStatus", table =>
+            {
+                table.HasCheckConstraint("CK_AnimeFolderStatus_MalId", "[MalId] > 0");
+                table.HasCheckConstraint("CK_AnimeFolderStatus_VideoCount", "[VideoCount] >= 0");
+                table.HasCheckConstraint("CK_AnimeFolderStatus_State", "[State] IN ('none', 'partial', 'complete')");
+            });
+            entity.HasKey(status => status.MalId);
+            entity.Property(status => status.MalId).ValueGeneratedNever();
+            entity.Property(status => status.RootKey).HasMaxLength(AnimeFolderStatus.RootKeyMaxLength).IsRequired();
+            entity.Property(status => status.RelativePath).HasColumnType("nvarchar(max)").IsRequired();
+            entity.Property(status => status.State).HasMaxLength(AnimeFolderStatus.StateMaxLength).IsRequired();
+            entity.Property(status => status.CheckedAtUtc).HasPrecision(7).IsRequired();
+            entity.HasIndex(status => status.MyAnimeId);
+        });
+        modelBuilder.Entity<AnimeFolderRefreshRun>(entity =>
+        {
+            entity.ToTable("AnimeFolderRefreshRuns");
+            entity.HasKey(run => run.Id);
+            entity.Property(run => run.Status).HasMaxLength(30).IsRequired();
+            entity.Property(run => run.RequestedBy).HasMaxLength(AnimeFolderRefreshRun.RequestedByMaxLength).IsRequired();
+            entity.Property(run => run.Error).HasMaxLength(AnimeFolderRefreshRun.ErrorMaxLength);
+            entity.HasIndex(run => new { run.StartedAtUtc, run.Id });
+        });
+        modelBuilder.Entity<AnimeFolderRefreshItem>(entity =>
+        {
+            entity.ToTable("AnimeFolderRefreshItems");
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.Outcome).HasMaxLength(30).IsRequired();
+            entity.Property(item => item.State).HasMaxLength(AnimeFolderStatus.StateMaxLength);
+            entity.Property(item => item.Detail).HasMaxLength(AnimeFolderRefreshItem.DetailMaxLength).IsRequired();
+            entity.HasOne<AnimeFolderRefreshRun>().WithMany().HasForeignKey(item => item.RunId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(item => new { item.RunId, item.Id });
+        });
 
         modelBuilder.Entity<SecurityAuditEvent>(entity =>
         {

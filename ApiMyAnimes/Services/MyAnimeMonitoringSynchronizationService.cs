@@ -271,7 +271,7 @@ public sealed class MyAnimeMonitoringSynchronizationService(
         CollectionSyncFolderDto folder,
         IReadOnlyList<CatalogItem> catalog)
     {
-        var titleCandidates = catalog.Where(item => NamesShareFirstWords(folder.RelativePath, item.Titulo)).ToList();
+        var titleCandidates = catalog.Where(item => FolderNameMatcher.ShareFirstWords(folder.RelativePath, item.Titulo)).ToList();
         var catalogIds = catalog.SelectMany(item => item.AnimesMalId).Where(id => id > 0).ToHashSet();
         var validImageIds = folder.CoverIds.Where(catalogIds.Contains).Distinct().ToArray();
         if (validImageIds.Length == 0)
@@ -298,33 +298,6 @@ public sealed class MyAnimeMonitoringSynchronizationService(
         }
         var coverage = $"{bestScore} de {validImageIds.Length} mal_id validos das imagens correspondem a colecao";
         return (best, best.Count == 1 ? coverage + "; correspondencia priorizada por imagens." : coverage + "; candidatos empatados.");
-    }
-
-    private static bool NamesShareFirstWords(string folderName, string catalogTitle)
-    {
-        var folderWords = GetWords(folderName);
-        var titleWords = GetWords(catalogTitle);
-        var count = Math.Min(4, Math.Min(folderWords.Count, titleWords.Count));
-        return count > 0 && folderWords.Take(count).SequenceEqual(titleWords.Take(count), StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static IReadOnlyList<string> GetWords(string value)
-    {
-        var decomposed = value.Normalize(NormalizationForm.FormD);
-        var words = new List<string>();
-        var current = new StringBuilder();
-        foreach (var character in decomposed)
-        {
-            if (CharUnicodeInfo.GetUnicodeCategory(character) == UnicodeCategory.NonSpacingMark) continue;
-            if (char.IsLetterOrDigit(character))
-            {
-                current.Append(char.ToUpperInvariant(character));
-                continue;
-            }
-            if (current.Length > 0) { words.Add(current.ToString()); current.Clear(); }
-        }
-        if (current.Length > 0) words.Add(current.ToString());
-        return words;
     }
 
     private static List<SyncEventDraft> BuildEvents(

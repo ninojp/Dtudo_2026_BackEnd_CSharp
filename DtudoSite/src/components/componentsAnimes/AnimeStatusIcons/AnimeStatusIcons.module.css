@@ -1,0 +1,46 @@
+.divStatusIcons {
+    --statusCinza: #8a94a6;
+    --statusAzul: var(--corFrontEnd, #4eb7e6);
+    --statusVerde: var(--corProgramacao, #00c86f);
+
+    position: absolute;
+    top: 50%;
+    left: 0.25rem;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    transform: translateY(-50%);
+}
+
+.btnIcone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0.8px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    background-color: rgba(2, 12, 25, 0.72);
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: default;
+}
+
+.btnIcone:focus-visible {
+    outline: 2px solid var(--statusAzul);
+    outline-offset: 1px;
+}
+
+.estadoNone {
+    color: var(--statusCinza);
+}
+
+.estadoPartial {
+    color: var(--statusAzul);
+}
+
+.estadoComplete {
+    color: var(--statusVerde);
+}

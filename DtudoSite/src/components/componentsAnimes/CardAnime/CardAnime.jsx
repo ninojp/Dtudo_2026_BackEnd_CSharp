@@ -1,5 +1,6 @@
 import styles from './CardAnime.module.css';
 import { FaCalendarAlt, FaStar } from 'react-icons/fa';
+import AnimeStatusIcons from '../AnimeStatusIcons/AnimeStatusIcons';
 import {
     obterAnoAnime,
     obterGenerosAnime,
@@ -11,7 +12,7 @@ import {
     obterTituloAnime
 } from '@dtudo-anime-content';
 
-export default function CardAnime({ anime }) {
+export default function CardAnime({ anime, status }) {
     const titulo = obterTituloAnime(anime);
     const tituloAlternativo = obterTituloAlternativoAnime(anime);
     const imagem = obterImagemAnime(anime);
@@ -36,6 +37,11 @@ export default function CardAnime({ anime }) {
                 ) : (
                     <div className={styles.imagemIndisponivel}>Imagem indisponivel</div>
                 )}
+                <AnimeStatusIcons
+                    watchState={status?.watch}
+                    folderState={status?.folder}
+                    like={status?.like ?? null}
+                />
             </figure>
             <div className={styles.divContainerInfo}>
                 {tituloAlternativo && (

@@ -1,6 +1,4 @@
-# PRIMEIRAMENTE, NÃO QUERO QUE LEIA TODA MINHA SOLUÇÃO, POIS ELA É GRANDE E COMPLEXA
-
-## ANOTE, MARQUE, REGISTRE!!!!
+# Meu arquivo TextosTemp.md deve permanecer intocado (não mexa, arquivo pessoal temporario, para lidar as I.As, apenas visualize se necessário).
 
 EU SEMPRE EXECUTO TUDO VIA VS 2026!  
 Estou DESENVOLVENDO e EXECUTANDO (modo Debug) TODA parte de back-end (C#) da minha solução via Visual Studio 2016, e apenas o front-end (React.js) é feito via VS Code (inclusive uso o Chat e agents I.A no VS Code, para auxiliar no desenvolvimento).
@@ -9,8 +7,6 @@ Minha SOLUÇÃO: C:\2026MeusProjetos\Dtudo2026\ (conjunto de projetos) chamada "
 MEU PROJETO PRINCIPAL É WINAPPDTUDO (C:\2026MeusProjetos\Dtudo2026\WinAppDtudo\), ATRAVÉS DELE EU EXECUTO TODAS AS MINHAS AÇÕES  PRINCIPAIS RELACIONADAS À CONSULTA, CADASTRO, MANIPULAÇÃO DE DADOS E EXECUÇÃO DOS DEMAIS PROJETOS (DTUDOSITE).  
 O ponto central é o projeto WinAppDtudo, que é o aplicativo desktop que manipula, faz consultas externas e DEVE CONTROLAR o Banco de dados local (via ApiMyAnimes) e arquivos em disco local (via ApiFileStore).
 
-ESTOU TRABALHANDO LOCALMENTE, SOZINHO NO PROJETO.  
-MEU PORJETO NÃO TEM VERSÃO DE PRODUÇÃO (DEPLOY) AINDA (FUTURAMENTE TERÁ).  
 Lembrando que este meu projeto (é pessoal e apenas eu trabalho nele, portanto não necessita de controle de versão avançado ou integração contínua) está em desenvolvimento e não tem uma versão de produção/deployment ainda.
 
 Projeto LibDtudo.Shared - Biblioteca para compartilhar Dtos, Modelos, Utils... entre os projetos dentro da solução Dtudo2026.
@@ -40,11 +36,6 @@ Atualmente (03/09/2026) foram adicionados (através de I.A) diversos novos proje
 
 Agora eu preciso fazer 3 implementações importantes, mas estou em dúvida por onde começo, quero apenas uma opinião na ordem que devo começar e dicas para facilitar a implementação, que será TODA feita por I.A:
 
-1. Documentar toda solução e seus projetos, na pasta Docs, atualmente temos a documentação toda bagunçada, uma subpasta "security" com arquivos criados na implementação da parte de segurançao, 
-que agora devem ser reorganizados, classificados e separados.  
-Na pasta docs não quero mais subpastas apenas arquivos .md com a documentação ORGANIZADA por projetos, ou seja um arquivo .md para cada projeto e um .md para a as especificações da Solução (todo o projeto). 
-Meu arquivo TextosTemp.md deve permanecer intocado (não mexa, arquivo pessoal temporario, para lidar as I.As, apenas visualize se necessário).
-
 2. implementar um sistema que quando o usuario estiver dentro do site (para entrar no site, atualmente é obrigatório login), 
 na página que lista os cards dos animes, em todos os Cards apareça (no meio da lateral esquerda, flutuando sobre a imagem, em linha vertical)
 os NOVOS ICONES:
@@ -61,6 +52,31 @@ icone na cor VERDE para tem a estrutura de pastas, e dentro TEM as subpastas com
  - Icone Play, para iniciar (reproduzir) a playlist com os episódios. apenas o icone na primeira etapa, esta função será implementada separadamente por ultimo.
 
 3. Atualmente meu front end DtudoSite, está feito em React, Vite, javaScript. Quero REFAZE-LO completamente em React, Next.Js, TypeScript. Mas quero manter toda mesma a logina e exatamente o mesmo visual, aparencia.
+
+RESPOSTA DA I.A:
+Dicas para a implementação toda feita por I.A.
+Geral
+•	Uma tarefa por vez, em um branch por tarefa, com commit ao fim de cada fase. Peça sempre uma fase pequena e verificável.
+•	Peça à I.A. um plano em fases antes de qualquer código. Revise o plano e só então mande executar.
+•	Atualize copilot-instructions.md ao fim de cada tarefa (por exemplo, "docs só em docs\, um arquivo por projeto").
+
+Tarefa 2 (ícones)
+•	Defina o contrato antes do código. Cada ícone tem um estado (nenhum | parcial | completo) calculado no backend e entregue por um endpoint em lote, por exemplo POST /animes/status com a lista de ids da página. Isso evita N requisições, uma por card.
+•	Olho: exige guardar o progresso por usuário (usuário × anime × episódios vistos). Verifique se isso já existe no ApiMyAnimes ou na ApiIdentity.
+•	Pasta: o cálculo é "episódios com arquivo de vídeo / episódios do anime". Isso deve ficar no ApiFileStorage, com cache ou resultado persistido. Não faça varredura de disco a cada requisição. Aproveite o MonitoramentoColecoes.md, que parece cobrir esse caso.
+•	Curtir: deixe para depois, como você disse. Só reserve o espaço no card.
+•	Play: só o ícone, desabilitado ou sem ação.
+•	Faça um componente único (AnimeStatusIcons) com as cores como constantes. Implemente em fases: (a) componente com dados falsos, (b) endpoint do olho, (c) endpoint da pasta.
+Tarefa 3 (Next.js)
+•	Não peça "refaça tudo". Migre por rotas, uma de cada vez, começando por uma página simples e deixando o login para depois de validar o fluxo.
+•	Pontos de risco que a I.A. precisa tratar com cuidado:
+•	O login e o BFF (etapa 17 da segurança). No Next, o BFF pode virar Route Handlers ou Middleware, e isso muda onde os cookies e tokens ficam.
+•	A paridade visual. Copie o CSS e os componentes literalmente. Não deixe a I.A. "melhorar" nada. Use screenshots antes e depois de cada página.
+•	A distinção Server/Client Components. Contextos, hooks e qualquer uso de window ou localStorage precisam de "use client".
+•	TypeScript: converta em duas passadas, primeiro .jsx → .tsx com tipos permissivos e depois tipos estritos. Gere os tipos dos DTOs a partir dos contratos das APIs.
+•	Como o site exige login em tudo, quase nada se beneficia de SSR. Você pode manter a maior parte como Client Components, o que reduz muito o risco da migração.
+
+
 
 COMO SEMPRE! VOU REPETIR!
 Quero uma implementação PROFISSIONAL, COMPLETA E ROBUSTA (mesmo que precise de mais tempo ou reformular grandes partes do projeto, me avise sobre as alterações necessárias neste caso).

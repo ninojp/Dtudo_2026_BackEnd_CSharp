@@ -141,18 +141,14 @@ builder.Services.AddOptions<ServiceTokenIssuerOptions>()
                     !string.IsNullOrWhiteSpace(client.ClientId)
                     && client.CertificateThumbprints.Length is >= 1 and <= 2
                     && client.CertificateThumbprints.All(IsThumbprint)
-                    && client.AllowedScopes.Length > 0
-                    && client.AllowedScopes.Distinct(StringComparer.Ordinal).Count() == client.AllowedScopes.Length
-                    && client.AllowedAudiences.Length > 0
-                    && client.AllowedAudiences.All(IsAbsoluteAudience)
-                    && client.AllowedAudiences.Distinct(StringComparer.Ordinal).Count() == client.AllowedAudiences.Length
+                    && client.HasValidGrants()
                     && client.CertificateThumbprints.Distinct(StringComparer.OrdinalIgnoreCase).Count() == client.CertificateThumbprints.Length)
                 && options.Clients.Select(client => client.ClientId)
                     .Distinct(StringComparer.Ordinal).Count() == options.Clients.Length
                 && options.Clients.SelectMany(client => client.CertificateThumbprints)
                     .Distinct(StringComparer.OrdinalIgnoreCase).Count()
                     == options.Clients.SelectMany(client => client.CertificateThumbprints).Count()),
-        "ServiceAuthentication deve conter clientes, thumbprints, escopos e audiences exclusivos validos quando habilitado.")
+        "ServiceAuthentication deve conter clientes, thumbprints e concessoes (AllowedGrants: audience -> escopos) exclusivos e validos quando habilitado. A forma legada AllowedScopes/AllowedAudiences so vale com uma unica audience e nao pode ser combinada com AllowedGrants.")
     .ValidateOnStart();
 
 var dataProtectionKeyDirectory = new DirectoryInfo(Path.Combine(
@@ -1490,9 +1486,6 @@ static bool UsesConfiguredDatabase(IdentityDatabaseOptions options)
 static bool IsThumbprint(string value) =>
     value.Length == 40
         && value.All(character => char.IsAsciiHexDigit(character));
-
-static bool IsAbsoluteAudience(string value) =>
-    Uri.TryCreate(value, UriKind.Absolute, out _);
 
 static string? GetPrincipalAccountId(ClaimsPrincipal principal) =>
     principal.Identity?.IsAuthenticated == true

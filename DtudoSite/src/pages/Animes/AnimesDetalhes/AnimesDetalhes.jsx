@@ -6,6 +6,7 @@ import { MdMovieCreation } from 'react-icons/md';
 import AuthContext from '../../../context_api/AuthContext/AuthContext';
 import AnimesContext from '../../../context_api/AnimesContext/AnimesContext';
 import { buscarAnimePorMalId } from '../../../services/apiMyAnimes';
+import EpisodiosVistos from '../../../components/componentsAnimes/EpisodiosVistos/EpisodiosVistos';
 import {
     ehAnimeAdulto,
     obterAnimesRelacionados,
@@ -208,6 +209,8 @@ export default function AnimesDetalhes() {
                         </div>
                     ) : <p>Nenhum anime relacionado encontrado.</p>}
                 </section>
+
+                <EpisodiosVistos key={malIdNumerico} malId={malIdNumerico} />
 
                 <dl className={styles.dlMetadados}>
                     {metadados.map(([rotulo, valor]) => (

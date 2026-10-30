@@ -46,6 +46,9 @@ public sealed class GatewayOpenIdConnectOptions
     public string ClientSecret { get; set; } = string.Empty;
 
     public string[] Scopes { get; set; } = [];
+
+    /// <summary>Recursos (audiences) solicitados no login; cada um vira um parametro <c>resource</c> do authorize.</summary>
+    public string[] Resources { get; set; } = [];
 }
 
 public static class GatewayOptionsValidator
@@ -82,7 +85,15 @@ public static class GatewayOptionsValidator
         && !string.IsNullOrWhiteSpace(options.ClientSecret)
         && options.Scopes.Length > 0
         && options.Scopes.Contains("openid", StringComparer.Ordinal)
-        && options.Scopes.Distinct(StringComparer.Ordinal).Count() == options.Scopes.Length;
+        && options.Scopes.Distinct(StringComparer.Ordinal).Count() == options.Scopes.Length
+        && options.Resources.Length > 0
+        && options.Resources.All(IsAbsoluteResourceIndicator)
+        && options.Resources.Distinct(StringComparer.Ordinal).Count() == options.Resources.Length;
+
+    public static bool IsAbsoluteResourceIndicator(string value) =>
+        Uri.TryCreate(value, UriKind.Absolute, out var uri)
+        && string.IsNullOrEmpty(uri.Fragment)
+        && string.Equals(value, value.Trim(), StringComparison.Ordinal);
 
     public static bool IsHttpsOrigin(string value)
     {

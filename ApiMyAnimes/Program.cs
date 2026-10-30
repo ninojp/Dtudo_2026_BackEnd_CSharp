@@ -93,12 +93,16 @@ builder.Services.AddAuthorization(options =>
     ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:health.read", "health.read", "health.read");
     ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:service.mal.read", "service.mal.read", "service.mal.read");
     ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:identity.self.read", "identity.self.read", "identity.self.read");
+    ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:personal.read", "personal.read", "personal.read");
+    ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:personal.write", "personal.write", "personal.write");
 });
 
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddTransient<CorrelationIdDelegatingHandler>();
 builder.Services.AddScoped<AnimeBuscaLocalService>();
 builder.Services.AddScoped<AnimeTitleConflictService>();
+builder.Services.AddScoped<AnimeWatchService>();
 builder.Services.AddScoped<MyAnimeMonitoringSynchronizationService>();
 builder.Services.AddScoped<ISecurityAuditWriter, SecurityAuditWriter>();
 
@@ -140,33 +144,14 @@ builder.Services.AddHttpClient<MyAnimeListImportClient>((serviceProvider, client
     client.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
     client.Timeout = TimeSpan.FromSeconds(30);
 })
-    .ConfigurePrimaryHttpMessageHandler(serviceProvider =>
-    {
-        var options = serviceProvider.GetRequiredService<IOptions<ServiceClientCredentialsOptions>>().Value;
-        if (!options.Enabled)
-        {
-            return new HttpClientHandler();
-        }
-
-        var certificate = serviceProvider.GetRequiredService<ServiceCertificateStore>()
-            .LoadClientCertificate(
-                options.CertificateStore,
-                options.ToBinding(),
-                DateTimeOffset.UtcNow);
-        if (certificate is null)
-        {
-            throw new InvalidOperationException("Certificado de cliente do servico nao encontrado no Certificate Store.");
-        }
-
-        var handler = new HttpClientHandler
-        {
-            ClientCertificateOptions = ClientCertificateOption.Manual
-        };
-        handler.ClientCertificates.Add(certificate);
-        return handler;
-    })
+    .ConfigurePrimaryHttpMessageHandler(serviceProvider => ServiceClientHttpHandlerFactory.Create(
+        serviceProvider.GetRequiredService<IOptions<ServiceClientCredentialsOptions>>().Value,
+        serviceProvider.GetRequiredService<ServiceCertificateStore>()))
     .AddHttpMessageHandler<CorrelationIdDelegatingHandler>()
     .AddHttpMessageHandler<ServiceAccessTokenHandler>();
+
+// Cliente servico-a-servico da ApiFileStorage + atualizacao do status de pasta dos animes.
+builder.Services.AddAnimeFolderStatus(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 

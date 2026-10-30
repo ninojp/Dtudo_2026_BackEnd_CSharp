@@ -37,6 +37,9 @@
 }
 
 .figureImagemAnimacao {
+    position: relative;
+    width: 180px;
+    align-self: center;
     display: flex;
     justify-content: center;
     align-items: center;

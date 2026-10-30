@@ -106,6 +106,7 @@ public sealed class OpenIddictConfigurationSeeder
         gatewayDescriptor.RedirectUris.Add(new Uri(_options.Gateway.RedirectUri, UriKind.Absolute));
         gatewayDescriptor.PostLogoutRedirectUris.Add(new Uri(_options.Gateway.PostLogoutRedirectUri, UriKind.Absolute));
         gatewayDescriptor.AddResourcePermissions(
+            "urn:dtudo:api-my-animes",
             "urn:dtudo:api-musicx",
             "urn:dtudo:api-discogs");
         gatewayDescriptor.Requirements.Add(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange);
@@ -115,9 +116,12 @@ public sealed class OpenIddictConfigurationSeeder
             OpenIddictConstants.Permissions.Endpoints.Authorization,
             OpenIddictConstants.Permissions.Endpoints.Token,
             OpenIddictConstants.Permissions.Endpoints.EndSession,
+            OpenIddictConstants.Permissions.Endpoints.Revocation,
             OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+            OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
             OpenIddictConstants.Permissions.ResponseTypes.Code,
-            OpenIddictConstants.Permissions.Prefixes.Scope + OpenIddictConstants.Scopes.OpenId
+            OpenIddictConstants.Permissions.Prefixes.Scope + OpenIddictConstants.Scopes.OpenId,
+            OpenIddictConstants.Permissions.Prefixes.Scope + OpenIddictConstants.Scopes.OfflineAccess
         }
         .Concat(
             _options.Gateway.Scopes
