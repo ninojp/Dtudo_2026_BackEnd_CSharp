@@ -3,6 +3,7 @@ using System.Text;
 using ApiIdentity.Data;
 using ApiIdentity.Models;
 using ApiIdentity.Provisioning;
+using LibDtudo.Shared.Dtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiIdentity.Privacy;
@@ -27,15 +28,18 @@ public sealed class IdentityPrivacyService
 
     private readonly IdentityDbContext _context;
     private readonly IdentityProvisioningAuditWriter _auditWriter;
+    private readonly IMyAnimesPrivacyClient _myAnimesClient;
     private readonly TimeProvider _timeProvider;
 
     public IdentityPrivacyService(
         IdentityDbContext context,
         IdentityProvisioningAuditWriter auditWriter,
+        IMyAnimesPrivacyClient myAnimesClient,
         TimeProvider timeProvider)
     {
         _context = context;
         _auditWriter = auditWriter;
+        _myAnimesClient = myAnimesClient;
         _timeProvider = timeProvider;
     }
 
@@ -580,45 +584,131 @@ public sealed class IdentityPrivacyService
         return ToDeletionRequestView(deletionRequest);
     }
 
-    public async Task<bool> ProcessDueDeletionAsync(
+    /// <summary>
+    /// Ids dos pedidos de exclusao pendentes cuja carencia terminou, do mais antigo ao mais novo, no maximo <paramref name="batchSize"/>.
+    /// Ignora pedidos que falharam ha menos de <paramref name="retryDelay"/> e contas bootstrap (protegidas).
+    /// </summary>
+    public async Task<IReadOnlyList<Guid>> GetDueDeletionRequestIdsAsync(
+        int batchSize,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken = default)
+    {
+        var now = _timeProvider.GetUtcNow();
+        var retryThreshold = now - retryDelay;
+        return await _context.PersonalDataDeletionRequests
+            .AsNoTracking()
+            .Where(request => request.Status == PersonalDataDeletionStatuses.Pending
+                && request.ScheduledForUtc <= now
+                && (request.LastAttemptAtUtc == null || request.LastAttemptAtUtc <= retryThreshold)
+                && !_context.BootstrapStates.Any(state => state.BootstrappedAccountId == request.AccountId))
+            .OrderBy(request => request.ScheduledForUtc)
+            .Select(request => request.Id)
+            .Take(batchSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Processa um pedido vencido: PRIMEIRO apaga (idempotente) os dados da conta na ApiMyAnimes, sem nenhuma transacao de banco aberta
+    /// durante a chamada HTTP, e SO DEPOIS remove os dados locais e marca o pedido como concluido (na mesma transacao local).
+    /// Se a ApiMyAnimes falhar, nada local e removido, o pedido continua <c>Pending</c> com tentativa e ultimo erro registrados e
+    /// uma nova tentativa e possivel. Conta bootstrap nunca e excluida.
+    /// </summary>
+    public async Task<DeletionProcessingOutcome> ProcessDueDeletionAsync(
         Guid deletionRequestId,
         CancellationToken cancellationToken = default)
     {
         var deletionRequest = await _context.PersonalDataDeletionRequests
             .SingleOrDefaultAsync(request => request.Id == deletionRequestId
                 && request.Status == PersonalDataDeletionStatuses.Pending, cancellationToken);
-        if (deletionRequest is null
-            || deletionRequest.ScheduledForUtc > _timeProvider.GetUtcNow()
-            || await IsBootstrappedAccountAsync(deletionRequest.AccountId, cancellationToken))
+        if (deletionRequest is null)
         {
-            return false;
+            return DeletionProcessingOutcome.NotPending;
         }
 
-        var account = await _context.Users
-            .SingleOrDefaultAsync(item => item.Id == deletionRequest.AccountId, cancellationToken);
-        if (account is null)
+        if (deletionRequest.ScheduledForUtc > _timeProvider.GetUtcNow())
         {
-            return false;
+            return DeletionProcessingOutcome.NotDue;
         }
 
-        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-        await RemoveAccountDataAsync(account.Id, cancellationToken);
+        var accountId = deletionRequest.AccountId;
+        if (await IsBootstrappedAccountAsync(accountId, cancellationToken))
+        {
+            return DeletionProcessingOutcome.Protected;
+        }
 
-        var processedAtUtc = _timeProvider.GetUtcNow();
-        deletionRequest.Status = PersonalDataDeletionStatuses.Completed;
-        deletionRequest.ProcessedAtUtc = processedAtUtc;
-        deletionRequest.RetentionUntilUtc = processedAtUtc.AddMonths(12);
-        _auditWriter.Record(
-            account.Id,
-            "privacy.deletion-completed",
-            $"account:{account.Id}",
-            "succeeded",
-            "privacy-worker",
-            "Dados pessoais removidos; pedido e auditoria minima permanecem sob retencao legal.");
-        await _context.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        return true;
+        try
+        {
+            await _myAnimesClient.EraseAsync(accountId, cancellationToken);
+        }
+        catch (MyAnimesPrivacyUnavailableException exception)
+        {
+            deletionRequest.AttemptCount++;
+            deletionRequest.LastAttemptAtUtc = _timeProvider.GetUtcNow();
+            deletionRequest.LastError = TruncateError(exception.Code);
+            _auditWriter.Record(
+                accountId,
+                "privacy.deletion-failed",
+                $"account:{accountId}",
+                "failed",
+                "privacy-worker",
+                $"Exclusao na ApiMyAnimes nao concluida ({deletionRequest.LastError}); dados locais preservados e pedido mantido pendente para nova tentativa.");
+            return await TrySaveAsync(cancellationToken)
+                ? DeletionProcessingOutcome.DownstreamFailed
+                : DeletionProcessingOutcome.NotPending;
+        }
+
+        try
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            var account = await _context.Users
+                .SingleOrDefaultAsync(item => item.Id == accountId, cancellationToken);
+            if (account is not null)
+            {
+                await RemoveAccountDataAsync(account.Id, cancellationToken);
+            }
+
+            var processedAtUtc = _timeProvider.GetUtcNow();
+            deletionRequest.Status = PersonalDataDeletionStatuses.Completed;
+            deletionRequest.ProcessedAtUtc = processedAtUtc;
+            deletionRequest.RetentionUntilUtc = processedAtUtc.AddMonths(12);
+            deletionRequest.AttemptCount++;
+            deletionRequest.LastAttemptAtUtc = processedAtUtc;
+            deletionRequest.LastError = null;
+            _auditWriter.Record(
+                accountId,
+                "privacy.deletion-completed",
+                $"account:{accountId}",
+                "succeeded",
+                "privacy-worker",
+                "Dados pessoais removidos (ApiIdentity e ApiMyAnimes); pedido e auditoria minima permanecem sob retencao legal.");
+            await _context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return DeletionProcessingOutcome.Completed;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Outro processamento concluiu o mesmo pedido; a exclusao remota e idempotente.
+            return DeletionProcessingOutcome.NotPending;
+        }
     }
+
+    private async Task<bool> TrySaveAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return false;
+        }
+    }
+
+    private static string TruncateError(string code) =>
+        code.Length <= PersonalDataDeletionRequest.LastErrorMaxLength
+            ? code
+            : code[..PersonalDataDeletionRequest.LastErrorMaxLength];
 
     public async Task<PersonalDataExport?> ExportAsync(
         string accountId,
@@ -662,17 +752,36 @@ public sealed class IdentityPrivacyService
             .ToListAsync(cancellationToken);
 
         var generatedAtUtc = _timeProvider.GetUtcNow();
+        MyAnimesPrivacyExportDto myAnimes;
+        try
+        {
+            // Sem a ApiMyAnimes a exportacao falharia incompleta: nao ha export parcial silencioso (o chamador responde 503).
+            myAnimes = await _myAnimesClient.ExportAsync(accountId, cancellationToken);
+        }
+        catch (MyAnimesPrivacyUnavailableException exception)
+        {
+            _auditWriter.Record(
+                accountId,
+                "privacy.data-export",
+                $"account:{accountId}",
+                "failed",
+                "self-service",
+                $"Exportacao nao gerada: ApiMyAnimes indisponivel ({exception.Code}); nenhum dado foi entregue.");
+            await _context.SaveChangesAsync(cancellationToken);
+            throw;
+        }
+
         _auditWriter.Record(
             accountId,
             "privacy.data-export",
             $"account:{accountId}",
             "succeeded",
             "self-service",
-            "Exportacao completa dos dados pessoais sob controle da conta; segredos de autenticacao foram omitidos.");
+            "Exportacao completa dos dados pessoais sob controle da conta (ApiIdentity e ApiMyAnimes); segredos de autenticacao foram omitidos.");
         await _context.SaveChangesAsync(cancellationToken);
 
         return new PersonalDataExport(
-            "1",
+            PersonalDataExportVersions.Current,
             generatedAtUtc,
             account.Id,
             account.UserName,
@@ -683,7 +792,8 @@ public sealed class IdentityPrivacyService
             favorites,
             preferences,
             lists,
-            deletionRequests);
+            deletionRequests,
+            myAnimes);
     }
 
     private async Task<bool> AccountExistsAsync(

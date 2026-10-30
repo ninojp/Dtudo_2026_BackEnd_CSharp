@@ -17,7 +17,7 @@ namespace ApiIdentity.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -751,6 +751,11 @@ namespace ApiIdentity.Migrations
                         },
                         new
                         {
+                            Key = "service.privacy.myanimes",
+                            Description = "Chamada interna (ApiIdentity para ApiMyAnimes) de exportacao e exclusao de dados pessoais por conta."
+                        },
+                        new
+                        {
                             Key = "filesystem.command",
                             Description = "Operacao de arquivos por ID e comando autorizado."
                         });
@@ -766,6 +771,16 @@ namespace ApiIdentity.Migrations
                         .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("LastAttemptAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("ProcessedAtUtc")
                         .HasColumnType("datetimeoffset");
@@ -799,8 +814,14 @@ namespace ApiIdentity.Migrations
 
                     b.HasIndex("AccountId", "Status");
 
+                    b.HasIndex("Status", "ScheduledForUtc");
+
                     b.ToTable("IdentityPersonalDataDeletionRequests", null, t =>
                         {
+                            t.HasCheckConstraint("CK_IdentityPersonalDataDeletionRequests_AttemptCount", "[AttemptCount] >= 0");
+
+                            t.HasCheckConstraint("CK_IdentityPersonalDataDeletionRequests_LastAttemptAtUtc", "[LastAttemptAtUtc] IS NULL OR DATEPART(TZOFFSET, [LastAttemptAtUtc]) = 0");
+
                             t.HasCheckConstraint("CK_IdentityPersonalDataDeletionRequests_ProcessedAtUtc", "[ProcessedAtUtc] IS NULL OR DATEPART(TZOFFSET, [ProcessedAtUtc]) = 0");
 
                             t.HasCheckConstraint("CK_IdentityPersonalDataDeletionRequests_RetentionUntilUtc", "[RetentionUntilUtc] IS NULL OR DATEPART(TZOFFSET, [RetentionUntilUtc]) = 0");

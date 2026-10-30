@@ -149,6 +149,9 @@ builder.Services.AddOptions<ServiceTokenIssuerOptions>()
                     .Distinct(StringComparer.OrdinalIgnoreCase).Count()
                     == options.Clients.SelectMany(client => client.CertificateThumbprints).Count()),
         "ServiceAuthentication deve conter clientes, thumbprints e concessoes (AllowedGrants: audience -> escopos) exclusivos e validos quando habilitado. A forma legada AllowedScopes/AllowedAudiences so vale com uma unica audience e nao pode ser combinada com AllowedGrants.")
+    .Validate(
+        options => !options.Enabled || options.Clients.All(PrivacyServiceGrantRules.IsAllowed),
+        $"O escopo {PrivacyServiceGrantRules.Scope} so pode ser concedido para a audience {PrivacyServiceGrantRules.Audience}.")
     .ValidateOnStart();
 
 var dataProtectionKeyDirectory = new DirectoryInfo(Path.Combine(
@@ -228,6 +231,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IdentityProvisioningAuditWriter>();
 builder.Services.AddScoped<IdentityPrivacyService>();
+builder.Services.AddPrivacyIntegration(builder.Configuration);
 builder.Services.AddScoped<AccountProvisioningService>();
 builder.Services.AddScoped<IdentitySecurityAuditWriter>();
 builder.Services.AddScoped<SecuritySessionService>();
@@ -1449,8 +1453,20 @@ personal.MapPost("/data-export", async (
         return Results.Unauthorized();
     }
 
-    var result = await service.ExportAsync(accountId, cancellationToken);
-    return result is null ? Results.NotFound() : Results.Ok(result);
+    try
+    {
+        var result = await service.ExportAsync(accountId, cancellationToken);
+        return result is null ? Results.NotFound() : Results.Ok(result);
+    }
+    catch (MyAnimesPrivacyUnavailableException)
+    {
+        // Sem a ApiMyAnimes a exportacao ficaria incompleta: nenhuma exportacao parcial e entregue.
+        httpContext.Response.Headers.RetryAfter = "60";
+        return Results.Problem(
+            statusCode: StatusCodes.Status503ServiceUnavailable,
+            title: "Exportacao temporariamente indisponivel.",
+            detail: "Parte dos dados pessoais nao pode ser lida agora. Tente novamente em instantes.");
+    }
 }).RequireAuthorization(privacyExportPolicy);
 
 personal.MapPost("/deletion-request", async (

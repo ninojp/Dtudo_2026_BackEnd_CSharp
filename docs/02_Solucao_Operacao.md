@@ -115,6 +115,23 @@ Regras comuns:
 - IIS/TLS: TLS 1.2+ (desativação de 1.0/1.1 via Schannel é opt-in), HSTS, cabeçalhos de segurança, limite de 50 MiB, remoção de `X-Powered-By`, backup de configuração IIS com `appcmd`.
 - Tarefas que mudam o Schannel, IIS, SQL ou ACL de chave privada exigem elevação e confirmação explícita.
 
+## Habilitar o service-to-service e o worker LGPD (ApiIdentity → ApiMyAnimes)
+
+A exportação e a exclusão LGPD do progresso de episódios usam client credentials + mTLS entre a [ApiIdentity](21_ApiIdentity.md) e os endpoints internos da [ApiMyAnimes](22_ApiMyAnimes.md). **Tudo vem desabilitado**; nesse estado a exportação responde `503` e os pedidos de exclusão vencidos ficam `Pending` (comportamento seguro). Valores reais (thumbprints, client IDs, URLs) ficam só em User Secrets/variáveis de ambiente protegidas, nunca no repositório. Ordem:
+
+1. **Migração da ApiIdentity** (gerada, não aplicada): `dotnet ef database update --project ApiIdentity\ApiIdentity.csproj --startup-project ApiIdentity\ApiIdentity.csproj`.
+2. **Certificados:** um certificado de cliente (EKU de cliente, chave privada acessível à conta do processo; ver `Invoke-DtudoInfrastructureHardening.ps1 -ConfigureCertificateAcl`) para o client `api-identity`, no store configurado.
+3. **ApiIdentity — emissor:** `ServiceAuthentication:Enabled=true` e, em `ServiceAuthentication:Clients`, o client `api-identity` com `CertificateThumbprints` e `AllowedGrants` = `{ Audience: urn:dtudo:api-my-animes, Scopes: [service.privacy.myanimes] }`. A ApiIdentity não inicia se esse escopo for concedido a outra audiência.
+4. **ApiIdentity — credenciais de saída:** `ServiceAuthentication:ApiMyAnimes` com `Enabled=true`, `TokenEndpoint` (o próprio `/connect/token` da ApiIdentity, HTTPS), `ClientId` `api-identity`, `CertificateThumbprints` e store; `Audience` e `Scopes` já vêm fixos.
+5. **ApiMyAnimes:** `InternalServiceAuthentication:Enabled=true` e `Clients` com `ClientId` `api-identity` e os mesmos thumbprints (rotação: novo thumbprint primeiro e `PreviousCertificateAcceptedUntilUtc` para o antigo). O Kestrel passa a pedir certificado de cliente opcional nessa API.
+6. **ApiIdentity — destino:** `PrivacyIntegration:MyAnimes:BaseUrl` (HTTPS da ApiMyAnimes; em Development `https://localhost:63980/`). Reiniciar as duas APIs.
+7. **Teste manual da exportação** (`POST /identity/me/data-export` com um usuário): deve trazer `exportVersion` `"2"` e a seção `myAnimes`.
+8. **Worker:** `PrivacyDeletionWorker:Enabled=true` (ajustes: `PollIntervalSeconds`, `InitialDelaySeconds`, `BatchSize`, `RetryDelayMinutes`). O log (Seq) registra a configuração ao iniciar; com `Enabled=false` registra "Worker de exclusao LGPD desabilitado por configuracao".
+
+**Acompanhamento:** pedidos pendentes e falhas ficam em `IdentityPersonalDataDeletionRequests` (`Status`, `ScheduledForUtc`, `AttemptCount`, `LastAttemptAtUtc`, `LastError` com código curto: `not-configured`, `http-503`, `timeout`, `network`, `service-auth-unavailable`, `token-http-NNN`, `invalid-response`). A auditoria fica em `IdentityProvisioningAuditEvents` (`privacy.deletion-failed`/`privacy.deletion-completed`) e, na ApiMyAnimes, em `SecurityAuditEvents` (apenas hash curto da conta). Falhas são repetidas após `RetryDelayMinutes`; nunca se marca `Completed` com dado remanescente. Se `AttemptCount` crescer sem parar, verificar certificados/thumbprints, a allowlist da ApiMyAnimes, `BaseUrl` e a saúde das duas APIs. Para pausar, `PrivacyDeletionWorker:Enabled=false` e reiniciar. A conta bootstrap é sempre ignorada.
+
+**Status:** implementado e testado com substitutos; **não validado ao vivo** até os itens 2–8 estarem aplicados no ambiente.
+
 ## Painel de saúde e alertas
 
 O WinApp possui a aba **Painel de Saúde** (`FUC_PainelSaude`), alimentada por `WinAppHealthMonitoringService`, com timer de 60 s:

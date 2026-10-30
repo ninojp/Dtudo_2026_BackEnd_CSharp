@@ -24,6 +24,7 @@ public static class AuthorizationCatalog
         public const string PrivacyDelete = "privacy.delete";
         public const string HealthRead = "health.read";
         public const string ServiceMalRead = "service.mal.read";
+        public const string ServicePrivacyMyAnimes = "service.privacy.myanimes";
         public const string FilesystemCommand = "filesystem.command";
     }
 
@@ -41,6 +42,7 @@ public static class AuthorizationCatalog
         new(Permissions.PrivacyDelete, "Solicitacao de exclusao dos dados do proprio usuario."),
         new(Permissions.HealthRead, "Leitura do health minimo restrito."),
         new(Permissions.ServiceMalRead, "Chamada interna autorizada a dados MyAnimeList."),
+        new(Permissions.ServicePrivacyMyAnimes, "Chamada interna (ApiIdentity para ApiMyAnimes) de exportacao e exclusao de dados pessoais por conta."),
         new(Permissions.FilesystemCommand, "Operacao de arquivos por ID e comando autorizado.")
     ];
 

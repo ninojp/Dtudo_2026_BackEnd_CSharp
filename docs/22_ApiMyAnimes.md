@@ -55,6 +55,7 @@ O contexto é `MyAnimesContext`. Tabelas e papéis:
 | `catalog.delete` | exclusões |
 | `health.read` | `Health` e Swagger (somente em Development) |
 | `service.mal.read`, `identity.self.read` | definidas na configuração de autorização (uso por serviço/identidade; ver [01_Solucao_Seguranca.md](01_Solucao_Seguranca.md)) |
+| `service.privacy.myanimes` | `POST apiLocal/internal/privacy/export` e `.../erase` (LGPD por conta; **somente** conta de serviço da [ApiIdentity](21_ApiIdentity.md), com mTLS; ver "Endpoints internos de privacidade") |
 
 CORS usa a política `AllowFrontend` com `Cors:AllowedOrigins` (em desenvolvimento, `http://localhost:5173` e `http://localhost:5178`).
 
@@ -80,7 +81,7 @@ Normalização no cadastro: `AnimesRelacionadosIds` mantém só IDs positivos e 
 
 ### `AnimeStatusController` — `POST apiLocal/Anime/status` (`catalog.read`)
 
-Status por anime **do usuário autenticado**, em lote, para os ícones dos cards do [DtudoSite](10_DtudoSite.md). Chega pelo [Gateway](20_DtudoGateway.md) (`POST /api/catalog/animes/status`) com o Bearer da sessão; contrato completo em `docs\TEMP_Plano_Icones_Cards.md`.
+Status por anime **do usuário autenticado**, em lote, para os ícones dos cards do [DtudoSite](10_DtudoSite.md). Chega pelo [Gateway](20_DtudoGateway.md) (`POST /api/catalog/animes/status`) com o access token da sessão; o contrato do lote está descrito nesta seção e no [20_DtudoGateway.md](20_DtudoGateway.md).
 
 - **Autorização:** policy `permission:catalog.read` (claim `permission` **e** `scope`). Anônimo → `401`; sem permissão/escopo → `403`. A identidade vem **somente** do claim `sub` (`MapInboundClaims=false`); token sem `sub` → `403`. Campos de identidade no corpo são ignorados.
 - **Corpo:** `{ "malIds": [1, 5, 20] }` (`[RequestSizeLimit]` de 16 KiB). Corpo ausente, `malIds` ausente/nulo, tipos inválidos (inclusive inteiros fora do intervalo) → `400`. Mais de **200** itens no corpo → `400` (a contagem considera a lista bruta, antes de descartar repetidos/inválidos). Ids ≤ 0 e repetidos são descartados mantendo a ordem da primeira ocorrência; lista vazia → `{ "items": [] }`.
@@ -136,7 +137,19 @@ Progresso de episódios vistos **do usuário autenticado** (tabela `AnimeEpisode
 - **Concorrência:** colisões de chave primária por requisições simultâneas (idempotência) são tratadas com até 3 tentativas (`ChangeTracker.Clear()` entre elas). Verificado durante o desenvolvimento contra um SQL Server LocalDB descartável (marcações/desmarcações paralelas, `GROUP BY` e check constraint); não há teste automatizado equivalente, pois o EF InMemory não reproduz a colisão.
 - **Total de episódios:** mesma regra do status em lote (`AnimeStatusRules.ResolveTotalEpisodes`); `AnimeStatusRules.ResolveWatchState(watched, total)` calcula o estado.
 - Código: `Controllers\AnimeWatchController.cs`, `Services\AnimeWatchService.cs` (escopo; usa `TimeProvider`), `Services\AnimeWatchContract.cs` (regras, DTOs e resultados), `Data\AnimeEpisodeWatch.cs`.
-- **LGPD:** esse dado pessoal **ainda não** entra na exportação/exclusão de dados da ApiIdentity (ver [01_Solucao_Seguranca.md](01_Solucao_Seguranca.md)).
+- **LGPD:** o progresso entra na exportação e na exclusão de dados da ApiIdentity pelos endpoints internos descritos abaixo.
+
+### `InternalPrivacyController` — `POST apiLocal/internal/privacy/export` e `.../erase` (`service.privacy.myanimes`)
+
+Endpoints **internos** de serviço, chamados apenas pela [ApiIdentity](21_ApiIdentity.md) (exportação e exclusão LGPD por conta). **Sem rota no Gateway e sem CORS.**
+
+- **Acesso:** política `permission:service.privacy.myanimes` com falha fechada. Exige `InternalServiceAuthentication:Enabled=true`; permissão **e** scope no token; `sub == client_id` (token de usuário, mesmo com a claim, é `403`); `client_id` na allowlist; e **certificado mTLS da conexão** registrado para esse client (thumbprint atual ou anterior ainda dentro de `PreviousCertificateAcceptedUntilUtc`). Sem token: `401`; qualquer falha das demais condições: `403`. A permissão não pertence a nenhuma role de usuário.
+- **Contrato:** `POST` com corpo `{ "accountId": "..." }` (conta nunca na URL nem em log). Validação: não vazio/branco, ≤ 128 caracteres, corpo ≤ 1 KiB; inválido → `400` ProblemDetails. Respostas com `Cache-Control: no-store`; outros verbos não são mapeados. Contratos em `LibDtudo.Shared\Dtos\MyAnimesPrivacyContracts.cs`.
+- **`export`:** devolve `schemaVersion` `"1"`, `episodeProgress` (por `malId`: episódios e `watchedAtUtc`) e `folderRefreshRuns` (execução iniciada pela conta: id, estado, datas e contadores). **Nunca devolve caminho físico**, chave de raiz ou dados de outra conta.
+- **`erase`:** apaga todo o progresso da conta (lotes de 1 000) e **anonimiza** `AnimeFolderRefreshRuns.RequestedBy` para `deleted-account` (a execução é dado global do catálogo). É **idempotente**: conta sem dados responde `200` com contadores zerados (nunca `404`). `AnimeFolderStatus` é dado global e não entra.
+- **Auditoria:** `SecurityAuditEvents` (append-only, 12 meses) com a ação, o resultado e apenas um hash curto da conta (`account-hash:<sha256[..16]>`), `deviceId` `internal-service`; nunca o `AccountId`.
+- **Configuração:** `InternalServiceAuthentication` (`Enabled`, `Clients[]` com `ClientId`, `CertificateThumbprints`, `PreviousCertificateAcceptedUntilUtc`); em Development vem `Enabled=false` e `Clients: []`. O Kestrel pede certificado de cliente opcional e o valida contra essa allowlist.
+- Código: `Controllers\InternalPrivacyController.cs`, `Services\AccountPrivacyService.cs`, `Infrastructure\InternalServiceAuthorization.cs`, `Configuration\InternalServiceAuthenticationOptions.cs`.
 
 ### `MyAnimeController` — `apiLocal/MyAnime`
 
@@ -214,6 +227,7 @@ Não há arquivo de imagem local no banco: `ImagensUrlMal` guarda URLs do MyAnim
 | `ServiceAuthentication:ApiFileStorage` | mesma forma da chave acima; `Audience` `urn:dtudo:api-file-storage`, `Scopes` `["filesystem.command"]`; `Enabled=false` em Development; `ClientId` e certificado a configurar pelo dono (ver [21_ApiIdentity.md](21_ApiIdentity.md)) |
 | `FolderStatus:Refresh:MaxConcurrency` | Chamadas simultâneas à ApiFileStorage na atualização (1–16, padrão 4) |
 | `Cors:AllowedOrigins` | Origens do front |
+| `InternalServiceAuthentication` | Allowlist de contas de serviço dos endpoints internos de privacidade: `Enabled` (falso em Development), `Clients[]` (`ClientId` `api-identity`, `CertificateThumbprints`, `PreviousCertificateAcceptedUntilUtc`); valores reais só em segredo/ambiente. Habilitação em [02_Solucao_Operacao.md](02_Solucao_Operacao.md) |
 | `Seq:Url` | Opcional (`http://localhost:5341` em desenvolvimento) |
 
 Observabilidade: Serilog com `SensitiveDataRedactionEnricher` e `RequestCorrelationMiddleware` (`X-Correlation-ID`, compatível com W3C Activity). Swagger apenas em Development, restrito a `health.read`; comentários XML são publicados.
@@ -237,6 +251,8 @@ Ambas foram aplicadas no ambiente local de desenvolvimento. Em outro banco, apli
 
 ## Testes
 
+`InternalPrivacyEndpointTests` (22 casos, Fase 8): exportação/exclusão por conta, isolamento entre contas, idempotência, anonimização de `RequestedBy`, ausência de caminhos nas respostas, `401` sem token, `403` para token de usuário, `sub ≠ client_id`, sem scope, outra permissão, sem certificado/certificado errado, client fora da allowlist e `Enabled=false`, `400` para conta vazia/longa/corpo vazio, só `POST` e auditoria sem o `AccountId` (usa certificado de cliente injetado por header apenas no host de teste).
+
 `ApiMyAnimesTestHost` (helper compartilhado; `CreateAppWith` injeta o `FakeAnimeFolderScanClient` e carga extra), `AnimeFolderMapperTests` (mapeamento por capa, por convenção exata/aproximada, duplicado, ano divergente, ambiguidade, capa na pasta da coleção e não encontrado), `AnimeFolderRefreshServiceTests` (atualização parcial com falha de um anime, disco offline/pasta ausente/listagem truncada preservando o status, `NoLocation`, falha de descoberta isolada por coleção, concorrência máxima, cancelamento, execução órfã/interrompida e paginação do relatório), `AnimeFolderStatusEndpointTests` (autorização 401/403 em todas as rotas, `404`/`503`/`409`, `202` com execução consultável, cancelamento, **lote lendo `folder` da tabela** com não verificado = `none` e `checkedAtUtc` nulo, e **ausência de caminho físico/chave de raiz** nas respostas), `ApiAuthorizationTests`,
 
 ```powershell
@@ -256,4 +272,4 @@ Não há rotas de homologação para `/public` no gateway.
 - **Fora do escopo desta API:** `PasswordHasher`/`ChecaForcaSenha`/`ValidaCPF` na LibDtudo.Shared não são usados aqui (ver [30_LibDtudo.Shared.md](30_LibDtudo.Shared.md)).
 - **Status em lote (Fase 2):** `like` segue neutro até a próxima fase; `folder` passou a ser real na Fase 5; ids inexistentes são omitidos (não há 404 por item); lista bruta acima de 200 é rejeitada com `400` (opção restritiva, em vez de truncar). Usa a policy `catalog.read` existente (não foi criada permissão nova).
 (uso administrativo direto, pelo WinAppDtudo via `Frm_StatusPastas`, Fase 6);
-- **Progresso de episódios (Fase 3):** (1) em outro banco, a migração `AddAnimeEpisodeWatch` precisa ser aplicada manualmente (no local já foi); (2) os tokens do gateway só carregam `personal.read`/`personal.write` depois que a ApiIdentity for reiniciada (o seeder atualiza o cliente) e o usuário **entrar novamente**, senão as rotas respondem `403`; (3) sem FK para `Animes` e sem exportação/exclusão LGPD do dado (ver [01_Solucao_Seguranca.md](01_Solucao_Seguranca.md)); (4) o limite por requisição (5 000 itens) e o teto por anime (10 000) são decisões de proteção do projeto, não do contrato original.
+- **Progresso de episódios (Fase 3):** (1) em outro banco, a migração `AddAnimeEpisodeWatch` precisa ser aplicada manualmente (no local já foi); (2) os tokens do gateway só carregam `personal.read`/`personal.write` depois que a ApiIdentity for reiniciada (o seeder atualiza o cliente) e o usuário **entrar novamente**, senão as rotas respondem `403`; (3) sem FK para `Animes`; exportação e exclusão LGPD pelos endpoints internos (Fase 8), **ainda não validadas ao vivo** (exigem mTLS, `InternalServiceAuthentication` e o worker da ApiIdentity habilitado; ver [02_Solucao_Operacao.md](02_Solucao_Operacao.md)); (4) o limite por requisição (5 000 itens) e o teto por anime (10 000) são decisões de proteção do projeto, não do contrato original.

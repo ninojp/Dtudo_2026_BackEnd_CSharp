@@ -333,6 +333,12 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
                 table.HasCheckConstraint(
                     "CK_IdentityPersonalDataDeletionRequests_RetentionUntilUtc",
                     "[RetentionUntilUtc] IS NULL OR DATEPART(TZOFFSET, [RetentionUntilUtc]) = 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalDataDeletionRequests_AttemptCount",
+                    "[AttemptCount] >= 0");
+                table.HasCheckConstraint(
+                    "CK_IdentityPersonalDataDeletionRequests_LastAttemptAtUtc",
+                    "[LastAttemptAtUtc] IS NULL OR DATEPART(TZOFFSET, [LastAttemptAtUtc]) = 0");
             });
             request.HasKey(item => item.Id);
             request.Property(item => item.AccountId).HasMaxLength(450).IsRequired();
@@ -341,8 +347,11 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             request.Property(item => item.ScheduledForUtc).HasColumnType("datetimeoffset");
             request.Property(item => item.ProcessedAtUtc).HasColumnType("datetimeoffset");
             request.Property(item => item.RetentionUntilUtc).HasColumnType("datetimeoffset");
+            request.Property(item => item.LastAttemptAtUtc).HasColumnType("datetimeoffset");
+            request.Property(item => item.LastError).HasMaxLength(PersonalDataDeletionRequest.LastErrorMaxLength);
             request.Property(item => item.RowVersion).IsRowVersion();
             request.HasIndex(item => new { item.AccountId, item.Status });
+            request.HasIndex(item => new { item.Status, item.ScheduledForUtc });
             request.HasIndex(item => item.AccountId)
                 .IsUnique()
                 .HasFilter("[Status] = 'Pending'")

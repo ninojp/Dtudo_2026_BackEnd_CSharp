@@ -17,6 +17,29 @@ using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// mTLS das rotas internas de privacidade: o certificado de cliente e opcional na conexao (usuarios nao o apresentam),
+// mas, se apresentado, precisa ser de um cliente registrado; a politica de servico exige o certificado correto.
+var configuredInternalServices = builder.Configuration
+    .GetSection(InternalServiceAuthenticationOptions.SectionName)
+    .Get<InternalServiceAuthenticationOptions>() ?? new InternalServiceAuthenticationOptions();
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ConfigureHttpsDefaults(https =>
+    {
+        if (!configuredInternalServices.Enabled) return;
+
+        https.ClientCertificateMode = Microsoft.AspNetCore.Server.Kestrel.Https.ClientCertificateMode.AllowCertificate;
+        https.ClientCertificateValidation = (certificate, _, _) =>
+            certificate is not null
+            && configuredInternalServices.Clients.Any(client =>
+                new ServiceCertificateValidator().Validate(
+                    certificate,
+                    client.ClientId,
+                    client.ToBinding(),
+                    DateTimeOffset.UtcNow).Succeeded);
+    });
+});
+
 builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 {
     loggerConfiguration
@@ -95,7 +118,16 @@ builder.Services.AddAuthorization(options =>
     ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:identity.self.read", "identity.self.read", "identity.self.read");
     ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:personal.read", "personal.read", "personal.read");
     ApiAuthorizationPolicies.AddPermissionPolicy(options, "permission:personal.write", "personal.write", "personal.write");
+    InternalServiceAuthorization.AddPrivacyPolicy(options);
 });
+
+builder.Services.AddOptions<InternalServiceAuthenticationOptions>()
+    .Bind(builder.Configuration.GetSection(InternalServiceAuthenticationOptions.SectionName))
+    .Validate(InternalServiceAuthenticationOptions.IsValid,
+        "InternalServiceAuthentication deve conter clients com client ID e thumbprints validos e exclusivos quando habilitado.")
+    .ValidateOnStart();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IAuthorizationHandler, InternalServiceAuthorizationHandler>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton(TimeProvider.System);
@@ -105,6 +137,7 @@ builder.Services.AddScoped<AnimeTitleConflictService>();
 builder.Services.AddScoped<AnimeWatchService>();
 builder.Services.AddScoped<MyAnimeMonitoringSynchronizationService>();
 builder.Services.AddScoped<ISecurityAuditWriter, SecurityAuditWriter>();
+builder.Services.AddScoped<AccountPrivacyService>();
 
 builder.Services.AddOptions<ApiMyAnimeListOptions>()
     .Bind(builder.Configuration.GetSection(ApiMyAnimeListOptions.SectionName))

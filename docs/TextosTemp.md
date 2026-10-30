@@ -60,13 +60,21 @@ Geral
 •	Peça à I.A. um plano em fases antes de qualquer código. Revise o plano e só então mande executar.
 •	Atualize copilot-instructions.md ao fim de cada tarefa (por exemplo, "docs só em docs\, um arquivo por projeto").
 
-Tarefa 2 (ícones)
-•	Defina o contrato antes do código. Cada ícone tem um estado (nenhum | parcial | completo) calculado no backend e entregue por um endpoint em lote, por exemplo POST /animes/status com a lista de ids da página. Isso evita N requisições, uma por card.
-•	Olho: exige guardar o progresso por usuário (usuário × anime × episódios vistos). Verifique se isso já existe no ApiMyAnimes ou na ApiIdentity.
-•	Pasta: o cálculo é "episódios com arquivo de vídeo / episódios do anime". Isso deve ficar no ApiFileStorage, com cache ou resultado persistido. Não faça varredura de disco a cada requisição. Aproveite o MonitoramentoColecoes.md, que parece cobrir esse caso.
-•	Curtir: deixe para depois, como você disse. Só reserve o espaço no card.
-•	Play: só o ícone, desabilitado ou sem ação.
-•	Faça um componente único (AnimeStatusIcons) com as cores como constantes. Implemente em fases: (a) componente com dados falsos, (b) endpoint do olho, (c) endpoint da pasta.
+Tarefa 2
+Limitação
+O mapeamento 503 do endpoint /identity/me/data-export não tem teste HTTP, porque o projeto de testes da ApiIdentity não tem infraestrutura de token de usuário. A propagação da exceção está coberta no teste do serviço.
+
+Pendências
+•	Ícone "gostei".
+•	Playlist/play.
+•	Retenção do monitoramento da ApiFileStorage.
+
+## Pendências para depois (fora das 8 fases)
+- **Gostei:** modelo (like/dislike por usuário? por anime ou episódio?), endpoint e interação. O ícone e o campo `like` do contrato já ficam reservados.
+- **Play/playlist:** reprodução de episódios (depende de streaming seguro via ApiFileStorage).
+- **LGPD:** progresso de episódios na exportação/exclusão → **Fase 8**. Futuro: incluir o `like` quando existir.
+- **Retenção do histórico de monitoramento** na ApiFileStorage.
+
 Tarefa 3 (Next.js)
 •	Não peça "refaça tudo". Migre por rotas, uma de cada vez, começando por uma página simples e deixando o login para depois de validar o fluxo.
 •	Pontos de risco que a I.A. precisa tratar com cuidado:

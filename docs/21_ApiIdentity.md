@@ -66,6 +66,7 @@ Catálogo central em `AuthorizationCatalog`; cada permissão vira uma policy `pe
 | `privacy.export`, `privacy.delete` | ✔ | ✔ |
 | `health.read`, `filesystem.command` | ✔ | — |
 | `service.mal.read` | só conta de serviço | — |
+| `service.privacy.myanimes` | só conta de serviço (client `api-identity`, apenas para a audiência `urn:dtudo:api-my-animes`) | — |
 
 Matriz de acesso em [01_Solucao_Seguranca.md](01_Solucao_Seguranca.md).
 
@@ -110,10 +111,29 @@ O proprietário é sempre derivado do claim `sub`/`NameIdentifier`; **nenhum `ac
 | `GET/POST/DELETE /identity/me/favorites` | read / write |
 | `GET/PUT/DELETE /identity/me/preferences` (chaves: `catalog-sort`, `language`, `notifications`, `theme`) | read / write |
 | `GET/POST/DELETE /identity/me/lists` e itens (`POST/DELETE`) | read / write |
-| `POST /identity/me/data-export` (JSON v1, sem segredos de autenticação) | `privacy.export` |
+| `POST /identity/me/data-export` (JSON **v2**, sem segredos de autenticação; inclui a seção `myAnimes` com o progresso de episódios; `503` + `Retry-After` se a ApiMyAnimes estiver indisponível) | `privacy.export` |
 | `POST /identity/me/deletion-request` (carência 7 dias, retenção de auditoria 12 meses, idempotente, bloqueada para a conta bootstrap) | `privacy.delete` |
 
-Maioridade é guardada só como `HasConfirmedAdultAge` + `AdultAgeConfirmedAtUtc` (sem data de nascimento). Termos são versionados com hash. O processamento da exclusão existe em `ProcessDueDeletionAsync`, **sem worker operacional**. Essas rotas **não são expostas pelo Gateway** nem consumidas pelo DtudoSite hoje.
+Maioridade é guardada só como `HasConfirmedAdultAge` + `AdultAgeConfirmedAtUtc` (sem data de nascimento). Termos são versionados com hash. A exclusão é processada pelo **worker** descrito em "Integração LGPD com a ApiMyAnimes e worker de exclusão" (desabilitado por padrão). Essas rotas **não são expostas pelo Gateway** nem consumidas pelo DtudoSite hoje.
+
+### Integração LGPD com a ApiMyAnimes e worker de exclusão
+
+**Formato do export (`exportVersion`).** `"1"` = dados da ApiIdentity; `"2"` (atual, `PersonalDataExportVersions.Current`) = `"1"` + `myAnimes` (`schemaVersion` próprio, hoje `"1"`): `episodeProgress` (por `malId`, episódios e `watchedAtUtc`) e `folderRefreshRuns` (execuções de atualização de pasta iniciadas pela conta, sem caminhos). A exportação **nunca é parcial**: se a ApiMyAnimes não responder (indisponível, timeout, rejeição, não configurada), o endpoint responde `503` com `Retry-After`, e o evento de auditoria `privacy.data-export` fica `failed` com um código curto (`http-503`, `timeout`, `network`, `not-configured`…), sem dado pessoal.
+
+**Cliente tipado** (`IMyAnimesPrivacyClient`/`MyAnimesPrivacyClient`, `AddHttpClient`): handler primário com certificado de cliente (mTLS), `CorrelationIdDelegatingHandler` e `ServiceAccessTokenHandler` (token de client credentials do client `api-identity`, escopo `service.privacy.myanimes`, recurso `urn:dtudo:api-my-animes`). Timeout por tentativa e retry limitado com backoff exponencial **somente** para falhas transitórias (rede, timeout, `408`, `429`, `5xx`); `4xx` definitivo, resposta inválida e autenticação de serviço desabilitada/sem certificado não são repetidos. Rotas `POST` com a conta no corpo (nunca na URL): `apiLocal/internal/privacy/export` e `.../erase`.
+
+**Exclusão (`ProcessDueDeletionAsync`)** devolve `DeletionProcessingOutcome` (`Completed`, `NotPending`, `NotDue`, `Protected`, `DownstreamFailed`):
+
+1. valida pedido pendente, carência vencida e conta não-bootstrap (a conta bootstrap nunca é excluída);
+2. chama a exclusão idempotente na ApiMyAnimes **sem transação de banco aberta**;
+3. se falhar: o pedido continua `Pending`, `AttemptCount` e `LastAttemptAtUtc` sobem, `LastError` guarda o código curto (≤ 200), auditoria `privacy.deletion-failed`, nada local é removido;
+4. se tiver sucesso: transação local remove os dados da conta, marca `Completed` (retenção de 12 meses) e audita `privacy.deletion-completed`. Nunca há `Completed` com dado remanescente na ApiMyAnimes. Pedido cuja conta local já não existe é concluído após a exclusão remota idempotente.
+
+**Worker** (`PrivacyDeletionWorker`, `BackgroundService`): **desabilitado por padrão**. A cada `PollIntervalSeconds` seleciona até `BatchSize` pedidos `Pending` vencidos (do mais antigo ao mais novo; ignora contas bootstrap e pedidos que falharam há menos de `RetryDelayMinutes`) e os processa **um por vez**, cada um em um escopo DI próprio (um `DbContext` por pedido). Cancelamento cooperativo no shutdown, `InitialDelaySeconds` antes da primeira varredura (a ApiIdentity precisa estar atendendo o próprio `/connect/token`), falhas inesperadas não derrubam o loop (o pedido continua pendente). Logs sem identificador de conta/e-mail/mensagem de exceção: apenas id do pedido e tipo da exceção. Auditoria em `IdentityProvisioningAuditEvents` (ações `privacy.deletion-failed`/`privacy.deletion-completed`, `deviceId` `privacy-worker`).
+
+**Permissão de serviço.** `service.privacy.myanimes` está no `AuthorizationCatalog` (e na policy `permission:...`), mas **fora de `AllRoles`**: nenhum usuário a recebe. Validações de startup (`ValidateOnStart`): o escopo só pode constar em `AllowedGrants` para a audiência `urn:dtudo:api-my-animes`; `ServiceAuthentication:ApiMyAnimes` (credenciais de saída) exige, quando habilitado, endpoint HTTPS, client ID, thumbprints válidos, audiência e escopo fixos.
+
+**Migração** `AddDeletionRetryTrackingAndPrivacyServicePermission` (gerada, **não aplicada**): colunas `AttemptCount` (`>= 0`), `LastAttemptAtUtc` (offset UTC) e `LastError` (≤ 200) em `IdentityPersonalDataDeletionRequests`, índice `(Status, ScheduledForUtc)` e o registro da permissão de serviço. Aplicar com `dotnet ef database update --project ApiIdentity\ApiIdentity.csproj`.
 
 ## Remoção do login legado
 
@@ -128,15 +148,18 @@ Maioridade é guardada só como `HasConfirmedAdultAge` + `AdultAgeConfirmedAtUtc
 | `LocalProvisioning:AdministrationSecret` | **User Secrets** (Base64Url ≥ 32 bytes) |
 | `IdentitySessions`, `IdentityMfa` | Faixas validadas no startup |
 | `ServiceAuthentication` | `Enabled=false`, `Clients: []`; certificados/thumbprints só em segredo/ambiente |
+| `ServiceAuthentication:ApiMyAnimes` | Credenciais **de saída** para a ApiMyAnimes (`Enabled=false`; `TokenEndpoint`, `ClientId` `api-identity`, `Audience` `urn:dtudo:api-my-animes`, `Scopes` `[service.privacy.myanimes]`, thumbprints, store); valores reais só em segredo/ambiente |
+| `PrivacyIntegration:MyAnimes` | `BaseUrl` HTTPS da ApiMyAnimes (vazia = não configurado: export `503`, exclusão pendente), `RequestTimeoutSeconds` 1–60 (10), `MaxAttempts` 1–5 (3), `RetryBaseDelayMilliseconds` 0–5000 (250) |
+| `PrivacyDeletionWorker` | `Enabled=false` (padrão), `PollIntervalSeconds` 10–86400 (300), `InitialDelaySeconds` 0–3600 (30), `BatchSize` 1–100 (10), `RetryDelayMinutes` 1–1440 (15); fora da faixa → falha de startup |
 | Certificados OpenIddict | Dev: certificados de desenvolvimento (assinatura/criptografia); real: pendente |
 
 ## Testes
 
-`tests\ApiIdentity.Tests` (xUnit; 62 `[Fact]/[Theory]` em 7 arquivos): `AccountProvisioningServiceTests` (bootstrap único, replay, expiração, concorrência), `ApiIdentityStartupTests` (discovery sem registro público, end-session, falha fechada de configuração, policy por permissão, recursos musicx/discogs, **cliente `dtudo-gateway` semeado com os recursos my-animes/musicx/discogs, refresh, revogação e `offline_access`, sem file-storage**)
+`tests\ApiIdentity.Tests` (xUnit; 87 `[Fact]/[Theory]` em 8 arquivos): `AccountProvisioningServiceTests` (bootstrap único, replay, expiração, concorrência), `ApiIdentityStartupTests` (discovery sem registro público, end-session, falha fechada de configuração, policy por permissão, recursos musicx/discogs, **cliente `dtudo-gateway` semeado com os recursos my-animes/musicx/discogs, refresh, revogação e `offline_access`, sem file-storage**, worker desabilitado por padrão e cliente tipado registrado, falha fechada com config do worker fora da faixa e com escopo de privacidade para outra audiência), `IdentityGovernanceDatabaseTests`, `IdentitySecurityServiceTests`, `LocalProvisioningEndpointTests`, `ServiceTokenEndpointTests`, `IdentityPrivacyServiceTests` (export v2 e falha sem export parcial; exclusão chama a ApiMyAnimes antes de remover; falha do cliente mantém `Pending` com `AttemptCount`/`LastError` e o retry conclui; seleção de vencidos respeitando carência, `RetryDelayMinutes`, lote e conta bootstrap; worker um por vez, lote limitado e cancelamento; permissão de serviço fora das roles; usa SQL Server LocalDB com migrações e um `FakeMyAnimesPrivacyClient`) e `MyAnimesPrivacyClientTests` (retry limitado, `4xx` sem retry, rede/timeout, autenticação de serviço indisponível, resposta inválida, não configurado, conta inválida, cancelamento, validação de options e `PrivacyServiceGrantRules`). Não há teste HTTP do mapeamento `503` do `/identity/me/data-export` (sem infraestrutura de token de usuário nesse projeto); a propagação da exceção é coberta no serviço.
 
 ## Pendências/Divergências
 
-- Sem worker de purge/processamento de exclusão LGPD.
+- Worker de exclusão LGPD e integração com a ApiMyAnimes implementados e testados com substitutos, mas **não validados ao vivo** (exigem `ServiceAuthentication` real, certificados, client `api-identity` e `PrivacyDeletionWorker:Enabled=true`; ver [02_Solucao_Operacao.md](02_Solucao_Operacao.md)). A migração `AddDeletionRetryTrackingAndPrivacyServicePermission` precisa ser aplicada.
 - Execução limitada a Development/Windows; certificados reais, issuer público, ACLs e `ServiceAuthentication` real ficam para homologação.
 - `RegisterScopes` registra só 3 escopos; os demais são criados pelo Seeder no banco.
 - `/identity/me/*` sem exposição no Gateway/Site (decisão de produto pendente).

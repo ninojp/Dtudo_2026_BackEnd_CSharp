@@ -39,7 +39,7 @@ Este documento consolida o modelo de segurança transversal da solução Dtudo20
 
 ### Riscos residuais do modelo
 
-Certificados e contas de serviço reais; validação OIDC/mTLS em processos reais; scanner Defender/AMSI real; backups no mesmo host; controles administrativos do GitHub; worker de retenção LGPD; e a própria homologação.
+Certificados e contas de serviço reais; validação OIDC/mTLS em processos reais; scanner Defender/AMSI real; backups no mesmo host; controles administrativos do GitHub; validação ao vivo do worker de exclusão LGPD e do fluxo ApiIdentity → ApiMyAnimes; e a própria homologação.
 
 ## Autenticação e autorização
 
@@ -61,6 +61,7 @@ Certificados e contas de serviço reais; validação OIDC/mTLS em processos reai
 | WinApp (`dtudo-winapp`) | Escopos `openid profile offline_access identity.login identity.provision catalog.read/write/delete filesystem.command health.read`, limitados pelas permissões do usuário |
 | Gateway (`dtudo-gateway`) | Escopos `openid profile catalog.read personal.read personal.write offline_access` (refresh/revogação; os `personal.*` exigem novo login); recursos `api-my-animes`, `api-musicx` e `api-discogs` |
 | ApiMyAnimes (serviço) | `service.mal.read` por client credentials para `api-my-animelist`; `filesystem.command` por client credentials para `api-file-storage` (atualização do status de pasta; mesmo client `api-my-animes` e mesmo certificado) |
+| ApiIdentity (serviço, client `api-identity`) | `service.privacy.myanimes` por client credentials **somente** para `api-my-animes` (exportação e exclusão LGPD do progresso); permissão **fora de qualquer role de usuário** |
 
 ### Atores × recursos
 
@@ -73,6 +74,7 @@ Certificados e contas de serviço reais; validação OIDC/mTLS em processos reai
 | ApiMyAnimes — POST/PUT/PATCH, `conflito-titulo`, migração de catálogo, monitoramento (locais/sincronizações) | Não | Não | `catalog.write` | — |
 | ApiMyAnimes — `MyAnime/folder-status/*` e `MyAnime/{id}/folder-status/refresh` (atualizar/consultar/cancelar a atualização do status de pasta; **sem rota no gateway**) | Não | Não (`403`) | `catalog.write` | — |
 | ApiMyAnimes — DELETE | Não | Não | `catalog.delete` | — |
+| ApiMyAnimes — POST `apiLocal/internal/privacy/export` e `.../erase` (exportação/exclusão LGPD por conta; corpo com `accountId`; **sem rota no gateway e sem CORS**) | Não (`401`) | Não (`403`) | Não (`403`; token de usuário nunca é aceito) | `service.privacy.myanimes` (client `api-identity` + certificado mTLS registrado) |
 | ApiMyAnimes — health | Não | Não | `health.read` | — |
 | ApiMyAnimeList — busca, detalhes, relações | Não | `catalog.read` | `catalog.read` | `service.mal.read` |
 | ApiMusicX — GET coleções/artistas/lançamentos | Não | `catalog.read` | Sim | — |
@@ -104,6 +106,8 @@ Fluxo de `ApiMyAnimes` → `ApiMyAnimeList`:
 
 Fluxo de `ApiMyAnimes` → `ApiFileStorage` (atualização do status de pasta dos animes, Fase 5): mesmo client `api-my-animes`, mesmo certificado e mesmo `/connect/token`, com escopo `filesystem.command` e recurso `urn:dtudo:api-file-storage`; na ApiIdentity o client ganhou a concessão `urn:dtudo:api-file-storage` → `filesystem.command` em `AllowedGrants`. **Escopo e audiência são amarrados por concessão** (`AllowedGrants`: audiência → escopos): `api-my-animes` só obtém `service.mal.read` para a audiência da MAL e `filesystem.command` para a da ApiFileStorage; o cruzamento (`service.mal.read` em `api-file-storage` ou o inverso) é recusado com `invalid_scope`. A forma legada `AllowedScopes`/`AllowedAudiences` só é aceita com **uma única** audiência e não pode ser combinada com `AllowedGrants`; com várias audiências a ApiIdentity e a ApiMyAnimeList **não iniciam** (validação no startup). Em Development isso está nos user-secrets das duas APIs (nada no repositório) e foi validado ao vivo: token emitido com o certificado e `anime-folders/discovery`/`scan` respondendo na ApiFileStorage; sem token a ApiFileStorage responde `401`. A ApiFileStorage valida apenas o JWT (audiência `urn:dtudo:api-file-storage` + permissão `filesystem.command`), sem middleware de certificado de cliente — o `filesystem.command` também é de usuários (superadmin/WinApp), então a ApiFileStorage não pode exigir certificado de cliente em todas as chamadas. Sem o registro, a atualização falha de forma isolada por anime e o status anterior é preservado.
 
+Fluxo de `ApiIdentity` → `ApiMyAnimes` (exportação e exclusão LGPD do progresso, Fase 8): client `api-identity`, certificado próprio, escopo `service.privacy.myanimes` e recurso `urn:dtudo:api-my-animes`, em `AllowedGrants` do client na própria ApiIdentity (a ApiIdentity chama o próprio `/connect/token` por HTTPS). O escopo **só pode ser concedido para a audiência da ApiMyAnimes**: a ApiIdentity não inicia se qualquer client o receber para outra audiência, nem se as credenciais de saída (`ServiceAuthentication:ApiMyAnimes`) tiverem audiência/escopo diferentes dos fixos. Na ApiMyAnimes a política `permission:service.privacy.myanimes` falha fechada e só autoriza quando `InternalServiceAuthentication:Enabled=true`, o token tem a permissão **e** o escopo, `sub == client_id` (exclui qualquer token de usuário), o `client_id` está na allowlist e o **certificado mTLS da conexão** é o registrado para esse client (o Kestrel também exige certificado opcional e o valida contra a allowlist). A permissão está no `AuthorizationCatalog` mas **não** é concedida a nenhuma role. Timeout por tentativa (10 s) e retry limitado (3 tentativas, backoff exponencial, só falhas transitórias).
+
 Rotação de certificado: registrar o novo thumbprint primeiro e manter o antigo como secundário até `PreviousCertificateAcceptedUntilUtc`; depois do prazo o antigo é rejeitado (`client-certificate-not-registered`). O acesso à chave privada é concedido por `Invoke-DtudoInfrastructureHardening.ps1 -ConfigureCertificateAcl` ([02_Solucao_Operacao.md](02_Solucao_Operacao.md)). Thumbprints ficam apenas em configuração protegida (`<THUMBPRINT_HEX_40>`).
 
 **Estado:** `ServiceAuthentication.Enabled=false` por padrão em todos os `appsettings`; **nenhum teste mTLS ao vivo entre processos foi executado**.
@@ -127,7 +131,11 @@ Regras de rotação:
 
 ## LGPD (ApiIdentity)
 
-Autorização do titular sobre seus próprios dados; confirmação de idade sem guardar a data de nascimento completa; termos versionados com hash; exportação de dados sem material de autenticação; solicitação de exclusão com janela de 7 dias; retenção de 12 meses; auditoria em `SecurityAuditEvents` (append-only). O **worker de retenção/purge LGPD ainda não foi validado em ambiente real**.
+Autorização do titular sobre seus próprios dados; confirmação de idade sem guardar a data de nascimento completa; termos versionados com hash; exportação de dados sem material de autenticação; solicitação de exclusão com janela de 7 dias; retenção de 12 meses; auditoria append-only (`IdentityProvisioningAuditEvents` na ApiIdentity e `SecurityAuditEvents` na ApiMyAnimes, retenção de 12 meses).
+
+**Escopo da exportação/exclusão (desde a Fase 8):** além dos dados da ApiIdentity, entram o **progresso de episódios** (`AnimeEpisodeWatches`) e o vínculo da conta com execuções de atualização de pasta (`AnimeFolderRefreshRuns.RequestedBy`) da ApiMyAnimes. A exportação (formato v2) falha com `503` se a ApiMyAnimes estiver indisponível (nunca entrega export parcial). A exclusão, executada pelo **worker** da ApiIdentity após a carência de 7 dias, apaga **primeiro** na ApiMyAnimes (idempotente) e só então remove os dados locais; se a chamada falhar, o pedido continua `Pending`, com contador de tentativas e último erro (código curto, sem dado pessoal), e é repetido. Na ApiMyAnimes o progresso é apagado e `RequestedBy` é **anonimizado** (`deleted-account`), pois a execução é dado global; a trilha `SecurityAuditEvents` guarda apenas um hash curto da conta. `AnimeFolderStatus` é dado global do catálogo e fica fora da LGPD. A conta bootstrap continua protegida (nunca é excluída).
+
+O **worker vem desabilitado** (`PrivacyDeletionWorker:Enabled=false`) e **não foi validado em ambiente real** (sem mTLS/`ServiceAuthentication` ao vivo entre os processos); os testes usam substitutos do cliente HTTP e certificados efêmeros.
 
 ## Estado final do Gate 30
 
@@ -140,7 +148,7 @@ Autorização do titular sobre seus próprios dados; confirmação de idade sem 
 | 1 | Homologação externa | Não aplicável no momento (projeto sem implantação; a borda de homologação foi removida) |
 | 2 | MSIX real | `makeappx`/`signtool`, assinatura real, teste de instalação/atualização/rollback, runner protegido, environment com aprovação |
 | 3 | GitHub | Ruleset, secret scanning/push protection, environments e runner group (configurações administrativas diferidas) |
-| 4 | Antes da promoção | Defender/AMSI reais, OIDC/mTLS ao vivo, worker de retenção LGPD, restauração semestral fora do host |
+| 4 | Antes da promoção | Defender/AMSI reais, OIDC/mTLS ao vivo, validação ao vivo do worker LGPD (exclusão e exportação ApiIdentity → ApiMyAnimes), restauração semestral fora do host |
 
 ### Evidências locais (Development)
 
@@ -176,7 +184,7 @@ Os documentos por etapa foram consolidados nesta série; nomes de etapa permanec
 - **ApiIdentity:** registra certificados de **assinatura e criptografia de desenvolvimento** de forma incondicional; certificados reais são obrigatórios antes de Homologação/Produção.
 - **Gateway (resolvido na Fase 2):** o handler OIDC chamava `SetParameter("resource", ...)` duas vezes e o último valor sobrescrevia o primeiro; agora monta `resource=a&resource=b&resource=c` a partir de `OpenIdConnect:Resources` (my-animes, musicx, discogs) e o client `dtudo-gateway` recebeu permissão para `api-my-animes`. O gateway renova o access token (refresh rotativo, `offline_access`) e revoga o refresh token no logout; sessões antigas exigem novo login. O proxy continua somente-GET, com a única exceção `POST /api/catalog/animes/status` (sessão + CSRF + corpo ≤ 16 KiB + Bearer da sessão apenas nessa rota de anime). CORS segue `GET`-only (restritivo; o POST é same-origin).
 - **Gateway/progresso de episódios (Fase 3):** além do status em lote, o proxy expõe 5 rotas `.../animes/{id}/watch*` (GET sem CSRF; PUT/DELETE com sessão + CSRF, corpo ≤ 64 KiB ou vazio nas mutações sem corpo). Nelas o gateway também injeta o access token da sessão; a ApiMyAnimes exige `personal.read`/`personal.write` (permission + scope) e usa apenas o `sub` como `AccountId`. O `GET` sem sessão responde `401` (sem redirecionamento). Sessões anteriores à ampliação dos scopes recebem `403` até novo login.
-**Direção decidida (ainda não implementada):** a ApiIdentity, dona do pedido de exclusão, da carência e da auditoria, chama a ApiMyAnimes por **client credentials + mTLS** (infraestrutura existente em `LibDtudo.Shared`: `ServiceAccessTokenProvider`/`ServiceAccessTokenHandler`) em endpoints internos por `AccountId` (exportar e apagar o progresso), protegidos por uma permissão de serviço dedicada (ex.: `service.privacy.myanimes`, a criar no `AuthorizationCatalog`). Na exclusão, apagar primeiro na ApiMyAnimes (idempotente) e só então remover os dados da ApiIdentity; em falha, o pedido segue pendente e é repetido. Não depende de token de usuário, pois a exclusão roda em worker após a carência. **Pré-requisitos:** o worker de processamento da exclusão (`ProcessDueDeletionAsync` hoje não tem worker) e `ServiceAuthentication` habilitado no ambiente.
+**LGPD do progresso (resolvido na Fase 8):** exportação e exclusão do progresso passam pela ApiIdentity por **client credentials + mTLS** em endpoints internos da ApiMyAnimes (ver "LGPD" e "Client credentials e mTLS" acima e [21_ApiIdentity.md](21_ApiIdentity.md)). **Pendente (ambiente):** `ServiceAuthentication:Enabled=true`, certificados, client `api-identity` com `AllowedGrants`, `InternalServiceAuthentication` na ApiMyAnimes e `PrivacyDeletionWorker:Enabled=true`; sem isso a exclusão permanece pendente e a exportação responde `503` (comportamento seguro). Passo a passo em [02_Solucao_Operacao.md](02_Solucao_Operacao.md).
 Se houver publicação no futuro, a borda de homologação precisará ser refeita para esse modelo.
 - **ApiMyAnimeList:** busca/detalhes/relações usam `catalog.external.read` (aceita `catalog.read` **ou** `service.mal.read`).
 - **ApiFileStorage:** além de `resolve`, `reconcile`, `health` e `startup`, existe `MonitoringController` (raízes, sincronizações/descoberta, sessões, heartbeat, refresh, eventos, entradas), exigindo `filesystem.command`. O `appsettings.json` base declara `FileStorage:Roots` vazio, mas a validação de inicialização exige ao menos uma raiz; também define `Authentication:Issuer` sem barra final.

@@ -1,5 +1,36 @@
 namespace ApiIdentity.Privacy;
 
+/// <summary>Versões do formato do JSON de exportação de dados pessoais.</summary>
+public static class PersonalDataExportVersions
+{
+    /// <summary>Formato original (somente dados da ApiIdentity).</summary>
+    public const string V1 = "1";
+
+    /// <summary>Acrescenta a seção <c>MyAnimes</c> (progresso de episódios e demais dados pessoais da ApiMyAnimes).</summary>
+    public const string V2 = "2";
+
+    public const string Current = V2;
+}
+
+/// <summary>Resultado do processamento de um pedido de exclusão.</summary>
+public enum DeletionProcessingOutcome
+{
+    /// <summary>Dados remotos e locais removidos; pedido marcado como concluído.</summary>
+    Completed,
+
+    /// <summary>Pedido inexistente, já concluído ou concluído por outro processamento concorrente.</summary>
+    NotPending,
+
+    /// <summary>A carência de sete dias ainda não terminou.</summary>
+    NotDue,
+
+    /// <summary>Conta bootstrap: protegida, nunca é excluída.</summary>
+    Protected,
+
+    /// <summary>A ApiMyAnimes falhou; nada local foi removido e o pedido continua pendente para nova tentativa.</summary>
+    DownstreamFailed
+}
+
 public static class PersonalResourceTypes
 {
     public const string Anime = "anime";
@@ -82,7 +113,8 @@ public sealed record PersonalDataExport(
     IReadOnlyList<PersonalFavoriteView> Favorites,
     IReadOnlyList<PersonalPreferenceView> Preferences,
     IReadOnlyList<PersonalListView> Lists,
-    IReadOnlyList<PersonalDataDeletionRequestView> DeletionRequests);
+    IReadOnlyList<PersonalDataDeletionRequestView> DeletionRequests,
+    LibDtudo.Shared.Dtos.MyAnimesPrivacyExportDto MyAnimes);
 
 public sealed record TermsAcceptanceExport(
     Guid AcceptanceId,
