@@ -1,3 +1,5 @@
+using LibDtudo.Shared.Dtos;
+
 namespace ApiMyAnimes.Services;
 
 /// <summary>
@@ -21,7 +23,7 @@ public static class AnimeStatusStates
 public static class AnimeStatusRules
 {
     /// <summary>Quantidade maxima de ids aceitos por requisicao em lote.</summary>
-    public const int MaxMalIdsPerRequest = 200;
+    public const int MaxMalIdsPerRequest = AnimeStatusRequestDto.MaxMalIdsPerRequest;
 
     /// <summary>
     /// Total de episodios: <c>Episodes</c> (MAL) se maior que 0; senao <c>Episodios</c> se maior que 1; senao desconhecido (<c>null</c>).
@@ -84,37 +86,3 @@ public static class AnimeStatusRules
     }
 }
 
-/// <summary>Corpo da requisicao do status em lote.</summary>
-public sealed class AnimeStatusRequestDto
-{
-    /// <summary>Ids do MyAnimeList (maximo de <see cref="AnimeStatusRules.MaxMalIdsPerRequest"/>).</summary>
-    public int[]? MalIds { get; set; }
-}
-
-/// <summary>Resposta do status em lote.</summary>
-/// <param name="Items">Status por anime existente no banco local.</param>
-public sealed record AnimeStatusResponseDto(IReadOnlyList<AnimeStatusItemDto> Items);
-
-/// <summary>Status de um anime para o usuario autenticado.</summary>
-/// <param name="MalId">Id do anime no MyAnimeList.</param>
-/// <param name="Watch">Progresso de episodios vistos.</param>
-/// <param name="Folder">Situacao da pasta no disco.</param>
-/// <param name="Like">Reservado; sempre <c>null</c> ate a fase correspondente.</param>
-public sealed record AnimeStatusItemDto(
-    int MalId,
-    AnimeWatchStatusDto Watch,
-    AnimeFolderStatusDto Folder,
-    string? Like);
-
-/// <summary>Progresso de visualizacao.</summary>
-/// <param name="State">none, partial ou complete.</param>
-/// <param name="Watched">Episodios vistos pelo usuario.</param>
-/// <param name="Total">Total de episodios, ou <c>null</c> se desconhecido.</param>
-public sealed record AnimeWatchStatusDto(string State, int Watched, int? Total);
-
-/// <summary>Situacao da pasta do anime.</summary>
-/// <param name="State">none, partial ou complete.</param>
-/// <param name="Videos">Videos encontrados na pasta.</param>
-/// <param name="Expected">Episodios esperados, ou <c>null</c> se desconhecido.</param>
-/// <param name="CheckedAtUtc">Ultima verificacao; <c>null</c> significa nunca verificado.</param>
-public sealed record AnimeFolderStatusDto(string State, int Videos, int? Expected, DateTime? CheckedAtUtc);

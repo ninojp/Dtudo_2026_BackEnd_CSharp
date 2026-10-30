@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using ApiMyAnimes.Configuration;
 using ApiMyAnimes.Data;
+using LibDtudo.Shared.Dtos;
 using LibDtudo.Shared.Dtos.FileMonitoring;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -59,14 +60,14 @@ public sealed class AnimeFolderRefreshService(
             run.Error = InterruptedError;
             await context.SaveChangesAsync(cancellationToken);
         }
-        if (!includeItems) return AnimeFolderRefreshRunDto.From(run);
+        if (!includeItems) return run.ToDto();
 
         var items = await context.AnimeFolderRefreshItems.AsNoTracking()
             .Where(item => item.RunId == runId && item.Id > afterId)
             .OrderBy(item => item.Id)
             .Take(Math.Clamp(take, 1, MaxItemsPerPage))
             .ToListAsync(cancellationToken);
-        return AnimeFolderRefreshRunDto.From(run, items.Select(AnimeFolderRefreshItemDto.From).ToList());
+        return run.ToDto(items.Select(item => item.ToDto()).ToList());
     }
 
     /// <summary>Execucoes mais recentes (sem relatorio por anime).</summary>
@@ -76,7 +77,7 @@ public sealed class AnimeFolderRefreshService(
             .OrderByDescending(run => run.StartedAtUtc).ThenByDescending(run => run.Id)
             .Take(Math.Clamp(take, 1, MaxRunsListed))
             .ToListAsync(cancellationToken);
-        return runs.Select(run => AnimeFolderRefreshRunDto.From(run)).ToList();
+        return runs.Select(run => run.ToDto()).ToList();
     }
 
     /// <summary>Executa a atualizacao da execucao ja criada. Nao lanca por falha de anime nem por cancelamento: registra o resultado na execucao.</summary>

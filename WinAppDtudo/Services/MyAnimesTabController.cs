@@ -376,6 +376,8 @@ public sealed class MyAnimesTabController : IDisposable
             ucDetalhes.CardClicado += AbrirDetalhesAnimeLocal;
             ucDetalhes.EditarMyAnimeSolicitado += AbrirEditarMyAnime;
             ucDetalhes.MonitorarEstruturaSolicitado += (_, collectionId) => AbrirEstruturaMyAnime(collectionId);
+            ucDetalhes.AtualizarStatusPastasSolicitado += async (_, collectionId) =>
+                await AtualizarStatusPastasAsync(collectionId, ucDetalhes.TituloColecao);
 
             var tabPage = new TabPage
             {
@@ -386,6 +388,19 @@ public sealed class MyAnimesTabController : IDisposable
             tabPage.Controls.Add(ucDetalhes);
             return tabPage;
         });
+    }
+
+    private async Task AtualizarStatusPastasAsync(int myAnimeId, string? tituloColecao)
+    {
+        try
+        {
+            await Frm_StatusPastas.ExecutarAsync(_owner, _authenticationService, myAnimeId, tituloColecao);
+        }
+        catch (Exception exception)
+        {
+            // Handler de evento assincrono: sem este limite uma falha derrubaria o WinApp.
+            DarkMessageBox.Show(_owner, $"Não foi possível atualizar o status das pastas.\n\n{exception.Message}", "Status das pastas", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private async Task AtualizarAbaMyAnimeAsync(int myAnimeId)

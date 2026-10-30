@@ -40,6 +40,8 @@ public sealed class FUC_Monitoramento : UserControl
     private readonly ComboBox synchronizationFilter = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 150 };
     private readonly Button exportText = new() { Text = "Exportar TXT", AutoSize = true };
     private readonly Button exportCsv = new() { Text = "Exportar CSV", AutoSize = true };
+    private readonly Button refreshFolderStatus = new() { AutoSize = true };
+    private readonly WinAppAuthenticationService authentication;
     private MonitoringSessionDto? session;
     private MyAnimeMonitoringLocationDto? target;
     private long eventCursor;
@@ -58,6 +60,7 @@ public sealed class FUC_Monitoramento : UserControl
     public FUC_Monitoramento(WinAppAuthenticationService authentication, int? collectionId = null, Action<int>? openMyAnimeStructure = null)
     {
         myAnimeId = collectionId;
+        this.authentication = authentication;
         this.openMyAnimeStructure = openMyAnimeStructure;
         client = new MonitoringApiClient(authentication);
         catalog = new ApiMyAnimesService(authentication);
@@ -79,6 +82,10 @@ public sealed class FUC_Monitoramento : UserControl
             });
             actions.Controls.Add(change);
         }
+        refreshFolderStatus.Text = myAnimeId.HasValue ? "Atualizar status das pastas" : "Atualizar todas";
+        // Fora do GuardAsync de proposito: a verificacao e longa e o GuardAsync bloquearia o heartbeat da sessao de monitoramento.
+        refreshFolderStatus.Click += async (_, _) => await RefreshFolderStatusAsync();
+        actions.Controls.Add(refreshFolderStatus);
         var tabs = new TabControl { Dock = DockStyle.Fill };
         var structure = new TabPage("Estrutura");
         tree.DrawNode += Tree_DrawNode;
@@ -549,6 +556,25 @@ public sealed class FUC_Monitoramento : UserControl
             }
         }
         finally { busy = false; }
+    }
+
+    private async Task RefreshFolderStatusAsync()
+    {
+        if (IsDisposed) return;
+        refreshFolderStatus.Enabled = false;
+        try
+        {
+            await Forms.Frm_StatusPastas.ExecutarAsync(FindForm(), authentication, myAnimeId);
+        }
+        catch (Exception exception)
+        {
+            // Handler de evento assincrono: sem este limite uma falha derrubaria o WinApp.
+            if (!IsDisposed) status.Text = $"Nao foi possivel atualizar o status das pastas: {exception.Message}";
+        }
+        finally
+        {
+            if (!IsDisposed) refreshFolderStatus.Enabled = true;
+        }
     }
 
     private static DataGridView CreateGrid<T>(BindingList<T> source) => new()

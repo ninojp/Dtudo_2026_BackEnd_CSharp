@@ -6,6 +6,7 @@ import H2SubTitulo from '../../../components/H2SubTitulo/H2SubTitulo';
 import CardAnime from '../../../components/componentsAnimes/CardAnime/CardAnime';
 import AuthContext from '../../../context_api/AuthContext/AuthContext';
 import { buscarColecaoMyAnimePorId, buscarAnimesPorMalIds } from '../../../services/apiMyAnimes';
+import { useAnimeStatus } from '../../../hooks/useAnimeStatus';
 import {
     ehAnimeAdulto,
     obterIdAnime,
@@ -119,6 +120,8 @@ export default function AnimesRelacionados() {
         animesDaColecao.filter(({ anime }) => anime !== null).map(({ anime }) => anime)
     ), [animesDaColecao]);
 
+    const statusPorMalId = useAnimeStatus(animesVisiveis.map(obterIdAnime));
+
     if (isLoadingColecao) {
         return <main className={styles.mainRelacionados}>Loading...</main>;
     }
@@ -162,7 +165,7 @@ export default function AnimesRelacionados() {
                                 {animesDaColecao.map(({ malId, anime, disponivelLocalmente }) => (
                                     disponivelLocalmente ? (
                                         <Link key={malId} to={`/animes/animes-detalhes/${obterIdAnime(anime)}`}>
-                                            <CardAnime anime={anime} />
+                                            <CardAnime anime={anime} status={statusPorMalId[obterIdAnime(anime)]} />
                                         </Link>
                                     ) : (
                                         <div key={malId} className={styles.cardPlaceholder} title={`MalId ${malId} ainda nao foi importado para o banco local.`}>

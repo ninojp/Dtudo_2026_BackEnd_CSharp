@@ -9,7 +9,7 @@ namespace ApiMyAnimes.Services;
 /// </summary>
 public static class FolderNameMatcher
 {
-    /// <summary>Quantidade de palavras iniciais comparadas por <see cref="ShareFirstWords"/>.</summary>
+    /// <summary>Quantidade de palavras iniciais comparadas por <see cref="ShareFirstWords(string, string)"/>.</summary>
     public const int FirstWordsCount = 4;
 
     /// <summary>

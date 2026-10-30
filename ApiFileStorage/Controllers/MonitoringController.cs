@@ -21,7 +21,7 @@ public sealed class MonitoringController(IServiceProvider services, ILogger<Moni
             ?? throw new MonitoringDisabledException();
     private AnimeFolderScanService AnimeFolderScanner => services.GetRequiredService<AnimeFolderScanService>();
 
-    /// <summary>Lista as raizes permitidas
+    /// <summary>Lista as raizes permitidas.</summary>
     [HttpGet("roots")]
     [ProducesResponseType(typeof(MonitoringRootDto[]), StatusCodes.Status200OK)]
     public ActionResult<MonitoringRootDto[]> Roots() => Ok(MonitoringRoots.Collections().All.Select(root => new MonitoringRootDto(root.Key, root.Path)).ToArray());

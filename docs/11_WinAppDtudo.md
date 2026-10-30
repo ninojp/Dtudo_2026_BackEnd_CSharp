@@ -18,7 +18,7 @@ Pastas principais:
 
 | Pasta | Conteúdo |
 | --- | --- |
-| `Forms\` | `Frm_WinAppLogin` (WebView2), `Frm_DiscogsImport`, `Frm_ProgressoOperacao`, `Frm_Questao` |
+| `Forms\` | `Frm_WinAppLogin` (WebView2), `Frm_DiscogsImport`, `Frm_ProgressoOperacao`, `Frm_Questao`, `Frm_StatusPastas` |
 | `FormsUC\` | telas hospedadas em abas (ver abaixo) |
 | `Controls\` | `UC_AnimeCard`, `UC_MiniAnimeCard`, `AccentLabel`, `IconTextLabel`, `DarkTabControl`, `TabWorkspace` |
 | `Services\` | clientes HTTP, autenticação, startup/health de APIs, importação, migração, diagnóstico |
@@ -39,8 +39,9 @@ Regras visuais: o aplicativo é inteiramente escuro; novas telas devem reutiliza
 | `FUC_BuscarAnime` | busca unificada: DB Local ([ApiMyAnimes](22_ApiMyAnimes.md)) e [ApiMyAnimeList](23_ApiMyAnimeList.md) (`IAnimeSearchSource`) |
 | `FUC_DetalhesAnime` | detalhes do anime nas duas fontes (layout compartilhado), relações e mini cards (`UC_MiniAnimeCard.FormatoPoster`) |
 | `FUC_EditarAnime` / `FUC_EditarMyAnime` | edição de Anime e MyAnime (coleção interna `MyAnimeId`) |
-| `FUC_MyAnimeDetalhes` | detalhes da coleção local; botão "Monitorar Estrutura" |
-| `FUC_Monitoramento` | monitoramento local de coleções (geral e por MyAnime) — ver [24_ApiFileStorage.md](24_ApiFileStorage.md) |
+| `FUC_MyAnimeDetalhes` | detalhes da coleção local; botões "Monitorar Estrutura" e "Atualizar status das pastas" |
+| `FUC_Monitoramento` | monitoramento local de coleções (geral e por MyAnime) — ver [24_ApiFileStorage.md](24_ApiFileStorage.md); botão "Atualizar status das pastas" (coleção) / "Atualizar todas" (geral) |
+| `Frm_StatusPastas` | diálogo escuro com o progresso e o resultado da verificação de pastas (ver "Status das pastas") |
 | `FUC_PainelSaude` | painel de saúde das APIs |
 | `FUC_IdentityAdministration` | administração de usuários ([ApiIdentity](21_ApiIdentity.md)) |
 | `FUC_MyMusicX` | coleção musical via [ApiMusicX](25_ApiMusicX.md) e importação Discogs ([ApiDiscogs](26_ApiDiscogs.md)) |
@@ -68,7 +69,7 @@ Escopos solicitados: `openid profile offline_access identity.login identity.prov
 | API | Uso no WinApp | Cliente |
 | --- | --- | --- |
 | [ApiIdentity](21_ApiIdentity.md) | login, sessão, administração de usuários, health | `WinAppAuthenticationService`, `IdentityAdministrationApiClient` |
-| [ApiMyAnimes](22_ApiMyAnimes.md) | catálogo (`apiLocal/Anime`, `apiLocal/MyAnime`, `apiLocal/catalog-migration/*`), vínculo de pasta | `ApiMyAnimesService` |
+| [ApiMyAnimes](22_ApiMyAnimes.md) | catálogo (`apiLocal/Anime`, `apiLocal/MyAnime`, `apiLocal/catalog-migration/*`), vínculo de pasta, status das pastas (`folder-status/*`) | `ApiMyAnimesService`, `AnimeFolderStatusApiClient` |
 | [ApiMyAnimeList](23_ApiMyAnimeList.md) | busca, detalhes, capas e relações externas | `MyAnimeListApiService` |
 | [ApiMusicX](25_ApiMusicX.md) | coleções, artistas, álbuns | `ApiMusicXService` |
 | [ApiDiscogs](26_ApiDiscogs.md) | busca/importação Discogs | `ApiDiscogsService`, `ApiDiscogsImportCoordinator` |
@@ -107,7 +108,46 @@ Mensagens de duplicidade seguem o formato "MyAnime ID: Nome do anime" + quebra d
 
 ## Monitoramento local
 
-A classificação de vídeo (cor verde e unidade MB) reutiliza `EpisodeVideoPolicy.VideoExtensions` de [30_LibDtudo.Shared.md](30_LibDtudo.Shared.md), a mesma lista usada pela ApiFileStorage para contar vídeos da pasta do anime; não há cópia local (a lista de 23 extensões e o comportamento visual não mudaram). O vínculo MyAnime ↔ pasta usa `ApiMyAnimesService`
+A classificação de vídeo (cor verde e unidade MB) reutiliza `EpisodeVideoPolicy.VideoExtensions` de [30_LibDtudo.Shared.md](30_LibDtudo.Shared.md), a mesma lista usada pela ApiFileStorage para contar vídeos da pasta do anime; não há cópia local (a lista de 23 extensões e o comportamento visual não mudaram). O vínculo MyAnime ↔ pasta usa `ApiMyAnimesService`.
+
+## Status das pastas (ícones dos cards)
+
+O proprietário dispara, pelo WinApp, a verificação que a [ApiMyAnimes](22_ApiMyAnimes.md) executa com apoio da [ApiFileStorage](24_ApiFileStorage.md) e que alimenta os ícones de pasta (cinza/azul/verde) dos cards do site. O WinApp não acessa disco nem SQL para isso: tudo passa pela API.
+
+**Pontos de entrada**
+
+- `FUC_MyAnimeDetalhes` → "Atualizar status das pastas" (uma coleção MyAnime).
+- `FUC_Monitoramento` → "Atualizar status das pastas" (modo coleção) e "Atualizar todas" (modo geral). "Atualizar todas" pede confirmação (padrão: Não), pois percorre todas as coleções.
+- Ambos chamam `Frm_StatusPastas.ExecutarAsync`, com guarda contra execução dupla no WinApp.
+
+**Camadas (sem UI nas duas primeiras, cobertas por testes)**
+
+| Tipo | Papel |
+| --- | --- |
+| `AnimeFolderStatusApiClient` (`IAnimeFolderStatusApi`) | cliente HTTP autenticado (mesmo bearer/PKCE dos demais clientes; 401 faz refresh da sessão e repete uma vez). Rotas `apiLocal/MyAnime/{id}/folder-status/refresh`, `folder-status/refresh`, `folder-status/runs[/{runId}]` (cursor `afterId`, `take` 1–500) e `.../cancel`; consulta em lote `POST apiLocal/Anime/status` (até 200 ids por chamada) para `expected` e última verificação |
+| `AnimeFolderRefreshCoordinator` | inicia (ou anexa à execução ativa em 409), consulta o progresso por cursor, tolera falhas transitórias (até 5 seguidas, "tentando novamente (n/5)"), enriquece cada item com título/`expected`/data, cancela e devolve resultado parcial |
+| `AnimeFolderStatusPresenter` | textos, cores, filtro e resumo ("Concluído: 70 completos, 10 parciais, 7 sem pasta") |
+| `Frm_StatusPastas` | diálogo `CustomFormNoBorder` escuro, redimensionável (até 96 % da área útil, DPI por monitor) |
+
+**Feedback por etapa:** "Planejando…", "Contando os vídeos de N animes; aguardando o primeiro resultado…" e, por item, "Coleção X: 'Anime' verificado (12/87) — completo (26/26 vídeos)". O servidor só reporta itens concluídos, por isso as mensagens dizem "verificado". A barra fica indeterminada até haver total e depois passa a contínua.
+
+**Resultado por anime:** grade (virtual) com Coleção, MAL ID, Anime, Estado (colorido), Vídeos/Episódios, Última verificação e Resultado; filtro Todos/Completo/Parcial/Sem pasta/Atenção. Cores (em `DarkModeColors`, iguais às do site): sem pasta `#8A94A6` (cinza), parcial `#4EB7E6` (azul), completo `#00C86F` (verde). Itens indisponíveis ou com falha mantêm o status anterior (exibido com a observação "status anterior mantido").
+
+**Cancelamento:** "Cancelar verificação" (ou fechar o diálogo) chama `POST .../cancel` e aguarda o estado final (até 30 s), mostrando o resultado parcial ("Cancelado: …").
+
+**Erros (mensagens claras no diálogo e em `DarkMessageBox`)**
+
+| Situação | Tratamento |
+| --- | --- |
+| API/rede/timeout, 502–504 | "ApiMyAnimes indisponível"; durante o acompanhamento, novas tentativas antes de desistir |
+| 401 / sem sessão | pede para reconectar (Arquivo > Conectar) |
+| 403 | falta a permissão `catalog.write` |
+| 404 | coleção inexistente ou execução que deixou de existir |
+| 409 | já existe execução; o WinApp anexa a ela e acompanha |
+| 503 | ApiFileStorage fora do ar ou raiz de coleções não configurada/indisponível |
+| JSON inválido | resposta inesperada da API |
+
+**Contratos:** os DTOs de refresh e do status em lote vêm de `LibDtudo.Shared\Dtos\AnimeFolderStatusContracts.cs` (o mesmo código usado pela ApiMyAnimes, sem cópia no WinApp; ver [30_LibDtudo.Shared.md](30_LibDtudo.Shared.md)). Só o `AnimeFolderStatusInfo` (visão do WinApp com `MalId`) e as exceções/tipos de falha ficam em `AnimeFolderStatusModels.cs`.
 
 ## Empacotamento MSIX, atualização e rollback
 
@@ -143,7 +183,7 @@ Projeto `tests\WinAppDtudo.Tests` (executar com `dotnet test`). Áreas cobertas:
 | Área | Classes |
 | --- | --- |
 | Autenticação | `WinAppPkceBrowserClientTests` (PKCE/state/callback/porta ocupada), `WinAppAuthenticationServiceTests` (refresh, rebind, logout), `ProtectedTokenStoreTests` (DPAPI) |
-| APIs | `ApiMyAnimesServiceTests`, `ApiMusicXServiceTests`, `ApiDiscogsServiceTests`, `ApiDiscogsImportCoordinatorTests`, `ConversorAnimeDtoServiceTests` |
+| APIs | `ApiMyAnimesServiceTests`, `AnimeFolderStatusApiClientTests`, `AnimeFolderRefreshCoordinatorTests` (inclui `AnimeFolderStatusPresenterTests`), `ApiMusicXServiceTests`, `ApiDiscogsServiceTests`, `ApiDiscogsImportCoordinatorTests`, `ConversorAnimeDtoServiceTests` |
 | Saúde | `WinAppHealthMonitoringServiceTests` |
 | Migração | `LegacyMusicCollectionMigrationServiceTests` |
 | UI/layout | `AnimeDetailLayoutTests`, `AnimeSearch*Tests`, `UnifiedAnimeSearchTests`, `MainWindowTabsTests`, `TabWorkspaceTests`, `DarkTabControlTests`, `MigratedTabContentTests`, `ImageLoaderServiceTests` |
@@ -166,5 +206,6 @@ Projeto `tests\WinAppDtudo.Tests` (executar com `dotnet test`). Áreas cobertas:
 - **Acesso a arquivos não é zero:** o WinApp não usa SQL, mas ainda toca o disco local: `CriadorDeEstruturas` cria pastas e capas (`FileMode.CreateNew`, nunca sobrescreve) na pasta escolhida; `AnalizadorDeEstruturas` lê a pasta escolhida; `ImportadorAnimesMyAnimeService` grava `LogsImportacao`; `FUC_Monitoramento` abre pastas no Explorer e exporta TXT/CSV; DPAPI, configuração, backup (leitura de manifesto) e `StartupDiagnostics` também usam arquivos. A documentação da etapa de remoção de arquivos diz que esses fluxos foram migrados para a ApiFileStorage; os endpoints `import`, `delete*` e `export/*` foram removidos e `FileStorageApiClient` não existe mais.
 - **Defaults de código:** `AppConfigurationService` (usado só sem `appsettings.json`) não inclui o escopo `filesystem.command` nem o recurso `urn:dtudo:api-file-storage`, e `DtudoSite.StartUrl` padrão é `/animes` (o `appsettings.json` usa `/`).
 - **MSIX não validado ponta a ponta:** scripts, template e workflow existem, mas a emissão real depende de `makeappx`/`signtool` e de runner dedicado; não há evidência de release publicada.
+- **Status das pastas sem teste de UI:** `Frm_StatusPastas` e os botões não têm teste automatizado (só cliente, coordenador e apresentador); o caminho 401 via HTTP não é exercitado (dispararia refresh real no ApiIdentity); o menu principal não ganhou item novo (as ações ficam nas telas de detalhe e monitoramento).
 - **Contagens de testes** em documentos históricos estão desatualizadas e não foram repetidas aqui.
 - **Dúvida aberta:** manter ou migrar para API a criação de estruturas de pastas e capas (`CriadorDeEstruturas`), dado o princípio de "somente APIs".

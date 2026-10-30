@@ -71,4 +71,13 @@ public static class DarkModeColors
 
     /// <summary>Cor de informacao.</summary>
     public static Color InfoColor { get; } = Color.FromArgb(0, 150, 200);
+
+    /// <summary>Estado de pasta "sem pasta" (cinza do site: #8a94a6).</summary>
+    public static Color FolderStatusNoneColor { get; } = Color.FromArgb(0x8A, 0x94, 0xA6);
+
+    /// <summary>Estado de pasta "parcial" (azul do site: #4eb7e6).</summary>
+    public static Color FolderStatusPartialColor { get; } = Color.FromArgb(0x4E, 0xB7, 0xE6);
+
+    /// <summary>Estado de pasta "completo" (verde do site: #00c86f).</summary>
+    public static Color FolderStatusCompleteColor { get; } = Color.FromArgb(0x00, 0xC8, 0x6F);
 }

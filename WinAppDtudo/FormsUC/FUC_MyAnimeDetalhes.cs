@@ -10,6 +10,7 @@ public class FUC_MyAnimeDetalhes : UserControl
     public event EventHandler<int>? CardClicado;
     public event EventHandler<int>? EditarMyAnimeSolicitado;
     public event EventHandler<int>? MonitorarEstruturaSolicitado;
+    public event EventHandler<int>? AtualizarStatusPastasSolicitado;
 
     private readonly int _myAnimeId;
     private readonly ApiMyAnimesService _apiMyAnimesService;
@@ -28,6 +29,9 @@ public class FUC_MyAnimeDetalhes : UserControl
 
     // Última pasta de salvamento usada na sessão, compartilhada entre as abas de detalhes.
     private static string? _ultimaPastaSalvamento;
+
+    /// <summary>Título da coleção já carregado (nulo enquanto os dados não chegaram).</summary>
+    public string? TituloColecao => _myAnimeAtual?.Titulo;
 
     public FUC_MyAnimeDetalhes(int myAnimeId, ApiMyAnimesService? apiMyAnimesService = null)
     {
@@ -112,12 +116,16 @@ public class FUC_MyAnimeDetalhes : UserControl
         var monitorar = new Button { Text = "Monitorar Estrutura" };
         ConfigurarBotaoAcao(monitorar);
         monitorar.Click += (_, _) => MonitorarEstruturaSolicitado?.Invoke(this, _myAnimeId);
+        var atualizarPastas = new Button { Text = "Atualizar status das pastas" };
+        ConfigurarBotaoAcao(atualizarPastas);
+        atualizarPastas.Click += (_, _) => AtualizarStatusPastasSolicitado?.Invoke(this, _myAnimeId);
         flpAcoes.Controls.AddRange([
             _lblMyAnimeId,
             _txtMyAnimeId,
             _btnSalvarEstrutura,
             _btnEditarMyAnime,
-            monitorar
+            monitorar,
+            atualizarPastas
         ]);
 
         _flpCards = new FlowLayoutPanel

@@ -1,5 +1,6 @@
 using ApiMyAnimes.Data;
 using ApiMyAnimes.Services;
+using LibDtudo.Shared.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

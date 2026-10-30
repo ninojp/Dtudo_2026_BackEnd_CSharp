@@ -7,6 +7,15 @@ public static class AnimeFolderState
     public const string Partial = "partial";
     public const string Complete = "complete";
 
+    /// <summary>Normaliza o texto recebido de uma API; qualquer valor desconhecido vira <see cref="None"/>.</summary>
+    public static string Normalize(string? state) =>
+        state?.Trim().ToLowerInvariant() switch
+        {
+            Partial => Partial,
+            Complete => Complete,
+            _ => None
+        };
+
     /// <summary>
     /// <c>none</c>: pasta inexistente/indisponivel ou sem nenhum video de episodio. <c>complete</c>: leitura integral
     /// (sem <paramref name="truncated"/>), total conhecido (&gt; 0) e videos &gt;= total. <c>partial</c>: ha videos, mas menos

@@ -1,3 +1,5 @@
+using LibDtudo.Shared.Dtos;
+
 namespace ApiMyAnimes.Services;
 
 /// <summary>Ja ha uma atualizacao de status de pasta em andamento neste processo.</summary>
@@ -42,7 +44,7 @@ public sealed class AnimeFolderRefreshRunner(
                 .CreateRunAsync(myAnimeId, requestedBy, cancellationToken);
             current.RunId = run.Id;
             current.Task = Task.Run(() => ExecuteAsync(run.Id, current), CancellationToken.None);
-            return AnimeFolderRefreshRunDto.From(run);
+            return run.ToDto();
         }
         catch
         {

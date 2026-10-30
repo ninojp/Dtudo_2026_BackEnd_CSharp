@@ -46,7 +46,7 @@ public sealed class AnimeFolderRefreshRun
     public DateTimeOffset StartedAtUtc { get; set; }
     public DateTimeOffset? FinishedAtUtc { get; set; }
 
-    /// <summary>Ver <see cref="Services.AnimeFolderRefreshStatuses"/>.</summary>
+    /// <summary>Ver <see cref="LibDtudo.Shared.Dtos.AnimeFolderRefreshStatuses"/>.</summary>
     public string Status { get; set; } = string.Empty;
 
     /// <summary>Colecao atualizada; <c>null</c> quando a execucao cobre todas.</summary>
@@ -72,7 +72,7 @@ public sealed class AnimeFolderRefreshItem
     public int MalId { get; set; }
     public int MyAnimeId { get; set; }
 
-    /// <summary>Ver <see cref="Services.AnimeFolderRefreshOutcomes"/>.</summary>
+    /// <summary>Ver <see cref="LibDtudo.Shared.Dtos.AnimeFolderRefreshOutcomes"/>.</summary>
     public string Outcome { get; set; } = string.Empty;
 
     public string? State { get; set; }
